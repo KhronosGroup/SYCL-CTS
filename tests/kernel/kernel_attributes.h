@@ -16,27 +16,38 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides generic sycl::accessor constructors with buffers test for generic
-//  types
-//
 *******************************************************************************/
 
 #include "../common/common.h"
 
-// FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-#include "accessor_common.h"
-#include "generic_accessor_common_buffer_constructors.h"
-#endif
+namespace kernel_attributes {
 
-#include "../common/disabled_for_test_case.h"
+template <typename F>
+struct kernel_functor_st;
+template <typename F>
+struct kernel_functor;
+template <typename F>
+struct kernel_functor_wg;
 
-namespace generic_accessor_common_buffer_constructors_core {
+template <class vec_t>
+struct kernel_separate_lambda_st;
+template <int dims, int size, typename T = int>
+struct kernel_separate_lambda;
+template <int dims, int size, typename T = int>
+struct kernel_separate_lambda_wg;
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Generic sycl::accessor buffer constructors. core types", "[accessor]")({
-  using namespace generic_accessor_common_buffer_constructors;
-  common_run_tests<run_generic_common_buffer_constructors_test>();
-});
+template <class vec_t>
+struct kernel_lambda_st;
+template <int dims, int size, typename T = int>
+struct kernel_lambda;
+template <int dims, int size, typename T = int>
+struct kernel_lambda_wg;
 
-}  // namespace generic_accessor_common_buffer_constructors_core
+template <int dims>
+inline constexpr int expected_val() {
+  return 40 + dims;
+}
+
+const sycl::range<1> range(1);
+
+}  // namespace kernel_attributes

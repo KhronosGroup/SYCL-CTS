@@ -1,0 +1,116 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for usm_device_read_only
+
+This is a test plan for the USM property described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_usm_device_read_only.asciidoc[sycl_ext_oneapi_usm_device_read_only]
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_USM_DEVICE_READ_ONLY` so they can be skipped
+if feature is not supported.
+
+== Tests
+
+=== malloc_device
+
+Perform the test shown in this code snippet:
+
+[source, c++]
+----
+property_list pl{ext::oneapi::property::usm::device_read_only()};
+
+int *ptr = malloc_shared<int>(1, queue);
+int *ptr_read_only = malloc_device<int>(1, queue, pl);
+
+queue.submit([&](handler& cgh) {
+  cgh.single_task([=] {
+    *ptr = *ptr_read_only;
+  });
+});
+
+int var;
+{
+  buffer buf(&var, {1});
+  queue.submit([&](handler& cgh) {
+    auto acc = buf.template get_access<access_mode::write>(cgh);
+    cgh.single_task([=] {
+      acc[0] = *ptr_read_only;
+    });
+  });
+}
+
+if (var != *ptr) { /* tests failed */ }
+----
+
+Check that `var` has the same value as `ptr`, which means that this property allows memory to be accessed on the device.
+
+=== malloc_host
+
+Perform the test shown on this code snippet:
+
+[source, c++]
+----
+property_list pl{device_read_only()};
+
+int *ptr_read_only = malloc_host<int>(1, queue, pl);
+*ptr_read_only = 42;
+
+int val;
+{
+  buffer buf(&val, {1});
+  queue.submit([&](handler& cgh) {
+    auto acc = buf.template get_access<access_mode::write>(cgh);
+    cgh.single_task([=] {
+      acc[0] = *ptr_read_only;
+    });
+  }).wait_and_throw();
+}
+
+if (val != *ptr_read_only) { /* tests failed */ }
+----
+
+Check that `var` has the same value as `ptr_read_only`, which means that this property allows memory to be modified on the host and accessed on the device.
+
+=== malloc_shared
+
+Perform the same test as shown above but replace `malloc_host` with `malloc_shared`.
+
+=== usm_allocator
+
+* Create `usm_allocator` with `usm_device_read_only` property using all combinations of
+
+  ** constructors:
+
+    *** `usm_allocator(context&, device&, property_list&)`;
+    *** `usm_allocator(queue&, property_list&)`.
+
+  ** allocator kinds
+
+    *** `usm::alloc::host`;
+    *** `usm::alloc::shared`.
+
+* Check that `usm_allocator::has_property<device_read_only>()` returns `true`;
+* Check that `usm_allocator::get_property<device_read_only>()` does not throw any exceptions;
+* Call `usm_allocator::allocate()` member function for each object and make sure it does not throw any exceptions.
+
+=== other allocations
+
+Verify that the property can be passed to each function without causing an error by calling all overloads of those functions:
+
+* `sycl::malloc_device()`;
+* `sycl::aligned_alloc_device()`;
+* `sycl::malloc_host()`;
+* `sycl::aligned_alloc_host()`;
+* `sycl::malloc_shared()`;
+* `sycl::aligned_alloc_shared()`;
+* `sycl::malloc()`;
+* `sycl::alligned_alloc()`.
