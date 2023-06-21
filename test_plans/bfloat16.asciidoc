@@ -1,0 +1,193 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for bfloat16
+
+This is a test plan for the APIs described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_bfloat16.asciidoc[sycl_ext_oneapi_bfloat16]
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Type coverage
+
+All of the tests described below are performed using each of the following `typename T`:
+
+* `char`
+* `short`
+* `int`
+* `long long`
+* `std::size_t`
+* `bool`
+* `float`
+
+In addition, if the device has aspect `aspect::fp64`:
+
+* `double`
+
+In addition, if the device has `aspect::fp16`:
+
+* `sycl::half`
+
+Note that `T` must be convertible to `float`
+
+== Tests
+
+=== Size
+
+`bfloat16` must occupy 2 bytes of memory, check that `sizeof(bfloat16) == 2`.
+This check is required to calculate special values.
+
+=== Constructors
+
+`bfloat16()` +
+`bfloat16(const bfloat16 &)` +
+`~bfloat16()`
+
+Check that:
+
+* `std::is_default_constructible_v<bfloat16> == true`;
+* `std::is_copy_constructible_v<bfloat16> == true`;
+* `std::is_destructible_v<bfloat16> == true`.
+
+`bfloat16(const float &a)` +
+`bfloat16 &operator=(const float &a)`
+
+* Create a `float` variable `f` equal to 1;
+* Create a `bfloat16` variable `bf1` passing `f` to the constructor;
+* Create a `bfloat16` variable `bf2` by assinging it to `f`;
+* Verify that:
+    ** `bf1 == f`
+    ** `bf2 == f`
+
+`bfloat16(const sycl::half &a)` +
+`bfloat16 &operator=(const sycl::half &a)`
+
+Same as above, but with `sycl::half` instead of `float`
+
+=== Special values
+
+Use `uint*_t` variables representing `bfloat16` and `float` values in bitset format.
+
+==== Minimum positive normal value
+
+[source, c++]
+----
+    uint16_t bfloat16_bits = 0b0000000010000000;
+    uint32_t float_bits    = 0b00000000100000000000000000000000;
+
+    bfloat16 bf_min = sycl::bit_cast<bfloat16>(bfloat16_bits);
+    float float_min = sycl::bit_cast<float>(float_bits);
+----
+
+Verify that the minimum values of `bfloat16` type is equal to the minimum value of `float` by using the `bfloat16` operator `==`.
+
+==== Zero
+
+[source, c++]
+----
+    uint16_t bfloat16_bits = 0b0000000000000000;
+    uint32_t float_bits = 0b00000000000000000000000000000000;
+
+    bfloat16 bf_zero = sycl::bit_cast<bfloat16>(bfloat16_bits);
+    float float_zero = sycl::bit_cast<float>(float_bits);
+----
+    Verify that `bf_zero == float_zero`.
+
+==== NaN
+
+[source, c++]
+----
+    uint16_t bfloat16_bits[4] = {
+        0b0111111111000001, // qNaN
+        0b1111111111000001,
+        0b0111111110000001, // sNaN
+        0b1111111110000001};
+
+    bfloat16 bf_nan[4];
+    for (int i = 0; i < 4; i++) {
+        bf_nan[i] = sycl::bit_cast<bfloat16>(bfloat16_bits[i]);
+    }
+----
+    Verify that `std::isnan(bf_nan)` is `true` for all elements.
+
+==== Infinity
+
+[source, c++]
+----
+    uint16_t bfloat16_bits[2] = {
+        0b0111111110000000,
+        0b1111111110000000};
+
+    bfloat16 bf_inf_0 = sycl::bit_cast<bfloat16>(bfloat16_bits[0]);
+    bfloat16 bf_inf_1 = sycl::bit_cast<bfloat16>(bfloat16_bits[1]);
+----
+     Verify that `std::isinf(bf_inf_0)` and `std::isinf(bf_inf_1)` are `true`.
+
+These tests will fail if the implementation does not use an 8 bit exponent and 7 bit significand for `bfloat16`.
+
+=== Conversion
+
+Check that:
+
+* `std::is_convertible_v<bfloat16, float> == true`
+* `std::is_convertible_v<bfloat16, sycl::half> == true`
+* `std::is_convertible_v<bfloat16, bool> == true`
+* `std::is_convertible_v<float, bfloat16> == true`
+* `std::is_convertible_v<sycl::half, bfloat16> == true`
+
+=== Operators
+
+`operator-(bfloat16 &bf)`
+
+Check that it constructs new instance of `bfloat16` class with negated value.
+Create `neg_bf` using this operator and verify:
+
+* `neg_bf == -bf`
+* `bf == -neg_bf`
+
+(Prefix) +
+`bfloat16 &operator++(bfloat16 &bf)` +
+`bfloat16 &operator--(bfloat16 &bf)`
+
+* Check if it adds/substracts 1 to the value of the object referenced by this `bf`.
+* Check that new value of the referenced object is equal to `(previous value +/- 1)`.
+* Check if it returns the copy of `bf`.
+* Check returned value type.
+
+(Postfix) +
+`bfloat16 operator++(bfloat16 &bf, int)` +
+`bfloat16 operator--(bfloat16 &bf, int)`
+
+Same as above, but check thar it returns value of `bf` before assignment instead of copy.
+
+OP is `+=`, `-=`, `*=`, `/=` +
+`bfloat16 &operatorOP(bfloat16 &lhs, const bfloat16 &rhs)`
+
+* Check results of arithmetic operations returned to initial `bfloat16` object.
+* Check returned value type.
+
+OP is `+`, `-`, `*`, `/` +
+`bfloat16 operatorOP(const bfloat16 &lhs, const bfloat16 &rhs)`
+
+* Check results of arithmetic operations.
+* Check returned value type.
+
+OP is `==`, `!=`, `<`, `>`, `+<=+`, `>=` +
+`bool operatorOP(const bfloat16 &lhs, const bfloat16 &rhs)`
+
+* Check results of equality and inequality between two `bfloat16` objects.
+* Check returned type is `bool`.
+
+OP is `==`, `!=`, `<`, `>`, `+<=+`, `>=` +
+`template <typename T>` +
+`bool operatorOP(const bfloat16 &lhs, const T &rhs)` +
+`template <typename T>` +
+`bool operatorOP(const T &lhs, const bfloat16 &rhs)`
+
+* Check results of equality and inequality between `bfloat16` and `T` objects.
+* Check returned type is `bool`.
