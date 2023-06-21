@@ -98,6 +98,7 @@ class run_handler_exceptions_tests {
             action(dest_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
       }
+      queue.wait_and_throw();
     }
     SECTION(
         sycl_cts::section_name(std::string("Check copy2d exception with T = ") +
@@ -125,6 +126,7 @@ class run_handler_exceptions_tests {
       CHECK_THROWS_MATCHES(
           action(dest_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
+      queue.wait_and_throw();
     }
     if constexpr (std::is_same_v<T, unsigned char>) {
       SECTION(sycl_cts::section_name(std::string("Check memset2d with T = ") +
@@ -148,6 +150,7 @@ class run_handler_exceptions_tests {
         CHECK_THROWS_MATCHES(
             action(dest_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
+        queue.wait_and_throw();
       }
     }
     SECTION(sycl_cts::section_name(std::string("Check fill2d with T = ") +
@@ -171,6 +174,7 @@ class run_handler_exceptions_tests {
       CHECK_THROWS_MATCHES(
           action(dest_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
+      queue.wait_and_throw();
     }
   }
 };
