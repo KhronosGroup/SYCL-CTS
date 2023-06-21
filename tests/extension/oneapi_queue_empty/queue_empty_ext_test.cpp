@@ -19,6 +19,7 @@
 *******************************************************************************/
 #include "../../common/common.h"
 
+namespace queue_empty::tests {
 constexpr size_t buf_size = 10;
 constexpr size_t iter_num = 10000000;
 
@@ -120,3 +121,4 @@ TEST_CASE(
   CHECK(is_empty);
 #endif
 }
+}  // namespace queue_empty::tests
