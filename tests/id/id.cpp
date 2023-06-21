@@ -284,6 +284,18 @@ TEMPLATE_TEST_CASE_SIG("id supports get() and operator[]", "[id]", ((int D), D),
   }
 }
 
+// FIXME: re-enable when sycl::id<>::dimensions is implemented
+// Issue link https://github.com/intel/llvm/issues/9786
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(DPCPP, hipSYCL)
+("id provides static constexpr member 'dimensions'", "[id]", ((int D), D), 1, 2,
+ 3)({
+  CHECK(std::is_same_v<decltype(sycl::id<D>::dimensions), const int>);
+  KCHECK(EVAL((std::is_same_v<decltype(sycl::id<D>::dimensions), const int>)));
+
+  CHECK(sycl::id<D>::dimensions == D);
+  KCHECK(EVAL(sycl::id<D>::dimensions) == D);
+});
+
 TEST_CASE("id can be converted to size_t if Dimensions == 1", "[id]") {
   using sycl::id;
   const auto convert = [] {
