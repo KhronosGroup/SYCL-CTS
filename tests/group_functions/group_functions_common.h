@@ -220,15 +220,29 @@ using CustomTypes = concatenation<ExtendedTypes, util::custom_type>::type;
 template <typename T>
 inline auto get_op_types() {
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  static const auto types =
-      named_type_pack<sycl::plus<T>, sycl::multiplies<T>, sycl::bit_and<T>,
-                      sycl::bit_or<T>, sycl::bit_xor<T>, sycl::logical_and<T>,
-                      sycl::logical_or<T>, sycl::minimum<T>,
-                      sycl::maximum<T>>::generate("plus", "multiplies",
-                                                  "bit_and", "bit_or",
-                                                  "bit_xor", "logical_and",
-                                                  "logical_or", "minimum",
-                                                  "maximum");
+  static const auto types = []() {
+    if constexpr (std::is_floating_point_v<T> ||
+                  std::is_same_v<std::remove_cv_t<T>, sycl::half>) {
+      // Bitwise operations are not defined for floating point types.
+      return named_type_pack<sycl::plus<T>, sycl::multiplies<T>,
+                             sycl::logical_and<T>, sycl::logical_or<T>,
+                             sycl::minimum<T>,
+                             sycl::maximum<T>>::generate("plus", "multiplies",
+                                                         "logical_and",
+                                                         "logical_or",
+                                                         "minimum", "maximum");
+    } else {
+      return named_type_pack<
+          sycl::plus<T>, sycl::multiplies<T>, sycl::bit_and<T>, sycl::bit_or<T>,
+          sycl::bit_xor<T>, sycl::logical_and<T>, sycl::logical_or<T>,
+          sycl::minimum<T>, sycl::maximum<T>>::generate("plus", "multiplies",
+                                                        "bit_and", "bit_or",
+                                                        "bit_xor",
+                                                        "logical_and",
+                                                        "logical_or", "minimum",
+                                                        "maximum");
+    }
+  }();
 #else
   static const auto types =
       named_type_pack<sycl::plus<T>, sycl::maximum<T>>::generate("plus",
