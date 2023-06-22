@@ -60,4 +60,22 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
   for_all_types<atomic_ref_stress_test::run_ordering>(type_pack);
 });
 
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+("sycl::atomic_ref atomicity with respect to atomic operations in host code. "
+ "core types",
+ "[atomic_ref_stress]")({
+#ifdef __cpp_lib_atomic_ref
+  auto queue = once_per_unit::get_queue();
+  if (!queue.get_device().has(sycl::aspect::usm_atomic_shared_allocations))
+    SKIP(
+        "Device does not support usm_atomic_shared_allocations. "
+        "Skipping the test case.");
+  const auto type_pack = named_type_pack<int, float>::generate("int", "float");
+  for_all_types<atomic_ref_stress_test::run_atomicity_with_host_code>(
+      type_pack);
+#else
+  SKIP("std::atomic_ref is not available");
+#endif
+});
+
 }  // namespace atomic_ref_stress_test_core
