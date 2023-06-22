@@ -87,9 +87,10 @@ class run_api_tests {
               std::is_same_v<decltype(acc_ref1), typename AccT::reference>);
           STATIC_CHECK(
               std::is_same_v<decltype(acc_ref2), typename AccT::reference>);
-          if constexpr (AccessMode != sycl::access_mode::read)
+          if constexpr (AccessMode != sycl::access_mode::read) {
             value_operations::assign(acc_ref1, changed_val);
-          CHECK(value_operations::are_equal(acc_ref2, changed_val));
+            CHECK(value_operations::are_equal(acc_ref2, changed_val));
+          }
         } else {
           T some_data = value_operations::init<T>(expected_val);
           typename AccT::reference dref = acc;

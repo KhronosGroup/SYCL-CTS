@@ -444,7 +444,7 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
     queue
         .submit([&](sycl::handler& cgh) {
           sycl::accessor<bool, 1, sycl::access_mode::read_write, Target>
-              res_acc(res_buf);
+              res_acc(res_buf, cgh);
           auto acc = get_accessor_functor(data_buf, cgh);
           if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
@@ -590,7 +590,9 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
     compare_res = compare_res_arr[0];
   }
 
-  if constexpr (AccessMode != sycl::access_mode::write) {
+  if constexpr (AccessMode != sycl::access_mode::write &&
+                !(accessor_type::local_accessor == AccType &&
+                  sycl::access_mode::read == AccessMode)) {
     CHECK(compare_res);
   }
 
@@ -707,7 +709,9 @@ void check_common_constructor(const sycl::range<Dimension>& r,
     compare_res = compare_res_arr[0];
   }
 
-  if constexpr (AccessMode != sycl::access_mode::write) {
+  if constexpr (AccessMode != sycl::access_mode::write &&
+                !(accessor_type::local_accessor == AccType &&
+                  sycl::access_mode::read == AccessMode)) {
     CHECK(compare_res);
   }
 

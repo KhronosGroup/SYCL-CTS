@@ -84,7 +84,7 @@ class check_multi_ptr_deduction {
             else
               acc_t(r, cgh);
             auto acc_res = buf_res.get_access(cgh);
-            cgh.single_task([=] {
+            cgh.parallel_for(sycl::nd_range<1>({1}, {1}), [=](auto item) {
               auto mptr = multi_ptr(_accessor);
               acc_res[0] = std::is_same_v<decltype(mptr),
                                           multi_ptr<ElementType, accessor_space,
@@ -103,11 +103,8 @@ class check_multi_ptr_deduction {
   }
 };
 
-// FIXME: re-enable when deduction guide for read is implemented
-// Issue link https://github.com/intel/llvm/issues/9692
-DISABLED_FOR_TEST_CASE(DPCPP)
-("multi_ptr deduction guides", "[test_multi_ptr]")({
+TEST_CASE("multi_ptr deduction guides", "[test_multi_ptr]") {
   for_all_types<check_multi_ptr_deduction>(deduction::vector_types);
   for_all_types<check_multi_ptr_deduction>(deduction::scalar_types);
-});
+}
 }  // namespace multi_ptr_deduction_guides

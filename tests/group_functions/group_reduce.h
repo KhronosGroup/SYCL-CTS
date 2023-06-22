@@ -26,39 +26,6 @@
 constexpr size_t init = 1412;
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
 
-template <typename T>
-inline auto get_op_types() {
-#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  static const auto types = []() {
-    if constexpr (std::is_floating_point_v<T> ||
-                  std::is_same_v<std::remove_cv_t<T>, sycl::half>) {
-      return named_type_pack<sycl::plus<T>, sycl::multiplies<T>,
-                             sycl::logical_and<T>, sycl::logical_or<T>,
-                             sycl::minimum<T>,
-                             sycl::maximum<T>>::generate("plus", "multiplies",
-                                                         "logical_and",
-                                                         "logical_or",
-                                                         "minimum", "maximum");
-    } else {
-      return named_type_pack<
-          sycl::plus<T>, sycl::multiplies<T>, sycl::bit_and<T>, sycl::bit_or<T>,
-          sycl::bit_xor<T>, sycl::logical_and<T>, sycl::logical_or<T>,
-          sycl::minimum<T>, sycl::maximum<T>>::generate("plus", "multiplies",
-                                                        "bit_and", "bit_or",
-                                                        "bit_xor",
-                                                        "logical_and",
-                                                        "logical_or", "minimum",
-                                                        "maximum");
-    }
-  }();
-#else
-  static const auto types =
-      named_type_pack<sycl::plus<T>, sycl::maximum<T>>::generate("plus",
-                                                                 "maximum");
-#endif
-  return types;
-}
-
 template <bool with_init, typename OpT, typename IteratorT>
 size_t get_reduce_reference(IteratorT first, IteratorT end) {
   // Cast `init` to size_t so that guards are introduced in verification
@@ -215,7 +182,10 @@ class invoke_joint_reduce_group {
 
  public:
   void operator()(sycl::queue& queue, const std::string& op_name) {
-    joint_reduce_group<D, T, OperatorT>(queue, op_name);
+    if constexpr (type_traits::group_algorithms::is_legal_operator_v<
+                      T, OperatorT>) {
+      joint_reduce_group<D, T, OperatorT>(queue, op_name);
+    }
   }
 };
 
@@ -321,7 +291,10 @@ class invoke_init_joint_reduce_group {
 
  public:
   void operator()(sycl::queue& queue, const std::string& op_name) {
-    init_joint_reduce_group<D, RetT, ReducedT, OperatorT>(queue, op_name);
+    if constexpr (type_traits::group_algorithms::is_legal_operator_v<
+                      RetT, OperatorT>) {
+      init_joint_reduce_group<D, RetT, ReducedT, OperatorT>(queue, op_name);
+    }
   }
 };
 
@@ -433,7 +406,10 @@ class invoke_reduce_over_group {
 
  public:
   void operator()(sycl::queue& queue, const std::string& op_name) {
-    reduce_over_group<D, T, OperatorT>(queue, op_name);
+    if constexpr (type_traits::group_algorithms::is_legal_operator_v<
+                      T, OperatorT>) {
+      reduce_over_group<D, T, OperatorT>(queue, op_name);
+    }
   }
 };
 
@@ -443,8 +419,8 @@ class init_reduce_over_group_kernel;
 /**
  * @brief Provides test for reduce over group values with init
  * @tparam D Dimension to use for group instance
- * @tparam T Type for group values
- * @tparam U Type for init and result values
+ * @tparam T Type for init and result values
+ * @tparam U Type for group values
  * @tparam OpT Type for binary operator
  */
 template <int D, typename T, typename U, typename OpT>
@@ -461,7 +437,7 @@ void init_reduce_over_group(sycl::queue& queue, const std::string& op_name) {
 
   bool res = false;
   // array to input data
-  std::vector<T> v(work_group_size);
+  std::vector<U> v(work_group_size);
   std::iota(v.begin(), v.end(), 1);
   // array to reduce results
   std::vector<T> group_output(work_group_size, 0);
@@ -470,7 +446,7 @@ void init_reduce_over_group(sycl::queue& queue, const std::string& op_name) {
   // Store subgroup size
   size_t sg_size = 0;
   {
-    sycl::buffer<T, 1> v_sycl(v.data(), sycl::range<1>(work_group_size));
+    sycl::buffer<U, 1> v_sycl(v.data(), sycl::range<1>(work_group_size));
     sycl::buffer<T, 1> g_output_sycl(group_output.data(),
                                      sycl::range<1>(work_group_size));
     sycl::buffer<T, 1> sg_output_sycl(sg_output.data(),
@@ -550,6 +526,9 @@ class invoke_init_reduce_over_group {
 
  public:
   void operator()(sycl::queue& queue, const std::string& op_name) {
-    init_reduce_over_group<D, RetT, ReducedT, OperatorT>(queue, op_name);
+    if constexpr (type_traits::group_algorithms::is_legal_operator_v<
+                      RetT, OperatorT>) {
+      init_reduce_over_group<D, RetT, ReducedT, OperatorT>(queue, op_name);
+    }
   }
 };

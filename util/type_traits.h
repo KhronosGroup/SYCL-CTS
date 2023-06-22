@@ -388,6 +388,37 @@ template <typename T>
 inline constexpr bool less_or_equal_v = less_or_equal<T>::value;
 
 }  // namespace has_comparison
+
+namespace group_algorithms {
+/**
+ Checks whether \p T and \p OperatorT form a valid SYCL operator. */
+template <typename T, typename OperatorT>
+using is_legal_operator = std::bool_constant<
+    (std::is_same_v<OperatorT, sycl::plus<T>> && std::is_arithmetic_v<T>) ||
+    (std::is_same_v<OperatorT, sycl::multiplies<T>> &&
+     std::is_arithmetic_v<T>) ||
+    (std::is_same_v<OperatorT, sycl::bit_and<T>> && std::is_integral_v<T>) ||
+    (std::is_same_v<OperatorT, sycl::bit_or<T>> && std::is_integral_v<T>) ||
+    (std::is_same_v<OperatorT, sycl::bit_xor<T>> && std::is_integral_v<T>) ||
+    (std::is_same_v<OperatorT, sycl::logical_and<T>> &&
+     std::is_same_v<std::remove_cv_t<T>, bool>) ||
+    (std::is_same_v<OperatorT, sycl::logical_or<T>> &&
+     std::is_same_v<std::remove_cv_t<T>, bool>) ||
+    (std::is_same_v<OperatorT, sycl::minimum<T>> && std::is_integral_v<T>) ||
+    (std::is_same_v<OperatorT, sycl::minimum<T>> &&
+     (std::is_floating_point_v<T> ||
+      std::is_same_v<std::remove_cv_t<T>, sycl::half>)) ||
+    (std::is_same_v<OperatorT, sycl::maximum<T>> && std::is_integral_v<T>) ||
+    (std::is_same_v<OperatorT, sycl::maximum<T>> &&
+     (std::is_floating_point_v<T> ||
+      std::is_same_v<std::remove_cv_t<T>, sycl::half>))>;
+
+/**
+ Checks whether \p T and \p OperatorT form a valid SYCL operator. */
+template <typename T, typename OperatorT>
+inline constexpr bool is_legal_operator_v{
+    is_legal_operator<T, OperatorT>::value};
+}  // namespace group_algorithms
 }  // namespace type_traits
 
 #endif  // __SYCLCTS_UTIL_TYPE_TRAITS_H
