@@ -56,7 +56,7 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_WEAK_OBJECT_TESTS
     "Enable extension oneAPI weak_object tests" OFF)
 
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_DISCARD_QUEUE_EVENTS_TESTS
-    "Enable extension oneAPI discard_queue_events tests" ON)
+    "Enable extension oneAPI discard_queue_events tests" OFF)
 
 # TODO: Deprecated - remove
 add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG
