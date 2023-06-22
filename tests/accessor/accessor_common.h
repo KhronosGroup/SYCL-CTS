@@ -27,6 +27,7 @@
 #include "../common/common.h"
 #include "../common/once_per_unit.h"
 #include "../common/section_name_builder.h"
+#include "../common/type_list.h"
 #include "../common/value_operations.h"
 
 // FIXME: re-enable when marrray is implemented in hipsycl
@@ -213,6 +214,8 @@ void common_run_tests() {
   for_all_types<action, actionArgsT...>(types);
   for_type_vectors_marray_reduced<action, int, actionArgsT...>("int");
 #endif
+  for_all_types<action, actionArgsT...>(
+      named_type_pack<user_struct>::generate("user_struct"));
 }
 
 /**
