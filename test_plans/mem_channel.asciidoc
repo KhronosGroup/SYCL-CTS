@@ -1,0 +1,63 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for mem_channel
+
+This is a test plan for the APIs described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_intel_mem_channel_property.asciidoc[sycl_ext_intel_mem_channel]
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_INTEL_MEM_CHANNEL_PROPERTY` so they can be skipped
+if feature is not supported.
+
+== Tests
+
+=== buffer with property
+
+* Create a property list with `property::buffer::mem_channel` property;
+* Create a `mem_channel` instance using `property::buffer::mem_channel::mem_channel(cl_uint channel)` constructor;
+* Create buffers sing these property list and property instance;
+* Verify that `buffer::has_property<mem_channel>()` returns true;
+* Verify that `buffer::get_property<mem_channel>()` does not throw any exceptions.
+* Run the code below to make sure that buffers work correctly:
+[source, c++]
+----
+property_list pl = {mem_channel(0)};
+mem_channel mc_object(1);
+
+std::array<int, 10> arr1;
+std::array<int, 10> arr2;
+{
+    buffer<T, 1> buf1(arr1.data(), range{10}, pl);
+    buffer<T, 1> buf2(arr2.data(), range{10}, mc_object);
+
+    queue.submit([&](handler& cgh) {
+        auto acc1 = buf1.get_access<access_mode::read_write>(cgh);
+        auto acc2 = buf2.get_access<access_mode::read_write>(cgh);
+        cgh.parallel_for([=](id<1> i) {
+            // some data manipulations
+        });
+    });
+}
+// verify data in arrays
+----
+
+=== get_channel() member function
+
+* Use property list and `mem_channel` object to call `get_channel() member function`:
+[source, c++]
+----
+auto channel_1 = pl.get_property<mem_channel>().get_channel();
+auto channel_2 = mc_object.get_channel();
+----
+
+* Check that `get_channel()` returns expected values
+* Check that `std::is_same_v<decltype(channel_1), cl_uint>` and `std::is_same_v<decltype(channel_1), cl_uint>` are `true`.
