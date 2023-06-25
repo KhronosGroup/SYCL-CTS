@@ -104,7 +104,8 @@ void joint_reduce_group(sycl::queue& queue, const std::string& op_name) {
       "std::iterator_traits<Ptr>::value_type joint_reduce(sub_group g, Ptr "
       "first, Ptr last, BinaryOperation binary_op)"};
 
-  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue, test_size);
+  sycl::range<D> work_group_range =
+      sycl_cts::util::work_group_range<D>(queue, test_size);
   size_t work_group_size = work_group_range.size();
 
   const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
@@ -210,7 +211,8 @@ void init_joint_reduce_group(sycl::queue& queue, const std::string& op_name) {
       "T joint_reduce(sub_group g, Ptr first, Ptr last, T init, "
       "BinaryOperation binary_op)"};
 
-  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue, test_size);
+  sycl::range<D> work_group_range =
+      sycl_cts::util::work_group_range<D>(queue, test_size);
   size_t work_group_size = work_group_range.size();
 
   const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
@@ -316,7 +318,8 @@ void reduce_over_group(sycl::queue& queue, const std::string& op_name) {
       "T reduce_over_group(group g, T x, BinaryOperation binary_op)",
       "T reduce_over_group(sub_group g, T x, BinaryOperation binary_op)"};
 
-  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue, test_size);
+  sycl::range<D> work_group_range =
+      sycl_cts::util::work_group_range<D>(queue, test_size);
   size_t work_group_size = work_group_range.size();
 
   bool res = false;
@@ -433,7 +436,8 @@ void init_reduce_over_group(sycl::queue& queue, const std::string& op_name) {
       "T reduce_over_group(sub_group g, V x, T init, BinaryOperation "
       "binary_op)"};
 
-  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue, test_size);
+  sycl::range<D> work_group_range =
+      sycl_cts::util::work_group_range<D>(queue, test_size);
   size_t work_group_size = work_group_range.size();
 
   bool res = false;
