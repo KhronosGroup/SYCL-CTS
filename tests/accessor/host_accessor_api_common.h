@@ -87,9 +87,10 @@ class run_api_tests {
               std::is_same_v<decltype(acc_ref1), typename AccT::reference>);
           STATIC_CHECK(
               std::is_same_v<decltype(acc_ref2), typename AccT::reference>);
-          if constexpr (AccessMode != sycl::access_mode::read)
+          if constexpr (AccessMode != sycl::access_mode::read) {
             value_operations::assign(acc_ref1, changed_val);
-          CHECK(value_operations::are_equal(acc_ref2, changed_val));
+            CHECK(value_operations::are_equal(acc_ref2, changed_val));
+          }
         } else {
           T some_data = value_operations::init<T>(expected_val);
           typename AccT::reference dref = acc;
@@ -132,10 +133,12 @@ class run_api_tests {
             buff_range_size, buff_range_size, buff_range_size);
         auto offset_id =
             util::get_cts_object::id<dims>::get(offset, offset, offset);
+        auto offset_start = linearize(buff_range, offset_id);
         std::remove_const_t<T> data[buff_size];
         for (size_t i = 0; i < buff_size; i++) {
           data[i] = value_operations::init<T>(i);
         }
+        auto acc_first_value = value_operations::init<T>(offset_start);
         bool res = false;
         {
           sycl::buffer<T, dims> data_buf(data, buff_range);
@@ -147,12 +150,12 @@ class run_api_tests {
                                       offset_id /*&expected_offset)*/);
 
           test_accessor_ptr(acc, T());
-          test_begin_end_host(acc, value_operations::init<T>(0),
+          test_begin_end_host(acc, acc_first_value,
                               value_operations::init<T>(buff_size - 1), false);
           auto &acc_ref1 = get_subscript_overload<T, AccT, dims>(acc, index);
           auto &acc_ref2 = acc[sycl::id<dims>()];
           CHECK(value_operations::are_equal(acc_ref1, linear_index));
-          CHECK(value_operations::are_equal(acc_ref2, 0));
+          CHECK(value_operations::are_equal(acc_ref2, acc_first_value));
           if constexpr (AccessMode != sycl::access_mode::read) {
             value_operations::assign(acc_ref1, changed_val);
             value_operations::assign(acc_ref2, expected_val);
@@ -160,7 +163,7 @@ class run_api_tests {
         }
         if constexpr (AccessMode != sycl::access_mode::read) {
           CHECK(value_operations::are_equal(data[linear_index], changed_val));
-          CHECK(value_operations::are_equal(data[0], expected_val));
+          CHECK(value_operations::are_equal(data[offset_start], expected_val));
         }
       }
     }

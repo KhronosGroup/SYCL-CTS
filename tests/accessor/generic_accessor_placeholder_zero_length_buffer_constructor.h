@@ -37,16 +37,13 @@ template <typename DataT, int Dimension, sycl::access_mode AccessMode,
 void test_placeholder_zero_length_buffer_constructor(
     const std::string& type_name, const std::string& access_mode_name,
     const std::string& target_name) {
-  auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
-  auto offset = util::get_cts_object::id<Dimension>::get(0, 0, 0);
-  auto r_zero = util::get_cts_object::range<Dimension>::get(0, 0, 0);
-
   auto section_name = get_section_name<Dimension>(
       type_name, access_mode_name, target_name,
       "From zero-length buffer placeholder constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor = [](sycl::buffer<DataT, Dimension>& data_buf) {
+    constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
+    auto get_acc_functor = [](sycl::buffer<DataT, dim_buf>& data_buf) {
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf);
     };
     check_zero_length_buffer_placeholder_constructor<AccType, DataT, Dimension,
@@ -78,7 +75,7 @@ class run_generic_placeholder_zero_length_buffer_constructor {
     // Type packs instances have to be const, otherwise for_all_combination will
     // not compile
     const auto access_modes = get_access_modes();
-    const auto dimensions = get_dimensions();
+    const auto dimensions = get_all_dimensions();
     const auto targets = get_targets();
 
     // To handle cases when class was called from functions

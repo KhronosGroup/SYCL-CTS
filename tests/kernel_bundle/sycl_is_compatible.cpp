@@ -142,7 +142,7 @@ TEST_CASE(
   const sycl::device device = sycl_cts::util::get_cts_object::device();
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   size_t max_work_group_size =
-      device.get_info<sycl::info::device::max_work_item_sizes<1>>();
+      device.get_info<sycl::info::device::max_work_item_sizes<1>>()[0];
 
   SECTION("for a kernel with `[[sycl::reqd_work_group_size(8)]]`") {
     check_max_work_group_size<8>(device, queue, max_work_group_size);
@@ -239,6 +239,6 @@ TEST_CASE(
       1, sycl::get_kernel_id<kernel_name::type>());
 
   CHECK(sycl::is_compatible(builtinKernelIds, device) ==
-        (size_t(device.get_info<sycl::info::device::max_work_item_sizes<1>>()) >
+        (device.get_info<sycl::info::device::max_work_item_sizes<1>>()[0] >
          4294967295));
 }

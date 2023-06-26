@@ -245,7 +245,48 @@ class ordering {
     CHECK(std::all_of(res.cbegin(), res.cend(), [=](T i) { return i; }));
   }
 };
+#ifdef __cpp_lib_atomic_ref
+template <typename T, typename MemoryOrderT, typename AddressSpaceT>
+class atomicity_with_host_code {
+  static constexpr sycl::memory_order MemoryOrder = MemoryOrderT::value;
+  static constexpr sycl::access::address_space AddressSpace =
+      AddressSpaceT::value;
 
+ public:
+  void operator()(const std::string& type_name,
+                  const std::string& memory_order_name,
+                  const std::string& memory_scope_name,
+                  const std::string& address_space_name) {
+    INFO(atomic_ref::tests::common::get_section_name(
+        type_name, memory_order_name, memory_scope_name, address_space_name,
+        "atomicity_with_host_code"));
+    auto queue = once_per_unit::get_queue();
+    if (!atomic_ref::tests::common::memory_order_is_supported(queue,
+                                                              MemoryOrder))
+      return;
+    if (!atomic_ref::tests::common::memory_scope_is_supported(
+            queue, sycl::memory_scope::system))
+      return;
+    const size_t size =
+        queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+    const size_t count = size * 2;
+    T* pval = sycl::malloc_shared<T>(1, queue);
+    *pval = 0;
+    std::atomic_ref<T> a_host{*pval};
+    auto event = queue.submit([&](sycl::handler& cgh) {
+      cgh.parallel_for({size}, [=](auto i) {
+        sycl::atomic_ref<T, MemoryOrder, sycl::memory_scope::system,
+                         AddressSpace>
+            a_dev{*pval};
+        a_dev++;
+      });
+    });
+    for (int i = 0; i < count; i++) a_host++;
+    event.wait();
+    CHECK(*pval == size + count);
+  }
+};
+#endif
 template <typename T>
 struct run_atomicity_device_scope {
   void operator()(const std::string &type_name) {
@@ -322,6 +363,22 @@ struct run_ordering {
                                       address_spaces, type_name);
   }
 };
+#ifdef __cpp_lib_atomic_ref
+template <typename T>
+struct run_atomicity_with_host_code {
+  void operator()(const std::string& type_name) {
+    const auto memory_orders =
+        value_pack<sycl::memory_order, sycl::memory_order::relaxed,
+                   sycl::memory_order::acq_rel,
+                   sycl::memory_order::seq_cst>::generate_named();
+    const auto address_spaces = value_pack<
+        sycl::access::address_space, sycl::access::address_space::global_space,
+        sycl::access::address_space::generic_space>::generate_named();
 
+    for_all_combinations<atomicity_with_host_code, T>(
+        memory_orders, address_spaces, type_name);
+  }
+};
+#endif
 }  // namespace atomic_ref_stress_test
 #endif  // SYCL_CTS_ATOMIC_REF_STRESS_TEST_H

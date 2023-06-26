@@ -169,9 +169,8 @@ class check_conversion_generic {
       check_zero_dim_constructor<AccType, SrcDataT, DstAccessMode, Target>(
           get_acc_functor, modify_acc_functor);
     } else {
-      const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
       check_common_constructor<AccType, SrcDataT, Dimension, DstAccessMode,
-                               Target>(r, get_acc_functor, modify_acc_functor);
+                               Target>(get_acc_functor, modify_acc_functor);
     }
   }
 
@@ -244,7 +243,7 @@ class check_conversion_local {
         return src_acc;
       };
       check_common_constructor<AccType, SrcDataT, Dimension, DstAccessMode,
-                               Target>(r, get_acc_functor, modify_acc_functor);
+                               Target>(get_acc_functor, modify_acc_functor);
     }
   }
 
@@ -309,9 +308,8 @@ class check_conversion_host {
       check_zero_dim_constructor<AccType, SrcDataT, DstAccessMode>(
           get_acc_functor, modify_acc_functor);
     } else {
-      const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
       check_common_constructor<AccType, SrcDataT, Dimension, DstAccessMode>(
-          r, get_acc_functor, modify_acc_functor);
+          get_acc_functor, modify_acc_functor);
     }
   }
   void operator()(const std::string& type_name) const {
