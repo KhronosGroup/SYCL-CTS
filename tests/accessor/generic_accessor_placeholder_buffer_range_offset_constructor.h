@@ -52,7 +52,7 @@ void test_placeholder_buffer_range_offset_constructor(
                                                                   offset);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        r, get_acc_functor);
+        get_acc_functor);
   }
 }
 

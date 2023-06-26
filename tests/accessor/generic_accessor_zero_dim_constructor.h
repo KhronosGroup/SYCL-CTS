@@ -70,7 +70,8 @@ class run_generic_zero_dim_constructor_test {
     // Type packs instances have to be const, otherwise for_all_combination will
     // not compile
     const auto access_modes = get_access_modes();
-    const auto dimensions = get_dimensions();
+
+    const auto dimensions = integer_pack<0>::generate_unnamed();
     const auto targets = get_targets();
 
     // To handle cases when class was called from functions
