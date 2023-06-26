@@ -27,6 +27,7 @@
 #include "../common/common.h"
 #include "../common/once_per_unit.h"
 #include "../common/section_name_builder.h"
+#include "../common/type_list.h"
 #include "../common/value_operations.h"
 
 // FIXME: re-enable when marrray is implemented in hipsycl
@@ -213,6 +214,8 @@ void common_run_tests() {
   for_all_types<action, actionArgsT...>(types);
   for_type_vectors_marray_reduced<action, int, actionArgsT...>("int");
 #endif
+  for_all_types<action, actionArgsT...>(
+      named_type_pack<user_struct>::generate("user_struct"));
 }
 
 /**
@@ -386,19 +389,11 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
   bool conditions_check[conditions_checks_size];
   std::fill(conditions_check, conditions_check + conditions_checks_size, true);
 
+  auto acc = get_accessor_functor();
   if constexpr (AccType != accessor_type::host_accessor) {
-    sycl::buffer res_buf(conditions_check, sycl::range(conditions_checks_size));
-
-    queue
-        .submit([&](sycl::handler& cgh) {
-          sycl::accessor<bool, 1, sycl::access_mode::read_write, Target>
-              res_acc(res_buf, cgh);
-          auto acc = get_accessor_functor();
-          check_empty_accessor_constructor_post_conditions(acc, res_acc, false);
-        })
-        .wait_and_throw();
+    check_empty_accessor_constructor_post_conditions(acc, conditions_check,
+                                                     false);
   } else {
-    auto acc = get_accessor_functor();
     check_empty_accessor_constructor_post_conditions(acc, conditions_check,
                                                      true);
   }
@@ -440,7 +435,7 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
     queue
         .submit([&](sycl::handler& cgh) {
           sycl::accessor<bool, 1, sycl::access_mode::read_write, Target>
-              res_acc(res_buf);
+              res_acc(res_buf, cgh);
           auto acc = get_accessor_functor(data_buf, cgh);
           if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
@@ -448,7 +443,7 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
                                                                false);
             });
           } else if constexpr (Target == sycl::target::device) {
-            cgh.parallel_for_work_group(r, [=](auto group) {
+            cgh.parallel_for_work_group(r, [=](sycl::group<Dimension>) {
               check_empty_accessor_constructor_post_conditions(acc, res_acc,
                                                                false);
             });
@@ -590,7 +585,9 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
     compare_res = compare_res_arr[0];
   }
 
-  if constexpr (AccessMode != sycl::access_mode::write) {
+  if constexpr (AccessMode != sycl::access_mode::write &&
+                !(accessor_type::local_accessor == AccType &&
+                  sycl::access_mode::read == AccessMode)) {
     CHECK(compare_res);
   }
 
@@ -723,7 +720,9 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
     compare_res = compare_res_arr[0];
   }
 
-  if constexpr (AccessMode != sycl::access_mode::write) {
+  if constexpr (AccessMode != sycl::access_mode::write &&
+                !(accessor_type::local_accessor == AccType &&
+                  sycl::access_mode::read == AccessMode)) {
     CHECK(compare_res);
   }
 

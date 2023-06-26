@@ -359,7 +359,9 @@ const auto get_lambda_with_no_arg(const sycl::accessor<bool, 1> &acc) {
   } else if constexpr (CallType == call_attribute_type::dummy_decorated) {
     return [=] { dummy_function_decorated<FeatureAspectT>(acc); };
   } else if constexpr (CallType == call_attribute_type::dummy_non_decorated) {
-    return [=] { dummy_function_non_decorated(acc); };
+    return [=] [[sycl::device_has(FeatureAspectT)]] {
+      dummy_function_non_decorated(acc);
+    };
   } else if constexpr (CallType == call_attribute_type::type_used) {
     return [acc] { USE_FEATURE(FeatureTypeT); };
   } else if constexpr (CallType == call_attribute_type::type_used_with_attr) {
@@ -397,7 +399,9 @@ const auto get_lambda_with_item_arg(const sycl::accessor<bool, 1> &acc) {
     return
         [=](sycl::item<1>) { dummy_function_decorated<FeatureAspectT>(acc); };
   } else if constexpr (CallType == call_attribute_type::dummy_non_decorated) {
-    return [=](sycl::item<1>) { dummy_function_non_decorated(acc); };
+    return [=](sycl::item<1>) [[sycl::device_has(FeatureAspectT)]] {
+      dummy_function_non_decorated(acc);
+    };
   } else if constexpr (CallType == call_attribute_type::type_used) {
     return [=](sycl::item<1>) { USE_FEATURE(FeatureTypeT); };
   } else if constexpr (CallType == call_attribute_type::type_used_with_attr) {
@@ -434,7 +438,9 @@ const auto get_lambda_with_group_arg(const sycl::accessor<bool, 1> &acc) {
     return
         [=](sycl::group<1>) { dummy_function_decorated<FeatureAspectT>(acc); };
   } else if constexpr (CallType == call_attribute_type::dummy_non_decorated) {
-    return [=](sycl::group<1>) { dummy_function_non_decorated(acc); };
+    return [=](sycl::group<1>) [[sycl::device_has(FeatureAspectT)]] {
+      dummy_function_non_decorated(acc);
+    };
   } else if constexpr (CallType == call_attribute_type::type_used) {
     return [=](sycl::group<1>) { USE_FEATURE(FeatureTypeT); };
   } else if constexpr (CallType == call_attribute_type::type_used_with_attr) {

@@ -31,7 +31,8 @@ template <int numDims>
 struct item_constructors_kernel;
 
 enum class current_check {
-  copy_constructor,
+  copy_constructor = 0,
+  copy_constructor_def,
   move_constructor,
   copy_assignment,
   move_assignment,
@@ -111,7 +112,7 @@ class TEST_NAME : public util::test_base {
             util::get_cts_object::range<numDims>::get(1, 1, 1);
 
         sycl::buffer<bool> successBuf(success.data(),
-                                          sycl::range<1>(success.size()));
+                                      sycl::range<1>(success.size()));
 
         testQueue.submit([&](sycl::handler& cgh) {
           auto successAcc =
@@ -124,6 +125,15 @@ class TEST_NAME : public util::test_base {
                 check_equality(successAcc, current_check::copy_constructor,
                                copied, item);
 
+                if constexpr (numDims == 1) {
+                  // Check default Dimension and offset
+                  sycl::item copied_def(item);
+                  successAcc[to_integral(current_check::copy_constructor_def)] =
+                      std::is_same_v<sycl::item<1, true>, decltype(copied_def)>;
+                } else {
+                  successAcc[to_integral(current_check::copy_constructor_def)] =
+                      true;
+                }
                 // Check move constructor
                 sycl::item<numDims> moved(std::move(copied));
                 check_equality(successAcc, current_check::move_constructor,
@@ -145,6 +155,10 @@ class TEST_NAME : public util::test_base {
       CHECK_VALUE(log,
                   success[static_cast<size_t>(current_check::copy_constructor)],
                   true, numDims);
+      CHECK_VALUE(
+          log,
+          success[static_cast<size_t>(current_check::copy_constructor_def)],
+          true, numDims);
       CHECK_VALUE(log,
                   success[static_cast<size_t>(current_check::move_constructor)],
                   true, numDims);

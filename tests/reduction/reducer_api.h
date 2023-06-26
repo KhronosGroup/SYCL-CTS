@@ -226,7 +226,9 @@ struct check_reducer_identity_operator {
 template <typename OperatorT, typename AccumulatorT>
 struct check_reducer_identity_operator<
     OperatorT, AccumulatorT,
-    typename std::enable_if_t<is_legal_operator_v<AccumulatorT, OperatorT>>> {
+    typename std::enable_if_t<
+        type_traits::group_algorithms::is_legal_operator_v<AccumulatorT,
+                                                           OperatorT>>> {
   void operator()(sycl::queue& queue, const std::string& op_name) {
     INFO("operation type: " << op_name);
 
