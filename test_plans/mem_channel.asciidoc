@@ -33,15 +33,15 @@ if feature is not supported.
 property_list pl = {mem_channel(0)};
 mem_channel mc_object(1);
 
-std::array<int, 10> arr1;
-std::array<int, 10> arr2;
+std::array<int, 10> arr1{0};
+std::array<int, 10> arr2{0};
 {
     buffer<T, 1> buf1(arr1.data(), range{10}, pl);
     buffer<T, 1> buf2(arr2.data(), range{10}, mc_object);
 
     queue.submit([&](handler& cgh) {
-        auto acc1 = buf1.get_access<access_mode::read_write>(cgh);
-        auto acc2 = buf2.get_access<access_mode::read_write>(cgh);
+        sycl::accessor acc1{buf1, cgh, access_mode::write};
+        sycl::accessor acc2{buf2, cgh, access_mode::write};
         cgh.parallel_for([=](id<1> i) {
             // some data manipulations
         });
@@ -60,4 +60,4 @@ auto channel_2 = mc_object.get_channel();
 ----
 
 * Check that `get_channel()` returns expected values
-* Check that `std::is_same_v<decltype(channel_1), cl_uint>` and `std::is_same_v<decltype(channel_1), cl_uint>` are `true`.
+* Check that `std::is_same_v<decltype(channel_1), uint32_t>` and `std::is_same_v<decltype(channel_1), uint32_t>` are `true`.
