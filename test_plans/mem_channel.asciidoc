@@ -40,8 +40,8 @@ std::array<int, 10> arr2{0};
     buffer<T, 1> buf2(arr2.data(), range{10}, mc_object);
 
     queue.submit([&](handler& cgh) {
-        sycl::accessor acc1{buf1, cgh, access_mode::write};
-        sycl::accessor acc2{buf2, cgh, access_mode::write};
+        sycl::accessor acc1{buf1, cgh, access_mode::write_only};
+        sycl::accessor acc2{buf2, cgh, access_mode::write_only};
         cgh.parallel_for([=](id<1> i) {
             // some data manipulations
         });
