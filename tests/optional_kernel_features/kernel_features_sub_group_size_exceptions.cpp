@@ -63,19 +63,21 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL, ComputeCpp)
     const auto separate_lambda_group_arg =
         [](sycl::group<1>) [[sycl::reqd_sub_group_size(N)]] {};
 
-    run_separate_lambda_nd_range<kname>(is_exception_expected, errc_expected,
-                                        queue, separate_lambda_nd_item_arg,
-                                        separate_lambda_group_arg);
+    run_separate_lambda_nd_range<kname, N>(is_exception_expected, errc_expected,
+                                           queue, separate_lambda_nd_item_arg,
+                                           separate_lambda_group_arg);
   }
 
   {
     using FunctorT = functor_with_attribute<N>;
-    run_functor_nd_range<FunctorT>(is_exception_expected, errc_expected, queue);
+    run_functor_nd_range<FunctorT, N>(is_exception_expected, errc_expected,
+                                      queue);
   }
 
   {
-    RUN_SUBMISSION_CALL_ND_RANGE(is_exception_expected, errc_expected, queue,
-                                 [[sycl::reqd_sub_group_size(N)]], kname, {});
+    RUN_SUBMISSION_CALL_ND_RANGE(N, 1, is_exception_expected, errc_expected,
+                                 queue, [[sycl::reqd_sub_group_size(N)]], kname,
+                                 {});
   }
 });
 }  // namespace kernel_features_sub_group_size
