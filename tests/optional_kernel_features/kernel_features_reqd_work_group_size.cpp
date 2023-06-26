@@ -71,25 +71,25 @@ void test_size() {
   {
     if constexpr (Dimensions == 1) {
       const auto lambda_nd_item_arg_1D =
-          [](sycl::nd_item<1>) [[sycl::reqd_work_group_size(N)]]{};
-      const auto lambda_group_arg_1D =
-          [](sycl::group<1>) [[sycl::reqd_work_group_size(N)]]{};
+          [](sycl::nd_item<1>) [[sycl::reqd_work_group_size(N)]] {};
+      const auto lambda_group_arg_1D = [](sycl::group<1>)
+                                           [[sycl::reqd_work_group_size(N)]] {};
       run_separate_lambda_nd_range<kname, N, Dimensions>(
           is_exception_expected, expected_errc, queue, lambda_nd_item_arg_1D,
           lambda_group_arg_1D);
     } else if constexpr (Dimensions == 2) {
       const auto lambda_nd_item_arg_2D =
-          [](sycl::nd_item<2>) [[sycl::reqd_work_group_size(N, N)]]{};
+          [](sycl::nd_item<2>) [[sycl::reqd_work_group_size(N, N)]] {};
       const auto lambda_group_arg_2D =
-          [](sycl::group<2>) [[sycl::reqd_work_group_size(N, N)]]{};
+          [](sycl::group<2>) [[sycl::reqd_work_group_size(N, N)]] {};
       run_separate_lambda_nd_range<kname, N, Dimensions>(
           is_exception_expected, expected_errc, queue, lambda_nd_item_arg_2D,
           lambda_group_arg_2D);
     } else {
       const auto lambda_nd_item_arg_3D =
-          [](sycl::nd_item<3>) [[sycl::reqd_work_group_size(N, N, N)]]{};
+          [](sycl::nd_item<3>) [[sycl::reqd_work_group_size(N, N, N)]] {};
       const auto lambda_group_arg_3D =
-          [](sycl::group<3>) [[sycl::reqd_work_group_size(N, N, N)]]{};
+          [](sycl::group<3>) [[sycl::reqd_work_group_size(N, N, N)]] {};
       run_separate_lambda_nd_range<kname, N, Dimensions>(
           is_exception_expected, expected_errc, queue, lambda_nd_item_arg_3D,
           lambda_group_arg_3D);
