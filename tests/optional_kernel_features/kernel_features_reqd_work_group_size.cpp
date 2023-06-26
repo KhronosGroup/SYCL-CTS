@@ -49,6 +49,8 @@ class Functor {
 template <size_t N, int Dimensions>
 class kernel_reqd_wg_size;
 
+// FIXME: re-enable when max_work_item_sizes is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 template <size_t N, int Dimensions>
 void test_size() {
   INFO("N = " + std::to_string(N));
@@ -105,7 +107,7 @@ void test_size() {
         [[sycl::reqd_work_group_size(N)]], kname, NO_KERNEL_BODY);
   }
 }
-
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 ("Exceptions thrown by [[reqd_work_group_size(N)]] with unsupported size",
  "[kernel_features]", ((int Dimensions), Dimensions), 1, 2, 3)({
