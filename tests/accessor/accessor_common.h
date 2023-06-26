@@ -339,6 +339,8 @@ struct tag_factory<accessor_type::host_accessor> {
  * @param testing_acc Instance of TestingAccT that were constructed with default
  * constructor
  * @param res_acc Instance of result accessor
+ * @param check_iterator_methods Flag to avoid undefined behavior on access to
+ * uninitialized underlying buffer
  */
 template <typename TestingAccT, typename ResultAccT>
 void check_empty_accessor_constructor_post_conditions(
@@ -387,11 +389,15 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
 
   auto acc = get_accessor_functor();
   if constexpr (AccType != accessor_type::host_accessor) {
+    // Disable checking iteration methods with empty device accessor
+    // to avoid undefined behavior
+    bool check_iterator_methods = false;
     check_empty_accessor_constructor_post_conditions(acc, conditions_check,
-                                                     false);
+                                                     check_iterator_methods);
   } else {
+    bool check_iterator_methods = true;
     check_empty_accessor_constructor_post_conditions(acc, conditions_check,
-                                                     true);
+                                                     check_iterator_methods);
   }
 
   for (size_t i = 0; i < conditions_checks_size; i++) {
@@ -425,11 +431,15 @@ void check_zero_length_buffer_placeholder_constructor(
 
   auto acc = get_accessor_functor(data_buf);
   if constexpr (AccType != accessor_type::host_accessor) {
+    // Disable checking iteration methods with empty device accessor
+    // to avoid undefined behavior
+    bool check_iterator_methods = false;
     check_empty_accessor_constructor_post_conditions(acc, conditions_check,
-                                                     false);
+                                                     check_iterator_methods);
   } else {
+    bool check_iterator_methods = true;
     check_empty_accessor_constructor_post_conditions(acc, conditions_check,
-                                                     true);
+                                                     check_iterator_methods);
   }
 
   for (size_t i = 0; i < conditions_checks_size; i++) {
@@ -467,23 +477,27 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
         .submit([&](sycl::handler& cgh) {
           sycl::accessor res_acc(res_buf, cgh);
           auto acc = get_accessor_functor(data_buf, cgh);
+          // Disable checking iteration methods with empty device accessor
+          // to avoid undefined behavior
+          bool check_iterator_methods = false;
           if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
               check_empty_accessor_constructor_post_conditions(acc, res_acc,
-                                                               false);
+                                                               check_iterator_methods);
             });
           } else if constexpr (Target == sycl::target::device) {
             cgh.parallel_for_work_group(r, [=](sycl::group<Dimension>) {
               check_empty_accessor_constructor_post_conditions(acc, res_acc,
-                                                               false);
+                                                               check_iterator_methods);
             });
           }
         })
         .wait_and_throw();
   } else {
     auto acc = get_accessor_functor(data_buf);
+    bool check_iterator_methods = true;
     check_empty_accessor_constructor_post_conditions(acc, conditions_check,
-                                                     true);
+                                                     check_iterator_methods);
   }
 
   for (size_t i = 0; i < conditions_checks_size; i++) {
