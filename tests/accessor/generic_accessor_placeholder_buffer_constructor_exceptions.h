@@ -37,19 +37,19 @@ template <typename DataT, int Dimension, sycl::access_mode AccessMode,
 void test_placeholder_buffer_accessors_exception(
     const std::string& type_name, const std::string& access_mode_name,
     const std::string& target_name) {
-  const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
-  const auto offset = util::get_cts_object::id<Dimension>::get(0, 0, 0);
+  constexpr int buf_dims = (0 == Dimension) ? 1 : Dimension;
+  auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
 
   auto section_name =
       get_section_name<Dimension>(type_name, access_mode_name, target_name,
                                   "From buffer placeholder constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor = [](sycl::buffer<DataT, Dimension>& data_buf) {
+    auto get_acc_functor = [](sycl::buffer<DataT, buf_dims>& data_buf) {
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf);
     };
     check_placeholder_accessor_exception<DataT, Dimension, AccessMode, Target>(
-        r, get_acc_functor);
+        get_acc_functor);
   }
 }
 
@@ -76,7 +76,7 @@ class run_generic_placeholder_buffer_constructor_exceptions_test {
     // Type packs instances have to be const, otherwise for_all_combination will
     // not compile
     const auto access_modes = get_access_modes();
-    const auto dimensions = get_dimensions();
+    const auto dimensions = get_all_dimensions();
     const auto targets = get_targets();
 
     // To handle cases when class was called from functions

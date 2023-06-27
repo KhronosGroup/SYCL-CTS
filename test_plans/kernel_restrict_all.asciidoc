@@ -1,0 +1,78 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for kernel_restrict_all
+
+This is a test plan for the APIs described in https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_intel_kernel_args_restrict.asciidoc[sycl_intel_kernel_restrict_all]
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_INTEL_KERNEL_ARGS_RESTRICT` so they can be skipped
+if feature is not supported.
+
+== Tests
+
+=== Kernel arguments alias
+
+All tests should use following methods of kernels submission unless stated otherwise:
+
+* parallel_for_work_group
+* parallel_for
+* single_task
+
+Kernel should be defined:
+
+* through lambda in submission call
+* through a separate functor
+* through a separate lambda
+
+For following dimensions `dims = 1, 2, 3`:
+
+* Create kernel with `intel::kernel_args_restrict` attribute. Kernel should write values to acessors to a buffers<int, dims>;
+* Submit kernel to device;
+* Check that kernel is executed without any exception and has the expected result.
+
+Example for parallel_for and lamda submission:
+[source, c++]
+----
+queue.submit([&](handler &cgh) {
+auto acc1 = out_buf_1.get_access<access_mode::write>(cgh);
+auto acc2 = out_buf_2.get_access<access_mode::write>(cgh);
+cgh.parallel_for<lambda_foo<dims>>(range<dims>(N),
+    [=](id<dims> wiid) [[intel::kernel_args_restrict]] {
+        acc1[wiid] = dims;
+        acc2[wiid] = dims * 2;
+    });
+});
+/* check values in buffers */
+----
+
+=== Kernel arguments don't alias
+
+Run this code to check aliasing inside the kernel:
+[source, c++]
+----
+int func(int *p1, int *p2, int *p3) {
+  *p1 = 1;
+  *p2 = 2;
+  *p3 = 3;
+  return *p1;
+}
+
+void test(queue& q) {
+  int *ptr1 = malloc_device(1, q);
+  int *ptr2 = malloc_device(1, q);
+  q.single_task([=]() [[intel::kernel_args_restrict]] {
+    int val = func(ptr1, ptr2, ptr1);
+    if (val != 3)
+      /* test fails */
+  });
+}
+----

@@ -257,7 +257,7 @@ class run_api_tests {
         // dim accessors
         std::array<std::array<bool, 1>, to_integral(check::nChecks)> res;
         std::for_each(res.begin(), res.end(),
-                      [](std::array<bool, 1> &arr) { arr.fill(false); });
+                      [](std::array<bool, 1>& arr) { arr.fill(false); });
         {
           auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
           sycl::buffer<bool, 2> res_buf(
