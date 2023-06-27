@@ -303,7 +303,7 @@ class run_api_tests {
                                               item_id);
                       res_acc[sycl::id<2>(to_integral(check::iterator_access),
                                           item_id)] =
-                          test_begin_end_device(acc, expected_val, changed_val,
+                          test_begin_end_device(acc, changed_val, changed_val,
                                                 !std::is_const_v<T>);
                     });
               })
