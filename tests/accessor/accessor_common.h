@@ -447,7 +447,6 @@ void check_zero_length_buffer_placeholder_constructor(
   }
 
   for (size_t i = 0; i < conditions_checks_size; i++) {
-    INFO(std::string("conditions_check[")+std::to_string(i) + "]");
     CHECK(conditions_check[i]);
   }
 }
