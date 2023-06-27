@@ -1,0 +1,127 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl extension intel compute slice (cslice)
+
+This is a test plan for the extension adding a new form of partitioning -
+"cslice" with a smaller granularity than "tile" and providing a way to
+partition a device by "cslice" when it is enabled in the device driver. The
+extension is described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_intel_cslice.asciidoc[sycl_ext_intel_cslice.asciidoc].
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_INTEL_CSLICE` so they can
+be skipped if feature is not supported.
+
+== Tests
+
+Extension introduces new partition property and new function template
+specialization of the SYCL `device` class to create sub-devices partitioned
+from the SYCL `device`, each representing a fixed set of hardware cslices. If
+the SYCL `device` does not support
+`info::partition_property::ext_intel_partition_by_cslice`, calling this
+function throws a synchronous exception with the `errc::feature_not_supported`
+error code. We should check correct kernel execution submitted to the cslice
+sub-device if the parent device could be partitioned to cslice sub-devices or
+check otherwise that exception with the `errc::feature_not_supported` error
+code is thrown on attempt to partition a device by cslice. Also we should check
+that the device info query with info descriptor
+`info::device::partition_type_property` returns `ext_intel_partition_by_cslice`
+when applied to a device object that represents a cslice partition. The
+behavior of Level Zero / OpenCL backend interop functions which is described by
+the extension specification needs to be checked too.
+
+=== Test description
+
+==== Kernel execution check
+
+* Create a device
+* Query the device using `info::device::partition_properties` to determine if
+  it supports partitioning by `ext_intel_partition_by_cslice`
+* If a device doesn't support partitioning by `ext_intel_partition_by_cslice`
+  it may first need to be partitioned into per-tile sub-devices via
+  `partition_by_affinity_domain`, and then each of the resulting sub-devices
+  may be further partitioned by `ext_intel_partition_by_cslice`, if per-tile
+  sub-devices doesn't support partitioning by `ext_intel_partition_by_cslice`
+  too skip the test
+* Submit a `single_task` kernel to the first cslice device, wait on the queue,
+  validate that the kernel ran
+* Submit a simple `parallel_for` kernel to the second cslice device if it
+  exists (to the first otherwise), wait on the queue, validate that the kernel
+  ran
+* Submit an `nd-range` kernel to the third cslice device if it exists (to the
+  first otherwise), wait on the queue, validate that the kernel ran
+
+==== New function template specialization to create sub-devices
+
+* Create a device
+* Query the device using `info::device::partition_properties` to determine if
+  it supports partitioning by `ext_intel_partition_by_cslice`
+* If the device doesn't support partitioning by `ext_intel_partition_by_cslice`
+  call `create_sub_devices()` member function with
+  `info::partition_property::ext_intel_partition_by_cslice` as template
+  parameter, otherwise skip the test
+* Check that exception is thrown with the `errc::feature_not_supported` error
+  code
+
+==== Device info "partition_type_property" query for a "cslice" sub-device
+
+* Create a device
+* Query the device using `info::device::partition_properties` to determine if
+  it supports partitioning by `ext_intel_partition_by_cslice`
+* If a device doesn't support partitioning by `ext_intel_partition_by_cslice`
+  it may first need to be partitioned into per-tile sub-devices via
+  `partition_by_affinity_domain`, and then each of the resulting sub-devices
+  may be further partitioned by `ext_intel_partition_by_cslice`, if per-tile
+  sub-devices doesn't support partitioning by `ext_intel_partition_by_cslice`
+  too skip the test
+* Query each cslice sub-device using `info::device::partition_type_property`
+  info descriptor
+* Check that return values for each query is equal to
+  `ext_intel_partition_by_cslice`
+
+==== Behavior of the Level Zero backend interop functions
+
+* Create a device
+* Call `get_backend()` on the device object, if the backend is not Level Zero
+  skip the test
+* Query the device using `info::device::partition_properties` to determine if
+  it supports partitioning by `ext_intel_partition_by_cslice`
+* If a device doesn't support partitioning by `ext_intel_partition_by_cslice`
+  it may first need to be partitioned into per-tile sub-devices via
+  `partition_by_affinity_domain`, and then each of the resulting sub-devices
+  may be further partitioned by `ext_intel_partition_by_cslice`, if per-tile
+  sub-devices doesn't support partitioning by `ext_intel_partition_by_cslice`
+  too skip the test
+* Call `get_native()` for the parent device and for the cslice sub-device,
+  check that returned `ze_device_handle_t`s object are equal
+* Create two queues, for the parent device and for the cslice sub-device
+* Call `get_native()` for the queues, check that returned
+  `ze_command_queue_handle_t`s are different
+
+==== Behavior of the OpenCL backend interop functions
+
+* Create a device
+* Call `get_backend()` on the device object, if the backend is not OpenCL skip
+  the test
+* Query the device using `info::device::partition_properties` to determine if
+  it supports partitioning by `ext_intel_partition_by_cslice`
+* If a device doesn't support partitioning by `ext_intel_partition_by_cslice`
+  it may first need to be partitioned into per-tile sub-devices via
+  `partition_by_affinity_domain`, and then each of the resulting sub-devices
+  may be further partitioned by `ext_intel_partition_by_cslice`, if per-tile
+  sub-devices doesn't support partitioning by `ext_intel_partition_by_cslice`
+  too skip the test
+* Call `get_native()` for the parent device and for the cslice sub-device,
+  check that returned `cl_device_id`s object are equal
+* Create two queues, for the parent device and for the cslice sub-device
+* Call `get_native()` for the queues, check that returned `cl_command_queue`s
+  are different
