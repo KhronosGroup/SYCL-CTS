@@ -83,8 +83,31 @@ struct invoke_group {
   }
 };
 
+template <int dim, typename kernelT>
+struct invoke_sub_group {
+  static constexpr int dimensions = dim;
+  using parameterT = sycl::sub_group;
+
+template <typename kernelBodyT>
+  void operator()(sycl::handler &cgh,
+                  sycl::range<dim> numWorkItems,
+                  sycl::range<dim> workGroupSize,
+                  kernelBodyT kernelBody) {
+    sycl::range<dim> numWorkGroups = numWorkItems / workGroupSize;
+
+    cgh.parallel_for<kernelT>(
+        sycl::nd_range<dim>(numWorkItems, workGroupSize),
+        [=](sycl::nd_item<3> item) {
+          const size_t index = item.get_global_linear_id();
+          sycl::sub_group sub_group = item.get_sub_group();
+
+          kernelBody(sub_group, index);
+    });
+  }
+};
+
 /**
- * @brief Generate and store the given number of nd_item/group/h_item instances
+ * @brief Generate and store the given number of nd_item/group/h_item/sub_group instances
  * @retval Array of instances
  * @tparam numItems Number of instances to store
  * @tparam kernelInvokeT Invocation functor to use
