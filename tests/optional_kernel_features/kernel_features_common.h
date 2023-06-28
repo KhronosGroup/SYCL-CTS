@@ -964,6 +964,7 @@ class kernel_submission_call;
         single_task_action, parallel_for_action, parallel_for_wg_action);   \
   }
 
+/// Use a macro because we need to inject C++11 attributes
 #define RUN_SUBMISSION_CALL_ND_RANGE(SIZE, D, IS_EXCEPTION_EXPECTED, ERRC,    \
                                      QUEUE, ATTRIBUTE, KERNEL_NAME, ...)      \
                                                                               \
