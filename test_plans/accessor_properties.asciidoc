@@ -16,60 +16,7 @@ is selected on the CTS command line.
 
 == Type coverage
 
-All of the interface tests described are performed using each of the
-following value type of `sycl::accessor`.
-
-In regular mode:
-
-* `bool`
-* `int`
-* `float`
-* `sycl::vec<int, int NumElements>` where `NumElements` is 3 and 4
-* `sycl::marray<int, size_t NumElements>` where `NumElements` is 10
-* user defined custom type
-
-In full conformance mode:
-
-* `bool`
-* `char`
-* `signed char`
-* `unsigned char`
-* `short int`
-* `unsigned short int`
-* `int`
-* `unsigned int`
-* `long int`
-* `unsigned long int`
-* `long long int`
-* `unsigned long long int`
-* `float`
-* `sycl::vec<T, int NumElements>` where `T` are all types above and `NumElements` is 1, 2, 3, 4, 8 and 16
-* `sycl::marray<T, size_t NumElements>` where `T` are all types above and `NumElements` is 2, 5 and 10
-* user defined custom type
-
-In addition, if the device has `aspect::atomic64`, the following types are tested:
-
-In regular mode:
-
-* `double`
-
-In full conformance mode:
-
-* `double`
-* `sycl::vec<double, int NumElements>` where `NumElements` is 1, 2, 3, 4, 8 and 16
-* `sycl::marray<double, size_t NumElements>` where `NumElements` is 2, 5 and 10
-
-In addition, if the device has `aspect::atomic16`, the following types are tested:
-
-In regular mode:
-
-* `sycl::half`
-
-In full conformance mode:
-
-* `sycl::half`
-* `sycl::vec<sycl::half, int NumElements>` where `NumElements` is 1, 2, 3, 4, 8 and 16
-* `sycl::marray<sycl::half, size_t NumElements>` where `NumElements` is 2, 5 and 10
+All of the interface tests described are performed using `float` as value type of `sycl::accessor`.
 
 == Tests
 
@@ -106,45 +53,6 @@ Check that `property_list` is convertible to `template<typename...properties>
 accessor_property_list` if `properties...` contains no compile-time-constant
 properties.
 
-=== Tests for sycl::accessor type with accessor_property_list
-
-Tests are perforemd with each of following accessor Dimension when it is posssible:
-
-* 0
-* 1
-* 2
-* 3
-
-Tests are performed with all combinations of following `property` values:
-
-* `sycl::property::no_init`
-* `sycl::ext::oneapi::property::no_alias`
-* `sycl::ext::oneapi::property::no_offset`
-
-For type
-[source,c++]
-----
-template <typename dataT,
-          int dimensions,
-          access::mode accessmode,
-          access::target accessTarget,
-          access::placeholder isPlaceholder,
-          typename property_listT = accessor_property_list<>>
-class accessor
-----
-check the following types:
-
-* value_type
-* reference
-* const_reference
-* accessor_ptr
-* iterator
-* const_iterator
-* reverse_iterator
-* const_reverse_iterator
-* difference_type
-* size_type
-
 === Test for properties interface
 
 For type
@@ -166,7 +74,13 @@ and compile-time-constant properties `no_alias` and `no_offset` check the follow
 
 === sycl::accessor with accessor_property_list
 
-Create sycl::accessor instance `acc` with following constructors:
+Test is performed with accessor Dimension = 1, zero offset and with all combinations of the following `property` values:
+
+* `sycl::property::no_init` (only with accessor with `access_mode` = `write_only`)
+* `sycl::ext::oneapi::property::no_alias`
+* `sycl::ext::oneapi::property::no_offset`
+
+Test is performed with each of the following accessor constructors:
 
 * `accessor(buffer<dataT, 1, AllocatorT> &bufferRef,
            const ext::oneapi::accessor_property_list<properties...> &propList = {});`
@@ -206,83 +120,27 @@ Create sycl::accessor instance `acc` with following constructors:
            id<dimensions> accessOffset, TagT tag,
            const ext::oneapi::accessor_property_list<properties...> &propList = {});`
 
-For created accessor instance check the following tests:
+Create two `sycl::accessor` instances `acc_source` with `access_mode = read_only` and `acc_dest` 
+with `access_mode = read_only` and check if data from `acc_source` is copied to `acc_dest` correctly with
+code below:
 
-==== Tests for read only accessor implicit conversion rules
-
-For accessor with access_mode::read check an implicit conversion between accessors with const-qualified and with non
-const-qualified data types, provided that all other template parameters are the same.
-
-==== Tests for accessor iteration methods
-
-For the following methods:
-
-* begin
-* end
-* rbegin
-* rend
-* cbegin
-* cend
-* crbegin
-* crend
-
-Check the following:
-
-* for accessor with `access_mode != write` iterator refers to the expected values stored in the accessor
-* for accessor with `access_mode != read` data stored on host changed to expected values after changing accessor data in
-kernel function
-
-==== Tests for accessor read and write operations with `operator[]`, `operator=` and `operator reference`
-
-For `operator[](id<Dimension> index)` and `Dimension > 0` check the following:
-
-* For accessor with `access_mode != write` check that operator refers to the expected values stored in the accessor
-* For accessor with `access_mode != read` data stored on host changed to expected values after changing accessor data in
-kernel function
-
-For `operator[](size_t index)` and `Dimension > 1` check the following:
-
-* For accessor with `access_mode != write` check that operator refers to the expected values stored in the accessor
-* For accessor with `access_mode != read` data stored on host changed to expected values after changing accessor data in
-kernel function
-
-For `operator reference`,  `Dimension == 0` and `access_mode != write` check that operator refers to the expected value stored in the accessor
-
-For `operator=`,  `Dimension == 0` and `access_mode != read` check that data stored on host changed to expected value after changing accessor data in
-kernel function
-
-==== Test for accessor swap method
-
-* On host side create two instances of type T `v1` and `v2` with values = `expected_value` and `changed_value`
-* Create two `sycl::buffer` instances `buf1` and `buf2` with pointers to `v1` and `v2`
-* Inside command group scope create two instances of accessor `acc1` and `acc2` with `buf1`and `buf2`
-* For `acc1` call `swap` method: `acc1.swap(acc2)`
-* For accessors with `access_mode != write` check that `acc1` data equals `changed_value` and `acc2` data equals
-`expected_value`
-* For accessor with `access_mode != read` assign to `acc1` value `expected_value` and to `acc2` value `changed_value`
-and after kernel execution check that `v1 == changed_value` and `v2 == expected_value`
-
-==== Test for accessor is_placeholder method
-
-For accessor instance created with constructors without `sycl::handler` parameter the `is_placeholder` method returns
-`true` and for accessor instance created with constructors with `sycl::handler` parameter it return `false`.
-
-==== Tests for accessor methods byte_size, size, max_size and empty
-
-* byte_size method - check that `byte_size()` is equals `size()*sizeof(T)`
-* size method - check that `size()` equals the number of elements in the underlying buffer, and for ranged accessor
-equals the number of elements within the accessor’s range
-* max_size method check that `max_size() >= size()`
-* empty method - check that `empty()` equals `true` when `size() == 0` and equals `false` otherwise
-
-==== Test for accesor `get_range` method
-
-For accessor with `Dimension > 0` check that `get_range` equals the range of the underlying buffer.
-
-==== Test for accessor get_offset method
-
-Test performed for accessor instance only with `Dimension > 0`. If `accessor_property_list` constructed with property
-`no_offset` than ranged accessor must be constructed with an offset equals `id<Dimension>{}`.
-
-For ranged accessor check that `get_offset()` equals offset that was specified when the accessor was constructed.
-For other accessor check that `get_offset()` equals id<Dimension>{}.
+[source,c++]
+----
+...
+float source_val = expected_value;
+float dest_val = initial_value;
+{
+  sycl::buffer<float, 1> source_buf(&source_val, sycl::range<1>(1));
+  sycl::buffer<float, 1> dest_buf(&dest_val, sycl::range<1>(1));
+  sycl::queue q = /* create queue on choosed device */;
+  q.submit([&](sycl::nadler& cgh) {
+    sycl::accessor<float, 1, read_only, /* other parameters */> acc_source(source_buf, cgh, /* other parameters */, src_prop_list); 
+    sycl::accessor<float, 1, write_only, /* other parameters */> acc_dest(dest_buf, cgh, /* other parameters */, dest_prop_list);
+    cgh.parallel_for(range<1>(1), [=](id<1> index) {
+      acc_dest[index] = acc_source[index];
+    });
+  }).wait_and_throw();
+}
+CHECK(dest_val == expected_value);
+...
+----
