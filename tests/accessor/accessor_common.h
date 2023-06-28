@@ -342,6 +342,8 @@ struct tag_factory<accessor_type::host_accessor> {
  * @param testing_acc Instance of TestingAccT that were constructed with default
  * constructor
  * @param res_acc Instance of result accessor
+ * @param check_iterator_methods Flag to avoid undefined behavior on access to
+ * uninitialized underlying buffer
  */
 template <typename TestingAccT, typename ResultAccT>
 void check_empty_accessor_constructor_post_conditions(
@@ -391,11 +393,57 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
 
   auto acc = get_accessor_functor();
   if constexpr (AccType != accessor_type::host_accessor) {
+    // Disable checking iteration methods with empty device accessor
+    // to avoid undefined behavior
+    bool check_iterator_methods = false;
     check_empty_accessor_constructor_post_conditions(acc, conditions_check,
-                                                     false);
+                                                     check_iterator_methods);
   } else {
+    bool check_iterator_methods = true;
     check_empty_accessor_constructor_post_conditions(acc, conditions_check,
-                                                     true);
+                                                     check_iterator_methods);
+  }
+
+  for (size_t i = 0; i < conditions_checks_size; i++) {
+    CHECK(conditions_check[i]);
+  }
+}
+
+/**
+ * @brief Common function that constructs placeholder accessor with zero-length
+ * buffer and checks post-conditions
+ *
+ * @tparam AccType Type of the accessor
+ * @tparam DataT Type of underlying data
+ * @tparam Dimension Dimensions of the accessor
+ * @tparam AccessMode Access mode of the accessor
+ * @tparam Target Target of accessor
+ * @tparam GetAccFunctorT Type of functor for accessor creation
+ */
+template <accessor_type AccType, typename DataT, int Dimension,
+          sycl::access_mode AccessMode = sycl::access_mode::read_write,
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
+void check_zero_length_buffer_placeholder_constructor(
+    GetAccFunctorT get_accessor_functor) {
+  auto queue = once_per_unit::get_queue();
+  constexpr int buf_dims = (0 == Dimension) ? 1 : Dimension;
+  auto r = util::get_cts_object::range<buf_dims>::get(0, 0, 0);
+  sycl::buffer<DataT, buf_dims> data_buf(r);
+  const size_t conditions_checks_size = 8;
+  bool conditions_check[conditions_checks_size];
+  std::fill(conditions_check, conditions_check + conditions_checks_size, true);
+
+  auto acc = get_accessor_functor(data_buf);
+  if constexpr (AccType != accessor_type::host_accessor) {
+    // Disable checking iteration methods with empty device accessor
+    // to avoid undefined behavior
+    bool check_iterator_methods = false;
+    check_empty_accessor_constructor_post_conditions(acc, conditions_check,
+                                                     check_iterator_methods);
+  } else {
+    bool check_iterator_methods = true;
+    check_empty_accessor_constructor_post_conditions(acc, conditions_check,
+                                                     check_iterator_methods);
   }
 
   for (size_t i = 0; i < conditions_checks_size; i++) {
@@ -437,23 +485,27 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
           sycl::accessor<bool, 1, sycl::access_mode::read_write, Target>
               res_acc(res_buf, cgh);
           auto acc = get_accessor_functor(data_buf, cgh);
+          // Disable checking iteration methods with empty device accessor
+          // to avoid undefined behavior
+          bool check_iterator_methods = false;
           if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
-              check_empty_accessor_constructor_post_conditions(acc, res_acc,
-                                                               false);
+              check_empty_accessor_constructor_post_conditions(
+                  acc, res_acc, check_iterator_methods);
             });
           } else if constexpr (Target == sycl::target::device) {
             cgh.parallel_for_work_group(r, [=](sycl::group<Dimension>) {
-              check_empty_accessor_constructor_post_conditions(acc, res_acc,
-                                                               false);
+              check_empty_accessor_constructor_post_conditions(
+                  acc, res_acc, check_iterator_methods);
             });
           }
         })
         .wait_and_throw();
   } else {
     auto acc = get_accessor_functor(data_buf);
+    bool check_iterator_methods = true;
     check_empty_accessor_constructor_post_conditions(acc, conditions_check,
-                                                     true);
+                                                     check_iterator_methods);
   }
 
   for (size_t i = 0; i < conditions_checks_size; i++) {
