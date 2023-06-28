@@ -831,7 +831,7 @@ static void test_write_acc_copy_functions(log_helper lh,
             "copy(accessor<$dataT, $dim_src, $mode_src, $target>, "
             "accessor<$dataT, $dim_dst, $mode_dst, $target>)"));
   }
-#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS  
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   {
     if constexpr (mode_src == mode_t::read) {
       // Check copy(accessor, accessor) with constant_buffer target
