@@ -14,6 +14,8 @@
 
 #include "../common/string_makers.h"
 
+#include "../common/disabled_for_test_case.h"
+
 namespace handler_copy_core {
 using namespace handler_copy_common;
 
@@ -38,10 +40,11 @@ TEST_CASE("Tests the API for sycl::handler::copy", "[handler]") {
 #endif
 }
 
-TEST_CASE(
-    "Check exception on copy(accessor, accessor) in case of invalid "
-    "destination accessor size",
-    "[handler]") {
+// FIXME: re-enable when sycl::errc is implemented in computecpp
+DISABLED_FOR_TEST_CASE(ComputeCpp)
+("Check exception on copy(accessor, accessor) in case of invalid "
+ "destination accessor size",
+ "[handler]")({
   auto queue = util::get_cts_object::queue();
 
   const auto types =
@@ -75,6 +78,6 @@ TEST_CASE(
 
   for_all_combinations<CheckCopyAccToAccException>(types, dims, dims, src_modes,
                                                    dst_modes, queue);
-}
+});
 
 }  // namespace handler_copy_core
