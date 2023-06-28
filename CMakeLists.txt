@@ -52,6 +52,9 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_MEMCPY2D_TESTS
     "Enable extension oneAPI memcpy2d tests" OFF)
 
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_ENQUEUE_BARRIER_TESTS
+    "Enable extension oneAPI enqueue_barrier tests" OFF)
+
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_WEAK_OBJECT_TESTS
     "Enable extension oneAPI weak_object tests" OFF)
 
