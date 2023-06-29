@@ -969,6 +969,8 @@ static void test_all_variants(log_helper lh, sycl::queue& queue) {
   test_all_dimensions<dataT, true, true>(lh, queue);
 }
 
+// FIXME: re-enable when sycl::errc is implemented in computecpp
+#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * @brief Class provides a test that checks if exception is thrown on explicit
  * memory operation copy(acc, acc) in case of destination accessor range less
@@ -1072,9 +1074,9 @@ class CheckCopyAccToAccException {
           sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     }
-#endif
+#endif  // SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   }
 };
-
+#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
 }  // namespace handler_copy_common
 #endif  // __SYCLCTS_TESTS_HANDLER_COPY_COMMON_H
