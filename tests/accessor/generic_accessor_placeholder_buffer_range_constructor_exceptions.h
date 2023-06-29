@@ -49,7 +49,7 @@ void test_placeholder_buffer_range_accessors_exception(
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf, r);
     };
     check_placeholder_accessor_exception<DataT, Dimension, AccessMode, Target>(
-        r, get_acc_functor);
+        get_acc_functor);
   }
 }
 

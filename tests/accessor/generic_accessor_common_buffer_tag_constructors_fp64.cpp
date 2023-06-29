@@ -16,27 +16,39 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides sycl::local_accessor constructors test for generic types
+//  Provides generic sycl::accessor constructors with buffer and tag test for
+//  double type
 //
 *******************************************************************************/
 
 #include "../common/common.h"
 
-// FIXME: re-enable when sycl::local_accessor is implemented
+// FIXME: re-enable when sycl::accessor is implemented
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-
 #include "accessor_common.h"
-#include "local_accessor_constructors.h"
+#include "generic_accessor_common_buffer_tag_constructors.h"
 #endif
 
 #include "../common/disabled_for_test_case.h"
-#include "catch2/catch_test_macros.hpp"
 
-namespace local_accessor_constructors_core {
+namespace generic_accessor_common_buffer_tag_constructors_fp64 {
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("sycl::local_accessor constructors. core types", "[accessor]")({
-  using namespace local_accessor_constructors;
-  common_run_tests<run_local_constructors_test>();
+("Generic sycl::accessor buffer tag constructors. fp64 type", "[accessor]")({
+  using namespace generic_accessor_common_buffer_tag_constructors;
+
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if (queue.get_device().has(sycl::aspect::fp64)) {
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+    for_type_vectors_marray<run_generic_common_buffer_tag_constructors_test,
+                            double>("double");
+#else
+    run_generic_common_buffer_tag_constructors_test<double>{}("double");
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  } else {
+    WARN("Device does not support double precision floating point operations");
+    return;
+  }
 });
-}  // namespace local_accessor_constructors_core
+
+}  // namespace generic_accessor_common_buffer_tag_constructors_fp64

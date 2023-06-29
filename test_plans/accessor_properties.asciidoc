@@ -1,0 +1,146 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for accessor_properties
+
+This is a test plan for the APIs described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_accessor_properties.asciidoc[sycl_ext_oneapi_accessor_properties]
+
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+== Type coverage
+
+All of the interface tests described are performed using `float` as value type of `sycl::accessor`.
+
+== Tests
+
+=== Test for sycl::ext::oneapi::property
+
+Test is performed with following `property` values:
+
+* `sycl::property::no_init`
+* `sycl::ext::oneapi::property::no_alias`
+* `sycl::ext::oneapi::property::no_offset`
+
+Check that `is_compile_time_property<property>::value` equals `true` for values
+`no_alias` and `no_offset` and equals `false` for value `no_init`.
+Check that `is_property<property>::value` == `true` for values `no_init`,
+`no_alias` and `no_offset`.
+
+=== Tests for sycl::ext::oneapi::accessor_property_list
+
+Check that `accessor_property_list` is constructible with:
+
+* only with runtime properties
+* only with compile-time-constant properties
+* both with runtime and compile-time-constant properties
+
+Check that `template<typename...properties> accessor_property_list` is not
+convertible to `property_list` if `properties...` contains compile-time-constant
+properties.
+
+Check that `template<typename...properties> accessor_property_list` is
+convertible to `property_list` if `properties...` contains no compile-time-constant
+properties.
+
+Check that `property_list` is convertible to `template<typename...properties>
+accessor_property_list` if `properties...` contains no compile-time-constant
+properties.
+
+=== Test for properties interface
+
+For type
+[source,c++]
+----
+template <typename dataT,
+          int dimensions,
+          access::mode accessmode,
+          access::target accessTarget,
+          access::placeholder isPlaceholder,
+          typename property_listT = accessor_property_list<>>
+class accessor
+----
+and compile-time-constant properties `no_alias` and `no_offset` check the following:
+
+* `template <typename propertyT> static constexpr bool has_property()` return `true` if property_listT contains
+`propertyT` and `false` otherwice
+* `template <typename propertyT> static constexpr /*unspecified*/ get_property()` return `const propertyT` if property_listT contains `propertyT`
+
+=== sycl::accessor with accessor_property_list
+
+Test is performed with accessor Dimension = 1, zero offset and with all combinations of the following `property` values:
+
+* `sycl::property::no_init` (only with accessor with `access_mode` = `write_only`)
+* `sycl::ext::oneapi::property::no_alias`
+* `sycl::ext::oneapi::property::no_offset`
+
+Test is performed with each of the following accessor constructors:
+
+* `accessor(buffer<dataT, 1, AllocatorT> &bufferRef,
+           const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+* `accessor(buffer<dataT, 1, AllocatorT> &bufferRef,
+           handler &commandGroupHandlerRef, const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+* `accessor(buffer<dataT, dimensions, AllocatorT> &bufferRef,
+           const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+* `accessor(buffer<dataT, dimensions, AllocatorT> &bufferRef, TagT tag,
+           const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+* `accessor(buffer<dataT, dimensions, AllocatorT> &bufferRef,
+           handler &commandGroupHandlerRef, const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+* `accessor(buffer<dataT, dimensions, AllocatorT> &bufferRef,
+           handler &commandGroupHandlerRef, TagT tag,
+           const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+* `accessor(buffer<dataT, dimensions, AllocatorT> &bufferRef,
+           range<dimensions> accessRange, const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+* `accessor(buffer<dataT, dimensions, AllocatorT> &bufferRef,
+           range<dimensions> accessRange, TagT tag,
+           const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+* `accessor(buffer<dataT, dimensions, AllocatorT> &bufferRef,
+           range<dimensions> accessRange, id<dimensions> accessOffset,
+           const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+* `accessor(buffer<dataT, dimensions, AllocatorT> &bufferRef,
+           range<dimensions> accessRange, id<dimensions> accessOffset,
+           TagT tag, const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+* `accessor(buffer<dataT, dimensions, AllocatorT> &bufferRef,
+           handler &commandGroupHandlerRef, range<dimensions> accessRange,
+           const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+* `accessor(buffer<dataT, dimensions, AllocatorT> &bufferRef,
+           handler &commandGroupHandlerRef, range<dimensions> accessRange,
+           TagT tag, const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+* `accessor(buffer<dataT, dimensions, AllocatorT> &bufferRef,
+           handler &commandGroupHandlerRef, range<dimensions> accessRange,
+           id<dimensions> accessOffset, const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+* `accessor(buffer<dataT, dimensions, AllocatorT> &bufferRef,
+           handler &commandGroupHandlerRef, range<dimensions> accessRange,
+           id<dimensions> accessOffset, TagT tag,
+           const ext::oneapi::accessor_property_list<properties...> &propList = {});`
+
+Create two `sycl::accessor` instances `acc_source` with `access_mode = read_only` and `acc_dest` 
+with `access_mode = read_only` and check if data from `acc_source` is copied to `acc_dest` correctly with
+code below:
+
+[source,c++]
+----
+...
+float source_val = expected_value;
+float dest_val = initial_value;
+{
+  sycl::buffer<float, 1> source_buf(&source_val, sycl::range<1>(1));
+  sycl::buffer<float, 1> dest_buf(&dest_val, sycl::range<1>(1));
+  sycl::queue q = /* create queue on choosed device */;
+  q.submit([&](sycl::nadler& cgh) {
+    sycl::accessor<float, 1, read_only, /* other parameters */> acc_source(source_buf, cgh, /* other parameters */, src_prop_list); 
+    sycl::accessor<float, 1, write_only, /* other parameters */> acc_dest(dest_buf, cgh, /* other parameters */, dest_prop_list);
+    cgh.parallel_for(range<1>(1), [=](id<1> index) {
+      acc_dest[index] = acc_source[index];
+    });
+  }).wait_and_throw();
+}
+CHECK(dest_val == expected_value);
+...
+----
