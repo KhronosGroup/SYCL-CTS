@@ -85,9 +85,9 @@ class EnqueueBarrierTestBase {
 
       auto event1 = q1.submit([&](sycl::handler& cgh) {
         auto result_buf_a_acc =
-            result_buf_a.get_access<sycl::access_mode::write>(cgh);
+            sycl::accessor(result_buf_a, cgh, sycl::write_only);
         auto loop_arr_buf_a_acc =
-            loop_arr_buf_a.get_access<sycl::access_mode::write>(cgh);
+            sycl::accessor(loop_arr_buf_a, cgh, sycl::write_only);
         enqueue_barrier_kernel<ker_a_iter_num> kern_a(
             loop_arr_buf_a_acc, result_buf_a_acc, completion_flags);
         cgh.single_task(kern_a);
@@ -95,9 +95,9 @@ class EnqueueBarrierTestBase {
 
       auto event2 = q2.submit([&](sycl::handler& cgh) {
         auto result_buf_b_acc =
-            result_buf_b.get_access<sycl::access_mode::write>(cgh);
+            sycl::accessor(result_buf_b, cgh, sycl::write_only);
         auto loop_arr_buf_b_acc =
-            loop_arr_buf_b.get_access<sycl::access_mode::write>(cgh);
+            sycl::accessor(loop_arr_buf_b, cgh, sycl::write_only);
         enqueue_barrier_kernel<ker_b_iter_num> kern_b(
             loop_arr_buf_b_acc, result_buf_b_acc, completion_flags);
         cgh.single_task(kern_b);
@@ -193,7 +193,7 @@ void test_returned_event(sycl::queue& queue1, sycl::queue& queue2,
 
   auto event1 = queue1.submit([&](sycl::handler& cgh) {
     auto loop_arr_buf_a_acc =
-        loop_arr_buf_a.get_access<sycl::access_mode::write>(cgh);
+        sycl::accessor(loop_arr_buf_a, cgh, sycl::write_only);
     cgh.single_task([=] {
       for (size_t i = 0; i < ker_a_iter_num; i++) {
         int val = sycl::sqrt(float(i));
@@ -205,7 +205,7 @@ void test_returned_event(sycl::queue& queue1, sycl::queue& queue2,
 
   auto event2 = queue2.submit([&](sycl::handler& cgh) {
     auto loop_arr_buf_b_acc =
-        loop_arr_buf_b.get_access<sycl::access_mode::write>(cgh);
+        sycl::accessor(loop_arr_buf_b, cgh, sycl::write_only);
     cgh.single_task([=] {
       for (size_t i = 0; i < ker_b_iter_num; i++) {
         int val = sycl::sqrt(float(i));
