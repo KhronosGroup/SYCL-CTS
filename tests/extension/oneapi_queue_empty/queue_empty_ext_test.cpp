@@ -64,8 +64,7 @@ TEST_CASE(
   sycl::buffer<size_t, 1> array_buf(array, buf_size);
 
   auto e = queue.submit([&](sycl::handler& cgh) {
-    auto array_acc =
-        array_buf.template get_access<sycl::access_mode::write>(cgh);
+    auto array_acc = sycl::accessor(array_buf, cgh, sycl::write_only);
     cgh.single_task(Kernel<iter_num, decltype(array_acc)>(array_acc));
   });
 
@@ -95,15 +94,13 @@ TEST_CASE(
   sycl::buffer<size_t, 1> array_buf(array, buf_size);
 
   auto Ea = queue.submit([&](sycl::handler& cgh) {
-    auto array_acc =
-        array_buf.template get_access<sycl::access_mode::write>(cgh);
+    auto array_acc = sycl::accessor(array_buf, cgh, sycl::write_only);
     cgh.single_task(Kernel<iter_num, decltype(array_acc)>(array_acc));
   });
 
   auto Eb = queue.submit([&](sycl::handler& cgh) {
     cgh.depends_on(Ea);
-    auto array_acc =
-        array_buf.template get_access<sycl::access_mode::write>(cgh);
+    auto array_acc = sycl::accessor(array_buf, cgh, sycl::write_only);
     cgh.single_task(Kernel<iter_num, decltype(array_acc)>(array_acc));
   });
 
