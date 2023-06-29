@@ -471,8 +471,9 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
 #if !SYCL_CTS_COMPILING_WITH_DPCPP
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
   auto queue = once_per_unit::get_queue();
-  sycl::range<dim_buf> r = util::get_cts_object::range<dim_buf>::get(0, 0, 0);
-  sycl::buffer<DataT, dim_buf> data_buf(r);
+  sycl::range<dim_buf> buf_range =
+      util::get_cts_object::range<dim_buf>::get(0, 0, 0);
+  sycl::buffer<DataT, dim_buf> data_buf(buf_range);
   const size_t conditions_checks_size = 8;
   bool conditions_check[conditions_checks_size];
   std::fill(conditions_check, conditions_check + conditions_checks_size, true);
@@ -494,7 +495,7 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
                   acc, res_acc, check_iterator_methods);
             });
           } else if constexpr (Target == sycl::target::device) {
-            cgh.parallel_for_work_group(r, [=](sycl::group<Dimension>) {
+            cgh.parallel_for_work_group(sycl::range(1), [=](sycl::group<1>) {
               check_empty_accessor_constructor_post_conditions(
                   acc, res_acc, check_iterator_methods);
             });
