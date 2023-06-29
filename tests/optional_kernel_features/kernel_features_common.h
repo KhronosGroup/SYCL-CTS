@@ -650,29 +650,34 @@ void run_separate_lambda(const bool is_exception_expected,
       single_task_action, parallel_for_action, parallel_for_wg_action);
 }
 
-template <typename KernelName, typename LambdaItemArg, typename LambdaGroupArg>
+template <typename KernelName, size_t Size = 1, int Dimensions = 1,
+          typename LambdaItemArg, typename LambdaGroupArg>
 void run_separate_lambda_nd_range(const bool is_exception_expected,
                                   const sycl::errc errc_expected,
-                                  sycl::queue &queue,
+                                  sycl::queue& queue,
                                   LambdaItemArg separate_lambda_nd_item_arg,
                                   LambdaGroupArg separate_lambda_group_arg) {
-  auto parallel_for_action = [&queue, separate_lambda_nd_item_arg] {
+  auto range =
+      sycl_cts::util::get_cts_object::range<Dimensions>::get(Size, Size, Size);
+  auto parallel_for_action = [&queue, separate_lambda_nd_item_arg, range] {
     queue
-        .submit([&](sycl::handler &cgh) {
+        .submit([&](sycl::handler& cgh) {
           cgh.parallel_for<
               kernel_separate_lambda<KernelName, call_type::item_arg>>(
-              sycl::nd_range{sycl::range{1}, sycl::range{1}},
+              sycl::nd_range<Dimensions>{range, range},
               separate_lambda_nd_item_arg);
         })
         .wait();
   };
 
-  auto parallel_for_wg_action = [&queue, separate_lambda_group_arg] {
+  auto parallel_for_wg_action = [&queue, separate_lambda_group_arg, range] {
+    auto groupRange =
+        sycl_cts::util::get_cts_object::range<Dimensions>::get(1, 1, 1);
     queue
-        .submit([&](sycl::handler &cgh) {
+        .submit([&](sycl::handler& cgh) {
           cgh.parallel_for_work_group<
               kernel_separate_lambda<KernelName, call_type::group_arg>>(
-              sycl::range{1}, sycl::range{1}, separate_lambda_group_arg);
+              groupRange, range, separate_lambda_group_arg);
         })
         .wait();
   };
@@ -805,22 +810,27 @@ void run_functor(const bool is_exception_expected,
       single_task_action, parallel_for_action, parallel_for_wg_action);
 }
 
-template <typename Functor>
+template <typename Functor, size_t Size = 1, int Dimensions = 1>
 void run_functor_nd_range(const bool is_exception_expected,
-                          const sycl::errc errc_expected, sycl::queue &queue) {
-  auto parallel_for_action = [&queue] {
+                          const sycl::errc errc_expected, sycl::queue& queue) {
+  auto range =
+      sycl_cts::util::get_cts_object::range<Dimensions>::get(Size, Size, Size);
+
+  auto parallel_for_action = [&queue, &range] {
     queue
-        .submit([&](sycl::handler &cgh) {
+        .submit([&](sycl::handler& cgh) {
           cgh.parallel_for<kernel_parallel_for<Functor>>(
-              sycl::nd_range{sycl::range{1}, sycl::range{1}}, Functor{});
+              sycl::nd_range<Dimensions>{range, range}, Functor{});
         })
         .wait();
   };
-  auto parallel_for_wg_action = [&queue] {
+  auto parallel_for_wg_action = [&queue, &range] {
+    auto groupRange =
+        sycl_cts::util::get_cts_object::range<Dimensions>::get(1, 1, 1);
     queue
-        .submit([&](sycl::handler &cgh) {
+        .submit([&](sycl::handler& cgh) {
           cgh.parallel_for_work_group<kernel_parallel_for_wg<Functor>>(
-              sycl::range{1}, sycl::range{1}, Functor{});
+              groupRange, range, Functor{});
         })
         .wait();
   };
@@ -954,27 +964,34 @@ class kernel_submission_call;
         single_task_action, parallel_for_action, parallel_for_wg_action);   \
   }
 
-#define RUN_SUBMISSION_CALL_ND_RANGE(IS_EXCEPTION_EXPECTED, ERRC, QUEUE,      \
-                                     ATTRIBUTE, KERNEL_NAME, ...)             \
+/// Use a macro because we need to inject C++11 attributes
+#define RUN_SUBMISSION_CALL_ND_RANGE(SIZE, D, IS_EXCEPTION_EXPECTED, ERRC,    \
+                                     QUEUE, ATTRIBUTE, KERNEL_NAME, ...)      \
                                                                               \
   {                                                                           \
     auto parallel_for_action = [&QUEUE] {                                     \
+      auto range =                                                            \
+          sycl_cts::util::get_cts_object::range<D>::get(SIZE, SIZE, SIZE);    \
       QUEUE                                                                   \
-          .submit([&](sycl::handler &cgh) {                                   \
+          .submit([&](sycl::handler& cgh) {                                   \
             cgh.parallel_for<                                                 \
                 kernel_submission_call<KERNEL_NAME, call_type::item_arg>>(    \
-                sycl::nd_range{sycl::range{1}, sycl::range{1}},               \
-                [=](sycl::nd_item<1>) ATTRIBUTE { __VA_ARGS__; });            \
+                sycl::nd_range<D>{range, range},                              \
+                [=](sycl::nd_item<D>) ATTRIBUTE { __VA_ARGS__; });            \
           })                                                                  \
           .wait();                                                            \
     };                                                                        \
     auto parallel_for_wg_action = [&QUEUE] {                                  \
+      auto range =                                                            \
+          sycl_cts::util::get_cts_object::range<D>::get(SIZE, SIZE, SIZE);    \
+      auto groupRange =                                                       \
+          sycl_cts::util::get_cts_object::range<D>::get(1, 1, 1);             \
       QUEUE                                                                   \
-          .submit([&](sycl::handler &cgh) {                                   \
+          .submit([&](sycl::handler& cgh) {                                   \
             cgh.parallel_for_work_group<                                      \
                 kernel_submission_call<KERNEL_NAME, call_type::group_arg>>(   \
-                sycl::range{1}, sycl::range{1},                               \
-                [=](sycl::group<1>) ATTRIBUTE { __VA_ARGS__; });              \
+                groupRange, range,                                            \
+                [=](sycl::group<D>) ATTRIBUTE { __VA_ARGS__; });              \
           })                                                                  \
           .wait();                                                            \
     };                                                                        \

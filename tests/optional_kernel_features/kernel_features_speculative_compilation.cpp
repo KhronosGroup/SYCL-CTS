@@ -183,7 +183,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
     {
       RUN_SUBMISSION_CALL_ND_RANGE(
-          is_exception_expected, errc_expected, queue,
+          testing_wg_size[0], 1, is_exception_expected, errc_expected, queue,
           [[sycl::reqd_work_group_size(testing_wg_size[0])]],
           kernel_speculative<5>, NO_KERNEL_BODY);
     }
@@ -209,7 +209,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
     {
       RUN_SUBMISSION_CALL_ND_RANGE(
-          is_exception_expected, errc_expected, queue,
+          testing_wg_size[1], 1, is_exception_expected, errc_expected, queue,
           [[sycl::reqd_work_group_size(testing_wg_size[1])]],
           kernel_speculative<6>, NO_KERNEL_BODY);
     }
@@ -241,7 +241,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
     {
       RUN_SUBMISSION_CALL_ND_RANGE(
-          is_exception_expected, errc_expected, queue,
+          testing_sg_size[0], 1, is_exception_expected, errc_expected, queue,
           [[sycl::reqd_sub_group_size(testing_sg_size[0])]],
           kernel_speculative<7>, NO_KERNEL_BODY);
     }
@@ -269,7 +269,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
     {
       RUN_SUBMISSION_CALL_ND_RANGE(
-          is_exception_expected, errc_expected, queue,
+          testing_sg_size[1], 1, is_exception_expected, errc_expected, queue,
           [[sycl::reqd_sub_group_size(testing_sg_size[1])]],
           kernel_speculative<8>, NO_KERNEL_BODY);
     }
