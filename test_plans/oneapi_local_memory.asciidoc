@@ -30,6 +30,7 @@ In regular mode:
 * `int`
 * `float`
 * custom trivially destructible type
+* `T[5]`, where `T` is one of above types 
 
 In full conformance mode:
 
@@ -48,6 +49,7 @@ In full conformance mode:
 * `float`
 * `double`
 * custom trivially destructible type
+* `T[5]`, where `T` is one of above types
 
 == Tests
 
@@ -86,10 +88,12 @@ following:
 * Pass the chosen set of initial values to the constructor of type `T` through
   the `args` parameter pack
 * Check the type of allocating function return value
-* Check the allocated object of type `T` has the predefined initial value
+* Check the allocated object of type `T` has the predefined initial value (or
+  values, if `T` is array)
 
 For the custom type test should be performed for sets of initial values
-containing one, two and three values.
+containing one, two and three values. If `T` is array, `args` parameter pack
+must have enough values to initialize each array element.
 
 For the `group_local_memory_for_overwrite(Group g)` in kernel scope do the
 following:
@@ -113,12 +117,15 @@ In kernel scope do the following:
 * All work-items in a group pass the same set of initial values through the
   `args` parameter pack
 * Work-items in each group check that the object of type `T` has the expected
-  initial value
+  initial value (or values, if `T` is array)
 
 For the custom type test should be performed for sets of initial values
-containing one, two and three values.
+containing one, two and three values. If `T` is array, `args` parameter pack
+must have enough values to initialize each array element.
 
 ==== Check availability of local memory by all work-items in the work-group
+
+Skip the test if `T` is array.
 
 Define and submit a work-group data parallel SYCL kernel with work group size
 `n`.
