@@ -192,7 +192,7 @@ void kernel_execution_test(sycl::property_list properties) {
   {
     sycl::buffer<bool, 1> sts_buf(&kernel_exec_sts, 1);
     queue.submit([&](sycl::handler& cgh) {
-      auto sts_acc = sts_buf.template get_access<sycl::access_mode::write>(cgh);
+      auto sts_acc = sycl::accessor(sts_buf, cgh, sycl::write_only);
       cgh.single_task([=] { sts_acc[0] = true; });
     });
     queue.wait();
