@@ -166,7 +166,7 @@ class run_api_tests {
         test_accessor_methods(acc, sizeof(T) /* expected_byte_size*/,
                               1 /*expected_size*/,
                               true /*expected_isPlaceholder*/);
-        if constexpr (0 < dims) {
+        if constexpr (dims > 0) {
           test_accessor_range_methods(acc,
                                       util::get_cts_object::range<dims>::get(
                                           1, 1, 1) /*expected_range*/,
