@@ -62,7 +62,7 @@ TEST_CASE("Common interface members", "[bfloat16]") {
 }
 
 TEST_CASE("Special values", "[bfloat16]") {
-  SECTION("Check that bfloat16 occupies 16 bits of memomry") {
+  SECTION("Check that bfloat16 occupies 16 bits of memory") {
     REQUIRE(sizeof(bfloat16) == 2);
   }
 
