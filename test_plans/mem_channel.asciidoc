@@ -33,8 +33,8 @@ if feature is not supported.
 property_list pl = {mem_channel(0)};
 mem_channel mc_object(1);
 
-std::array<int, 10> arr1{0};
-std::array<int, 10> arr2{0};
+std::array<int, 10> arr1{};
+std::array<int, 10> arr2{};
 {
     buffer<T, 1> buf1(arr1.data(), range{10}, pl);
     buffer<T, 1> buf2(arr2.data(), range{10}, mc_object);
