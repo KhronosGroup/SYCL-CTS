@@ -80,7 +80,7 @@ struct check_for_type {
                      check_type_extract_bits<T>, even_predicate,
                      const sycl::ext::oneapi::sub_group_mask>;
 
-  void operator()(const std::string &typeName) {
+  void operator()(const std::string& typeName) {
     SECTION("testing: " + type_name_string<T>::get(typeName)) {
       check_diff_sub_group_sizes<verification_func_for_even_predicate>();
     }

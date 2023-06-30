@@ -606,7 +606,7 @@ void for_type_and_marrays(argsT &&...args) {
  */
 template <template <typename, typename...> class action, typename T,
           typename... actionArgsT, typename... argsT>
-void for_marrays_of_type(argsT &&...args) {
+void for_marrays_of_type(argsT&&... args) {
   for_all_types<action, actionArgsT...>(
       type_pack<typename sycl::template marray<T, 2>,
                 typename sycl::template marray<T, 5>,
@@ -657,8 +657,8 @@ void for_all_types_and_marrays(const named_type_pack<types...> &typeList,
  */
 template <template <typename, typename...> class action,
           typename... actionArgsT, typename... types, typename... argsT>
-void for_marrays_of_all_types(const named_type_pack<types...> &typeList,
-                              argsT &&...args) {
+void for_marrays_of_all_types(const named_type_pack<types...>& typeList,
+                              argsT&&... args) {
   // run action for each type from types... parameter pack
   // Using fold expression to iterate over all types within type pack
 
