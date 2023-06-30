@@ -43,12 +43,29 @@ static const std::string skip_test_for_builtin_kernels_msg{
     "Test for built-in kernels will be skipped due to kernel bundle is "
     "empty."};
 
-inline auto user_def_kernels =
-    named_type_pack<kernels::kernel_cpu_descriptor,
-                    kernels::kernel_gpu_descriptor,
-                    kernels::kernel_accelerator_descriptor>::
-        generate("kernel_cpu_descriptor", "kernel_gpu_descriptor",
-                 "kernel_accelerator_descriptor");
+inline auto user_def_kernels = named_type_pack<
+    kernels::kernel_fp16_descriptor, kernels::kernel_fp64_descriptor,
+    kernels::kernel_atomic64_descriptor, kernels::kernel_image_descriptor,
+    kernels::kernel_online_compiler_descriptor,
+    kernels::kernel_online_linker_descriptor,
+    kernels::kernel_queue_profiling_descriptor,
+    kernels::kernel_usm_device_allocations_descriptor,
+    kernels::kernel_usm_host_allocations_descriptor,
+    kernels::kernel_usm_atomic_host_allocations_descriptor,
+    kernels::kernel_usm_shared_allocations_descriptor,
+    kernels::kernel_usm_atomic_shared_allocations_descriptor,
+    kernels::kernel_usm_system_allocations_descriptor>::
+    generate("kernel_fp16_descriptor", "kernel_fp64_descriptor",
+             "kernel_atomic64_descriptor", "kernel_image_descriptor",
+             "kernel_online_compiler_descriptor",
+             "kernel_online_linker_descriptor",
+             "kernel_queue_profiling_descriptor",
+             "kernel_usm_device_allocations_descriptor",
+             "kernel_usm_host_allocations_descriptor",
+             "kernel_usm_atomic_host_allocations_descriptor",
+             "kernel_usm_shared_allocations_descriptor",
+             "kernel_usm_atomic_shared_allocations_descriptor",
+             "kernel_usm_system_allocations_descriptor");
 
 template <sycl::bundle_state BundleState>
 class TestCaseDescription
