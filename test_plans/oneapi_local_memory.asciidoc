@@ -123,7 +123,7 @@ For the custom type test should be performed for sets of initial values
 containing one, two and three values. If `T` is array, `args` parameter pack
 must have enough values to initialize each array element.
 
-=== Check array initialization with fewer arguments than array elements
+==== Check array initialization with fewer arguments than array elements
 
 Run this test only when `T` is an array of `N` elements.
 
