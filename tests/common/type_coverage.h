@@ -57,7 +57,7 @@ struct type_name_string<sycl::vec<T, nElements>> {
   }
 };
 
-// FIXME: re-enable when marrray is implemented in hipsycl
+// FIXME: re-enable when marray is implemented in hipsycl
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Specialization of type name retrieve for sycl::marray class
@@ -457,7 +457,7 @@ void for_all_types_and_vectors(const named_type_pack<types...> &typeList,
   assert((typeNameIndex == sizeof...(types)) && "Pack expansion failed");
 }
 
-// FIXME: re-enable when marrray is implemented in hipsycl
+// FIXME: re-enable when marray is implemented in hipsycl
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Run action for type, vectors and marrays of this type
@@ -542,7 +542,7 @@ void for_type_vectors_marray_reduced(argsT&&... args) {
 }
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
-// FIXME: re-enable when marrray is implemented in hipsycl
+// FIXME: re-enable when marray is implemented in hipsycl
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Run action for each of types, vectors and marrays of types given by
@@ -573,7 +573,7 @@ void for_all_types_vectors_marray(const named_type_pack<types...> &typeList,
 }
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
-// FIXME: re-enable when marrray is implemented in hipsycl
+// FIXME: re-enable when marray is implemented in hipsycl
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Run action for type and marrays of this type
@@ -594,7 +594,28 @@ void for_type_and_marrays(argsT &&...args) {
 }
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
-// FIXME: re-enable when marrray is implemented in hipsycl
+// FIXME: re-enable when marray is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+/**
+ * @brief Run action for marrays of type T
+ * @tparam action Functor template for action to run
+ * @tparam T Type to instantiate functor template with
+ * @tparam actionArgsT Parameter pack to use for functor template instantiation
+ * @tparam argsT Deduced parameter pack for arguments to forward into the call
+ * @param args Arguments to forward into the call
+ */
+template <template <typename, typename...> class action, typename T,
+          typename... actionArgsT, typename... argsT>
+void for_marrays_of_type(argsT &&...args) {
+  for_all_types<action, actionArgsT...>(
+      type_pack<typename sycl::template marray<T, 2>,
+                typename sycl::template marray<T, 5>,
+                typename sycl::template marray<T, 10>>{},
+      std::forward<argsT>(args)...);
+}
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+
+// FIXME: re-enable when marray is implemented in hipsycl
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Run action for each of types and marrays of types given by
@@ -616,6 +637,34 @@ void for_all_types_and_marrays(const named_type_pack<types...> &typeList,
   size_t typeNameIndex = 0;
 
   ((for_type_and_marrays<action, types, actionArgsT...>(
+        std::forward<argsT>(args)..., typeList.names[typeNameIndex]),
+    ++typeNameIndex),
+   ...);
+}
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+
+// FIXME: re-enable when marray is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+/**
+ * @brief Run action for marrays of each type of types given by
+ *        named_type_pack instance
+ * @tparam action Functor template for action to run
+ * @tparam actionArgsT Parameter pack to use for functor template instantiation
+ * @tparam types Deduced from type_pack parameter pack for list of types to use
+ * @tparam argsT Deduced parameter pack for arguments to forward into the call
+ * @param typeList Named type pack instance with underlying type names stored
+ * @param args Arguments to forward into the call
+ */
+template <template <typename, typename...> class action,
+          typename... actionArgsT, typename... types, typename... argsT>
+void for_marrays_of_all_types(const named_type_pack<types...> &typeList,
+                              argsT &&...args) {
+  // run action for each type from types... parameter pack
+  // Using fold expression to iterate over all types within type pack
+
+  size_t typeNameIndex = 0;
+
+  ((for_marrays_of_type<action, types, actionArgsT...>(
         std::forward<argsT>(args)..., typeList.names[typeNameIndex]),
     ++typeNameIndex),
    ...);

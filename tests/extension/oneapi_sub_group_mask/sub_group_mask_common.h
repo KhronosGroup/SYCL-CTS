@@ -9,13 +9,37 @@
 #ifndef __SYCLCTS_TESTS_SUB_GROUP_MASK_COMMON_H
 #define __SYCLCTS_TESTS_SUB_GROUP_MASK_COMMON_H
 
+#include <array>
+
 #include "../../common/common.h"
 #include "../../common/type_coverage.h"
 
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 namespace {
 
+// Error types for sub_group_mask ctors
+struct ctor_error {
+  static constexpr size_t ctor_wrong =
+      0;  // wrong sub_group_mask instance created
+  static constexpr size_t copy_ctor_wrong =
+      1;  // wrong sub_group_mask instance created with copy ctor
+  static constexpr size_t assign_wrong =
+      2;  // wrong result of sub_group_mask::operator=
+  static constexpr size_t assign_type_wrong =
+      3;  // wrong type of sub_group_mask::operator=
+
+  static constexpr size_t error_types_count = 4;
+
+  inline static const std::array<std::string, error_types_count> error_strings{
+      std::string{"Error with constructed instance of sub_group_mask"},
+      std::string{
+          "Error with instance of sub_group_mask constructed with copy ctor"},
+      std::string{"Error with result of sub_group_mask::operator="},
+      std::string{"Error type of sub_group_mask::operator="}};
+};
+
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+
 static const auto types =
     named_type_pack<char, signed char, unsigned char, short, unsigned short,
                     int, unsigned int, long, unsigned long, long long,
@@ -74,6 +98,12 @@ inline auto get_result_array() {
   return resultArr;
 }
 
+inline auto get_ctors_result_array() {
+  std::array<bool, globalSize * ctor_error::error_types_count> resultArr;
+  resultArr.fill(true);
+  return resultArr;
+}
+
 inline bool if_check(const sycl::sub_group &sub_group) {
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   return true;
@@ -84,7 +114,7 @@ inline bool if_check(const sycl::sub_group &sub_group) {
 template <size_t SGSize, typename funT, typename funTypeT, typename predT,
           typename maskT, typename T = void>
 struct check_mask_api {
-  void operator()(sycl_cts::util::logger &log) {
+  void operator()() {
     sycl::range<1> globalRange(globalSize);
     sycl::range<1> localRange(localSize);
     sycl::nd_range<1> dataRange(globalRange, localRange);
@@ -116,16 +146,67 @@ struct check_mask_api {
             });
       });
     }
-    for (size_t i = 0; i < globalSize; i++)
-      if (!resultArr[i])
-        FAIL(log, "Check result failed on element " + std::to_string(i) +
-                      " with sub group size: " + std::to_string(SGSize));
-    if (!resultTypeArr[0]) FAIL(log, "Check type failed");
+    for (size_t i = 0; i < globalSize; i++) {
+      {
+        INFO("Check result failed on element " + std::to_string(i) +
+             " with sub group size: " + std::to_string(SGSize));
+        CHECK(true == resultArr[i]);
+      }
+    }
+    {
+      INFO("Check type failed");
+      CHECK(true == resultTypeArr[0]);
+    }
+  }
+};
+
+using res_array = sycl::marray<bool, ctor_error::error_types_count>;
+
+template <size_t SGSize, typename funT>
+struct check_mask_ctors {
+  void operator()() {
+    sycl::range<1> globalRange(globalSize);
+    sycl::range<1> localRange(localSize);
+    sycl::nd_range<1> dataRange(globalRange, localRange);
+
+    auto resultArr = get_ctors_result_array();
+
+    auto testQueue = sycl_cts::util::get_cts_object::queue();
+    {
+      auto buffer = sycl::buffer(resultArr.data(), globalRange);
+
+      testQueue.submit([&](sycl::handler &h) {
+        auto resultPtr =
+            buffer.template get_access<sycl::access_mode::read_write>(h);
+
+        h.parallel_for(
+            dataRange,
+            [=](sycl::nd_item<1> item) [[sycl::reqd_sub_group_size(SGSize)]] {
+              auto sub_group = item.get_sub_group();
+              if (if_check(sub_group)) {
+                res_array result = funT()(item);
+                for (size_t i = 0; i < ctor_error::error_types_count; ++i) {
+                  resultPtr[item.get_global_id(0) + i] = result[i];
+                }
+              }
+            });
+      });
+    }
+    for (size_t i = 0; i < globalSize; i++) {
+      for (size_t j = 0; j < ctor_error::error_types_count; ++j) {
+        {
+          INFO(ctor_error::error_strings[j] + " on element " +
+               std::to_string(i) +
+               " with sub group size: " + std::to_string(SGSize));
+          CHECK(resultArr[i * ctor_error::error_types_count + j]);
+        }
+      }
+    }
   }
 };
 
 template <template <size_t> class verification_func>
-void check_diff_sub_group_sizes(sycl_cts::util::logger &log) {
+void check_diff_sub_group_sizes() {
   sycl::device device{sycl_cts::util::get_cts_object::device()};
   const auto available_sg_sizes =
       device.get_info<sycl::info::device::sub_group_sizes>();
@@ -135,7 +216,7 @@ void check_diff_sub_group_sizes(sycl_cts::util::logger &log) {
 
   constexpr size_t eight_sg_size = 8;
   if (std::find(sb_begin, sb_end, eight_sg_size) != sb_end) {
-    verification_func<eight_sg_size>{}(log);
+    verification_func<eight_sg_size>{}();
   } else {
     WARN(
         "Test for 8 sub group size was skipped due to 8 is unsupported sub "
@@ -143,7 +224,7 @@ void check_diff_sub_group_sizes(sycl_cts::util::logger &log) {
   }
   constexpr size_t sixteen_sg_size = 16;
   if (std::find(sb_begin, sb_end, sixteen_sg_size) != sb_end) {
-    verification_func<sixteen_sg_size>{}(log);
+    verification_func<sixteen_sg_size>{}();
   } else {
     WARN(
         "Test for 16 sub group size was skipped due to 16 is unsupported sub "
@@ -151,7 +232,7 @@ void check_diff_sub_group_sizes(sycl_cts::util::logger &log) {
   }
   constexpr size_t thirty_two_sg_size = 32;
   if (std::find(sb_begin, sb_end, thirty_two_sg_size) != sb_end) {
-    verification_func<thirty_two_sg_size>{}(log);
+    verification_func<thirty_two_sg_size>{}();
   } else {
     WARN(
         "Test for 32 sub group size was skipped due to 32 is unsupported sub "
