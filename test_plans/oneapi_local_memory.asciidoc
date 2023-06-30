@@ -123,6 +123,16 @@ For the custom type test should be performed for sets of initial values
 containing one, two and three values. If `T` is array, `args` parameter pack
 must have enough values to initialize each array element.
 
+=== Check array initialization with fewer arguments than array elements
+
+Run this test only when `T` is an array of `N` elements.
+
+* Use `group_local_memory` to allocate an object of type `T` (which is an
+  array)
+* Specify `M` "args" to that call, where `M < N`
+* Verify that the first `M` elements of the array have the specified initial
+  value
+
 ==== Check availability of local memory by all work-items in the work-group
 
 Skip the test if `T` is array.
