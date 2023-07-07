@@ -176,8 +176,7 @@ struct check_mask_ctors {
       auto buffer = sycl::buffer(resultArr.data(), globalRange);
 
       testQueue.submit([&](sycl::handler& h) {
-        auto resultPtr =
-            buffer.template get_access<sycl::access_mode::read_write>(h);
+        auto resultPtr = sycl::accessor(buffer, h, sycl::read_write);
 
         h.parallel_for(
             dataRange,
