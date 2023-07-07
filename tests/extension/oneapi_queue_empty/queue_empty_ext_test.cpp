@@ -60,8 +60,7 @@ TEST_CASE(
 #else
   auto queue = sycl_cts::util::get_cts_object::queue();
 
-  size_t array[buf_size];
-  sycl::buffer<size_t, 1> array_buf(array, buf_size);
+  sycl::buffer<size_t, 1> array_buf(buf_size);
 
   auto e = queue.submit([&](sycl::handler& cgh) {
     auto array_acc = sycl::accessor(array_buf, cgh, sycl::write_only);
