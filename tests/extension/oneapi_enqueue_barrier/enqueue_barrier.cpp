@@ -85,7 +85,8 @@ class EnqueueBarrierTestBase {
 
       auto event1 = q1.submit([&](sycl::handler& cgh) {
         sycl::accessor result_buf_a_acc(result_buf_a, cgh, sycl::write_only);
-        sycl::accessor loop_arr_buf_a_acc(loop_arr_buf_a, cgh, sycl::write_only);
+        sycl::accessor loop_arr_buf_a_acc(loop_arr_buf_a, cgh,
+                                          sycl::write_only);
         enqueue_barrier_kernel<ker_a_iter_num> kern_a(
             loop_arr_buf_a_acc, result_buf_a_acc, completion_flags);
         cgh.single_task(kern_a);
