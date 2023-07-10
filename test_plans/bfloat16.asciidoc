@@ -78,25 +78,19 @@ Use `uint*_t` variables representing `bfloat16` and `float` values in bitset for
 [source, c++]
 ----
     uint16_t bfloat16_bits = 0b0000000010000000;
-    uint32_t float_bits    = 0b00000000100000000000000000000000;
-
     bfloat16 bf_min = sycl::bit_cast<bfloat16>(bfloat16_bits);
-    float float_min = sycl::bit_cast<float>(float_bits);
 ----
 
-Verify that the minimum values of `bfloat16` type is equal to the minimum value of `float` by using the `bfloat16` operator `==`.
+Verify that `bf_min == std::numeric_limits<float>::min()`.
 
 ==== Zero
 
 [source, c++]
 ----
     uint16_t bfloat16_bits = 0b0000000000000000;
-    uint32_t float_bits = 0b00000000000000000000000000000000;
-
     bfloat16 bf_zero = sycl::bit_cast<bfloat16>(bfloat16_bits);
-    float float_zero = sycl::bit_cast<float>(float_bits);
 ----
-    Verify that `bf_zero == float_zero`.
+    Verify that `bf_zero == 0.f`.
 
 ==== NaN
 
