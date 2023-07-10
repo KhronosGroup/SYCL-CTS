@@ -67,13 +67,9 @@ TEST_CASE("Special values", "[bfloat16]") {
   }
 
   SECTION("Check minimum positive normal value") {
-    uint16_t bfloat16_bits = 0b0000000010000000;
-    uint32_t float_bits = 0b00000000100000000000000000000000;
+    bfloat16 bf_min = sycl::bit_cast<bfloat16>(0b0000000010000000);
 
-    bfloat16 bf_min = sycl::bit_cast<bfloat16>(bfloat16_bits);
-    float float_min = sycl::bit_cast<float>(float_bits);
-
-    CHECK(bf_min == float_min);
+    CHECK(bf_min == std::numeric_limits<float>::min());
   }
 
   SECTION("NaN") {
