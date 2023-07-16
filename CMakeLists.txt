@@ -52,8 +52,20 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_MEMCPY2D_TESTS
     "Enable extension oneAPI memcpy2d tests" OFF)
 
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_ENQUEUE_BARRIER_TESTS
+    "Enable extension oneAPI enqueue_barrier tests" OFF)
+
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_WEAK_OBJECT_TESTS
     "Enable extension oneAPI weak_object tests" OFF)
+
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_QUEUE_EMPTY
+    "Enable extension oneAPI queue_empty tests" OFF)
+
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_DISCARD_QUEUE_EVENTS_TESTS
+    "Enable extension oneAPI discard_queue_events tests" OFF)
+
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_BFLOAT16_TESTS
+    "Enable extension oneAPI bfloat16 tests" OFF)
 
 # TODO: Deprecated - remove
 add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG

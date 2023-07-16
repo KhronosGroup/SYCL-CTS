@@ -342,6 +342,8 @@ struct tag_factory<accessor_type::host_accessor> {
  * @param testing_acc Instance of TestingAccT that were constructed with default
  * constructor
  * @param res_acc Instance of result accessor
+ * @param check_iterator_methods Flag to avoid undefined behavior on access to
+ * uninitialized underlying buffer
  */
 template <typename TestingAccT, typename ResultAccT>
 void check_empty_accessor_constructor_post_conditions(
@@ -391,11 +393,57 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
 
   auto acc = get_accessor_functor();
   if constexpr (AccType != accessor_type::host_accessor) {
+    // Disable checking iteration methods with empty device accessor
+    // to avoid undefined behavior
+    bool check_iterator_methods = false;
     check_empty_accessor_constructor_post_conditions(acc, conditions_check,
-                                                     false);
+                                                     check_iterator_methods);
   } else {
+    bool check_iterator_methods = true;
     check_empty_accessor_constructor_post_conditions(acc, conditions_check,
-                                                     true);
+                                                     check_iterator_methods);
+  }
+
+  for (size_t i = 0; i < conditions_checks_size; i++) {
+    CHECK(conditions_check[i]);
+  }
+}
+
+/**
+ * @brief Common function that constructs placeholder accessor with zero-length
+ * buffer and checks post-conditions
+ *
+ * @tparam AccType Type of the accessor
+ * @tparam DataT Type of underlying data
+ * @tparam Dimension Dimensions of the accessor
+ * @tparam AccessMode Access mode of the accessor
+ * @tparam Target Target of accessor
+ * @tparam GetAccFunctorT Type of functor for accessor creation
+ */
+template <accessor_type AccType, typename DataT, int Dimension,
+          sycl::access_mode AccessMode = sycl::access_mode::read_write,
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
+void check_zero_length_buffer_placeholder_constructor(
+    GetAccFunctorT get_accessor_functor) {
+  auto queue = once_per_unit::get_queue();
+  constexpr int buf_dims = (0 == Dimension) ? 1 : Dimension;
+  auto r = util::get_cts_object::range<buf_dims>::get(0, 0, 0);
+  sycl::buffer<DataT, buf_dims> data_buf(r);
+  const size_t conditions_checks_size = 8;
+  bool conditions_check[conditions_checks_size];
+  std::fill(conditions_check, conditions_check + conditions_checks_size, true);
+
+  auto acc = get_accessor_functor(data_buf);
+  if constexpr (AccType != accessor_type::host_accessor) {
+    // Disable checking iteration methods with empty device accessor
+    // to avoid undefined behavior
+    bool check_iterator_methods = false;
+    check_empty_accessor_constructor_post_conditions(acc, conditions_check,
+                                                     check_iterator_methods);
+  } else {
+    bool check_iterator_methods = true;
+    check_empty_accessor_constructor_post_conditions(acc, conditions_check,
+                                                     check_iterator_methods);
   }
 
   for (size_t i = 0; i < conditions_checks_size; i++) {
@@ -423,8 +471,9 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
 #if !SYCL_CTS_COMPILING_WITH_DPCPP
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
   auto queue = once_per_unit::get_queue();
-  sycl::range<dim_buf> r = util::get_cts_object::range<dim_buf>::get(0, 0, 0);
-  sycl::buffer<DataT, dim_buf> data_buf(r);
+  sycl::range<dim_buf> buf_range =
+      util::get_cts_object::range<dim_buf>::get(0, 0, 0);
+  sycl::buffer<DataT, dim_buf> data_buf(buf_range);
   const size_t conditions_checks_size = 8;
   bool conditions_check[conditions_checks_size];
   std::fill(conditions_check, conditions_check + conditions_checks_size, true);
@@ -437,23 +486,27 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
           sycl::accessor<bool, 1, sycl::access_mode::read_write, Target>
               res_acc(res_buf, cgh);
           auto acc = get_accessor_functor(data_buf, cgh);
+          // Disable checking iteration methods with empty device accessor
+          // to avoid undefined behavior
+          bool check_iterator_methods = false;
           if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
-              check_empty_accessor_constructor_post_conditions(acc, res_acc,
-                                                               false);
+              check_empty_accessor_constructor_post_conditions(
+                  acc, res_acc, check_iterator_methods);
             });
           } else if constexpr (Target == sycl::target::device) {
-            cgh.parallel_for_work_group(r, [=](sycl::group<Dimension>) {
-              check_empty_accessor_constructor_post_conditions(acc, res_acc,
-                                                               false);
+            cgh.parallel_for_work_group(sycl::range(1), [=](sycl::group<1>) {
+              check_empty_accessor_constructor_post_conditions(
+                  acc, res_acc, check_iterator_methods);
             });
           }
         })
         .wait_and_throw();
   } else {
     auto acc = get_accessor_functor(data_buf);
+    bool check_iterator_methods = true;
     check_empty_accessor_constructor_post_conditions(acc, conditions_check,
-                                                     true);
+                                                     check_iterator_methods);
   }
 
   for (size_t i = 0; i < conditions_checks_size; i++) {
@@ -731,185 +784,6 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
   if constexpr (AccType != accessor_type::local_accessor) {
     if constexpr (AccessMode != sycl::access_mode::read) {
       CHECK(value_operations::are_equal(some_data, changed_val));
-    }
-  }
-}
-
-/**
- * @brief Function helps to check if passing of a placeholder accessor triggers
- * the exception
- *
- * @tparam AccType Type of the accessor
- * @tparam DataT Type of underlying data
- * @tparam Dimension Dimensions of the accessor
- * @tparam AccessMode Access mode of the accessor
- * @tparam Target Target of accessor
- * @param r Range for accessors buffer
- * @param get_accessor_functor Functor for accessor creation
- */
-template <typename DataT, sycl::target Target, int Dimension,
-          typename GetAccFunctorT, typename OpT>
-void run_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor,
-                                        OpT memory_operation,
-                                        std::string op_name) {
-  constexpr int buf_dims = (0 == Dimension) ? 1 : Dimension;
-  auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
-  auto queue = once_per_unit::get_queue();
-  DataT some_data = value_operations::init<DataT>(expected_val);
-  using T = std::remove_const_t<DataT>;
-  T other_data = value_operations::init<T>(changed_val);
-
-  {
-    sycl::buffer<DataT, buf_dims> data_buf(&some_data, r);
-    sycl::buffer<T, buf_dims> other_buf(&other_data, r);
-
-    auto action = [&] {
-      queue
-          .submit([&](sycl::handler& cgh) {
-            auto acc = get_accessor_functor(data_buf);
-            sycl::accessor<T, Dimension, sycl::access_mode::read_write, Target>
-                other_acc(other_buf, cgh);
-            memory_operation(acc, cgh, other_acc);
-          })
-          .wait_and_throw();
-    };
-    INFO(
-        "Implementation has to throw a sycl::exception with "
-        "sycl::errc::kernel_argument when a placeholder accessor is passed to "
-        "the command. Check for " +
-        op_name);
-    CHECK_THROWS_MATCHES(
-        action(), sycl::exception,
-        sycl_cts::util::equals_exception(sycl::errc::kernel_argument));
-  }
-}
-
-template <int Dimension, typename Acc1, typename Acc2>
-void acc_first_element_assign(Acc1& acc, Acc2& acc2) {
-  if constexpr (0 != Dimension) {
-    acc2[sycl::id<Dimension>()] = acc[sycl::id<Dimension>()];
-  } else {
-    acc2 = acc;
-  }
-}
-
-/**
- * @brief Function helps to check if passing of a placeholder accessor triggers
- * the exception
- *
- * @tparam DataT Type of underlying data
- * @tparam Dimension Dimensions of the accessor
- * @tparam AccessMode Access mode of the accessor
- * @tparam Target Target of accessor
- * @param r Range for accessors buffer
- * @param get_accessor_functor Functor for accessor creation
- */
-template <typename DataT, int Dimension, sycl::access_mode AccessMode,
-          sycl::target Target, typename GetAccFunctorT>
-void check_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor) {
-  constexpr int buf_dims = (0 == Dimension) ? 1 : Dimension;
-  auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
-  if constexpr (Target == sycl::target::host_task) {
-    auto host_task = [&](auto& acc, auto& cgh, auto& acc2) {
-      cgh.host_task([=] { acc_first_element_assign<Dimension>(acc, acc2); });
-    };
-    run_placeholder_accessor_exception<DataT, Target, Dimension>(
-        get_accessor_functor, host_task, "host_task");
-  } else {
-    auto single_task = [&](auto& acc, auto& cgh, auto& acc2) {
-      cgh.single_task([=] { acc_first_element_assign<Dimension>(acc, acc2); });
-    };
-    run_placeholder_accessor_exception<DataT, Target, Dimension>(
-        get_accessor_functor, single_task, "single_task");
-
-    auto parallel_for_range = [&](auto& acc, auto& cgh, auto& acc2) {
-      cgh.parallel_for(r, [=](auto item) {
-        acc_first_element_assign<Dimension>(acc, acc2);
-      });
-    };
-    run_placeholder_accessor_exception<DataT, Target, Dimension>(
-        get_accessor_functor, parallel_for_range, "parallel_for with range");
-
-    auto parallel_for_nd_range = [&](auto& acc, auto& cgh, auto& acc2) {
-      cgh.parallel_for(sycl::nd_range<buf_dims>(r, r), [=](auto nd_item) {
-        acc_first_element_assign<Dimension>(acc, acc2);
-      });
-    };
-    run_placeholder_accessor_exception<DataT, Target, Dimension>(
-        get_accessor_functor, parallel_for_nd_range,
-        "parallel_for with nd_range");
-
-    auto parallel_for_work_group = [&](auto& acc, auto& cgh, auto& acc2) {
-      cgh.parallel_for_work_group(r, [=](auto group) {
-        acc_first_element_assign<Dimension>(acc, acc2);
-      });
-    };
-    run_placeholder_accessor_exception<DataT, Target, Dimension>(
-        get_accessor_functor, parallel_for_work_group,
-        "parallel_for_work_group");
-
-    auto update_host = [&](auto& acc, auto& cgh, auto& acc2) {
-      cgh.update_host(acc);
-    };
-    run_placeholder_accessor_exception<DataT, Target, Dimension>(
-        get_accessor_functor, update_host, "update_host");
-
-    if constexpr (AccessMode != sycl::access_mode::write) {
-      auto copy_to_shared = [&](auto& acc, auto& cgh, auto& acc2) {
-        using T = std::remove_const_t<DataT>;
-        std::shared_ptr<T> dest(new T);
-        cgh.copy(acc, dest);
-      };
-      run_placeholder_accessor_exception<DataT, Target, Dimension>(
-          get_accessor_functor, copy_to_shared, "copy to std::shared_ptr");
-
-      auto copy_to_pointer = [&](auto& acc, auto& cgh, auto& acc2) {
-        using T = std::remove_const_t<DataT>;
-        T val;
-        T* dest = &val;
-        cgh.copy(acc, dest);
-      };
-      run_placeholder_accessor_exception<DataT, Target, Dimension>(
-          get_accessor_functor, copy_to_pointer, "copy to pointer");
-
-      auto copy_to_acc = [&](auto& acc, auto& cgh, auto& acc2) {
-        cgh.copy(acc, acc2);
-      };
-      run_placeholder_accessor_exception<DataT, Target, Dimension>(
-          get_accessor_functor, copy_to_acc, "copy to new accessor");
-    }
-
-    if constexpr (AccessMode != sycl::access_mode::read) {
-      auto copy_shared = [&](auto& acc, auto& cgh, auto& acc2) {
-        using T = std::remove_const_t<DataT>;
-        std::shared_ptr<T> src(new T);
-        cgh.copy(src, acc);
-      };
-      run_placeholder_accessor_exception<DataT, Target, Dimension>(
-          get_accessor_functor, copy_shared, "copy std::shared_ptr");
-
-      auto copy_pointer = [&](auto& acc, auto& cgh, auto& acc2) {
-        using T = std::remove_const_t<DataT>;
-        T val;
-        T* src = &val;
-        cgh.copy(src, acc);
-      };
-      run_placeholder_accessor_exception<DataT, Target, Dimension>(
-          get_accessor_functor, copy_shared, "copy pointer");
-
-      auto copy_acc = [&](auto& acc, auto& cgh, auto& acc2) {
-        cgh.copy(acc2, acc);
-      };
-      run_placeholder_accessor_exception<DataT, Target, Dimension>(
-          get_accessor_functor, copy_acc, "copy new accessor");
-
-      auto fill = [&](auto& acc, auto& cgh, auto& acc2) {
-        using T = std::remove_const_t<DataT>;
-        T val = T(changed_val);
-        cgh.fill(acc, val);
-      };
-      run_placeholder_accessor_exception<DataT, Target, Dimension>(
-          get_accessor_functor, fill, "fill");
     }
   }
 }

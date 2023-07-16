@@ -43,12 +43,12 @@ void test_placeholder_zero_length_buffer_constructor(
 
   SECTION(section_name) {
     constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
-    auto get_acc_functor = [](sycl::buffer<DataT, dim_buf>& data_buf,
-                              sycl::handler& cgh) {
+    auto get_acc_functor = [](sycl::buffer<DataT, dim_buf>& data_buf) {
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf);
     };
-    check_zero_length_buffer_constructor<AccType, DataT, Dimension, AccessMode,
-                                         Target>(get_acc_functor);
+    check_zero_length_buffer_placeholder_constructor<AccType, DataT, Dimension,
+                                                     AccessMode, Target>(
+        get_acc_functor);
   }
 }
 
