@@ -33,7 +33,7 @@ namespace common_by_value_semantics {
  * @brief Provides a safe index for checking an operation
  */
 enum class current_check : size_t {
-  reflexivity_equal_self,
+  reflexivity_equal_self = 0,
   reflexivity_not_equal_self,
   equal_copy,
   equal_copy_symmetry,
