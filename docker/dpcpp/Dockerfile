@@ -4,4 +4,11 @@ ARG IMPL_VERSION
 
 FROM ghcr.io/intel/llvm/sycl_ubuntu2204_nightly:no-drivers-$IMPL_VERSION
 
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt update && \
+    apt install -y --no-install-recommends \
+      ccache && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists*
+
 COPY configure.sh /scripts/
