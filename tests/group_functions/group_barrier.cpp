@@ -154,6 +154,8 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
       if (local_acc[max_id - llid] != 1)
         std::get<s::test>(group_barriers_acc[0]) = false;
+      // make sure we check all items before moving on
+      sycl::group_barrier(group);
 
       // tests for other barriers
       for (int i = 1; i < group_barrier_variants; ++i) {
@@ -172,6 +174,8 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
               if (local_acc[max_id - llid] != 1)
                 std::get<s::test>(barrier) = false;
+              // make sure we check all items before moving on
+              sycl::group_barrier(group);
 
               [[fallthrough]];
             default:
@@ -180,6 +184,8 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
               if (global_acc[max_id - llid] != 1)
                 std::get<s::test>(barrier) = false;
+              // make sure we check all items before moving on
+              sycl::group_barrier(group);
           }
         }
       }
@@ -205,6 +211,8 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
       if (local_acc[max_id - llid] != 1)
         std::get<s::test>(sub_group_barriers_acc[0]) = false;
+      // make sure we check all items before moving on
+      sycl::group_barrier(sub_group);
 
       // tests for other barriers
       for (int i = 1; i < sub_group_barrier_variants; ++i) {
@@ -225,6 +233,8 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
               if (local_acc[max_id - llid] != 1)
                 std::get<s::test>(barrier) = false;
+              // make sure we check all items before moving on
+              sycl::group_barrier(sub_group);
 
               [[fallthrough]];
             default:
@@ -233,6 +243,8 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
               if (global_acc[max_id - llid] != 1)
                 std::get<s::test>(barrier) = false;
+              // make sure we check all items before moving on
+              sycl::group_barrier(sub_group);
           }
         }
       }
