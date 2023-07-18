@@ -143,20 +143,20 @@ def create_basic_types():
     t_char_0 = argtype("char", "scalar", "char", 1, [])
     type_dic["char"] = t_char_0
 
-    t_vchar_2 = argtype("sycl::vec<char, 2>", "vector", "char", 2, [])
-    type_dic["sycl::vec<char, 2>"] = t_vchar_2
+    t_vint8_2 = argtype("sycl::vec<int8_t, 2>", "vector", "int8_t", 2, [])
+    type_dic["sycl::vec<int8_t, 2>"] = t_vint8_2
 
-    t_vchar_3 = argtype("sycl::vec<char, 3>", "vector", "char", 3, [])
-    type_dic["sycl::vec<char, 3>"] = t_vchar_3
+    t_vint8_3 = argtype("sycl::vec<int8_t, 3>", "vector", "int8_t", 3, [])
+    type_dic["sycl::vec<int8_t, 3>"] = t_vint8_3
 
-    t_vchar_4 = argtype("sycl::vec<char, 4>", "vector", "char", 4, [])
-    type_dic["sycl::vec<char, 4>"] = t_vchar_4
+    t_vint8_4 = argtype("sycl::vec<int8_t, 4>", "vector", "int8_t", 4, [])
+    type_dic["sycl::vec<int8_t, 4>"] = t_vint8_4
 
-    t_vchar_8 = argtype("sycl::vec<char, 8>", "vector", "char", 8, [])
-    type_dic["sycl::vec<char, 8>"] = t_vchar_8
+    t_vint8_8 = argtype("sycl::vec<int8_t, 8>", "vector", "int8_t", 8, [])
+    type_dic["sycl::vec<int8_t, 8>"] = t_vint8_8
 
-    t_vchar_16 = argtype("sycl::vec<char, 16>", "vector", "char", 16, [])
-    type_dic["sycl::vec<char, 16>"] = t_vchar_16
+    t_vint8_16 = argtype("sycl::vec<int8_t, 16>", "vector", "int8_t", 16, [])
+    type_dic["sycl::vec<int8_t, 16>"] = t_vint8_16
 
     t_mchar_2 = argtype("sycl::marray<char, 2>", "marray", "char", 2, [])
     type_dic["sycl::marray<char, 2>"] = t_mchar_2
@@ -211,20 +211,20 @@ def create_basic_types():
     t_uchar_0 = argtype("unsigned char", "scalar", "unsigned char", 1, [])
     type_dic["unsigned char"] = t_uchar_0
 
-    t_vuchar_2 = argtype("sycl::vec<unsigned char, 2>", "vector", "unsigned char", 2, [])
-    type_dic["sycl::vec<unsigned char, 2>"] = t_vuchar_2
+    t_vuint8_2 = argtype("sycl::vec<uint8_t, 2>", "vector", "uint8_t", 2, [])
+    type_dic["sycl::vec<uint8_t, 2>"] = t_vuint8_2
 
-    t_vuchar_3 = argtype("sycl::vec<unsigned char, 3>", "vector", "unsigned char", 3, [])
-    type_dic["sycl::vec<unsigned char, 3>"] = t_vuchar_3
+    t_vuint8_3 = argtype("sycl::vec<uint8_t, 3>", "vector", "uint8_t", 3, [])
+    type_dic["sycl::vec<uint8_t, 3>"] = t_vuint8_3
 
-    t_vuchar_4 = argtype("sycl::vec<unsigned char, 4>", "vector", "unsigned char", 4, [])
-    type_dic["sycl::vec<unsigned char, 4>"] = t_vuchar_4
+    t_vuint8_4 = argtype("sycl::vec<uint8_t, 4>", "vector", "uint8_t", 4, [])
+    type_dic["sycl::vec<uint8_t, 4>"] = t_vuint8_4
 
-    t_vuchar_8 = argtype("sycl::vec<unsigned char, 8>", "vector", "unsigned char", 8, [])
-    type_dic["sycl::vec<unsigned char, 8>"] = t_vuchar_8
+    t_vuint8_8 = argtype("sycl::vec<uint8_t, 8>", "vector", "uint8_t", 8, [])
+    type_dic["sycl::vec<uint8_t, 8>"] = t_vuint8_8
 
-    t_vuchar_16 = argtype("sycl::vec<unsigned char, 16>", "vector", "unsigned char", 16, [])
-    type_dic["sycl::vec<unsigned char, 16>"] = t_vuchar_16
+    t_vuint8_16 = argtype("sycl::vec<uint8_t, 16>", "vector", "uint8_t", 16, [])
+    type_dic["sycl::vec<uint8_t, 16>"] = t_vuint8_16
 
     t_muchar_2 = argtype("sycl::marray<unsigned char, 2>", "marray", "unsigned char", 2, [])
     type_dic["sycl::marray<unsigned char, 2>"] = t_muchar_2
@@ -245,20 +245,20 @@ def create_basic_types():
     t_short_0 = argtype("short", "scalar", "short", 1, [])
     type_dic["short"] = t_short_0
 
-    t_vshort_2 = argtype("sycl::vec<short, 2>", "vector", "short", 2, [])
-    type_dic["sycl::vec<short, 2>"] = t_vshort_2
+    t_vint16_2 = argtype("sycl::vec<int16_t, 2>", "vector", "int16_t", 2, [])
+    type_dic["sycl::vec<int16_t, 2>"] = t_vint16_2
 
-    t_vshort_3 = argtype("sycl::vec<short, 3>", "vector", "short", 3, [])
-    type_dic["sycl::vec<short, 3>"] = t_vshort_3
+    t_vint16_3 = argtype("sycl::vec<int16_t, 3>", "vector", "int16_t", 3, [])
+    type_dic["sycl::vec<int16_t, 3>"] = t_vint16_3
 
-    t_vshort_4 = argtype("sycl::vec<short, 4>", "vector", "short", 4, [])
-    type_dic["sycl::vec<short, 4>"] = t_vshort_4
+    t_vint16_4 = argtype("sycl::vec<int16_t, 4>", "vector", "int16_t", 4, [])
+    type_dic["sycl::vec<int16_t, 4>"] = t_vint16_4
 
-    t_vshort_8 = argtype("sycl::vec<short, 8>", "vector", "short", 8, [])
-    type_dic["sycl::vec<short, 8>"] = t_vshort_8
+    t_vint16_8 = argtype("sycl::vec<int16_t, 8>", "vector", "int16_t", 8, [])
+    type_dic["sycl::vec<int16_t, 8>"] = t_vint16_8
 
-    t_vshort_16 = argtype("sycl::vec<short, 16>", "vector", "short", 16, [])
-    type_dic["sycl::vec<short, 16>"] = t_vshort_16
+    t_vint16_16 = argtype("sycl::vec<int16_t, 16>", "vector", "int16_t", 16, [])
+    type_dic["sycl::vec<int16_t, 16>"] = t_vint16_16
 
     t_mshort_2 = argtype("sycl::marray<short, 2>", "marray", "short", 2, [])
     type_dic["sycl::marray<short, 2>"] = t_mshort_2
@@ -279,20 +279,20 @@ def create_basic_types():
     t_ushort_0 = argtype("unsigned short", "scalar", "unsigned short", 1, [])
     type_dic["unsigned short"] = t_ushort_0
 
-    t_vushort_2 = argtype("sycl::vec<unsigned short, 2>", "vector", "unsigned short", 2, [])
-    type_dic["sycl::vec<unsigned short, 2>"] = t_vushort_2
+    t_vuint16_2 = argtype("sycl::vec<uint16_t, 2>", "vector", "uint16_t", 2, [])
+    type_dic["sycl::vec<uint16_t, 2>"] = t_vuint16_2
 
-    t_vushort_3 = argtype("sycl::vec<unsigned short, 3>", "vector", "unsigned short", 3, [])
-    type_dic["sycl::vec<unsigned short, 3>"] = t_vushort_3
+    t_vuint16_3 = argtype("sycl::vec<uint16_t, 3>", "vector", "uint16_t", 3, [])
+    type_dic["sycl::vec<uint16_t, 3>"] = t_vuint16_3
 
-    t_vushort_4 = argtype("sycl::vec<unsigned short, 4>", "vector", "unsigned short", 4, [])
-    type_dic["sycl::vec<unsigned short, 4>"] = t_vushort_4
+    t_vuint16_4 = argtype("sycl::vec<uint16_t, 4>", "vector", "unsigned short", 4, [])
+    type_dic["sycl::vec<uint16_t, 4>"] = t_vuint16_4
 
-    t_vushort_8 = argtype("sycl::vec<unsigned short, 8>", "vector", "unsigned short", 8, [])
-    type_dic["sycl::vec<unsigned short, 8>"] = t_vushort_8
+    t_vuint16_8 = argtype("sycl::vec<uint16_t, 8>", "vector", "uint16_t", 8, [])
+    type_dic["sycl::vec<uint16_t, 8>"] = t_vuint16_8
 
-    t_vushort_16 = argtype("sycl::vec<unsigned short, 16>", "vector", "unsigned short", 16, [])
-    type_dic["sycl::vec<unsigned short, 16>"] = t_vushort_16
+    t_vuint16_16 = argtype("sycl::vec<uint16_t, 16>", "vector", "uint16_t", 16, [])
+    type_dic["sycl::vec<uint16_t, 16>"] = t_vuint16_16
 
     t_mushort_2 = argtype("sycl::marray<unsigned short, 2>", "marray", "unsigned short", 2, [])
     type_dic["sycl::marray<unsigned short, 2>"] = t_mushort_2
@@ -313,20 +313,20 @@ def create_basic_types():
     t_int_0 = argtype("int", "scalar", "int", 1, [])
     type_dic["int"] = t_int_0
 
-    t_vint_2 = argtype("sycl::vec<int, 2>", "vector", "int", 2, [])
-    type_dic["sycl::vec<int, 2>"] = t_vint_2
+    t_vint32_2 = argtype("sycl::vec<int32_t, 2>", "vector", "int32_t", 2, [])
+    type_dic["sycl::vec<int32_t, 2>"] = t_vint32_2
 
-    t_vint_3 = argtype("sycl::vec<int, 3>", "vector", "int", 3, [])
-    type_dic["sycl::vec<int, 3>"] = t_vint_3
+    t_vint32_3 = argtype("sycl::vec<int32_t, 3>", "vector", "int32_t", 3, [])
+    type_dic["sycl::vec<int32_t, 3>"] = t_vint32_3
 
-    t_vint_4 = argtype("sycl::vec<int, 4>", "vector", "int", 4, [])
-    type_dic["sycl::vec<int, 4>"] = t_vint_4
+    t_vint32_4 = argtype("sycl::vec<int32_t, 4>", "vector", "int32_t", 4, [])
+    type_dic["sycl::vec<int32_t, 4>"] = t_vint32_4
 
-    t_vint_8 = argtype("sycl::vec<int, 8>", "vector", "int", 8, [])
-    type_dic["sycl::vec<int, 8>"] = t_vint_8
+    t_vint32_8 = argtype("sycl::vec<int32_t, 8>", "vector", "int32_t", 8, [])
+    type_dic["sycl::vec<int32_t, 8>"] = t_vint32_8
 
-    t_vint_16 = argtype("sycl::vec<int, 16>", "vector", "int", 16, [])
-    type_dic["sycl::vec<int, 16>"] = t_vint_16
+    t_vint32_16 = argtype("sycl::vec<int32_t, 16>", "vector", "int32_t", 16, [])
+    type_dic["sycl::vec<int32_t, 16>"] = t_vint32_16
 
     t_mint_2 = argtype("sycl::marray<int, 2>", "marray", "int", 2, [])
     type_dic["sycl::marray<int, 2>"] = t_mint_2
@@ -347,20 +347,20 @@ def create_basic_types():
     t_uint_0 = argtype("unsigned", "scalar", "unsigned", 1, [])
     type_dic["unsigned"] = t_uint_0
 
-    t_vuint_2 = argtype("sycl::vec<unsigned, 2>", "vector", "unsigned", 2, [])
-    type_dic["sycl::vec<unsigned, 2>"] = t_vuint_2
+    t_vuint32_2 = argtype("sycl::vec<uint32_t, 2>", "vector", "uint32_t", 2, [])
+    type_dic["sycl::vec<uint32_t, 2>"] = t_vuint32_2
 
-    t_vuint_3 = argtype("sycl::vec<unsigned, 3>", "vector", "unsigned", 3, [])
-    type_dic["sycl::vec<unsigned, 3>"] = t_vuint_3
+    t_vuint32_3 = argtype("sycl::vec<uint32_t, 3>", "vector", "uint32_t", 3, [])
+    type_dic["sycl::vec<uint32_t, 3>"] = t_vuint32_3
 
-    t_vuint_4 = argtype("sycl::vec<unsigned, 4>", "vector", "unsigned", 4, [])
-    type_dic["sycl::vec<unsigned, 4>"] = t_vuint_4
+    t_vuint32_4 = argtype("sycl::vec<uint32_t, 4>", "vector", "uint32_t", 4, [])
+    type_dic["sycl::vec<uint32_t, 4>"] = t_vuint32_4
 
-    t_vuint_8 = argtype("sycl::vec<unsigned, 8>", "vector", "unsigned", 8, [])
-    type_dic["sycl::vec<unsigned, 8>"] = t_vuint_8
+    t_vuint32_8 = argtype("sycl::vec<uint32_t, 8>", "vector", "uint32_t", 8, [])
+    type_dic["sycl::vec<uint32_t, 8>"] = t_vuint32_8
 
-    t_vuint_16 = argtype("sycl::vec<unsigned, 16>", "vector", "unsigned", 16, [])
-    type_dic["sycl::vec<unsigned, 16>"] = t_vuint_16
+    t_vuint32_16 = argtype("sycl::vec<uint32_t, 16>", "vector", "uint32_t", 16, [])
+    type_dic["sycl::vec<uint32_t, 16>"] = t_vuint32_16
 
     t_muint_2 = argtype("sycl::marray<unsigned, 2>", "marray", "unsigned", 2, [])
     type_dic["sycl::marray<unsigned, 2>"] = t_muint_2
@@ -381,20 +381,20 @@ def create_basic_types():
     t_long_0 = argtype("long", "scalar", "long", 1, [])
     type_dic["long"] = t_long_0
 
-    t_vlong_2 = argtype("sycl::vec<long, 2>", "vector", "long", 2, [])
-    type_dic["sycl::vec<long, 2>"] = t_vlong_2
+    t_vint64_2 = argtype("sycl::vec<int64_t, 2>", "vector", "int64_t", 2, [])
+    type_dic["sycl::vec<int64_t, 2>"] = t_vint64_2
 
-    t_vlong_3 = argtype("sycl::vec<long, 3>", "vector", "long", 3, [])
-    type_dic["sycl::vec<long, 3>"] = t_vlong_3
+    t_vint64_3 = argtype("sycl::vec<int64_t, 3>", "vector", "int64_t", 3, [])
+    type_dic["sycl::vec<int64_t, 3>"] = t_vint64_3
 
-    t_vlong_4 = argtype("sycl::vec<long, 4>", "vector", "long", 4, [])
-    type_dic["sycl::vec<long, 4>"] = t_vlong_4
+    t_vint64_4 = argtype("sycl::vec<int64_t, 4>", "vector", "int64_t", 4, [])
+    type_dic["sycl::vec<int64_t, 4>"] = t_vint64_4
 
-    t_vlong_8 = argtype("sycl::vec<long, 8>", "vector", "long", 8, [])
-    type_dic["sycl::vec<long, 8>"] = t_vlong_8
+    t_vint64_8 = argtype("sycl::vec<int64_t, 8>", "vector", "int64_t", 8, [])
+    type_dic["sycl::vec<int64_t, 8>"] = t_vint64_8
 
-    t_vlong_16 = argtype("sycl::vec<long, 16>", "vector", "long", 16, [])
-    type_dic["sycl::vec<long, 16>"] = t_vlong_16
+    t_vint64_16 = argtype("sycl::vec<int64_t, 16>", "vector", "int64_t", 16, [])
+    type_dic["sycl::vec<int64_t, 16>"] = t_vint64_16
 
     t_mlong_2 = argtype("sycl::marray<long, 2>", "marray", "long", 2, [])
     type_dic["sycl::marray<long, 2>"] = t_mlong_2
@@ -415,20 +415,20 @@ def create_basic_types():
     t_ulong_0 = argtype("unsigned long", "scalar", "unsigned long", 1, [])
     type_dic["unsigned long"] = t_ulong_0
 
-    t_vulong_2 = argtype("sycl::vec<unsigned long, 2>", "vector", "unsigned long", 2, [])
-    type_dic["sycl::vec<unsigned long, 2>"] = t_vulong_2
+    t_vuint64_2 = argtype("sycl::vec<uint64_t, 2>", "vector", "uint64_t", 2, [])
+    type_dic["sycl::vec<uint64_t, 2>"] = t_vuint64_2
 
-    t_vulong_3 = argtype("sycl::vec<unsigned long, 3>", "vector", "unsigned long", 3, [])
-    type_dic["sycl::vec<unsigned long, 3>"] = t_vulong_3
+    t_vuint64_3 = argtype("sycl::vec<uint64_t, 3>", "vector", "uint64_t", 3, [])
+    type_dic["sycl::vec<uint64_t, 3>"] = t_vuint64_3
 
-    t_vulong_4 = argtype("sycl::vec<unsigned long, 4>", "vector", "unsigned long", 4, [])
-    type_dic["sycl::vec<unsigned long, 4>"] = t_vulong_4
+    t_vuint64_4 = argtype("sycl::vec<uint64_t, 4>", "vector", "uint64_t", 4, [])
+    type_dic["sycl::vec<uint64_t, 4>"] = t_vuint64_4
 
-    t_vulong_8 = argtype("sycl::vec<unsigned long, 8>", "vector", "unsigned long", 8, [])
-    type_dic["sycl::vec<unsigned long, 8>"] = t_vulong_8
+    t_vuint64_8 = argtype("sycl::vec<uint64_t, 8>", "vector", "uint64_t", 8, [])
+    type_dic["sycl::vec<uint64_t, 8>"] = t_vuint64_8
 
-    t_vulong_16 = argtype("sycl::vec<unsigned long, 16>", "vector", "unsigned long", 16, [])
-    type_dic["sycl::vec<unsigned long, 16>"] = t_vulong_16
+    t_vuint64_16 = argtype("sycl::vec<uint64_t, 16>", "vector", "uint64_t", 16, [])
+    type_dic["sycl::vec<uint64_t, 16>"] = t_vuint64_16
 
     t_mulong_2 = argtype("sycl::marray<unsigned long, 2>", "marray", "unsigned long", 2, [])
     type_dic["sycl::marray<unsigned long, 2>"] = t_mulong_2
@@ -449,21 +449,6 @@ def create_basic_types():
     t_longlong_0 = argtype("long long", "scalar", "long long", 1, [])
     type_dic["long long"] = t_longlong_0
 
-    t_vlonglong_2 = argtype("sycl::vec<long long, 2>", "vector", "long long", 2, [])
-    type_dic["sycl::vec<long long, 2>"] = t_vlonglong_2
-
-    t_vlonglong_3 = argtype("sycl::vec<long long, 3>", "vector", "long long", 3, [])
-    type_dic["sycl::vec<long long, 3>"] = t_vlonglong_3
-
-    t_vlonglong_4 = argtype("sycl::vec<long long, 4>", "vector", "long long", 4, [])
-    type_dic["sycl::vec<long long, 4>"] = t_vlonglong_4
-
-    t_vlonglong_8 = argtype("sycl::vec<long long, 8>", "vector", "long long", 8, [])
-    type_dic["sycl::vec<long long, 8>"] = t_vlonglong_8
-
-    t_vlonglong_16 = argtype("sycl::vec<long long, 16>", "vector", "long long", 16, [])
-    type_dic["sycl::vec<long long, 16>"] = t_vlonglong_16
-
     t_mlonglong_2 = argtype("sycl::marray<long long, 2>", "marray", "long long", 2, [])
     type_dic["sycl::marray<long long, 2>"] = t_mlonglong_2
 
@@ -482,21 +467,6 @@ def create_basic_types():
 
     t_ulonglong_0 = argtype("unsigned long long", "scalar", "unsigned long long", 1, [])
     type_dic["unsigned long long"] = t_ulonglong_0
-
-    t_vulonglong_2 = argtype("sycl::vec<unsigned long long, 2>", "vector", "unsigned long long", 2, [])
-    type_dic["sycl::vec<unsigned long long, 2>"] = t_vulonglong_2
-
-    t_vulonglong_3 = argtype("sycl::vec<unsigned long long, 3>", "vector", "unsigned long long", 3, [])
-    type_dic["sycl::vec<unsigned long long, 3>"] = t_vulonglong_3
-
-    t_vulonglong_4 = argtype("sycl::vec<unsigned long long, 4>", "vector", "unsigned long long", 4, [])
-    type_dic["sycl::vec<unsigned long long, 4>"] = t_vulonglong_4
-
-    t_vulonglong_8 = argtype("sycl::vec<unsigned long long, 8>", "vector", "unsigned long long", 8, [])
-    type_dic["sycl::vec<unsigned long long, 8>"] = t_vulonglong_8
-
-    t_vulonglong_16 = argtype("sycl::vec<unsigned long long, 16>", "vector", "unsigned long long", 16, [])
-    type_dic["sycl::vec<unsigned long long, 16>"] = t_vulonglong_16
 
     t_mulonglong_2 = argtype("sycl::marray<unsigned long long, 2>", "marray", "unsigned long long", 2, [])
     type_dic["sycl::marray<unsigned long long, 2>"] = t_mulonglong_2
@@ -1226,33 +1196,29 @@ def create_types():
 
 
     # t_char_n = argtype("charn", "NULL", "NULL", 0, ["sycl::char2","sycl::char3","sycl::char4","sycl::char8","sycl::char16"])
-    t_vchar_n = argtype("vcharn", "NULL", "NULL", 0, ["sycl::vec<char, 2>","sycl::vec<char, 3>","sycl::vec<char, 4>","sycl::vec<char, 8>","sycl::vec<char, 16>"])
-    type_dic["vcharn"] = t_vchar_n
+    t_vint8_n = argtype("vint8n", "NULL", "NULL", 0, ["sycl::vec<int8_t, 2>","sycl::vec<int8_t, 3>","sycl::vec<int8_t, 4>","sycl::vec<int8_t, 8>","sycl::vec<int8_t, 16>"])
+    type_dic["vint8n"] = t_vint8_n
 
     t_mchar_n = argtype("mcharn", "NULL", "NULL", 0, ["sycl::marray<char, 2>","sycl::marray<char, 3>","sycl::marray<char, 4>","sycl::marray<char, 5>","sycl::marray<char, 17>"])
     type_dic["mcharn"] = t_mchar_n
 
-    t_char_n = argtype("charn", "NULL", "NULL", 0, ["vcharn", "mcharn"])
+    t_char_n = argtype("charn", "NULL", "NULL", 0, ["vint8n", "mcharn"])
     type_dic["charn"] = t_char_n
-
-    # t_schar_n = argtype("scharn", "NULL", "NULL", 0, ["sycl::schar2","sycl::schar3","sycl::schar4","sycl::schar8","sycl::schar16"])
-    t_vschar_n = argtype("vscharn", "NULL", "NULL", 0, ["sycl::vec<signed char, 2>","sycl::vec<signed char, 3>","sycl::vec<signed char, 4>","sycl::vec<signed char, 8>","sycl::vec<signed char, 16>"])
-    type_dic["vscharn"] = t_vschar_n
 
     t_mschar_n = argtype("mscharn", "NULL", "NULL", 0, ["sycl::marray<signed char, 2>","sycl::marray<signed char, 3>","sycl::marray<signed char, 4>","sycl::marray<signed char, 5>","sycl::marray<signed char, 17>"])
     type_dic["mscharn"] = t_mschar_n
 
-    t_schar_n = argtype("scharn", "NULL", "NULL", 0, ["vscharn","mscharn"])
+    t_schar_n = argtype("scharn", "NULL", "NULL", 0, ["vint8n","mscharn"])
     type_dic["scharn"] = t_schar_n
 
     # t_uchar_n = argtype("ucharn", "NULL", "NULL", 0, ["sycl::uchar2","sycl::uchar3","sycl::uchar4","sycl::uchar8","sycl::uchar16"])
-    t_vuchar_n = argtype("vucharn", "NULL", "NULL", 0, ["sycl::vec<unsigned char, 2>","sycl::vec<unsigned char, 3>","sycl::vec<unsigned char, 4>","sycl::vec<unsigned char, 8>","sycl::vec<unsigned char, 16>"])
-    type_dic["vucharn"] = t_vuchar_n
+    t_vuint8_n = argtype("vuint8n", "NULL", "NULL", 0, ["sycl::vec<uint8_t, 2>","sycl::vec<uint8_t, 3>","sycl::vec<uint8_t, 4>","sycl::vec<uint8_t, 8>","sycl::vec<uint8_t, 16>"])
+    type_dic["vuint8n"] = t_vuint8_n
 
     t_muchar_n = argtype("mucharn", "NULL", "NULL", 0, ["sycl::marray<unsigned char, 2>","sycl::marray<unsigned char, 3>","sycl::marray<unsigned char, 4>","sycl::marray<unsigned char, 5>","sycl::marray<unsigned char, 17>"])
     type_dic["mucharn"] = t_muchar_n
 
-    t_uchar_n = argtype("ucharn", "NULL", "NULL", 0, ["vucharn", "mucharn"])
+    t_uchar_n = argtype("ucharn", "NULL", "NULL", 0, ["vuint8n", "mucharn"])
     type_dic["ucharn"] = t_uchar_n
 
 
@@ -1267,13 +1233,13 @@ def create_types():
 
 
     # t_short_n = argtype("shortn", "NULL", "NULL", 0, ["sycl::short2","sycl::short3","sycl::short4","sycl::short8","sycl::short16"])
-    t_vshort_n = argtype("vshortn", "NULL", "NULL", 0, ["sycl::vec<short, 2>","sycl::vec<short, 3>","sycl::vec<short, 4>","sycl::vec<short, 8>","sycl::vec<short, 16>"])
-    type_dic["vshortn"] = t_vshort_n
+    t_vint16_n = argtype("vint16n", "NULL", "NULL", 0, ["sycl::vec<int16_t, 2>","sycl::vec<int16_t, 3>","sycl::vec<int16_t, 4>","sycl::vec<int16_t, 8>","sycl::vec<int16_t, 16>"])
+    type_dic["vint16n"] = t_vint16_n
 
     t_mshort_n = argtype("mshortn", "NULL", "NULL", 0, ["sycl::marray<short, 2>","sycl::marray<short, 3>","sycl::marray<short, 4>","sycl::marray<short, 5>","sycl::marray<short, 17>"])
     type_dic["mshortn"] = t_mshort_n
 
-    t_short_n = argtype("shortn", "NULL", "NULL", 0, ["vshortn","mshortn"])
+    t_short_n = argtype("shortn", "NULL", "NULL", 0, ["vint16n","mshortn"])
     type_dic["shortn"] = t_short_n
 
 
@@ -1281,13 +1247,13 @@ def create_types():
     type_dic["genshort"] = t_gen_short
 
 
-    t_vushort_n = argtype("vushortn", "NULL", "NULL", 0, ["sycl::vec<unsigned short, 2>","sycl::vec<unsigned short, 3>","sycl::vec<unsigned short, 4>","sycl::vec<unsigned short, 8>","sycl::vec<unsigned short, 16>"])
-    type_dic["vushortn"] = t_vushort_n
+    t_vuint16_n = argtype("vuint16n", "NULL", "NULL", 0, ["sycl::vec<uint16_t, 2>","sycl::vec<uint16_t, 3>","sycl::vec<uint16_t, 4>","sycl::vec<uint16_t, 8>","sycl::vec<uint16_t, 16>"])
+    type_dic["vuint16n"] = t_vuint16_n
 
     t_mushort_n = argtype("mushortn", "NULL", "NULL", 0, ["sycl::marray<unsigned short, 2>","sycl::marray<unsigned short, 3>","sycl::marray<unsigned short, 4>","sycl::marray<unsigned short, 5>","sycl::marray<unsigned short, 17>"])
     type_dic["mushortn"] = t_mushort_n
 
-    t_ushort_n = argtype("ushortn", "NULL", "NULL", 0, ["vushortn","mushortn"])
+    t_ushort_n = argtype("ushortn", "NULL", "NULL", 0, ["vuint16n","mushortn"])
     type_dic["ushortn"] = t_ushort_n
 
 
@@ -1296,13 +1262,13 @@ def create_types():
 
 
     # t_int_n = argtype("intn", "NULL", "NULL", 0, ["sycl::int2","sycl::int3","sycl::int4","sycl::int8","sycl::int16"])
-    t_vint_n = argtype("vintn", "NULL", "NULL", 0, ["sycl::vec<int, 2>","sycl::vec<int, 3>","sycl::vec<int, 4>","sycl::vec<int, 8>","sycl::vec<int, 16>"])
-    type_dic["vintn"] = t_vint_n
+    t_vint32_n = argtype("vint32n", "NULL", "NULL", 0, ["sycl::vec<int32_t, 2>","sycl::vec<int32_t, 3>","sycl::vec<int32_t, 4>","sycl::vec<int32_t, 8>","sycl::vec<int32_t, 16>"])
+    type_dic["vint32n"] = t_vint32_n
 
     t_mint_n = argtype("mintn", "NULL", "NULL", 0, ["sycl::marray<int, 2>","sycl::marray<int, 3>","sycl::marray<int, 4>","sycl::marray<int, 5>","sycl::marray<int, 17>"])
     type_dic["mintn"] = t_mint_n
 
-    t_int_n = argtype("intn", "NULL", "NULL", 0, ["vintn","mintn"])
+    t_int_n = argtype("intn", "NULL", "NULL", 0, ["vint32n","mintn"])
     type_dic["intn"] = t_int_n
 
 
@@ -1311,13 +1277,13 @@ def create_types():
 
 
     # t_uint_n = argtype("uintn", "NULL", "NULL", 0, ["sycl::uint2","sycl::uint3","sycl::uint4","sycl::uint8","sycl::uint16"])
-    t_vuint_n = argtype("vuintn", "NULL", "NULL", 0, ["sycl::vec<unsigned, 2>","sycl::vec<unsigned, 3>","sycl::vec<unsigned, 4>","sycl::vec<unsigned, 8>","sycl::vec<unsigned, 16>"])
-    type_dic["vuintn"] = t_vuint_n
+    t_vuint32_n = argtype("vuint32n", "NULL", "NULL", 0, ["sycl::vec<uint32_t, 2>","sycl::vec<uint32_t, 3>","sycl::vec<uint32_t, 4>","sycl::vec<uint32_t, 8>","sycl::vec<uint32_t, 16>"])
+    type_dic["vuint32n"] = t_vuint32_n
 
     t_muint_n = argtype("muintn", "NULL", "NULL", 0, ["sycl::marray<unsigned, 2>","sycl::marray<unsigned, 3>","sycl::marray<unsigned, 4>","sycl::marray<unsigned, 5>","sycl::marray<unsigned, 17>"])
     type_dic["muintn"] = t_muint_n
 
-    t_uint_n = argtype("uintn", "NULL", "NULL", 0, ["vuintn","muintn"])
+    t_uint_n = argtype("uintn", "NULL", "NULL", 0, ["vuint32n","muintn"])
     type_dic["uintn"] = t_uint_n
 
 
@@ -1326,13 +1292,13 @@ def create_types():
 
 
     # t_long_n = argtype("longn", "NULL", "NULL", 0, ["sycl::long2","sycl::long3","sycl::long4","sycl::long8","sycl::long16"])
-    t_vlong_n = argtype("vlongn", "NULL", "NULL", 0, ["sycl::vec<long, 2>","sycl::vec<long, 3>","sycl::vec<long, 4>","sycl::vec<long, 8>","sycl::vec<long, 16>"])
-    type_dic["vlongn"] = t_vlong_n
+    t_vint64_n = argtype("vint64n", "NULL", "NULL", 0, ["sycl::vec<int64_t, 2>","sycl::vec<int64_t, 3>","sycl::vec<int64_t, 4>","sycl::vec<int64_t, 8>","sycl::vec<int64_t, 16>"])
+    type_dic["vint64n"] = t_vint64_n
 
     t_mlong_n = argtype("mlongn", "NULL", "NULL", 0, ["sycl::marray<long, 2>","sycl::marray<long, 3>","sycl::marray<long, 4>","sycl::marray<long, 5>","sycl::marray<long, 17>"])
     type_dic["mlongn"] = t_mlong_n
 
-    t_long_n = argtype("longn", "NULL", "NULL", 0, ["vlongn","mlongn"])
+    t_long_n = argtype("longn", "NULL", "NULL", 0, ["vint64n","mlongn"])
     type_dic["longn"] = t_long_n
 
 
@@ -1341,13 +1307,13 @@ def create_types():
 
 
     # t_ulong_n = argtype("ulongn", "NULL", "NULL", 0, ["sycl::ulong2","sycl::ulong3","sycl::ulong4","sycl::ulong8","sycl::ulong16"])
-    t_vulong_n = argtype("vulongn", "NULL", "NULL", 0, ["sycl::vec<unsigned long, 2>","sycl::vec<unsigned long, 3>","sycl::vec<unsigned long, 4>","sycl::vec<unsigned long, 8>","sycl::vec<unsigned long, 16>"])
-    type_dic["vulongn"] = t_vulong_n
+    t_vuint64_n = argtype("vuint64n", "NULL", "NULL", 0, ["sycl::vec<uint64_t, 2>","sycl::vec<uint64_t, 3>","sycl::vec<uint64_t, 4>","sycl::vec<uint64_t, 8>","sycl::vec<uint64_t, 16>"])
+    type_dic["vuint64n"] = t_vuint64_n
 
     t_mulong_n = argtype("mulongn", "NULL", "NULL", 0, ["sycl::marray<unsigned long, 2>","sycl::marray<unsigned long, 3>","sycl::marray<unsigned long, 4>","sycl::marray<unsigned long, 5>","sycl::marray<unsigned long, 17>"])
     type_dic["mulongn"] = t_mulong_n
 
-    t_ulong_n = argtype("ulongn", "NULL", "NULL", 0, ["vulongn","mulongn"])
+    t_ulong_n = argtype("ulongn", "NULL", "NULL", 0, ["vuint64n","mulongn"])
     type_dic["ulongn"] = t_ulong_n
 
 
@@ -1355,29 +1321,20 @@ def create_types():
     type_dic["ugenlong"] = t_ugen_long
 
 
-    # t_longlong_n = argtype("longlongn", "NULL", "NULL", 0, ["sycl::longlong2","sycl::longlong3","sycl::longlong4","sycl::longlong8","sycl::longlong16"])
-    t_vlonglong_n = argtype("vlonglongn", "NULL", "NULL", 0, ["sycl::vec<long long, 2>","sycl::vec<long long, 3>","sycl::vec<long long, 4>","sycl::vec<long long, 8>","sycl::vec<long long, 16>"])
-    type_dic["vlonglongn"] = t_vlonglong_n
-
     t_mlonglong_n = argtype("mlonglongn", "NULL", "NULL", 0, ["sycl::marray<long long, 2>","sycl::marray<long long, 3>","sycl::marray<long long, 4>","sycl::marray<long long, 5>","sycl::marray<long long, 17>"])
     type_dic["mlonglongn"] = t_mlonglong_n
 
-    t_longlong_n = argtype("longlongn", "NULL", "NULL", 0, ["vlonglongn","mlonglongn"])
+    t_longlong_n = argtype("longlongn", "NULL", "NULL", 0, ["vint64n","mlonglongn"])
     type_dic["longlongn"] = t_longlong_n
 
 
     t_gen_longlong = argtype("genlonglong", "NULL", "NULL", 0, ["long long", "longlongn"])
     type_dic["genlonglong"] = t_gen_longlong
 
-
-    # t_ulonglong_n = argtype("ulonglongn", "NULL", "NULL", 0, ["sycl::ulonglong2","sycl::ulonglong3","sycl::ulonglong4","sycl::ulonglong8","sycl::ulonglong16"])
-    t_vulonglong_n = argtype("vulonglongn", "NULL", "NULL", 0, ["sycl::vec<unsigned long long, 2>","sycl::vec<unsigned long long, 3>","sycl::vec<unsigned long long, 4>","sycl::vec<unsigned long long, 8>","sycl::vec<unsigned long long, 16>"])
-    type_dic["vulonglongn"] = t_vulonglong_n
-
     t_mulonglong_n = argtype("mulonglongn", "NULL", "NULL", 0, ["sycl::marray<unsigned long long, 2>","sycl::marray<unsigned long long, 3>","sycl::marray<unsigned long long, 4>","sycl::marray<unsigned long long, 5>","sycl::marray<unsigned long long, 17>"])
     type_dic["mulonglongn"] = t_mulonglong_n
 
-    t_ulonglong_n = argtype("ulonglongn", "NULL", "NULL", 0, ["vulonglongn","mulonglongn"])
+    t_ulonglong_n = argtype("ulonglongn", "NULL", "NULL", 0, ["vuint64n","mulonglongn"])
     type_dic["ulonglongn"] = t_ulonglong_n
 
 
@@ -1532,21 +1489,21 @@ def create_types():
     type_dic["mgenfloat"] = t_mgenfloat_type
 
 
-    t_vigeninteger_type = argtype("vigeninteger", "NULL", "NULL", 0, ["vscharn", "vshortn", "vintn", "vlongn", "vlonglongn", "vigeninteger8bit", "vigeninteger16bit", "vigeninteger32bit", "vigeninteger64bit"])
+    t_vigeninteger_type = argtype("vigeninteger", "NULL", "NULL", 0, ["vint16n", "vint32n", "vint64n", "vigeninteger8bit", "vigeninteger16bit", "vigeninteger32bit", "vigeninteger64bit"])
     type_dic["vigeninteger"] = t_vigeninteger_type
 
     t_migeninteger_type = argtype("migeninteger", "NULL", "NULL", 0, ["mscharn", "mshortn", "mintn", "mlongn", "mlonglongn", "migeninteger8bit", "migeninteger16bit", "migeninteger32bit", "migeninteger64bit"])
     type_dic["migeninteger"] = t_migeninteger_type
 
 
-    t_vugeninteger_type = argtype("vugeninteger", "NULL", "NULL", 0, ["vucharn", "vushortn", "vuintn", "vulongn", "vulonglongn", "vugeninteger8bit", "vugeninteger16bit", "vugeninteger32bit", "vugeninteger64bit"])
+    t_vugeninteger_type = argtype("vugeninteger", "NULL", "NULL", 0, ["vuint8n", "vuint16n", "vuint32n", "vuint64n", "vugeninteger8bit", "vugeninteger16bit", "vugeninteger32bit", "vugeninteger64bit"])
     type_dic["vugeninteger"] = t_vugeninteger_type
 
     t_mugeninteger_type = argtype("mugeninteger", "NULL", "NULL", 0, ["mucharn", "mushortn", "muintn", "mulongn", "mulonglongn", "mugeninteger8bit", "mugeninteger16bit", "mugeninteger32bit", "mugeninteger64bit"])
     type_dic["mugeninteger"] = t_mugeninteger_type
 
 
-    t_vgeninteger_type = argtype("vgeninteger", "NULL", "NULL", 0, ["vcharn", "vigeninteger", "vugeninteger"])
+    t_vgeninteger_type = argtype("vgeninteger", "NULL", "NULL", 0, ["vint8n", "vigeninteger", "vugeninteger"])
     type_dic["vgeninteger"] = t_vgeninteger_type
 
     t_mgeninteger_type = argtype("mgeninteger", "NULL", "NULL", 0, ["mcharn", "migeninteger", "mugeninteger"])
