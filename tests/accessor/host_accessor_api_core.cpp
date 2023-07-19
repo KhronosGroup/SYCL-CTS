@@ -12,14 +12,15 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "accessor_common.h"
 #include "host_accessor_api_common.h"
+
+using namespace host_accessor_api_common;
 #endif
 
 namespace host_accessor_api_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("sycl::host_accessor api. core types", "[accessor]")({
-  using namespace host_accessor_api_common;
-  common_run_tests<run_host_accessor_api_for_type>();
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("sycl::host_accessor api. core types", "[accessor]", test_combinations)({
+  common_run_tests<run_host_accessor_api_for_type, TestType>();
 });
 
 }  // namespace host_accessor_api_core

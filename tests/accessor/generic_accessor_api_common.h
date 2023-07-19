@@ -438,13 +438,24 @@ class run_api_tests {
   }
 };
 
-template <typename T>
+using test_combinations =
+    typename get_combinations<access_modes_pack, all_dimensions_pack,
+                              targets_pack>::type;
+
+template <typename T, typename ArgCombination>
 class run_generic_api_for_type {
  public:
   void operator()(const std::string &type_name) {
-    const auto access_modes = get_access_modes();
-    const auto dimensions = get_all_dimensions();
-    const auto targets = get_targets();
+    // Get the packs from the test combination type.
+    using AccessModePack = typename std::tuple_element<0, ArgCombination>::type;
+    using DimensionsPack = typename std::tuple_element<1, ArgCombination>::type;
+    using TargetsPack = typename std::tuple_element<2, ArgCombination>::type;
+
+    // Type packs instances have to be const, otherwise for_all_combination
+    // will not compile
+    const auto access_modes = AccessModePack::generate_named();
+    const auto dimensions = DimensionsPack::generate_unnamed();
+    const auto targets = TargetsPack::generate_named();
 
     // To handle cases when class was called from functions
     // like for_all_types_vectors_marray or for_all_device_copyable_std_containers.

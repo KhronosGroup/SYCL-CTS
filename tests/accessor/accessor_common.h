@@ -219,42 +219,151 @@ void common_run_tests() {
 }
 
 /**
- * @brief Factory function for getting type_pack with access modes values
+ * @brief Alias for a value pack containing all tested access modes.
  */
-inline auto get_access_modes() {
-  static const auto access_modes =
-      value_pack<sycl::access_mode, sycl::access_mode::read,
-                 sycl::access_mode::write,
-                 sycl::access_mode::read_write>::generate_named();
-  return access_modes;
-}
+using access_modes_pack =
+    value_pack<sycl::access_mode, sycl::access_mode::read,
+               sycl::access_mode::write, sycl::access_mode::read_write>;
 
 /**
- * @brief Factory function for getting type_pack with dimensions values
+ * @brief Alias for a integer value pack containing all valid non-zero
+ * dimensions.
  */
-inline auto get_dimensions() {
-  static const auto dimensions = integer_pack<1, 2, 3>::generate_unnamed();
-  return dimensions;
-}
+using dimensions_pack = integer_pack<1, 2, 3>;
 
 /**
- * @brief Factory function for getting type_pack with all (including zero)
- *        dimensions values
+ * @brief Alias for a integer value pack containing all valid dimensions.
  */
-inline auto get_all_dimensions() {
-  static const auto dimensions = integer_pack<0, 1, 2, 3>::generate_unnamed();
-  return dimensions;
-}
+using all_dimensions_pack = integer_pack<0, 1, 2, 3>;
 
 /**
- * @brief Factory function for getting type_pack with target values
+ * @brief Alias for a value pack containing all tested targets.
  */
-inline auto get_targets() {
-  static const auto targets =
-      value_pack<sycl::target, sycl::target::device,
-                 sycl::target::host_task>::generate_named();
-  return targets;
-}
+using targets_pack =
+    value_pack<sycl::target, sycl::target::device, sycl::target::host_task>;
+
+/**
+ * @brief Lightweight struct for containing tuple types with the singleton packs
+ *        comprising a single combination to test.
+ */
+template <typename... Ts>
+struct combinations_list {};
+
+/**
+ * @brief Helper trait for concatenating two combinations_list.
+ */
+template <typename LCombs, typename RCombs>
+struct concat_combination_lists;
+template <typename... LCombTs, typename... RCombTs>
+struct concat_combination_lists<combinations_list<LCombTs...>,
+                                combinations_list<RCombTs...>> {
+  using type = combinations_list<LCombTs..., RCombTs...>;
+};
+
+/**
+ * @brief Helper trait for appending an element to a combinations_list.
+ */
+template <typename Comb, typename Combs>
+struct append_comb;
+template <typename Comb, typename... CombTs>
+struct append_comb<Comb, combinations_list<CombTs...>> {
+  using type = combinations_list<Comb, CombTs...>;
+};
+
+/**
+ * @brief Helper trait for appending an type to each element in a
+ * combinations_list.
+ */
+template <typename T, typename Combs>
+struct append_type_to_combs;
+template <typename T, typename... ElemTs, typename... CombTs>
+struct append_type_to_combs<
+    T, combinations_list<std::tuple<ElemTs...>, CombTs...>> {
+  using tail =
+      typename append_type_to_combs<T, combinations_list<CombTs...>>::type;
+  using type = typename append_comb<std::tuple<ElemTs..., T>, tail>::type;
+};
+template <typename T>
+struct append_type_to_combs<T, combinations_list<>> {
+  using type = combinations_list<>;
+};
+
+/**
+ * @brief Helper trait for either appending a type to each element of a
+ * combinations_list or creating a new combination with T if the given
+ * combination_list is empty.
+ */
+template <typename T, typename Combs>
+struct append_or_create_combs {
+  using type = typename append_type_to_combs<T, Combs>::type;
+};
+template <typename T>
+struct append_or_create_combs<T, combinations_list<>> {
+  using type = combinations_list<std::tuple<T>>;
+};
+
+/**
+ * @brief Helper trait for getting all combinations of the values and types in
+ * the specified packs.
+ */
+template <typename CurrentLevelCombs, typename LastLevelCombs,
+          typename... Packs>
+struct get_combinations_helper;
+template <typename CurrentLevelCombs, typename LastLevelCombs>
+struct get_combinations_helper<CurrentLevelCombs, LastLevelCombs> {
+  using type = LastLevelCombs;
+};
+template <typename CurrentLevelCombs, typename LastLevelCombs, typename T, T V,
+          T... Vs, typename... Packs>
+struct get_combinations_helper<CurrentLevelCombs, LastLevelCombs,
+                               value_pack<T, V, Vs...>, Packs...> {
+  using new_combs =
+      typename append_or_create_combs<value_pack<T, V>, LastLevelCombs>::type;
+  using new_current_level_combs =
+      typename concat_combination_lists<CurrentLevelCombs, new_combs>::type;
+  using type =
+      typename get_combinations_helper<new_current_level_combs, LastLevelCombs,
+                                       value_pack<T, Vs...>, Packs...>::type;
+};
+template <typename CurrentLevelCombs, typename LastLevelCombs, typename T,
+          typename... Packs>
+struct get_combinations_helper<CurrentLevelCombs, LastLevelCombs, value_pack<T>,
+                               Packs...> {
+  using type =
+      typename get_combinations_helper<combinations_list<>, CurrentLevelCombs,
+                                       Packs...>::type;
+};
+template <typename CurrentLevelCombs, typename LastLevelCombs, typename T,
+          typename... Ts, typename... Packs>
+struct get_combinations_helper<CurrentLevelCombs, LastLevelCombs,
+                               type_pack<T, Ts...>, Packs...> {
+  using new_combs =
+      typename append_or_create_combs<type_pack<T>, LastLevelCombs>::type;
+  using new_current_level_combs =
+      typename concat_combination_lists<CurrentLevelCombs, new_combs>::type;
+  using type =
+      typename get_combinations_helper<new_current_level_combs, LastLevelCombs,
+                                       type_pack<Ts...>, Packs...>::type;
+};
+template <typename CurrentLevelCombs, typename LastLevelCombs,
+          typename... Packs>
+struct get_combinations_helper<CurrentLevelCombs, LastLevelCombs, type_pack<>,
+                               Packs...> {
+  using type =
+      typename get_combinations_helper<combinations_list<>, CurrentLevelCombs,
+                                       Packs...>::type;
+};
+
+/**
+ * @brief Trait for getting all combinations of the values and types in the
+ * specified packs.
+ */
+template <typename... Packs>
+struct get_combinations {
+  using type =
+      typename get_combinations_helper<combinations_list<>, combinations_list<>,
+                                       Packs...>::type;
+};
 
 /**
  * @brief Function helps to generate type_pack with sycl::vec of all supported

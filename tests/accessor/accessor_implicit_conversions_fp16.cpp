@@ -25,9 +25,9 @@ using namespace accessor_implicit_conversions;
 
 namespace accessor_implicit_conversions_fp16 {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
 ("Generic sycl::accessor implicit conversion. fp16 type",
- "[accessor][generic_accessor][conversion][fp16]")({
+ "[accessor][generic_accessor][conversion][fp16]", generic_test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
 
   if (!queue.get_device().has(sycl::aspect::fp16)) {
@@ -56,15 +56,15 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   //    for_all_combinations<test_conversion_within_command>(
   //        types, targets, dimensions);
   //
-  for_type_vectors_marray<run_test_generic, sycl::half>("sycl::half");
+  for_type_vectors_marray<run_test_generic, sycl::half, TestType>("sycl::half");
 #else
-  run_test_generic<sycl::half>{}("sycl::half");
+  run_test_generic<sycl::half, TestType>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
 ("The sycl::local_accessor implicit conversion. fp16 type",
- "[accessor][local_accessor][conversion][fp16]")({
+ "[accessor][local_accessor][conversion][fp16]", host_local_test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
 
   if (!queue.get_device().has(sycl::aspect::fp16)) {
@@ -73,15 +73,15 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   }
 
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  for_type_vectors_marray<run_test_local, sycl::half>("sycl::half");
+  for_type_vectors_marray<run_test_local, sycl::half, TestType>("sycl::half");
 #else
-  run_test_local<sycl::half>{}("sycl::half");
+  run_test_local<sycl::half, TestType>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
 ("The sycl::host_accessor implicit conversion. fp16 type",
- "[accessor][host_accessor][conversion][fp16]")({
+ "[accessor][host_accessor][conversion][fp16]", host_local_test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
 
   if (!queue.get_device().has(sycl::aspect::fp16)) {
@@ -90,9 +90,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   }
 
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  for_type_vectors_marray<run_test_host, sycl::half>("sycl::half");
+  for_type_vectors_marray<run_test_host, sycl::half, TestType>("sycl::half");
 #else
-  run_test_host<sycl::half>{}("sycl::half");
+  run_test_host<sycl::half, TestType>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 

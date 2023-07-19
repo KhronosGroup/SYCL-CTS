@@ -28,27 +28,27 @@
 
 #include "accessor_common.h"
 #include "generic_accessor_placeholder_zero_length_buffer_range_offset_constructor.h"
+
+using namespace generic_accessor_placeholder_zero_length_buffer_range_offset_constructor;
 #endif
 
 #include "../common/disabled_for_test_case.h"
 
 namespace generic_accessor_placeholder_zero_length_buffer_range_offset_constructor_fp64 {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
 ("Generic sycl::accessor placeholder zero-length buffer range offset. fp64 "
  "type",
- "[accessor]")({
-  using namespace generic_accessor_placeholder_zero_length_buffer_range_offset_constructor;
-
+ "[accessor]", test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_device().has(sycl::aspect::fp64)) {
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_type_vectors_marray<
         run_generic_placeholder_zero_length_buffer_range_offset_constructor_test,
-        double>("double");
+        double, TestType>("double");
 #else
     run_generic_placeholder_zero_length_buffer_range_offset_constructor_test<
-        double>{}("double");
+        double, TestType>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   } else {
     WARN("Device does not support double precision floating point operations");

@@ -77,11 +77,19 @@ class run_linearization_tests {
   }
 };
 
-template <typename T>
+using test_combinations = typename get_combinations<integer_pack<2, 3>>::type;
+
+template <typename T, typename ArgCombination>
 class run_local_linearization_for_type {
  public:
   void operator()(const std::string &type_name) {
-    const auto dimensions = integer_pack<2, 3>::generate_unnamed();
+    // Get the packs from the test combination type.
+    using DimensionsPack = typename std::tuple_element<0, ArgCombination>::type;
+
+    // Type packs instances have to be const, otherwise for_all_combination
+    // will not compile
+    const auto dimensions = DimensionsPack::generate_unnamed();
+
     auto actual_type_name = type_name_string<T>::get(type_name);
 
     for_all_combinations<run_linearization_tests, T>(dimensions,

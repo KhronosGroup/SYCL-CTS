@@ -24,16 +24,22 @@ using namespace accessor_tests_common;
 namespace accessor_exceptions_test_core {
 using namespace sycl_cts;
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
 ("Generic sycl::accessor constructor exceptions test. Core types.",
- "[accessor]")({ common_run_tests<run_tests_with_types, generic_accessor>(); });
+ "[accessor]", test_combinations)({
+  common_run_tests<run_tests_with_types, generic_accessor, TestType>();
+});
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("sycl::local_accessor constructor exceptions test. Core types.",
- "[accessor]")({ common_run_tests<run_tests_with_types, local_accessor>(); });
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("sycl::local_accessor constructor exceptions test. Core types.", "[accessor]",
+ test_combinations)({
+  common_run_tests<run_tests_with_types, local_accessor, TestType>();
+});
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("sycl::host_accessor constructor exceptions test. Core types.",
- "[accessor]")({ common_run_tests<run_tests_with_types, host_accessor>(); });
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("sycl::host_accessor constructor exceptions test. Core types.", "[accessor]",
+ test_combinations)({
+  common_run_tests<run_tests_with_types, host_accessor, TestType>();
+});
 
 }  // namespace accessor_exceptions_test_core

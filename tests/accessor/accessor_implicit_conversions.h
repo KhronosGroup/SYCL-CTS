@@ -327,17 +327,27 @@ class check_conversion_host {
   }
 };
 
+using generic_test_combinations =
+    typename get_combinations<all_dimensions_pack, targets_pack>::type;
+
+using host_local_test_combinations =
+    typename get_combinations<all_dimensions_pack>::type;
+
 /**
  * @brief Run tests for generic sycl::accessor
  * @detail A wrapper around for_all_combinations call to make possible extended
  *         type coverage - e.g. vectors and marrays
  */
-template <typename DataT>
+template <typename DataT, typename ArgCombination>
 struct run_test_generic {
   void operator()(const std::string& type_name) {
+    // Get the packs from the test combination type.
+    using DimensionsPack = typename std::tuple_element<0, ArgCombination>::type;
+    using TargetsPack = typename std::tuple_element<1, ArgCombination>::type;
+
     // TODO: make for_all_combinations recognize non-const type packs
-    const auto dimensions = get_all_dimensions();
-    const auto targets = get_targets();
+    const auto dimensions = DimensionsPack::generate_unnamed();
+    const auto targets = TargetsPack::generate_named();
 
     for_all_combinations<check_conversion_generic, DataT>(dimensions, targets,
                                                           type_name);
@@ -347,10 +357,11 @@ struct run_test_generic {
 /**
  * @brief Run tests for sycl::local_accessor
  */
-template <typename DataT>
+template <typename DataT, typename ArgCombination>
 struct run_test_local {
   void operator()(const std::string& type_name) {
-    const auto dimensions = get_all_dimensions();
+    using DimensionsPack = typename std::tuple_element<0, ArgCombination>::type;
+    const auto dimensions = DimensionsPack::generate_unnamed();
 
     for_all_combinations<check_conversion_local, DataT>(dimensions, type_name);
   }
@@ -359,10 +370,11 @@ struct run_test_local {
 /**
  * @brief Run tests for sycl::host_accessor
  */
-template <typename DataT>
+template <typename DataT, typename ArgCombination>
 struct run_test_host {
   void operator()(const std::string& type_name) {
-    const auto dimensions = get_all_dimensions();
+    using DimensionsPack = typename std::tuple_element<0, ArgCombination>::type;
+    const auto dimensions = DimensionsPack::generate_unnamed();
 
     for_all_combinations<check_conversion_host, DataT>(dimensions, type_name);
   }

@@ -193,21 +193,33 @@ class test_for_generic_acc_placeholder_val_verification {
   }
 };
 
+using test_combinations =
+    typename get_combinations<access_modes_pack, all_dimensions_pack,
+                              targets_pack>::type;
+
 /**
  * @brief Struct with functor that will be used in type coverage to call all
  *        verification functions.
  * @tparam T Current data type
+ * @tparam ArgCombination A tuple containing the packs representing the current
+ *         test configuration. The packs appear in the following order:
+ *         access_mode, dimension, target
  * @param type_name Current data type string representation
  */
-template <typename T>
+template <typename T, typename ArgCombination>
 class run_tests {
  public:
   void operator()(const std::string& type_name) {
+    // Get the packs from the test combination type.
+    using AccessModePack = typename std::tuple_element<0, ArgCombination>::type;
+    using DimensionsPack = typename std::tuple_element<1, ArgCombination>::type;
+    using TargetsPack = typename std::tuple_element<2, ArgCombination>::type;
+
     // Type packs instances have to be const, otherwise for_all_combination
     // will not compile
-    const auto access_modes = get_access_modes();
-    const auto dimensions = get_all_dimensions();
-    const auto targets = get_targets();
+    const auto access_modes = AccessModePack::generate_named();
+    const auto dimensions = DimensionsPack::generate_unnamed();
+    const auto targets = TargetsPack::generate_named();
 
     // Run test with non const data type
     // Run test for local_accessor

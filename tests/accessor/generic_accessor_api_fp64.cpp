@@ -12,12 +12,14 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "accessor_common.h"
 #include "generic_accessor_api_common.h"
+
+using namespace generic_accessor_api_common;
 #endif
 
 namespace generic_accessor_api_fp64 {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Generic sycl::accessor api. fp64 type", "[accessor]")({
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("Generic sycl::accessor api. fp64 type", "[accessor]", test_combinations)({
   using namespace generic_accessor_api_common;
 
   auto queue = sycl_cts::util::get_cts_object::queue();
@@ -29,9 +31,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   }
 
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  for_type_vectors_marray<run_generic_api_for_type, double>("double");
+  for_type_vectors_marray<run_generic_api_for_type, double, TestType>("double");
 #else
-  run_generic_api_for_type<double>{}("double");
+  run_generic_api_for_type<double, TestType>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 }  // namespace generic_accessor_api_fp64

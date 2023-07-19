@@ -349,6 +349,9 @@ class test_exception_for_generic_acc {
   }
 };
 
+using test_combinations =
+    typename get_combinations<access_modes_pack, dimensions_pack>::type;
+
 /**
  * @brief Struct that runs test with different input parameters types
  * @tparam AccT Current type of the accessor: generic_accessor,
@@ -358,14 +361,18 @@ class test_exception_for_generic_acc {
  * @param access_mode_name Current access mode string representation
  * @param target_name Current target string representation
  */
-template <typename T, typename AccT>
+template <typename T, typename AccT, typename ArgCombination>
 class run_tests_with_types {
  public:
   void operator()(const std::string& type_name) {
+    // Get the packs from the test combination type.
+    using AccessModePack = typename std::tuple_element<0, ArgCombination>::type;
+    using DimensionsPack = typename std::tuple_element<1, ArgCombination>::type;
+
     // Type packs instances have to be const, otherwise for_all_combination
     // will not compile
-    const auto access_modes = get_access_modes();
-    const auto dimensions = get_dimensions();
+    const auto access_modes = AccessModePack::generate_named();
+    const auto dimensions = DimensionsPack::generate_unnamed();
 
     // To handle cases when class was called from functions
     // like for_all_types_vectors_marray or for_all_device_copyable_std_containers.
@@ -376,7 +383,7 @@ class run_tests_with_types {
     constexpr accessor_tests_common::accessor_type acc_type = AccT::value;
     if constexpr (acc_type ==
                   accessor_tests_common::accessor_type::generic_accessor) {
-      const auto targets = get_targets();
+      const auto targets = targets_pack::generate_named();
       for_all_combinations<test_exception_for_generic_acc, AccT, T>(
           access_modes, dimensions, targets, actual_type_name);
     } else if constexpr (acc_type ==
