@@ -143,24 +143,28 @@ jobs:
       - name: Set up ccache
         uses: actions/cache@v3
         with:
-          path: ~/.ccache
+          path: ${{ env.container-workspace }}/.ccache
           key: ${{ matrix.sycl-impl }}-ccache-${{ github.sha }}
           restore-keys: |
             ${{ matrix.sycl-impl }}-ccache-
       # Use ccache's "depend mode" to work around DPC++ issue (see https://github.com/intel/llvm/issues/5260)
       # This requires compilation with -MD, which is enabled because we use the Ninja generator
       # Using this mode should not have any practical disadvantages
+      - name: Set ccache environment variables
+        run: |
+          echo "CCACHE_DEPEND=1" >> "$GITHUB_ENV"
+          echo "CCACHE_DIR=${{ env.container-workspace }}/.ccache" >> "$GITHUB_ENV"
       - name: Build 'oclmath'
         working-directory: ${{ env.container-workspace }}/build
-        run: CCACHE_DEPEND=1 cmake --build . --target oclmath
+        run: cmake --build . --target oclmath
       - name: Build 'util'
         working-directory: ${{ env.container-workspace }}/build
-        run: CCACHE_DEPEND=1 cmake --build . --target util
+        run: cmake --build . --target util
       - name: Build all supported test categories
         working-directory: ${{ env.container-workspace }}/build
         run: |
           TS_BEFORE=$(date +%s)
-          CCACHE_DEPEND=1 cmake --build . --target test_all --parallel ${{ env.parallel-build-jobs }}
+          cmake --build . --target test_all --parallel ${{ env.parallel-build-jobs }}
           TS_AFTER=$(date +%s)
           ELAPSED=$(($TS_AFTER - $TS_BEFORE))
           sort --numeric-sort --reverse --output=build_times.log build_times.log
