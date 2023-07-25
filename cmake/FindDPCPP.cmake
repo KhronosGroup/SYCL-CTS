@@ -44,7 +44,7 @@ set(CMAKE_CXX_FLAGS "-D__SYCL_DISABLE_PARALLEL_FOR_RANGE_ROUNDING__ ${CMAKE_CXX_
 # Set flag to allow linking of large device code files. This option is currently
 # not available on Windows.
 if(NOT WIN32)
-    set(CMAKE_CXX_LINK_FLAGS "-fsycl-link-huge-device-code ${CMAKE_CXX_LINK_FLAGS}")
+    set(CMAKE_CXX_LINK_FLAGS "-flink-huge-device-code ${CMAKE_CXX_LINK_FLAGS}")
 endif()
 
 option(DPCPP_DISABLE_SYCL2020_DEPRECATION_WARNINGS

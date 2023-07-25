@@ -115,7 +115,9 @@ void test_local_accessor_ptr(AccT &accessor, T expected_data, AccRes &res_acc,
   auto acc_pointer = accessor.get_pointer();
   res_acc[sycl::id<2>(to_integral(check::get_pointer_type), item_id)] =
       std::is_same_v<decltype(acc_pointer),
-                     std::add_pointer_t<typename AccT::value_type>>;
+                     sycl::multi_ptr<typename AccT::value_type,
+                                     sycl::access::address_space::local_space,
+                                     sycl::access::decorated::legacy>>;
   if constexpr (!std::is_const_v<typename AccT::value_type>) {
     res_acc[sycl::id<2>(to_integral(check::get_multi_ptr_no_result), item_id)] =
         value_operations::are_equal(*acc_multi_ptr_no, expected_data);
