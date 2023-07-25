@@ -25,6 +25,8 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "accessor_common.h"
 #include "host_accessor_constructors.h"
+
+using namespace host_accessor_constructors;
 #endif
 
 #include "../common/disabled_for_test_case.h"
@@ -32,10 +34,10 @@
 
 namespace host_accessor_constructors_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("sycl::host_accessor constructors. core types", "[accessor]")({
-  using namespace host_accessor_constructors;
-  common_run_tests<run_host_constructors_test>();
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("sycl::host_accessor constructors. core types", "[accessor]",
+ test_combinations)({
+  common_run_tests<run_host_constructors_test, TestType>();
 });
 
 }  // namespace host_accessor_constructors_core

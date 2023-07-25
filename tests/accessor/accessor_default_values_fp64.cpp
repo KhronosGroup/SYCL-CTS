@@ -24,8 +24,9 @@ using namespace accessor_tests_common;
 namespace accessor_default_values_test_fp64 {
 using namespace sycl_cts;
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Accessors constructor default values test fp64 types.", "[accessor]")({
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("Accessors constructor default values test fp64 types.", "[accessor]",
+ test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     WARN(
@@ -35,9 +36,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   }
 
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  for_type_vectors_marray<run_tests, double>("double");
+  for_type_vectors_marray<run_tests, double, TestType>("double");
 #else
-  run_tests<double>{}("double");
+  run_tests<double, TestType>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 

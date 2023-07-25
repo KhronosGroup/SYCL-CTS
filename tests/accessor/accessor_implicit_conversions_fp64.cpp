@@ -25,9 +25,9 @@ using namespace accessor_implicit_conversions;
 
 namespace accessor_implicit_conversions_fp64 {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
 ("Generic sycl::accessor implicit conversion. fp64 type",
- "[accessor][generic_accessor][conversion][fp64]")({
+ "[accessor][generic_accessor][conversion][fp64]", generic_test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
 
   if (!queue.get_device().has(sycl::aspect::fp64)) {
@@ -36,15 +36,15 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   }
 
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  for_type_vectors_marray<run_test_generic, double>("double");
+  for_type_vectors_marray<run_test_generic, double, TestType>("double");
 #else
-  run_test_generic<double>{}("double");
+  run_test_generic<double, TestType>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
 ("The sycl::local_accessor implicit conversion. fp64 type",
- "[accessor][local_accessor][conversion][fp64]")({
+ "[accessor][local_accessor][conversion][fp64]", host_local_test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
 
   if (!queue.get_device().has(sycl::aspect::fp64)) {
@@ -53,15 +53,15 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   }
 
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  for_type_vectors_marray<run_test_local, double>("double");
+  for_type_vectors_marray<run_test_local, double, TestType>("double");
 #else
-  run_test_local<double>{}("double");
+  run_test_local<double, TestType>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
 ("The sycl::host_accessor implicit conversion. fp64 type",
- "[accessor][host_accessor][conversion][fp64]")({
+ "[accessor][host_accessor][conversion][fp64]", host_local_test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
 
   if (!queue.get_device().has(sycl::aspect::fp64)) {
@@ -70,9 +70,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   }
 
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  for_type_vectors_marray<run_test_host, double>("double");
+  for_type_vectors_marray<run_test_host, double, TestType>("double");
 #else
-  run_test_host<double>{}("double");
+  run_test_host<double, TestType>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 

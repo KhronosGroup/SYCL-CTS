@@ -27,6 +27,8 @@
 
 #include "accessor_common.h"
 #include "generic_accessor_linearization.h"
+
+using namespace generic_accessor_linearization;
 #endif
 
 #include "../common/disabled_for_test_case.h"
@@ -34,9 +36,9 @@
 
 namespace generic_accessor_linearization_fp16 {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Generic sycl::accessor linearization test. fp16 type", "[accessor]")({
-  using namespace generic_accessor_linearization;
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("Generic sycl::accessor linearization test. fp16 type", "[accessor]",
+ test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp16)) {
     WARN(
@@ -46,10 +48,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   }
 
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  for_type_vectors_marray<run_generic_linearization_for_type, sycl::half>(
-      "sycl::half");
+  for_type_vectors_marray<run_generic_linearization_for_type, sycl::half,
+                          TestType>("sycl::half");
 #else
-  run_generic_linearization_for_type<sycl::half>{}("sycl::half");
+  run_generic_linearization_for_type<sycl::half, TestType>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 

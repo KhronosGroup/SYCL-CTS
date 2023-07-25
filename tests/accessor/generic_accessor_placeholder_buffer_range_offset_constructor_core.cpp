@@ -28,19 +28,20 @@
 
 #include "accessor_common.h"
 #include "generic_accessor_placeholder_buffer_range_offset_constructor.h"
+
+using namespace generic_accessor_placeholder_buffer_range_offset_constructor;
 #endif
 
 #include "../common/disabled_for_test_case.h"
 
 namespace generic_accessor_placeholder_buffer_range_offset_constructor_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
 ("Generic sycl::accessor placeholder buffer range offset constructor. core "
  "types",
- "[accessor]")({
-  using namespace generic_accessor_placeholder_buffer_range_offset_constructor;
-  common_run_tests<
-      run_generic_placeholder_buffer_range_offset_constructor_test>();
+ "[accessor]", test_combinations)({
+  common_run_tests<run_generic_placeholder_buffer_range_offset_constructor_test,
+                   TestType>();
 });
 
 }  // namespace

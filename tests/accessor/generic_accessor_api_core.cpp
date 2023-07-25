@@ -13,14 +13,16 @@
 
 #include "accessor_common.h"
 #include "generic_accessor_api_common.h"
+
+using namespace generic_accessor_api_common;
 #endif
 
 namespace generic_accessor_api_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Generic sycl::accessor api. core types", "[accessor]")({
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("Generic sycl::accessor api. core types", "[accessor]", test_combinations)({
   using namespace generic_accessor_api_common;
-  common_run_tests<run_generic_api_for_type>();
+  common_run_tests<run_generic_api_for_type, TestType>();
 });
 
 }  // namespace generic_accessor_api_core
