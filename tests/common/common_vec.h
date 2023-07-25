@@ -433,7 +433,8 @@ bool check_vector_convert(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename asType, int asN>
 bool check_as_result(sycl::vec<vecType, N> inputVec,
                      sycl::vec<asType, asN> asVec) {
-  return std::memcmp(&inputVec, &asVec, N * sizeof(vecType)) == 0;
+  constexpr int n = std::min(N * sizeof(vecType), asN * sizeof(asVec));
+  return std::memcmp(&inputVec, &asVec, n) == 0;
 }
 
 /**
