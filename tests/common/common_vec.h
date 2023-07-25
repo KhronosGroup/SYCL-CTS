@@ -434,7 +434,7 @@ template <typename vecType, int N, typename asType, int asN>
 bool check_as_result(sycl::vec<vecType, N> inputVec,
                      sycl::vec<asType, asN> asVec) {
   constexpr int n = std::min(N * sizeof(vecType), asN * sizeof(asVec));
-  return std::memcmp(&inputVec, &asVec, n) == 0;
+  return std::memcmp(&inputVec[0], &asVec[0], n) == 0;
 }
 
 /**
