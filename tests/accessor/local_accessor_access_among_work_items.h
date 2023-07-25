@@ -109,7 +109,7 @@ class run_local_accessor_access_among_work_items_tests {
  public:
   void operator()(const std::string& type_name) {
     // Get the packs from the test combination type.
-    using DimensionsPack = typename std::tuple_element<0, ArgCombination>::type;
+    using DimensionsPack = std::tuple_element_t<0, ArgCombination>;
 
     // Type packs instances have to be const, otherwise for_all_combination
     // will not compile

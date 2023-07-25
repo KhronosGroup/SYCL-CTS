@@ -205,8 +205,8 @@ class run_host_accessor_api_for_type {
  public:
   void operator()(const std::string &type_name) {
     // Get the packs from the test combination type.
-    using AccessModePack = typename std::tuple_element<0, ArgCombination>::type;
-    using DimensionsPack = typename std::tuple_element<1, ArgCombination>::type;
+    using AccessModePack = std::tuple_element_t<0, ArgCombination>;
+    using DimensionsPack = std::tuple_element_t<1, ArgCombination>;
 
     // Type packs instances have to be const, otherwise for_all_combination
     // will not compile

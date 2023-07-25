@@ -271,7 +271,7 @@ struct append_comb<Comb, combinations_list<CombTs...>> {
 };
 
 /**
- * @brief Helper trait for appending an type to each element in a
+ * @brief Helper trait for appending a type to each element in a
  * combinations_list.
  */
 template <typename T, typename Combs>

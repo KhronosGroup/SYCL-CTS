@@ -342,8 +342,8 @@ template <typename DataT, typename ArgCombination>
 struct run_test_generic {
   void operator()(const std::string& type_name) {
     // Get the packs from the test combination type.
-    using DimensionsPack = typename std::tuple_element<0, ArgCombination>::type;
-    using TargetsPack = typename std::tuple_element<1, ArgCombination>::type;
+    using DimensionsPack = std::tuple_element_t<0, ArgCombination>;
+    using TargetsPack = std::tuple_element_t<1, ArgCombination>;
 
     // TODO: make for_all_combinations recognize non-const type packs
     const auto dimensions = DimensionsPack::generate_unnamed();
@@ -360,7 +360,7 @@ struct run_test_generic {
 template <typename DataT, typename ArgCombination>
 struct run_test_local {
   void operator()(const std::string& type_name) {
-    using DimensionsPack = typename std::tuple_element<0, ArgCombination>::type;
+    using DimensionsPack = std::tuple_element_t<0, ArgCombination>;
     const auto dimensions = DimensionsPack::generate_unnamed();
 
     for_all_combinations<check_conversion_local, DataT>(dimensions, type_name);
@@ -373,7 +373,7 @@ struct run_test_local {
 template <typename DataT, typename ArgCombination>
 struct run_test_host {
   void operator()(const std::string& type_name) {
-    using DimensionsPack = typename std::tuple_element<0, ArgCombination>::type;
+    using DimensionsPack = std::tuple_element_t<0, ArgCombination>;
     const auto dimensions = DimensionsPack::generate_unnamed();
 
     for_all_combinations<check_conversion_host, DataT>(dimensions, type_name);
