@@ -27,6 +27,8 @@
 
 #include "accessor_common.h"
 #include "local_accessor_constructors.h"
+
+using namespace local_accessor_constructors;
 #endif
 
 #include "../common/disabled_for_test_case.h"
@@ -34,9 +36,9 @@
 
 namespace local_accessor_constructors_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("sycl::local_accessor constructors. core types", "[accessor]")({
-  using namespace local_accessor_constructors;
-  common_run_tests<run_local_constructors_test>();
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("sycl::local_accessor constructors. core types", "[accessor]",
+ test_combinations)({
+  common_run_tests<run_local_constructors_test, TestType>();
 });
 }  // namespace local_accessor_constructors_core

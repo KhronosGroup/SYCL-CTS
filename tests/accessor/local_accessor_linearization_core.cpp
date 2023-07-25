@@ -27,14 +27,16 @@
 
 #include "accessor_common.h"
 #include "local_accessor_linearization.h"
+
+using namespace local_accessor_linearization;
 #endif
 
 namespace local_accessor_liniarization_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("sycl::local_accessor linearization. core types", "[accessor]")({
-  using namespace local_accessor_linearization;
-  common_run_tests<run_local_linearization_for_type>();
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("sycl::local_accessor linearization. core types", "[accessor]",
+ test_combinations)({
+  common_run_tests<run_local_linearization_for_type, TestType>();
 });
 
 }  // namespace local_accessor_liniarization_core

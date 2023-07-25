@@ -26,6 +26,8 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "accessor_common.h"
 #include "host_accessor_constructors.h"
+
+using namespace host_accessor_constructors;
 #endif
 
 #include "../common/disabled_for_test_case.h"
@@ -33,9 +35,9 @@
 
 namespace host_accessor_constructors_fp16 {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("sycl::host_accessor constructors. fp16 type", "[accessor]")({
-  using namespace host_accessor_constructors;
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("sycl::host_accessor constructors. fp16 type", "[accessor]",
+ test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp16)) {
     WARN(
@@ -45,9 +47,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   }
 
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  for_type_vectors_marray<run_host_constructors_test, sycl::half>("sycl::half");
+  for_type_vectors_marray<run_host_constructors_test, sycl::half, TestType>(
+      "sycl::half");
 #else
-  run_host_constructors_test<sycl::half>{}("sycl::half");
+  run_host_constructors_test<sycl::half, TestType>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 }  // namespace host_accessor_constructors_fp16

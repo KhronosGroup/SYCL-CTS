@@ -174,13 +174,18 @@ class run_tests_constructors {
   }
 };
 
-template <typename T>
+using test_combinations = typename get_combinations<dimensions_pack>::type;
+
+template <typename T, typename ArgCombination>
 class run_local_constructors_test {
  public:
   void operator()(const std::string& type_name) {
-    // Type packs instances have to be const, otherwise for_all_combination will
-    // not compile
-    const auto dimensions = get_all_dimensions();
+    // Get the packs from the test combination type.
+    using DimensionsPack = std::tuple_element_t<0, ArgCombination>;
+
+    // Type packs instances have to be const, otherwise for_all_combination
+    // will not compile
+    const auto dimensions = DimensionsPack::generate_unnamed();
 
     // To handle cases when class was called from functions
     // like for_all_types_vectors_marray or for_all_device_copyable_std_containers.

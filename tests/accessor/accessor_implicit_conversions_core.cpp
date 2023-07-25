@@ -25,22 +25,22 @@ using namespace accessor_implicit_conversions;
 
 namespace accessor_implicit_conversions_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
 ("Generic sycl::accessor implicit conversion. core types",
- "[accessor][generic_accessor][conversion][core]")({
-  common_run_tests<run_test_generic>();
+ "[accessor][generic_accessor][conversion][core]", generic_test_combinations)({
+  common_run_tests<run_test_generic, TestType>();
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
 ("The sycl::local_accessor implicit conversion. core types",
- "[accessor][local_accessor][conversion][core]")({
-  common_run_tests<run_test_local>();
+ "[accessor][local_accessor][conversion][core]", host_local_test_combinations)({
+  common_run_tests<run_test_local, TestType>();
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
 ("The sycl::host_accessor implicit conversion. core types",
- "[accessor][host_accessor][conversion][core]")({
-  common_run_tests<run_test_host>();
+ "[accessor][host_accessor][conversion][core]", host_local_test_combinations)({
+  common_run_tests<run_test_host, TestType>();
 });
 
 }  // namespace accessor_implicit_conversions_core

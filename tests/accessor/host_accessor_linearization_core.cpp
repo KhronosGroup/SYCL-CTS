@@ -27,14 +27,16 @@
 
 #include "accessor_common.h"
 #include "host_accessor_linearization.h"
+
+using namespace host_accessor_linearization;
 #endif
 
 namespace host_accessor_liniarization_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("sycl::host_accessor linearization. core types", "[accessor]")({
-  using namespace host_accessor_linearization;
-  common_run_tests<run_host_linearization_for_type>();
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("sycl::host_accessor linearization. core types", "[accessor]",
+ test_combinations)({
+  common_run_tests<run_host_linearization_for_type, TestType>();
 });
 
 }  // namespace host_accessor_liniarization_core

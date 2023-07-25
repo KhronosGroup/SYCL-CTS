@@ -28,16 +28,18 @@
 
 #include "accessor_common.h"
 #include "generic_accessor_placeholder_buffer_constructor.h"
+
+using namespace generic_accessor_placeholder_buffer_constructor;
 #endif
 
 #include "../common/disabled_for_test_case.h"
 
 namespace generic_accessor_placeholder_buffer_constructor_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Generic sycl::accessor placeholder constructors. core types", "[accessor]")({
-  using namespace generic_accessor_placeholder_buffer_constructor;
-  common_run_tests<run_generic_placeholder_buffer_constructor_test>();
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("Generic sycl::accessor placeholder constructors. core types", "[accessor]",
+ test_combinations)({
+  common_run_tests<run_generic_placeholder_buffer_constructor_test, TestType>();
 });
 
 }  // namespace generic_accessor_placeholder_buffer_constructor_core

@@ -27,16 +27,18 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "accessor_common.h"
 #include "generic_accessor_common_buffer_tag_constructors.h"
+
+using namespace generic_accessor_common_buffer_tag_constructors;
 #endif
 
 #include "../common/disabled_for_test_case.h"
 
 namespace generic_accessor_common_buffer_tag_constructors_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Generic sycl::accessor buffer tag constructors. core types", "[accessor]")({
-  using namespace generic_accessor_common_buffer_tag_constructors;
-  common_run_tests<run_generic_common_buffer_tag_constructors_test>();
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("Generic sycl::accessor buffer tag constructors. core types", "[accessor]",
+ test_combinations)({
+  common_run_tests<run_generic_common_buffer_tag_constructors_test, TestType>();
 });
 
 }  // namespace generic_accessor_common_buffer_tag_constructors_core

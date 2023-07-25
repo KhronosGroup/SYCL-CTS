@@ -43,12 +43,22 @@ class run_linearization_tests {
   }
 };
 
-template <typename T>
+using test_combinations =
+    typename get_combinations<access_modes_pack, integer_pack<2, 3>>::type;
+
+template <typename T, typename ArgCombination>
 class run_host_linearization_for_type {
  public:
   void operator()(const std::string &type_name) {
-    const auto access_modes = get_access_modes();
-    const auto dimensions = integer_pack<2, 3>::generate_unnamed();
+    // Get the packs from the test combination type.
+    using AccessModePack = std::tuple_element_t<0, ArgCombination>;
+    using DimensionsPack = std::tuple_element_t<1, ArgCombination>;
+
+    // Type packs instances have to be const, otherwise for_all_combination
+    // will not compile
+    const auto access_modes = AccessModePack::generate_named();
+    const auto dimensions = DimensionsPack::generate_unnamed();
+
     auto actual_type_name = type_name_string<T>::get(type_name);
 
     for_all_combinations<run_linearization_tests, T>(access_modes, dimensions,

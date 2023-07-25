@@ -27,6 +27,8 @@
 
 #include "accessor_common.h"
 #include "generic_accessor_linearization.h"
+
+using namespace generic_accessor_linearization;
 #endif
 
 #include "../common/disabled_for_test_case.h"
@@ -34,10 +36,10 @@
 
 namespace generic_accessor_linearization_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Generic sycl::accessor linearization test. core types", "[accessor]")({
-  using namespace generic_accessor_linearization;
-  common_run_tests<run_generic_linearization_for_type>();
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("Generic sycl::accessor linearization test. core types", "[accessor]",
+ test_combinations)({
+  common_run_tests<run_generic_linearization_for_type, TestType>();
 });
 
 }  // namespace generic_accessor_linearization_core

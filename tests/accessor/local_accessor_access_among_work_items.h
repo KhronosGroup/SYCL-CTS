@@ -102,13 +102,18 @@ class run_test {
   }
 };
 
-template <typename T>
+using test_combinations = typename get_combinations<dimensions_pack>::type;
+
+template <typename T, typename ArgCombination>
 class run_local_accessor_access_among_work_items_tests {
  public:
   void operator()(const std::string& type_name) {
-    // Type packs instances have to be const, otherwise for_all_combination will
-    // not compile
-    const auto dimensions = get_dimensions();
+    // Get the packs from the test combination type.
+    using DimensionsPack = std::tuple_element_t<0, ArgCombination>;
+
+    // Type packs instances have to be const, otherwise for_all_combination
+    // will not compile
+    const auto dimensions = DimensionsPack::generate_unnamed();
 
     for_all_combinations<run_test, T>(dimensions, type_name);
   }
