@@ -28,19 +28,21 @@
 
 #include "accessor_common.h"
 #include "generic_accessor_placeholder_zero_length_buffer_range_constructor.h"
+
+using namespace generic_accessor_placeholder_zero_length_buffer_range_constructor;
 #endif
 
 #include "../common/disabled_for_test_case.h"
 
 namespace generic_accessor_placeholder_zero_length_buffer_range_constructor_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
 ("Generic sycl::accessor placeholder zero-length buffer range constructor. "
  "core types",
- "[accessor]")({
-  using namespace generic_accessor_placeholder_zero_length_buffer_range_constructor;
+ "[accessor]", test_combinations)({
   common_run_tests<
-      run_generic_placeholder_zero_length_buffer_range_constructor_test>();
+      run_generic_placeholder_zero_length_buffer_range_constructor_test,
+      TestType>();
 });
 
 }  // namespace

@@ -25,8 +25,8 @@ using namespace accessor_tests_common;
 namespace accessor_default_values_test_core {
 using namespace sycl_cts;
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Accessors constructor default values test core types.",
- "[accessor]")({ common_run_tests<run_tests>(); });
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("Accessors constructor default values test core types.", "[accessor]",
+ test_combinations)({ common_run_tests<run_tests, TestType>(); });
 
 }  // namespace accessor_default_values_test_core

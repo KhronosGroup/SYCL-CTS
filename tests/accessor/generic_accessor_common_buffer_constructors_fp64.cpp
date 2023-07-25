@@ -27,23 +27,24 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "accessor_common.h"
 #include "generic_accessor_common_buffer_constructors.h"
+
+using namespace generic_accessor_common_buffer_constructors;
 #endif
 
 #include "../common/disabled_for_test_case.h"
 
 namespace generic_accessor_common_buffer_constructors_fp64 {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Generic sycl::accessor buffer constructors. fp64 type", "[accessor]")({
-  using namespace generic_accessor_common_buffer_constructors;
-
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("Generic sycl::accessor buffer constructors. fp64 type", "[accessor]",
+ test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_device().has(sycl::aspect::fp64)) {
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-    for_type_vectors_marray<run_generic_common_buffer_constructors_test,
-                            double>("double");
+    for_type_vectors_marray<run_generic_common_buffer_constructors_test, double,
+                            TestType>("double");
 #else
-    run_generic_common_buffer_constructors_test<double>{}("double");
+    run_generic_common_buffer_constructors_test<double, TestType>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   } else {
     WARN("Device does not support double precision floating point operations");

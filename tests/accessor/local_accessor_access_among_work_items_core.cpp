@@ -23,9 +23,11 @@ using namespace accessor_tests_common;
 
 namespace local_accessor_access_among_work_items_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("sycl::local_accessor access among work items. core types", "[accessor]")({
-  common_run_tests<run_local_accessor_access_among_work_items_tests>();
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("sycl::local_accessor access among work items. core types", "[accessor]",
+ test_combinations)({
+  common_run_tests<run_local_accessor_access_among_work_items_tests,
+                   TestType>();
 });
 
 }  // namespace local_accessor_access_among_work_items_core

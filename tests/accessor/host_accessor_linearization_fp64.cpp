@@ -27,6 +27,8 @@
 
 #include "accessor_common.h"
 #include "host_accessor_linearization.h"
+
+using namespace host_accessor_linearization;
 #endif
 
 #include "../common/disabled_for_test_case.h"
@@ -34,9 +36,9 @@
 
 namespace host_accessor_linearization_fp64 {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("sycl::host_accessor linearization test. fp64 type", "[accessor]")({
-  using namespace host_accessor_linearization;
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("sycl::host_accessor linearization test. fp64 type", "[accessor]",
+ test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     WARN(
@@ -46,9 +48,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   }
 
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  for_type_vectors_marray<run_host_linearization_for_type, double>("double");
+  for_type_vectors_marray<run_host_linearization_for_type, double, TestType>(
+      "double");
 #else
-  run_host_linearization_for_type<double>{}("double");
+  run_host_linearization_for_type<double, TestType>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 

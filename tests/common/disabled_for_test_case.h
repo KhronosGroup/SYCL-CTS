@@ -11,6 +11,7 @@
 
 // This is required for detecting the active SYCL implementation
 #include "macro_utils.h"
+#include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <sycl/sycl.hpp>
 
@@ -42,6 +43,9 @@
 
 #define DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(...) \
   INTERNAL_CTS_DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(__VA_ARGS__)
+
+#define DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(...) \
+  INTERNAL_CTS_DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(__VA_ARGS__)
 
 // ------------------------------------------------------------------------------------
 
@@ -145,5 +149,11 @@
 #define INTERNAL_CTS_DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(...) \
   INTERNAL_CTS_MAYBE_DISABLE_TEST_CASE(                       \
       INTERNAL_CTS_ENABLED_TEMPLATE_TEST_CASE_SIG, __VA_ARGS__)
+
+#define INTERNAL_CTS_ENABLED_TEMPLATE_LIST_TEST_CASE(...) \
+  TEMPLATE_LIST_TEST_CASE(__VA_ARGS__) INTERNAL_CTS_ENABLED_TEST_CASE_BODY
+#define INTERNAL_CTS_DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(...) \
+  INTERNAL_CTS_MAYBE_DISABLE_TEST_CASE(                        \
+      INTERNAL_CTS_ENABLED_TEMPLATE_LIST_TEST_CASE, __VA_ARGS__)
 
 #endif

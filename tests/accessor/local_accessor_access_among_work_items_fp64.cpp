@@ -22,8 +22,9 @@ using namespace accessor_tests_common;
 
 namespace local_accessor_access_among_work_items_fp64 {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("sycl::local_accessor access among work items. fp64 type", "[accessor]")({
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+("sycl::local_accessor access among work items. fp64 type", "[accessor]",
+ test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     WARN(
@@ -34,9 +35,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_local_accessor_access_among_work_items_tests,
-                          double>("double");
+                          double, TestType>("double");
 #else
-  run_local_accessor_access_among_work_items_tests<double>{}("double");
+  run_local_accessor_access_among_work_items_tests<double, TestType>{}(
+      "double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
