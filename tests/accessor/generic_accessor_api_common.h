@@ -27,7 +27,7 @@ using namespace sycl_cts;
 using namespace accessor_tests_common;
 
 template <typename AccT>
-void test_accessor_methods(const AccT& accessor,
+void test_accessor_methods(const AccT &accessor,
                            const size_t expected_byte_size,
                            const size_t expected_size,
                            const bool expected_isPlaceholder) {
@@ -58,7 +58,7 @@ void test_accessor_methods(const AccT& accessor,
 }
 
 template <typename T, typename AccT>
-void test_accessor_ptr_host(AccT& accessor, T expected_data) {
+void test_accessor_ptr_host(AccT &accessor, T expected_data) {
   {
     INFO("check get_multi_ptr() method");
     auto acc_multi_ptr_no =
@@ -123,9 +123,9 @@ class run_api_tests {
   using AccT = sycl::accessor<T, dims, AccessMode, Target>;
 
  public:
-  void operator()(const std::string& type_name,
-                  const std::string& access_mode_name,
-                  const std::string& target_name) {
+  void operator()(const std::string &type_name,
+                  const std::string &access_mode_name,
+                  const std::string &target_name) {
     auto queue = once_per_unit::get_queue();
     constexpr int buf_dims = (0 == dims) ? 1 : dims;
     auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
@@ -138,7 +138,7 @@ class run_api_tests {
     SECTION(get_section_name<dims>(type_name, access_mode_name, target_name,
                                    "Check api for empty accessor")) {
       queue
-          .submit([&](sycl::handler& cgh) {
+          .submit([&](sycl::handler &cgh) {
             AccT acc;
             test_accessor_methods(acc, 0 /* expected_byte_size*/,
                                   0 /*expected_size*/,
@@ -183,7 +183,7 @@ class run_api_tests {
         sycl::buffer<T, buf_dims> data_buf(&data, r);
         sycl::buffer res_buf(&res, sycl::range(1));
         queue
-            .submit([&](sycl::handler& cgh) {
+            .submit([&](sycl::handler &cgh) {
               AccT acc(data_buf, cgh);
 
               test_accessor_methods(acc, sizeof(T) /* expected_byte_size*/,
@@ -202,8 +202,8 @@ class run_api_tests {
                   test_accessor_ptr_host(acc, expected_val);
                   test_begin_end_host(acc, expected_val, expected_val, false);
                   if constexpr (0 < dims) {
-                    auto& acc_ref1 = acc[sycl::id<dims>()];
-                    auto& acc_ref2 =
+                    auto &acc_ref1 = acc[sycl::id<dims>()];
+                    auto &acc_ref2 =
                         get_subscript_overload<T, AccT, dims>(acc, 0);
                     CHECK(value_operations::are_equal(acc_ref1, expected_val));
                     CHECK(value_operations::are_equal(acc_ref2, expected_val));
@@ -243,8 +243,8 @@ class run_api_tests {
                   res_acc[0] = test_begin_end_device(acc, expected_val,
                                                      expected_val, true);
                   if constexpr (0 < dims) {
-                    auto& acc_ref1 = acc[sycl::id<dims>()];
-                    auto& acc_ref2 =
+                    auto &acc_ref1 = acc[sycl::id<dims>()];
+                    auto &acc_ref2 =
                         get_subscript_overload<T, AccT, dims>(acc, 0);
                     res_acc[0] &=
                         value_operations::are_equal(acc_ref1, expected_val);
@@ -322,7 +322,7 @@ class run_api_tests {
           sycl::buffer<T, dims> data_buf(data, buff_range);
           sycl::buffer res_buf(&res, sycl::range(1));
           queue
-              .submit([&](sycl::handler& cgh) {
+              .submit([&](sycl::handler &cgh) {
                 AccT acc(data_buf, cgh, acc_range, offset_id);
                 test_accessor_methods(
                     acc, sizeof(T) * acc_range.size() /* expected_byte_size*/,
@@ -337,9 +337,9 @@ class run_api_tests {
                     test_begin_end_host(
                         acc, value_operations::init<T>(first_elem),
                         value_operations::init<T>(last_elem), false);
-                    auto& acc_ref1 =
+                    auto &acc_ref1 =
                         get_subscript_overload<T, AccT, dims>(acc, index);
-                    auto& acc_ref2 = acc[sycl::id<dims>()];
+                    auto &acc_ref2 = acc[sycl::id<dims>()];
                     CHECK(value_operations::are_equal(acc_ref1, linear_index));
                     CHECK(value_operations::are_equal(acc_ref2, first_elem));
                     if constexpr (AccessMode != sycl::access_mode::read) {
@@ -355,9 +355,9 @@ class run_api_tests {
                     res_acc[0] = test_begin_end_device(
                         acc, value_operations::init<T>(first_elem),
                         value_operations::init<T>(last_elem), true);
-                    auto& acc_ref1 =
+                    auto &acc_ref1 =
                         get_subscript_overload<T, AccT, dims>(acc, index);
-                    auto& acc_ref2 = acc[sycl::id<dims>()];
+                    auto &acc_ref2 = acc[sycl::id<dims>()];
                     res_acc[0] &=
                         value_operations::are_equal(acc_ref1, linear_index);
                     res_acc[0] &=
@@ -388,7 +388,7 @@ class run_api_tests {
         sycl::buffer<T, buf_dims> data_buf1(&data1, r);
         sycl::buffer<T, buf_dims> data_buf2(&data2, r);
         queue
-            .submit([&](sycl::handler& cgh) {
+            .submit([&](sycl::handler &cgh) {
               AccT acc1(data_buf1, cgh);
               AccT acc2(data_buf2, cgh);
               acc1.swap(acc2);
@@ -441,15 +441,15 @@ class run_api_tests {
 template <typename T>
 class run_generic_api_for_type {
  public:
-  void operator()(const std::string& type_name) {
+  void operator()(const std::string &type_name) {
     const auto access_modes = get_access_modes();
     const auto dimensions = get_all_dimensions();
     const auto targets = get_targets();
 
     // To handle cases when class was called from functions
-    // like for_all_types_vectors_marray or
-    // for_all_device_copyable_std_containers. This will wrap string with type T
-    // to string with container<T> if T is an array or other kind of container.
+    // like for_all_types_vectors_marray or for_all_device_copyable_std_containers.
+    // This will wrap string with type T to string with container<T> if T is
+    // an array or other kind of container.
     auto actual_type_name = type_name_string<T>::get(type_name);
 
     for_all_combinations<run_api_tests, T>(access_modes, dimensions, targets,
