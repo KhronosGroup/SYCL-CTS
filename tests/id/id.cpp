@@ -286,6 +286,8 @@ TEMPLATE_TEST_CASE_SIG("id supports get() and operator[]", "[id]", ((int D), D),
 
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("id provides static constexpr member 'dimensions'", "[id]")({
+  // Dimension arguments in this test case are expanded to avoid conflicting
+  // kernel names for different instantiations of sycl::id.
   CHECK(std::is_same_v<decltype(sycl::id<1>::dimensions), const int>);
   CHECK(std::is_same_v<decltype(sycl::id<2>::dimensions), const int>);
   CHECK(std::is_same_v<decltype(sycl::id<3>::dimensions), const int>);
