@@ -146,10 +146,10 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
                          "fence_scope) is wrong\n");
 
       // test of default barrier
-      local_acc[llid] = 0;
+      local_acc[llid] = llid;
       sycl::group_barrier(group);
 
-      if (local_acc[max_id - llid] != 0)
+      if (local_acc[max_id - llid] != max_id - llid)
         std::get<s::test>(group_barriers_acc[0]) = false;
       // make sure we check all items before moving on
       sycl::group_barrier(group);
@@ -166,11 +166,12 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
         auto& barrier = group_barriers_acc[i];
 
         if (std::get<s::support>(barrier)) {
-          local_acc[llid] = 0;
-          global_acc[llid] = 0;
+          local_acc[llid] = llid;
+          global_acc[llid] = llid;
           sycl::group_barrier(group);
 
-          if (local_acc[max_id - llid] != 0 || global_acc[max_id - llid] != 0)
+          if (local_acc[max_id - llid] != max_id - llid ||
+              global_acc[max_id - llid] != max_id - llid)
             std::get<s::test>(barrier) = false;
           sycl::group_barrier(group);
 
@@ -208,10 +209,10 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
                          "memory_scope fence_scope) is wrong\n");
 
       // test of default barrier
-      local_acc[llid] = 0;
+      local_acc[llid] = llid;
       sycl::group_barrier(sub_group);
 
-      if (local_acc[max_id - llid] != 0)
+      if (local_acc[max_id - llid] != max_id - llid)
         std::get<s::test>(sub_group_barriers_acc[0]) = false;
       sycl::group_barrier(sub_group);
 
@@ -228,11 +229,12 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
         if ((sub_group.get_group_linear_id() == 0) &&
             std::get<s::support>(barrier)) {
-          local_acc[llid] = 0;
-          global_acc[llid] = 0;
+          local_acc[llid] = llid;
+          global_acc[llid] = llid;
           sycl::group_barrier(sub_group);
 
-          if (local_acc[max_id - llid] != 0 || global_acc[max_id - llid] != 0)
+          if (local_acc[max_id - llid] != max_id - llid ||
+              global_acc[max_id - llid] != max_id - llid)
             std::get<s::test>(barrier) = false;
           sycl::group_barrier(sub_group);
 
