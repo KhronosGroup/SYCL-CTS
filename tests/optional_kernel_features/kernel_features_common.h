@@ -72,11 +72,10 @@ inline void use_feature_function_non_decorated() {
 template <typename T>
 inline void use_feature_function_non_decorated_with_accessor(
     const sycl::accessor<bool, 1> &acc) {
-  unsigned long long temp = 42;
+  unsigned long long temp = acc[0];
   T feature1(temp);
-  T feature2(temp);
-  feature1 += 42;
-  acc[0] = (feature1 == feature2);
+  feature1 += 1;
+  acc[0] = (feature1 * 4 / 3 > 2);
 }
 
 /**
@@ -88,11 +87,10 @@ inline void use_feature_function_non_decorated_with_accessor(
 template <typename T, sycl::aspect aspect>
 [[sycl::device_has(aspect)]] void use_feature_function_decorated(
     const sycl::accessor<bool, 1> &acc) {
-  unsigned long long temp = 42;
+  unsigned long long temp = acc[0];
   T feature1(temp);
-  T feature2(temp);
-  feature1 += 42;
-  acc[0] = (feature1 == feature2);
+  feature1 += 1;
+  acc[0] = (feature1 * 4 / 3 > 2);
 }
 
 /**
@@ -126,12 +124,11 @@ inline void dummy_function_non_decorated(const sycl::accessor<bool, 1> &acc) {
 /**
  * @brief Macro for generating code that will use TYPE
  */
-#define USE_FEATURE(TYPE)       \
-  unsigned long long temp = 42; \
-  TYPE feature1(temp);          \
-  TYPE feature2(temp);          \
-  feature1 += 42;               \
-  acc[0] = (feature1 == feature2);
+#define USE_FEATURE(TYPE)           \
+  unsigned long long temp = acc[0]; \
+  TYPE feature1(temp);              \
+  feature1 += 1;                    \
+  acc[0] = (feature1 * 4 / 3 > 2);
 
 /**
  * @brief Not decorated functor that use feature defined in FeatureTypeT
