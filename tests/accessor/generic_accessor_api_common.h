@@ -240,8 +240,8 @@ class run_api_tests {
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.single_task<kname>([acc, res_acc]() {
                   test_accessor_ptr_device(acc, expected_val, res_acc);
-                  res_acc[0] = test_begin_end_device(acc, expected_val,
-                                                     expected_val, true);
+                  res_acc[0] &= test_begin_end_device(acc, expected_val,
+                                                      expected_val, true);
                   if constexpr (0 < dims) {
                     auto &acc_ref1 = acc[sycl::id<dims>()];
                     auto &acc_ref2 =
@@ -352,7 +352,7 @@ class run_api_tests {
                   sycl::accessor res_acc(res_buf, cgh);
                   cgh.single_task<kname>([=]() {
                     test_accessor_ptr_device(acc, T(), res_acc);
-                    res_acc[0] = test_begin_end_device(
+                    res_acc[0] &= test_begin_end_device(
                         acc, value_operations::init<T>(first_elem),
                         value_operations::init<T>(last_elem), true);
                     auto &acc_ref1 =
