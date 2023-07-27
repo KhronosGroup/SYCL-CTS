@@ -37,11 +37,25 @@ using ScanTypes = unnamed_type_pack<float, char, int>;
 using ScanTypes = Types;
 #endif
 
-static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
+using Dims = integer_pack<1, 2, 3>;
+
+using TestCombinations1Type = typename get_combinations<Dims, ScanTypes>::type;
+
+// FIXME: hipSYCL cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
+using TestCombinations2Types = TestCombinations1Type;
+using TestCombinations3Types = TestCombinations1Type;
+#else
+using TestCombinations2Types =
+    typename get_combinations<Dims, ScanTypes, ScanTypes>::type;
+using TestCombinations3Types =
+    typename get_combinations<Dims, ScanTypes, ScanTypes, ScanTypes>::type;
+#endif
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 // FIXME: known_identity is not impemented yet for hipSYCL.
-DISABLED_FOR_TEST_CASE(hipSYCL)
-("Group and sub-group joint scan functions", "[group_func][type_list][dim]")({
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+("Group and sub-group joint scan functions", "[group_func][type_list][dim]",
+ TestCombinations2Types)({
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   WARN(
       "hipSYCL cannot handle cases of different types for InPtr and OutPtr. "
@@ -55,23 +69,33 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #endif
 
   auto queue = once_per_unit::get_queue();
+
+  // Get the packs from the test combination type.
+  using DimensionsPack = std::tuple_element_t<0, TestType>;
+  using Type1Pack = std::tuple_element_t<1, TestType>;
+  const auto Dimensions = DimensionsPack::generate_unnamed();
+  const auto Types1 = Type1Pack{};
+
   // FIXME: ComputeCpp does not implement joint scan
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
   // FIXME: hipSYCL cannot handle cases of different types
 #elif defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
-  for_all_combinations<invoke_joint_scan_group_same_type>(Dims, ScanTypes{},
+  for_all_combinations<invoke_joint_scan_group_same_type>(Dimensions, Types1,
                                                           queue);
 #else
-  for_all_combinations<invoke_joint_scan_group>(Dims, ScanTypes{}, ScanTypes{},
+  using Type2Pack = std::tuple_element_t<2, TestType>;
+  const auto Types2 = Type2Pack{};
+
+  for_all_combinations<invoke_joint_scan_group>(Dimensions, Types1, Types2,
                                                 queue);
 #endif
 });
 
 // FIXME: known_identity is not impemented yet for hipSYCL.
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("Group and sub-group joint scan functions with init",
- "[group_func][type_list][dim]")({
+ "[group_func][type_list][dim]", TestCombinations3Types)({
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   WARN(
       "hipSYCL cannot handle cases of different types for T, *InPtr and "
@@ -86,21 +110,34 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 
   auto queue = once_per_unit::get_queue();
   // FIXME: ComputeCpp does not implement joint scan
+
+  // Get the packs from the test combination type.
+  using DimensionsPack = std::tuple_element_t<0, TestType>;
+  using Type1Pack = std::tuple_element_t<1, TestType>;
+  const auto Dimensions = DimensionsPack::generate_unnamed();
+  const auto Types1 = Type1Pack{};
+
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
   // FIXME: hipSYCL cannot handle cases of different types
 #elif defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
-  for_all_combinations<invoke_init_joint_scan_group_same_type>(
-      Dims, ScanTypes{}, queue);
+  for_all_combinations<invoke_init_joint_scan_group_same_type>(Dimensions,
+                                                               Types1, queue);
 #else
-  for_all_combinations<invoke_init_joint_scan_group>(
-      Dims, ScanTypes{}, ScanTypes{}, ScanTypes{}, queue);
+  using Type2Pack = std::tuple_element_t<2, TestType>;
+  using Type3Pack = std::tuple_element_t<3, TestType>;
+  const auto Types2 = Type2Pack{};
+  const auto Types3 = Type3Pack{};
+
+  for_all_combinations<invoke_init_joint_scan_group>(Dimensions, Types1, Types2,
+                                                     Types3, queue);
 #endif
 });
 
 // FIXME: known_identity is not impemented yet for hipSYCL.
-DISABLED_FOR_TEST_CASE(hipSYCL)
-("Group and sub-group scan functions", "[group_func][type_list][dim]")({
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+("Group and sub-group scan functions", "[group_func][type_list][dim]",
+ TestCombinations1Type)({
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN(
       "ComputeCpp does not implement scan for unsigned long long int and "
@@ -111,6 +148,13 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #endif
 
   auto queue = once_per_unit::get_queue();
+
+  // Get the packs from the test combination type.
+  using DimensionsPack = std::tuple_element_t<0, TestType>;
+  using Type1Pack = std::tuple_element_t<1, TestType>;
+  const auto Dimensions = DimensionsPack::generate_unnamed();
+  const auto Types1 = Type1Pack{};
+
   // FIXME: Codeplay ComputeCpp - CE 2.11.0
   //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
   //        clang-8: error: unable to execute command: Segmentation fault
@@ -118,15 +162,15 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  for_all_combinations<invoke_scan_over_group>(Dims, ScanTypes{}, queue);
+  for_all_combinations<invoke_scan_over_group>(Dimensions, Types1, queue);
 #endif
 });
 
 // FIXME: hipSYCL has wrong arguments order for inclusive_scan_over_group: init
 // and op are interchanged. known_identity is not implemented yet.
-DISABLED_FOR_TEST_CASE(hipSYCL)
-("Group and sub-group scan functions with init",
- "[group_func][type_list][dim]")({
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+("Group and sub-group scan functions with init", "[group_func][type_list][dim]",
+ TestCombinations2Types)({
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN(
       "ComputeCpp does not implement scan for unsigned long long int and "
@@ -140,6 +184,13 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #endif
 
   auto queue = once_per_unit::get_queue();
+
+  // Get the packs from the test combination type.
+  using DimensionsPack = std::tuple_element_t<0, TestType>;
+  using Type1Pack = std::tuple_element_t<1, TestType>;
+  const auto Dimensions = DimensionsPack::generate_unnamed();
+  const auto Types1 = Type1Pack{};
+
   // FIXME: Codeplay ComputeCpp - CE 2.11.0
   //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
   //        clang-8: error: unable to execute command: Segmentation fault
@@ -148,10 +199,13 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   return;
   // FIXME: ComputeCpp cannot handle cases of different types
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  for_all_combinations<invoke_init_scan_over_group_same_type>(Dims, ScanTypes{},
-                                                              queue);
+  for_all_combinations<invoke_init_scan_over_group_same_type>(Dimensions,
+                                                              Types1, queue);
 #else
-  for_all_combinations<invoke_init_scan_over_group>(Dims, ScanTypes{},
-                                                    ScanTypes{}, queue);
+  using Type2Pack = std::tuple_element_t<2, TestType>;
+  const auto Types2 = Type2Pack{};
+
+  for_all_combinations<invoke_init_scan_over_group>(Dimensions, Types1, Types2,
+                                                    queue);
 #endif
 });

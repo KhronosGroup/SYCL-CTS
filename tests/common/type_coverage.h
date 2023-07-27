@@ -258,6 +258,150 @@ struct value_pack {
 template <int... values>
 using integer_pack = value_pack<int, values...>;
 
+/**
+ * @brief Lightweight struct for containing tuple types with the singleton packs
+ *        comprising a single combination to test.
+ */
+template <typename... Ts>
+struct combinations_list {};
+
+/**
+ * @brief Helper trait for concatenating two combinations_list.
+ */
+template <typename LCombs, typename RCombs>
+struct concat_combination_lists;
+template <typename... LCombTs, typename... RCombTs>
+struct concat_combination_lists<combinations_list<LCombTs...>,
+                                combinations_list<RCombTs...>> {
+  using type = combinations_list<LCombTs..., RCombTs...>;
+};
+
+/**
+ * @brief Helper trait for appending an element to a combinations_list.
+ */
+template <typename Comb, typename Combs>
+struct append_comb;
+template <typename Comb, typename... CombTs>
+struct append_comb<Comb, combinations_list<CombTs...>> {
+  using type = combinations_list<Comb, CombTs...>;
+};
+
+/**
+ * @brief Helper trait for appending a type to each element in a
+ * combinations_list.
+ */
+template <typename T, typename Combs>
+struct append_type_to_combs;
+template <typename T, typename... ElemTs, typename... CombTs>
+struct append_type_to_combs<
+    T, combinations_list<std::tuple<ElemTs...>, CombTs...>> {
+  using tail =
+      typename append_type_to_combs<T, combinations_list<CombTs...>>::type;
+  using type = typename append_comb<std::tuple<ElemTs..., T>, tail>::type;
+};
+template <typename T>
+struct append_type_to_combs<T, combinations_list<>> {
+  using type = combinations_list<>;
+};
+
+/**
+ * @brief Helper trait for either appending a type to each element of a
+ * combinations_list or creating a new combination with T if the given
+ * combination_list is empty.
+ */
+template <typename T, typename Combs>
+struct append_or_create_combs {
+  using type = typename append_type_to_combs<T, Combs>::type;
+};
+template <typename T>
+struct append_or_create_combs<T, combinations_list<>> {
+  using type = combinations_list<std::tuple<T>>;
+};
+
+/**
+ * @brief Helper trait for getting all combinations of the values and types in
+ * the specified packs.
+ */
+template <typename CurrentLevelCombs, typename LastLevelCombs,
+          typename... Packs>
+struct get_combinations_helper;
+template <typename CurrentLevelCombs, typename LastLevelCombs>
+struct get_combinations_helper<CurrentLevelCombs, LastLevelCombs> {
+  using type = LastLevelCombs;
+};
+template <typename CurrentLevelCombs, typename LastLevelCombs, typename T, T V,
+          T... Vs, typename... Packs>
+struct get_combinations_helper<CurrentLevelCombs, LastLevelCombs,
+                               value_pack<T, V, Vs...>, Packs...> {
+  using new_combs =
+      typename append_or_create_combs<value_pack<T, V>, LastLevelCombs>::type;
+  using new_current_level_combs =
+      typename concat_combination_lists<CurrentLevelCombs, new_combs>::type;
+  using type =
+      typename get_combinations_helper<new_current_level_combs, LastLevelCombs,
+                                       value_pack<T, Vs...>, Packs...>::type;
+};
+template <typename CurrentLevelCombs, typename LastLevelCombs, typename T,
+          typename... Packs>
+struct get_combinations_helper<CurrentLevelCombs, LastLevelCombs, value_pack<T>,
+                               Packs...> {
+  using type =
+      typename get_combinations_helper<combinations_list<>, CurrentLevelCombs,
+                                       Packs...>::type;
+};
+template <typename CurrentLevelCombs, typename LastLevelCombs, typename T,
+          typename... Ts, typename... Packs>
+struct get_combinations_helper<CurrentLevelCombs, LastLevelCombs,
+                               type_pack<T, Ts...>, Packs...> {
+  using new_combs =
+      typename append_or_create_combs<type_pack<T>, LastLevelCombs>::type;
+  using new_current_level_combs =
+      typename concat_combination_lists<CurrentLevelCombs, new_combs>::type;
+  using type =
+      typename get_combinations_helper<new_current_level_combs, LastLevelCombs,
+                                       type_pack<Ts...>, Packs...>::type;
+};
+template <typename CurrentLevelCombs, typename LastLevelCombs,
+          typename... Packs>
+struct get_combinations_helper<CurrentLevelCombs, LastLevelCombs, type_pack<>,
+                               Packs...> {
+  using type =
+      typename get_combinations_helper<combinations_list<>, CurrentLevelCombs,
+                                       Packs...>::type;
+};
+template <typename CurrentLevelCombs, typename LastLevelCombs, typename T,
+          typename... Ts, typename... Packs>
+struct get_combinations_helper<CurrentLevelCombs, LastLevelCombs,
+                               unnamed_type_pack<T, Ts...>, Packs...> {
+  using new_combs = typename append_or_create_combs<unnamed_type_pack<T>,
+                                                    LastLevelCombs>::type;
+  using new_current_level_combs =
+      typename concat_combination_lists<CurrentLevelCombs, new_combs>::type;
+  using type =
+      typename get_combinations_helper<new_current_level_combs, LastLevelCombs,
+                                       unnamed_type_pack<Ts...>,
+                                       Packs...>::type;
+};
+template <typename CurrentLevelCombs, typename LastLevelCombs,
+          typename... Packs>
+struct get_combinations_helper<CurrentLevelCombs, LastLevelCombs,
+                               unnamed_type_pack<>, Packs...> {
+  using type =
+      typename get_combinations_helper<combinations_list<>, CurrentLevelCombs,
+                                       Packs...>::type;
+};
+
+/**
+ * @brief Trait for getting all combinations of the values and types in the
+ * specified packs.
+ */
+template <typename... Packs>
+struct get_combinations {
+  using type =
+      typename get_combinations_helper<combinations_list<>, combinations_list<>,
+                                       Packs...>::type;
+};
+
 namespace sfinae {
 namespace details {
 template <typename T>
@@ -275,6 +419,211 @@ using is_not_a_type_pack =
     std::enable_if_t<!details::is_type_pack_t<std::decay_t<T>>::value, bool>;
 
 }  // namespace sfinae
+
+/**
+ * @brief present_in is true if the first type is present
+ * in the following list of types, otherwise it is false.
+ * Inspired by xskxzr and Leedehai from https://stackoverflow.com/a/52380813
+ */
+
+template <typename T, typename X, typename... Rs>
+static constexpr bool present_in = present_in<T, Rs...>;
+
+template <typename T, typename X, typename... Rs>
+static constexpr bool present_in<T, T, X, Rs...> = true;
+
+template <typename T, typename X>
+static constexpr bool present_in<T, X> = std::is_same_v<T, X>;
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief Overload to handle cases where no runtime arguments provided with
+ * unnamed type packs
+ */
+template <template <typename...> class Action, typename Needed,
+          typename... ActionArgsT>
+inline void for_all_combinations_with() {
+  if constexpr (present_in<Needed, ActionArgsT...>) Action<ActionArgsT...>{}();
+}
+
+/**
+ * @brief Generic function to run specific action for every combination of each
+ * of the types given by appropriate type pack instances with one type
+ * needed to be present in any of the instances.
+ * Virtually any combination of named and unnamed type packs is supported.
+ * Supports different types of compile-time value lists via value pack.
+ * @tparam Action Functor template for action to run
+ * @tparam Needed Type needed to be present inside the functor template
+ * instantiation
+ * @tparam ActionArgsT Parameter pack to use for functor template instantiation
+ * @tparam HeadT The type of the first non-pack argument during the recursion
+ * @tparam ArgsT Parameter pack with types of arguments for functor
+ * @param head The first non-pack argument to pass into the functor
+ * @param args The rest of the arguments to pass into the functor
+ */
+template <template <typename...> class Action, typename Needed,
+          typename... ActionArgsT, typename HeadT, typename... ArgsT,
+          sfinae::is_not_a_type_pack<HeadT> = true>
+inline void for_all_combinations_with(HeadT&& head, ArgsT&&... args) {
+  // The first non-pack argument passed into the for_all_combinations stops the
+  // recursion
+  if constexpr (present_in<Needed, ActionArgsT...>)
+    Action<ActionArgsT...>{}(std::forward<HeadT>(head),
+                             std::forward<ArgsT>(args)...);
+}
+
+/**
+ * @brief Overload to handle the iteration over the types within the named type
+ * pack
+ */
+template <template <typename...> class Action, typename Needed,
+          typename... ActionArgsT, typename... HeadTypes, typename... ArgsT>
+inline void for_all_combinations_with(const named_type_pack<HeadTypes...>& head,
+                                      ArgsT&&... args) {
+  // Run the next level of recursion for each type from the head named_type_pack
+  // instance. Each recursion level unfolds the first argument passed and adds a
+  // type name as the last argument.
+  size_t type_name_index = 0;
+
+  ((for_all_combinations_with<Action, Needed, ActionArgsT..., HeadTypes>(
+        std::forward<ArgsT>(args)..., head.names[type_name_index]),
+    ++type_name_index),
+   ...);
+  // The unary right fold expression is used for parameter pack expansion.
+  // Every expression with comma operator is strictly sequenced, so we can
+  // increment safely. And of course the fold expression would not be optimized
+  // out due to side-effects.
+  // Additional pair of brackets is required because of precedence of increment
+  // operator relative to the comma operator.
+  //
+  // Note that there is actually no difference in left or right fold expression
+  // for the comma operator, as it would give the same order of actions
+  // execution and the same order of the type name index increment: both the
+  // "(expr0, (exr1, expr2))" and "((expr0, expr1), expr2)" would give the same
+  //  result as simple "expr0, expr1, expr2"
+  assert((type_name_index == sizeof...(HeadTypes)) && "Pack expansion failed");
+}
+
+/**
+ * @brief Overload to handle the iteration over the types within the unnamed
+ * type pack
+ */
+template <template <typename...> class Action, typename Needed,
+          typename... ActionArgsT, typename... HeadTypes, typename... ArgsT>
+inline void for_all_combinations_with(
+    const unnamed_type_pack<HeadTypes...>& head, ArgsT&&... args) {
+  // Using fold expression to iterate over all types within type pack
+
+  size_t typeNameIndex = 0;
+
+  ((for_all_combinations_with<Action, Needed, ActionArgsT..., HeadTypes>(
+        std::forward<ArgsT>(args)...),
+    ++typeNameIndex),
+   ...);
+  // Ensure there is no silent miss for coverage
+  assert((typeNameIndex == sizeof...(HeadTypes)) && "Pack expansion failed");
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief Overload to handle cases where no runtime arguments provided with
+ * unnamed type packs
+ */
+template <template <typename...> class Action, typename Needed1,
+          typename Needed2, typename... ActionArgsT>
+inline void for_all_combinations_with_two() {
+  if constexpr (present_in<Needed1, ActionArgsT...> &&
+                present_in<Needed2, ActionArgsT...>)
+    Action<ActionArgsT...>{}();
+}
+
+/**
+ * @brief Generic function to run specific action for every combination of each
+ * of the types given by appropriate type pack instances with two types
+ * needed to be present in any of the instances.
+ * Virtually any combination of named and unnamed type packs is supported.
+ * Supports different types of compile-time value lists via value pack.
+ * @tparam Action Functor template for action to run
+ * @tparam Needed1 First type needed to be present inside the functor template
+ * instantiation
+ * @tparam Needed2 Second type needed to be present inside the functor template
+ * instantiation
+ * @tparam ActionArgsT Parameter pack to use for functor template instantiation
+ * @tparam HeadT The type of the first non-pack argument during the recursion
+ * @tparam ArgsT Parameter pack with types of arguments for functor
+ * @param head The first non-pack argument to pass into the functor
+ * @param args The rest of the arguments to pass into the functor
+ */
+template <template <typename...> class Action, typename Needed1,
+          typename Needed2, typename... ActionArgsT, typename HeadT,
+          typename... ArgsT, sfinae::is_not_a_type_pack<HeadT> = true>
+inline void for_all_combinations_with_two(HeadT&& head, ArgsT&&... args) {
+  // The first non-pack argument passed into the for_all_combinations stops the
+  // recursion
+  if constexpr (present_in<Needed1, ActionArgsT...> &&
+                present_in<Needed2, ActionArgsT...>)
+    Action<ActionArgsT...>{}(std::forward<HeadT>(head),
+                             std::forward<ArgsT>(args)...);
+}
+
+/**
+ * @brief Overload to handle the iteration over the types within the named type
+ * pack
+ */
+template <template <typename...> class Action, typename Needed1,
+          typename Needed2, typename... ActionArgsT, typename... HeadTypes,
+          typename... ArgsT>
+inline void for_all_combinations_with_two(
+    const named_type_pack<HeadTypes...>& head, ArgsT&&... args) {
+  // Run the next level of recursion for each type from the head named_type_pack
+  // instance. Each recursion level unfolds the first argument passed and adds a
+  // type name as the last argument.
+  size_t type_name_index = 0;
+
+  ((for_all_combinations_with_two<Action, Needed1, Needed2, ActionArgsT...,
+                                  HeadTypes>(std::forward<ArgsT>(args)...,
+                                             head.names[type_name_index]),
+    ++type_name_index),
+   ...);
+  // The unary right fold expression is used for parameter pack expansion.
+  // Every expression with comma operator is strictly sequenced, so we can
+  // increment safely. And of course the fold expression would not be optimized
+  // out due to side-effects.
+  // Additional pair of brackets is required because of precedence of increment
+  // operator relative to the comma operator.
+  //
+  // Note that there is actually no difference in left or right fold expression
+  // for the comma operator, as it would give the same order of actions
+  // execution and the same order of the type name index increment: both the
+  // "(expr0, (exr1, expr2))" and "((expr0, expr1), expr2)" would give the same
+  //  result as simple "expr0, expr1, expr2"
+  assert((type_name_index == sizeof...(HeadTypes)) && "Pack expansion failed");
+}
+
+/**
+ * @brief Overload to handle the iteration over the types within the unnamed
+ * type pack
+ */
+template <template <typename...> class Action, typename Needed1,
+          typename Needed2, typename... ActionArgsT, typename... HeadTypes,
+          typename... ArgsT>
+inline void for_all_combinations_with_two(
+    const unnamed_type_pack<HeadTypes...>& head, ArgsT&&... args) {
+  // Using fold expression to iterate over all types within type pack
+
+  size_t typeNameIndex = 0;
+
+  ((for_all_combinations_with_two<Action, Needed1, Needed2, ActionArgsT...,
+                                  HeadTypes>(std::forward<ArgsT>(args)...),
+    ++typeNameIndex),
+   ...);
+  // Ensure there is no silent miss for coverage
+  assert((typeNameIndex == sizeof...(HeadTypes)) && "Pack expansion failed");
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 /**
  * @brief Generic function to run specific action for every combination of each

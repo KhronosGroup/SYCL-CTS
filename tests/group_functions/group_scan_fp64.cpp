@@ -20,7 +20,7 @@
 
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
-#include "type_coverage.h"
+#include "../common/type_coverage.h"
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "group_scan.h"
 
@@ -42,12 +42,27 @@ using ScanTypes = Types;
 using DoubleType = unnamed_type_pack<double>;
 using DoubleExtendedTypes = concatenation<ScanTypes, double>::type;
 
-static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
+using Dims = integer_pack<1, 2, 3>;
+
+using TestCombinations1Type = typename get_combinations<Dims, DoubleType>::type;
+
+// FIXME: hipSYCL cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
+using TestCombinations2Types = TestCombinations1Type;
+using TestCombinations3Types = TestCombinations1Type;
+#else
+using TestCombinations2Types =
+    typename get_combinations<Dims, DoubleExtendedTypes,
+                              DoubleExtendedTypes>::type;
+using TestCombinations3Types =
+    typename get_combinations<Dims, DoubleExtendedTypes, DoubleExtendedTypes,
+                              DoubleExtendedTypes>::type;
+#endif
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 // FIXME: known_identity is not impemented yet for hipSYCL.
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("Group and sub-group joint scan functions",
- "[group_func][type_list][fp64][dim]")({
+ "[group_func][type_list][fp64][dim]", TestCombinations2Types)({
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   WARN(
       "hipSYCL cannot handle cases of different types for InPtr and OutPtr. "
@@ -65,14 +80,24 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   return;
 #else
   auto queue = once_per_unit::get_queue();
+
+  // Get the packs from the test combination type.
+  using DimensionsPack = std::tuple_element_t<0, TestType>;
+  using Type1Pack = std::tuple_element_t<1, TestType>;
+  const auto Dimensions = DimensionsPack::generate_unnamed();
+  const auto Types1 = Type1Pack{};
+
   if (queue.get_device().has(sycl::aspect::fp64)) {
     // FIXME: hipSYCL cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
-    for_all_combinations<invoke_joint_scan_group_same_type>(Dims, DoubleType{},
+    for_all_combinations<invoke_joint_scan_group_same_type>(Dimensions, Types1,
                                                             queue);
 #else
+    using Type2Pack = std::tuple_element_t<2, TestType>;
+    const auto Types2 = Type2Pack{};
+
     for_all_combinations_with<invoke_joint_scan_group, double>(
-        Dims, DoubleExtendedTypes{}, DoubleExtendedTypes{}, queue);
+        Dimensions, Types1, Types2, queue);
 #endif
   } else {
     WARN("Device does not support double precision floating point operations.");
@@ -81,9 +106,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 });
 
 // FIXME: known_identity is not impemented yet for hipSYCL.
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("Group and sub-group joint scan functions with init",
- "[group_func][type_list][fp64][dim]")({
+ "[group_func][type_list][fp64][dim]", TestCombinations3Types)({
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   WARN(
       "hipSYCL cannot handle cases of different types for T, *InPtr and "
@@ -101,15 +126,26 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   return;
 #else
   auto queue = once_per_unit::get_queue();
+
+  // Get the packs from the test combination type.
+  using DimensionsPack = std::tuple_element_t<0, TestType>;
+  using Type1Pack = std::tuple_element_t<1, TestType>;
+  const auto Dimensions = DimensionsPack::generate_unnamed();
+  const auto Types1 = Type1Pack{};
+
   if (queue.get_device().has(sycl::aspect::fp64)) {
     // FIXME: hipSYCL cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
-    for_all_combinations<invoke_init_joint_scan_group_same_type>(
-        Dims, DoubleType{}, queue);
+    for_all_combinations<invoke_init_joint_scan_group_same_type>(Dimensions,
+                                                                 Types1, queue);
 #else
+    using Type2Pack = std::tuple_element_t<2, TestType>;
+    using Type3Pack = std::tuple_element_t<3, TestType>;
+    const auto Types2 = Type2Pack{};
+    const auto Types3 = Type3Pack{};
+
     for_all_combinations_with<invoke_init_joint_scan_group, double>(
-        Dims, DoubleExtendedTypes{}, DoubleExtendedTypes{},
-        DoubleExtendedTypes{}, queue);
+        Dimensions, Types1, Types2, Types3, queue);
 #endif
   } else {
     WARN("Device does not support double precision floating point operations.");
@@ -118,8 +154,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 });
 
 // FIXME: known_identity is not impemented yet for hipSYCL.
-DISABLED_FOR_TEST_CASE(hipSYCL)
-("Group and sub-group scan functions", "[group_func][fp64][dim]")({
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+("Group and sub-group scan functions", "[group_func][fp64][dim]",
+ TestCombinations1Type)({
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN(
       "ComputeCpp fails to compile with segfault in the compiler. "
@@ -134,8 +171,15 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   return;
 #else
   auto queue = once_per_unit::get_queue();
+
+  // Get the packs from the test combination type.
+  using DimensionsPack = std::tuple_element_t<0, TestType>;
+  using Type1Pack = std::tuple_element_t<1, TestType>;
+  const auto Dimensions = DimensionsPack::generate_unnamed();
+  const auto Types1 = Type1Pack{};
+
   if (queue.get_device().has(sycl::aspect::fp64)) {
-    for_all_combinations<invoke_scan_over_group>(Dims, DoubleType{}, queue);
+    for_all_combinations<invoke_scan_over_group>(Dimensions, Types1, queue);
   } else {
     WARN("Device does not support double precision floating point operations.");
   }
@@ -144,9 +188,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 
 // FIXME: hipSYCL has wrong arguments order for inclusive_scan_over_group: init
 // and op are interchanged. known_identity is not impemented yet.
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("Group and sub-group scan functions with init",
- "[group_func][type_list][fp64][dim]")({
+ "[group_func][type_list][fp64][dim]", TestCombinations2Types)({
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN(
       "ComputeCpp does not implement scan for unsigned long long int and "
@@ -167,14 +211,24 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   return;
 #else
   auto queue = once_per_unit::get_queue();
+
+  // Get the packs from the test combination type.
+  using DimensionsPack = std::tuple_element_t<0, TestType>;
+  using Type1Pack = std::tuple_element_t<1, TestType>;
+  const auto Dimensions = DimensionsPack::generate_unnamed();
+  const auto Types1 = Type1Pack{};
+
   if (queue.get_device().has(sycl::aspect::fp64)) {
     // FIXME: ComputeCpp cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    for_all_combinations<invoke_init_scan_over_group_same_type>(
-        Dims, DoubleType{}, queue);
+    for_all_combinations<invoke_init_scan_over_group_same_type>(Dimensions,
+                                                                Types1, queue);
 #else
+    using Type2Pack = std::tuple_element_t<2, TestType>;
+    const auto Types2 = Type2Pack{};
+
     for_all_combinations_with<invoke_init_scan_over_group, double>(
-        Dims, DoubleExtendedTypes{}, DoubleExtendedTypes{}, queue);
+        Dimensions, Types1, Types2, queue);
 #endif
   } else {
     WARN("Device does not support double precision floating point operations.");
