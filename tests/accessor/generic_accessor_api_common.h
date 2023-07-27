@@ -239,7 +239,10 @@ class run_api_tests {
                     kernel_buffer_accessor<T, AccessT, DimensionT, TargetT>;
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.single_task<kname>([acc, res_acc]() {
-                  test_accessor_ptr_device(acc, expected_val, res_acc);
+                  T converted_expected_val =
+                      value_operations::init<T>(expected_val);
+                  test_accessor_ptr_device(acc, converted_expected_val,
+                                           res_acc);
                   res_acc[0] &= test_begin_end_device(acc, expected_val,
                                                       expected_val, true);
                   if constexpr (0 < dims) {
@@ -351,7 +354,8 @@ class run_api_tests {
                   using kname = kernel_offset<T, AccessT, DimensionT, TargetT>;
                   sycl::accessor res_acc(res_buf, cgh);
                   cgh.single_task<kname>([=]() {
-                    test_accessor_ptr_device(acc, T(), res_acc);
+                    T empty_val = T();
+                    test_accessor_ptr_device(acc, empty_val, res_acc);
                     res_acc[0] &= test_begin_end_device(
                         acc, value_operations::init<T>(first_elem),
                         value_operations::init<T>(last_elem), true);
