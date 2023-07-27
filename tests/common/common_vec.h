@@ -467,7 +467,8 @@ bool check_vector_as(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename asType, int asN>
 bool check_vectorN_as(sycl::vec<vecType, N> inputVec) {
   if constexpr (sizeof(sycl::vec<vecType, N>) ==
-                sizeof(sycl::vec<asType, asN>))
+                    sizeof(sycl::vec<asType, asN>) &&
+                (sizeof(vecType) * N) == (sizeof(asType) * asN))
     return check_vector_as<vecType, N, asType, asN>(inputVec);
   else
     return true;
