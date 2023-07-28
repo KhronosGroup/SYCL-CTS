@@ -58,12 +58,6 @@ struct storage {
 
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("host_accessor common reference semantics", "[host_accessor]")({
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN(
-      "Implementation does not define std::hash for accessor. "
-      "Affected test cases set to fail.");
-#endif
-
   sycl::buffer<int> buffer_0{sycl::range<1>{1}};
   sycl::host_accessor<int> host_accessor_0{buffer_0};
 

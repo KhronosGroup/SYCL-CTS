@@ -75,18 +75,12 @@ template <typename PrimaryType>
 inline auto get_derived_type_pack(const std::string& primary_type_name) {
   static const auto types =
       named_type_pack<PrimaryType, PrimaryType[array_size],
-// FIXME: re-enable when sycl::marray for pointer types is implemented in
-// computecpp
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
                       sycl::marray<PrimaryType, array_size>,
-#endif  // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
                       Base<PrimaryType>, Derived<PrimaryType>>::
           generate(primary_type_name,
                    primary_type_name + "[" + std::to_string(array_size) + "]",
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
                    "sycl::marray<" + primary_type_name + ", " +
                        std::to_string(array_size) + ">",
-#endif  // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
                    "Base<" + primary_type_name + ">",
                    "Derived<" + primary_type_name + ">");
   return types;

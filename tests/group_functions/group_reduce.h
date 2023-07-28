@@ -18,8 +18,6 @@
 //
 *******************************************************************************/
 
-#include "../common/disabled_for_test_case.h"
-
 #include "group_functions_common.h"
 #include <optional>
 

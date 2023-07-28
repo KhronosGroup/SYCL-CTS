@@ -34,29 +34,6 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
   using T = std::tuple_element_t<0, TestType>;
   using U = std::tuple_element_t<1, TestType>;
 
-  // check types to only print warning once
-  if constexpr (std::is_same_v<T, double> && std::is_same_v<U, double>) {
-    // FIXME: hipSYCL omission
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
-    WARN(
-        "hipSYCL has no implementation of T joint_reduce(sub_group g, Ptr "
-        "first, Ptr last, T init, "
-        "BinaryOperation binary_op) over sub-groups. Skipping the test case.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCpp cannot handle cases of different types. "
-        "Skipping such test cases.");
-    WARN("ComputeCpp cannot handle half type. Skipping the test.");
-#endif
-  }
-
-  // FIXME: ComputeCpp has no half
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-  // FIXME: ComputeCpp cannot handle cases of different types
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   if (queue.get_device().has(sycl::aspect::fp16) &&
       queue.get_device().has(sycl::aspect::fp64)) {
     // Get binary operators from T
@@ -71,7 +48,6 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
         "Device does not support half and double precision floating point "
         "operations simultaneously.");
   }
-#endif
 }
 
 TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
@@ -80,23 +56,6 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
   using T = std::tuple_element_t<0, TestType>;
   using U = std::tuple_element_t<1, TestType>;
 
-  // check types to only print warning once
-  if constexpr (std::is_same_v<T, double> && std::is_same_v<U, double>) {
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCpp cannot handle cases of different types. "
-        "Skipping such test cases.");
-    WARN("ComputeCpp cannot handle half type. Skipping the test.");
-#endif
-  }
-
-  // FIXME: ComputeCpp has no half
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-  // FIXME: ComputeCpp cannot handle cases of different types
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   if (queue.get_device().has(sycl::aspect::fp16) &&
       queue.get_device().has(sycl::aspect::fp64)) {
     // Get binary operators from T
@@ -111,7 +70,6 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
         "Device does not support half and double precision floating point "
         "operations simultaneously.");
   }
-#endif
 }
 
 #endif

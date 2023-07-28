@@ -9,7 +9,7 @@
 #include "catch2/catch_test_macros.hpp"
 
 // FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 #include "accessor_common.h"
 #include "generic_accessor_api_common.h"
@@ -19,7 +19,7 @@ using namespace generic_accessor_api_common;
 
 namespace generic_accessor_api_fp16 {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("Generic sycl::accessor api. fp16 type", "[accessor]", test_combinations)({
   using namespace generic_accessor_api_common;
 

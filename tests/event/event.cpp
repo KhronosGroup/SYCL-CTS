@@ -30,7 +30,6 @@
 #include <vector>
 
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 #include "event.h"
 
 using namespace sycl_cts;
@@ -296,9 +295,7 @@ TEST_CASE("event::wait_and_throw only reports unconsumed asynchronous errors",
   CHECK(teh.has("another-error"));
 }
 
-// FIXME: reenable when struct information descriptors are implemented
-DISABLED_FOR_TEST_CASE(ComputeCpp)
-("event::get_info returns correct command execution status", "[event]")({
+TEST_CASE("event::get_info returns correct command execution status", "[event]") {
   // First check that return value is of expected type
   check_get_info_param<sycl::info::event::command_execution_status,
                        sycl::info::event_command_status>(make_device_event());
@@ -331,7 +328,7 @@ DISABLED_FOR_TEST_CASE(ComputeCpp)
         e1.get_info<sycl::info::event::command_execution_status>();
     CHECK(status == sycl::info::event_command_status::complete);
   }
-});
+}
 
 // TODO: Figure out if/how we want to test this.
 // => Must throw exception w/ errc::backend_mismatch if querying a parameter
@@ -349,8 +346,7 @@ static void check_get_profiling_info_return_type() {
 }
 
 // FIXME: reenable when struct information descriptors are implemented
-DISABLED_FOR_TEST_CASE(ComputeCpp)
-("event::get_profiling_info works as expected", "[event]")({
+TEST_CASE("event::get_profiling_info works as expected", "[event]") {
   // Check that queries return the expected type.
   check_get_profiling_info_return_type<
       sycl::info::event_profiling::command_submit>();
@@ -384,4 +380,4 @@ DISABLED_FOR_TEST_CASE(ComputeCpp)
   // perform some basic sanity checks.
   CHECK(submit_time <= start_time);
   CHECK(start_time <= end_time);
-});
+}

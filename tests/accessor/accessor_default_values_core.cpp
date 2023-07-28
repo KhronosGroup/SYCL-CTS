@@ -14,7 +14,7 @@
 #include "accessor_common.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 #include "accessor_default_values.h"
 
@@ -25,7 +25,7 @@ using namespace accessor_tests_common;
 namespace accessor_default_values_test_core {
 using namespace sycl_cts;
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("Accessors constructor default values test core types.", "[accessor]",
  test_combinations)({ common_run_tests<run_tests, TestType>(); });
 

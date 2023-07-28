@@ -208,20 +208,7 @@ struct test_equality {
  compiler-specific exception. */
 template <typename T>
 bool hash_equality_helper(const T& t0, const T& t1) {
-// FIXME: enable when std::hash specializations for local_accessor and
-// host_accessor are implemented
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  if constexpr (std::is_same_v<
-                    T, sycl::host_accessor<int, 1,
-                                           sycl::access::mode::read_write>> ||
-                std::is_same_v<T, sycl::local_accessor<int, 0>>) {
-    return false;
-  } else {
-    return std::hash<T>{}(t0) == std::hash<T>{}(t1);
-  }
-#else
   return std::hash<T>{}(t0) == std::hash<T>{}(t1);
-#endif
 }
 
 /** Tests equality using the hash functionality of the standard library. */
@@ -315,18 +302,7 @@ struct test_inequality {
  compiler-specific exception. */
 template <typename T>
 bool hash_inequality_helper(const T& t0, const T& t1) {
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  if constexpr (std::is_same_v<
-                    T, sycl::host_accessor<int, 1,
-                                           sycl::access::mode::read_write>> ||
-                std::is_same_v<T, sycl::local_accessor<int, 0>>) {
-    return false;
-  } else {
-    return std::hash<T>{}(t0) != std::hash<T>{}(t1);
-  }
-#else
   return std::hash<T>{}(t0) != std::hash<T>{}(t1);
-#endif
 }
 
 /** Tests inequality using the hash functionality of the standard library. */

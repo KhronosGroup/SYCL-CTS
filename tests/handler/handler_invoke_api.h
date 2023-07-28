@@ -24,13 +24,7 @@
 constexpr size_t bufferSize = 256;
 constexpr size_t defaultNumModified = 128;
 
-// FIXME: re-enable for computecpp when sycl::specialization_id<> will be
-// implemented in computecpp
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-
 constexpr sycl::specialization_id<int> SpecName(5);
-
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 struct TestConstants {
   const sycl::range<1> defaultRange;
@@ -127,9 +121,6 @@ struct parallel_for_range_size_t_functor {
   accessor_t acc;
 };
 
-// FIXME: re-enable for computecpp when sycl::kernel_handler and related version
-// of handler.parallel_for() will be implemented in computecpp
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
 template <int useOffset>
 struct parallel_for_range_item_functor_with_kernel_handler {
   parallel_for_range_item_functor_with_kernel_handler(accessor_t acc)
@@ -142,7 +133,6 @@ struct parallel_for_range_item_functor_with_kernel_handler {
 
   accessor_t acc;
 };
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 struct parallel_for_nd_range_nd_item_functor {
   parallel_for_nd_range_nd_item_functor(accessor_t acc) : acc(acc) {}
@@ -175,9 +165,6 @@ struct parallel_for_nd_range_custom_nd_item_functor {
   accessor_t acc;
 };
 
-// FIXME: re-enable for computecpp when sycl::kernel_handler and related version
-// of handler.parallel_for() will be implemented in computecpp
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
 struct parallel_for_nd_range_nd_item_functor_with_kernel_handler {
   parallel_for_nd_range_nd_item_functor_with_kernel_handler(accessor_t acc)
       : acc(acc) {}
@@ -189,7 +176,6 @@ struct parallel_for_nd_range_nd_item_functor_with_kernel_handler {
 
   accessor_t acc;
 };
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 #define PARALLEL_FOR_WORK_GROUP_DYNAMIC_FUNCTOR_BODY                          \
   group.parallel_for_work_item([&](sycl::h_item<1> item) { acc[0] = 0; });    \
@@ -213,9 +199,6 @@ struct parallel_for_work_group_dynamic_functor {
   accessor_t acc;
 };
 
-// FIXME: re-enable for computecpp when sycl::kernel_handler and related version
-// of handler.parallel_for() will be implemented in computecpp
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * Functor for testing calls to parallel_for_work_group with a
  * dynamic (runtime-defined) work group size and with kernel handler.
@@ -231,7 +214,6 @@ struct parallel_for_work_group_dynamic_with_kern_handler_functor {
 
   accessor_t acc;
 };
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 #define PARALLEL_FOR_WORK_GROUP_FIXED_FUNCTOR_BODY                            \
   group.parallel_for_work_item([&](sycl::h_item<1> item) {                    \
@@ -257,9 +239,6 @@ struct parallel_for_work_group_fixed_functor {
   accessor_t acc{};
 };
 
-// FIXME: re-enable for computecpp when sycl::kernel_handler and related version
-// of handler.parallel_for() will be implemented in computecpp
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * Functor for testing calls to parallel_for_work_group with a
  * fixed work group size and with kernel handler.
@@ -276,7 +255,6 @@ struct parallel_for_work_group_fixed_with_kern_handler_functor {
 
   accessor_t acc{};
 };
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 /**
  * @brief Checks that the handler API call works correctly

@@ -23,7 +23,7 @@
 
 #include "../common/common.h"
 
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 #include "accessor_common.h"
 #include "generic_accessor_zero_dim_constructor.h"
@@ -35,7 +35,7 @@ using namespace generic_accessor_zero_dim_constructor;
 
 namespace generic_accessor_zero_dim_constructor_fp16 {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("Generic sycl::accessor zero-dim constructors. fp16 type", "[accessor]",
  test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();

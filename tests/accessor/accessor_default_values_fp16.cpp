@@ -13,7 +13,7 @@
 #include "../common/disabled_for_test_case.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 #include "accessor_default_values.h"
 
@@ -24,7 +24,7 @@ using namespace accessor_tests_common;
 namespace accessor_exceptions_test_fp16 {
 using namespace sycl_cts;
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("Accessors constructor default values test fp16 types.", "[accessor]",
  test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();

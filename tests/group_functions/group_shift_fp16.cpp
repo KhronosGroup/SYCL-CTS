@@ -22,19 +22,6 @@
 
 TEMPLATE_TEST_CASE_SIG("Group and sub-group shift", "[group_func][fp16][dim]",
                        ((int D), D), 1, 2, 3) {
-  // check dimensions to only print warning once
-  if constexpr (D == 1) {
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCpp does not implement shift functions. "
-        "Skipping the test.");
-#endif
-  }
-
-  // FIXME: ComputeCpp do not implement shift functions
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   auto queue = once_per_unit::get_queue();
 
   if (queue.get_device().has(sycl::aspect::fp16)) {
@@ -42,5 +29,4 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group shift", "[group_func][fp16][dim]",
   } else {
     WARN("Device does not support half precision floating point operations.");
   }
-#endif
 }

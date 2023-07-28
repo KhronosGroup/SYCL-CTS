@@ -28,7 +28,7 @@
 #include "function_objects.h"
 #endif
 
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("function objects void specializations scalar fp64",
  "[function_objects][fp64]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
@@ -50,7 +50,7 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
       get_op_types(), types_only_double, types_only_double);
 });
 
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("function objects void specializations vector fp64",
  "[function_objects][fp64]")({
   auto queue = sycl_cts::util::get_cts_object::queue();

@@ -22,10 +22,6 @@
 #include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 
-// Disable test when compiling with ComputeCpp
-// ComputeCpp doesn't fully support kernel::get_info of SYCL 2020 spec
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-
 namespace kernel_info__ {
 using namespace sycl_cts;
 
@@ -109,7 +105,7 @@ TEST_CASE("Test kernel info", "[kernel]") {
         range3Ret,
         "sycl::kernel::get_info<sycl::info::kernel_device_specific::global_"
         "work_size>(dev) for built_in_kernel");
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
     check_get_info_param<sycl::info::kernel::num_args, uint32_t>(
         built_in_kernel);
 #endif
@@ -228,7 +224,7 @@ TEST_CASE("Test kernel info", "[kernel]") {
   }
 
 // FIXME: Reenable when struct information descriptors are implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
   check_get_info_param<sycl::info::kernel::attributes, std::string>(kernel);
 #endif
 
@@ -236,5 +232,3 @@ TEST_CASE("Test kernel info", "[kernel]") {
 };
 
 } /* namespace kernel_info__ */
-
-#endif // SYCL_CTS_COMPILING_WITH_COMPUTECPP

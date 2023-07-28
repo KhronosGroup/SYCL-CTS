@@ -19,7 +19,6 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 #include "queue_shortcuts_common.h"
 #include "queue_shortcuts_explicit.h"
 
