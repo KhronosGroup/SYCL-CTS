@@ -284,16 +284,23 @@ TEMPLATE_TEST_CASE_SIG("id supports get() and operator[]", "[id]", ((int D), D),
   }
 }
 
-// FIXME: re-enable when sycl::id<>::dimensions is implemented
-// Issue link https://github.com/intel/llvm/issues/9786
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(DPCPP, hipSYCL)
-("id provides static constexpr member 'dimensions'", "[id]", ((int D), D), 1, 2,
- 3)({
-  CHECK(std::is_same_v<decltype(sycl::id<D>::dimensions), const int>);
-  KCHECK(EVAL((std::is_same_v<decltype(sycl::id<D>::dimensions), const int>)));
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("id provides static constexpr member 'dimensions'", "[id]")({
+  // Dimension arguments in this test case are expanded to avoid conflicting
+  // kernel names for different instantiations of sycl::id.
+  CHECK(std::is_same_v<decltype(sycl::id<1>::dimensions), const int>);
+  CHECK(std::is_same_v<decltype(sycl::id<2>::dimensions), const int>);
+  CHECK(std::is_same_v<decltype(sycl::id<3>::dimensions), const int>);
+  KCHECK(EVAL((std::is_same_v<decltype(sycl::id<1>::dimensions), const int>)));
+  KCHECK(EVAL((std::is_same_v<decltype(sycl::id<2>::dimensions), const int>)));
+  KCHECK(EVAL((std::is_same_v<decltype(sycl::id<3>::dimensions), const int>)));
 
-  CHECK(sycl::id<D>::dimensions == D);
-  KCHECK(EVAL(sycl::id<D>::dimensions) == D);
+  CHECK(sycl::id<1>::dimensions == 1);
+  CHECK(sycl::id<2>::dimensions == 2);
+  CHECK(sycl::id<3>::dimensions == 3);
+  KCHECK(EVAL(sycl::id<1>::dimensions) == 1);
+  KCHECK(EVAL(sycl::id<2>::dimensions) == 2);
+  KCHECK(EVAL(sycl::id<3>::dimensions) == 3);
 });
 
 TEST_CASE("id can be converted to size_t if Dimensions == 1", "[id]") {

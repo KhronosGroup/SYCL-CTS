@@ -146,7 +146,12 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
                          "fence_scope) is wrong\n");
 
       // test of default barrier
-      local_acc[llid] = 0;
+      local_acc[llid] = llid;
+      sycl::group_barrier(group);
+
+      if (local_acc[max_id - llid] != max_id - llid)
+        std::get<s::test>(group_barriers_acc[0]) = false;
+      // make sure we check all items before moving on
       sycl::group_barrier(group);
 
       local_acc[llid] = 1;
@@ -154,15 +159,20 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
       if (local_acc[max_id - llid] != 1)
         std::get<s::test>(group_barriers_acc[0]) = false;
+      sycl::group_barrier(group);
 
       // tests for other barriers
       for (int i = 1; i < group_barrier_variants; ++i) {
         auto& barrier = group_barriers_acc[i];
 
         if (std::get<s::support>(barrier)) {
-          local_acc[llid] = 0;
-          global_acc[llid] = 0;
+          local_acc[llid] = llid;
+          global_acc[llid] = llid;
+          sycl::group_barrier(group);
 
+          if (local_acc[max_id - llid] != max_id - llid ||
+              global_acc[max_id - llid] != max_id - llid)
+            std::get<s::test>(barrier) = false;
           sycl::group_barrier(group);
 
           switch (std::get<s::scope>(barrier)) {
@@ -172,6 +182,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
               if (local_acc[max_id - llid] != 1)
                 std::get<s::test>(barrier) = false;
+              sycl::group_barrier(group);
 
               [[fallthrough]];
             default:
@@ -180,6 +191,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
               if (global_acc[max_id - llid] != 1)
                 std::get<s::test>(barrier) = false;
+              sycl::group_barrier(group);
           }
         }
       }
@@ -197,7 +209,11 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
                          "memory_scope fence_scope) is wrong\n");
 
       // test of default barrier
-      local_acc[llid] = 0;
+      local_acc[llid] = llid;
+      sycl::group_barrier(sub_group);
+
+      if (local_acc[max_id - llid] != max_id - llid)
+        std::get<s::test>(sub_group_barriers_acc[0]) = false;
       sycl::group_barrier(sub_group);
 
       local_acc[llid] = 1;
@@ -205,6 +221,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
       if (local_acc[max_id - llid] != 1)
         std::get<s::test>(sub_group_barriers_acc[0]) = false;
+      sycl::group_barrier(sub_group);
 
       // tests for other barriers
       for (int i = 1; i < sub_group_barrier_variants; ++i) {
@@ -212,9 +229,13 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
         if ((sub_group.get_group_linear_id() == 0) &&
             std::get<s::support>(barrier)) {
-          local_acc[llid] = 0;
-          global_acc[llid] = 0;
+          local_acc[llid] = llid;
+          global_acc[llid] = llid;
+          sycl::group_barrier(sub_group);
 
+          if (local_acc[max_id - llid] != max_id - llid ||
+              global_acc[max_id - llid] != max_id - llid)
+            std::get<s::test>(barrier) = false;
           sycl::group_barrier(sub_group);
 
           switch (std::get<s::scope>(barrier)) {
@@ -225,6 +246,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
               if (local_acc[max_id - llid] != 1)
                 std::get<s::test>(barrier) = false;
+              sycl::group_barrier(sub_group);
 
               [[fallthrough]];
             default:
@@ -233,6 +255,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
               if (global_acc[max_id - llid] != 1)
                 std::get<s::test>(barrier) = false;
+              sycl::group_barrier(sub_group);
           }
         }
       }
