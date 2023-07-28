@@ -1195,7 +1195,6 @@ def create_types():
     type_dic["gengeodouble"] = t_gen_geodouble
 
 
-    # t_char_n = argtype("charn", "NULL", "NULL", 0, ["sycl::char2","sycl::char3","sycl::char4","sycl::char8","sycl::char16"])
     t_vint8_n = argtype("vint8n", "NULL", "NULL", 0, ["sycl::vec<int8_t, 2>","sycl::vec<int8_t, 3>","sycl::vec<int8_t, 4>","sycl::vec<int8_t, 8>","sycl::vec<int8_t, 16>"])
     type_dic["vint8n"] = t_vint8_n
 
@@ -1211,7 +1210,6 @@ def create_types():
     t_schar_n = argtype("scharn", "NULL", "NULL", 0, ["vint8n","mscharn"])
     type_dic["scharn"] = t_schar_n
 
-    # t_uchar_n = argtype("ucharn", "NULL", "NULL", 0, ["sycl::uchar2","sycl::uchar3","sycl::uchar4","sycl::uchar8","sycl::uchar16"])
     t_vuint8_n = argtype("vuint8n", "NULL", "NULL", 0, ["sycl::vec<uint8_t, 2>","sycl::vec<uint8_t, 3>","sycl::vec<uint8_t, 4>","sycl::vec<uint8_t, 8>","sycl::vec<uint8_t, 16>"])
     type_dic["vuint8n"] = t_vuint8_n
 
@@ -1232,7 +1230,6 @@ def create_types():
     type_dic["genchar"] = t_gen_char
 
 
-    # t_short_n = argtype("shortn", "NULL", "NULL", 0, ["sycl::short2","sycl::short3","sycl::short4","sycl::short8","sycl::short16"])
     t_vint16_n = argtype("vint16n", "NULL", "NULL", 0, ["sycl::vec<int16_t, 2>","sycl::vec<int16_t, 3>","sycl::vec<int16_t, 4>","sycl::vec<int16_t, 8>","sycl::vec<int16_t, 16>"])
     type_dic["vint16n"] = t_vint16_n
 
@@ -1261,7 +1258,6 @@ def create_types():
     type_dic["ugenshort"] = t_ugen_short
 
 
-    # t_int_n = argtype("intn", "NULL", "NULL", 0, ["sycl::int2","sycl::int3","sycl::int4","sycl::int8","sycl::int16"])
     t_vint32_n = argtype("vint32n", "NULL", "NULL", 0, ["sycl::vec<int32_t, 2>","sycl::vec<int32_t, 3>","sycl::vec<int32_t, 4>","sycl::vec<int32_t, 8>","sycl::vec<int32_t, 16>"])
     type_dic["vint32n"] = t_vint32_n
 
@@ -1276,7 +1272,6 @@ def create_types():
     type_dic["genint"] = t_gen_int
 
 
-    # t_uint_n = argtype("uintn", "NULL", "NULL", 0, ["sycl::uint2","sycl::uint3","sycl::uint4","sycl::uint8","sycl::uint16"])
     t_vuint32_n = argtype("vuint32n", "NULL", "NULL", 0, ["sycl::vec<uint32_t, 2>","sycl::vec<uint32_t, 3>","sycl::vec<uint32_t, 4>","sycl::vec<uint32_t, 8>","sycl::vec<uint32_t, 16>"])
     type_dic["vuint32n"] = t_vuint32_n
 
@@ -1291,7 +1286,6 @@ def create_types():
     type_dic["ugenint"] = t_ugen_int
 
 
-    # t_long_n = argtype("longn", "NULL", "NULL", 0, ["sycl::long2","sycl::long3","sycl::long4","sycl::long8","sycl::long16"])
     t_vint64_n = argtype("vint64n", "NULL", "NULL", 0, ["sycl::vec<int64_t, 2>","sycl::vec<int64_t, 3>","sycl::vec<int64_t, 4>","sycl::vec<int64_t, 8>","sycl::vec<int64_t, 16>"])
     type_dic["vint64n"] = t_vint64_n
 
@@ -1306,7 +1300,6 @@ def create_types():
     type_dic["genlong"] = t_gen_long
 
 
-    # t_ulong_n = argtype("ulongn", "NULL", "NULL", 0, ["sycl::ulong2","sycl::ulong3","sycl::ulong4","sycl::ulong8","sycl::ulong16"])
     t_vuint64_n = argtype("vuint64n", "NULL", "NULL", 0, ["sycl::vec<uint64_t, 2>","sycl::vec<uint64_t, 3>","sycl::vec<uint64_t, 4>","sycl::vec<uint64_t, 8>","sycl::vec<uint64_t, 16>"])
     type_dic["vuint64n"] = t_vuint64_n
 
