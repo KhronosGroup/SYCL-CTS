@@ -127,7 +127,7 @@ TEST_CASE("predefined selectors", "[device_selector]") {
         if (is_host(defaultDevice)) {
           FAIL("selected non-host device when no devices are available");
         }
-      } catch (const sycl::exception &e) {
+      } catch (const sycl::exception& e) {
         CHECK((sycl::errc::runtime == e.code()));
       }
     }
@@ -141,7 +141,7 @@ TEST_CASE("predefined selectors", "[device_selector]") {
       try {
         auto cpuDevice = util::get_cts_object::device(cpuSelector);
         FAIL("selected a CPU device when none are available");
-      } catch (const sycl::exception &e) {
+      } catch (const sycl::exception& e) {
         CHECK((sycl::errc::runtime == e.code()));
       }
     }
@@ -155,7 +155,7 @@ TEST_CASE("predefined selectors", "[device_selector]") {
       try {
         auto gpuDevice = util::get_cts_object::device(gpuSelector);
         FAIL("selected a GPU device when none are available");
-      } catch (const sycl::exception &e) {
+      } catch (const sycl::exception& e) {
         CHECK((sycl::errc::runtime == e.code()));
       }
     }
@@ -171,7 +171,7 @@ TEST_CASE("predefined selectors", "[device_selector]") {
         auto acceleratorDevice =
             util::get_cts_object::device(acceleratorSelector);
         FAIL("selected an accelerator device when none are available");
-      } catch (const sycl::exception &e) {
+      } catch (const sycl::exception& e) {
         CHECK(sycl::errc::runtime == e.code());
       }
     }

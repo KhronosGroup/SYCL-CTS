@@ -295,7 +295,8 @@ TEST_CASE("event::wait_and_throw only reports unconsumed asynchronous errors",
   CHECK(teh.has("another-error"));
 }
 
-TEST_CASE("event::get_info returns correct command execution status", "[event]") {
+TEST_CASE("event::get_info returns correct command execution status",
+          "[event]") {
   // First check that return value is of expected type
   check_get_info_param<sycl::info::event::command_execution_status,
                        sycl::info::event_command_status>(make_device_event());

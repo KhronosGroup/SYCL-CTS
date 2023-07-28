@@ -6,10 +6,10 @@
 //
 *******************************************************************************/
 
-#include "handler_copy_common.h"
-#include "catch2/catch_test_macros.hpp"
-#include "../common/type_coverage.h"
 #include "../common/string_makers.h"
+#include "../common/type_coverage.h"
+#include "catch2/catch_test_macros.hpp"
+#include "handler_copy_common.h"
 
 namespace handler_copy_core {
 using namespace handler_copy_common;
@@ -35,9 +35,10 @@ TEST_CASE("Tests the API for sycl::handler::copy", "[handler]") {
 #endif
 }
 
-TEST_CASE("Check exception on copy(accessor, accessor) in case of invalid "
- "destination accessor size",
- "[handler]") {
+TEST_CASE(
+    "Check exception on copy(accessor, accessor) in case of invalid "
+    "destination accessor size",
+    "[handler]") {
   auto queue = util::get_cts_object::queue();
 
   const auto types =

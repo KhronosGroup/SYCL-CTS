@@ -20,7 +20,8 @@
 *******************************************************************************/
 #include "handler_invoke_api.h"
 
-TEST_CASE("handler.parallel_for(range) with item and kernel_handler", "[handler]") {
+TEST_CASE("handler.parallel_for(range) with item and kernel_handler",
+          "[handler]") {
   using handler = sycl::handler;
 
   TestConstants constants;

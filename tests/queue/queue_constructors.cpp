@@ -203,7 +203,8 @@ TEST_CASE("Check queue (context, device, async_handler, property_list)",
   CHECK(queue.has_property<sycl::property::queue::in_order>());
 }
 
-TEST_CASE("Check exceptions thrown for mismatched context and device", "[queue]") {
+TEST_CASE("Check exceptions thrown for mismatched context and device",
+          "[queue]") {
   const sycl::device device(cts_selector);
   sycl::device otherDevice = device;
   auto platforms = sycl::platform::get_platforms();

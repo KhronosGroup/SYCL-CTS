@@ -248,10 +248,8 @@ class TEST_NAME : public util::test_base {
                                 test_range<3>::m_z);
 
       sycl::range<1> range_1d_l(test_range<1>::m_local);
-      sycl::range<2> range_2d_l(test_range<2>::m_local,
-                                test_range<2>::m_local);
-      sycl::range<3> range_3d_l(test_range<3>::m_local,
-                                test_range<3>::m_local,
+      sycl::range<2> range_2d_l(test_range<2>::m_local, test_range<2>::m_local);
+      sycl::range<3> range_3d_l(test_range<3>::m_local, test_range<3>::m_local,
                                 test_range<3>::m_local);
 
       test_range<1> test1d;

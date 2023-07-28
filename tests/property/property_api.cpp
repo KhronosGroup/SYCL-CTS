@@ -88,19 +88,15 @@ TEST_CASE("property api", "[property]") {
     for_all_combinations<check_property_object>(properties, objects);
   }
   {
-
     const auto properties =
         named_type_pack<sycl::property::no_init>::generate("property::no_init");
     // provide any template argument for the types that require it
     const auto objects = named_type_pack<
-        sycl::accessor<int>, sycl::host_accessor<int>
-        ,
+        sycl::accessor<int>, sycl::host_accessor<int>,
         sycl::unsampled_image_accessor<sycl::int4, 1, sycl::access_mode::read>,
-        sycl::host_unsampled_image_accessor<sycl::int4, 1>
-        >::generate("accessor", "host_accessor"
-                    ,
-                    "unsampled_image_accessor", "host_unsampled_image_accessor"
-    );
+        sycl::host_unsampled_image_accessor<sycl::int4, 1>>::
+        generate("accessor", "host_accessor", "unsampled_image_accessor",
+                 "host_unsampled_image_accessor");
     for_all_combinations<check_property_object>(properties, objects);
   }
   {

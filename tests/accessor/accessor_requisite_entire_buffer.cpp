@@ -29,7 +29,7 @@
 namespace accessor_requisite_entire_buffer {
 
 TEST_CASE("requisite for the entire underlying buffer for sycl::accessor ",
- "[accessor]") {
+          "[accessor]") {
   auto q = sycl_cts::util::get_cts_object::queue();
 
   if (!q.get_device().has(sycl::aspect::usm_shared_allocations))

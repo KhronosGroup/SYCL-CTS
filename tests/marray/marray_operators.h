@@ -480,14 +480,9 @@ class check_marray_operators_for_type {
     const auto num_elements = marray_common::get_num_elements();
 
     static const auto unary_operators =
-        named_type_pack<op_upos, op_uneg, op_pre_inc, op_pre_dec, op_lnot
-                        ,
-                        op_bnot
-                        >::generate("unary +", "unary -", "pre ++", "pre --",
-                                    "!"
-                                    ,
-                                    "~"
-        );
+        named_type_pack<op_upos, op_uneg, op_pre_inc, op_pre_dec, op_lnot,
+                        op_bnot>::generate("unary +", "unary -", "pre ++",
+                                           "pre --", "!", "~");
     for_all_combinations<run_unary, DataT>(num_elements, unary_operators);
 
     static const auto unary_post_operators =
@@ -497,17 +492,11 @@ class check_marray_operators_for_type {
                                                 unary_post_operators);
     static const auto binary_operators =
         named_type_pack<op_add, op_sub, op_mul, op_div, op_mod, op_bor, op_band,
-                        op_bxor, op_sl, op_sr
-                        ,
-                        op_eq, op_not_eq, op_less, op_grater, op_less_eq,
-                        op_grater_eq
-                        ,
-                        op_land, op_lor
-                        >::generate("+", "-", "*", "/", "%", "|", "&", "^",
-                                    "<<", ">>"
-                                    ,
-                                    "==", "!=", "<", ">", "<=", ">=", "&&", "||"
-        );
+                        op_bxor, op_sl, op_sr, op_eq, op_not_eq, op_less,
+                        op_grater, op_less_eq, op_grater_eq, op_land,
+                        op_lor>::generate("+", "-", "*", "/", "%", "|", "&",
+                                          "^", "<<", ">>", "==", "!=", "<", ">",
+                                          "<=", ">=", "&&", "||");
 
     for_all_combinations<run_binary, DataT>(num_elements, binary_operators);
 

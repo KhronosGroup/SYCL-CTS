@@ -37,25 +37,24 @@ inline auto get_num_elements() {
 
 /** @brief Execute the tests with the same values for DataT. */
 inline auto get_types() {
-  return named_type_pack<
-      char, int, float, std::int8_t, std::int32_t
-      ,
-      custom_int
+  return named_type_pack<char, int, float, std::int8_t, std::int32_t, custom_int
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-      ,
-      unsigned char, short, unsigned short, unsigned int, long, unsigned long,
-      long long, unsigned long long, bool, std::uint8_t, std::int16_t,
-      std::uint16_t, std::uint32_t, std::int64_t, std::uint64_t
+                         ,
+                         unsigned char, short, unsigned short, unsigned int,
+                         long, unsigned long, long long, unsigned long long,
+                         bool, std::uint8_t, std::int16_t, std::uint16_t,
+                         std::uint32_t, std::int64_t, std::uint64_t
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
-      >::generate("char", "int", "float", "std::int8_t", "std::int32_t"
-                  ,
-                  "custom_type"
+                         >::generate("char", "int", "float", "std::int8_t",
+                                     "std::int32_t", "custom_type"
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-                  ,
-                  "unsigned char", "short", "unsigned short", "unsigned int",
-                  "long", "unsigned long", "long long", "unsigned long long",
-                  "bool", "std::uint8_t", "std::int16_t", "std::uint16_t",
-                  "std::uint32_t", "std::int64_t", "std::uint64_t"
+                                     ,
+                                     "unsigned char", "short", "unsigned short",
+                                     "unsigned int", "long", "unsigned long",
+                                     "long long", "unsigned long long", "bool",
+                                     "std::uint8_t", "std::int16_t",
+                                     "std::uint16_t", "std::uint32_t",
+                                     "std::int64_t", "std::uint64_t"
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   );
 }
