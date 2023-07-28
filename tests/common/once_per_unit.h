@@ -41,7 +41,7 @@ inline sycl::queue &get_queue() {
 /**
  * @brief Provide possibility to log message once per translation unit
  */
-inline void log(sycl_cts::util::logger &log, const std::string &message) {
+inline void log(sycl_cts::util::logger& log, const std::string& message) {
   static const detail::log_notice log_just_once(log, message);
 }
 }  // namespace once_per_unit

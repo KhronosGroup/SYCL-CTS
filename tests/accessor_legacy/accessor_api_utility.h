@@ -52,7 +52,7 @@ inline size_t compute_linear_id(sycl::id<2> id, sycl::range<2> r) {
 inline size_t compute_linear_id(sycl::id<3> id, sycl::range<3> r) {
   return id[2] + (id[1] * r[2]) + (id[0] * r[2] * r[1]);
 }
-}
+}  // namespace
 
 namespace accessor_utility {
 
