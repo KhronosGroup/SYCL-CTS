@@ -55,6 +55,24 @@ bool equal_impl(const sycl::vec<T, N>& a, const U& b) {
   return res;
 }
 
+// FIXME: hipSYCL has not implemented sycl::marray type yet
+//        The warning is printed from group_shift.cpp and group_permute.cpp
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+template <typename T, size_t N>
+bool equal_impl(const sycl::marray<T, N>& a, const sycl::marray<T, N>& b) {
+  bool res = true;
+  for (int i = 0; i < N; ++i) res &= (a[i] == b[i]);
+  return res;
+}
+
+template <typename T, size_t N, typename U>
+bool equal_impl(const sycl::marray<T, N>& a, const U& b) {
+  bool res = true;
+  for (size_t i = 0; i < N; ++i) res &= (a[i] == b);
+  return res;
+}
+#endif
+
 template <typename T, typename U>
 bool equal(const T& a, const U& b) {
   return equal_impl(a, b);
