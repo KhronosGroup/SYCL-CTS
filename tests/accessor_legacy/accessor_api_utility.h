@@ -37,22 +37,22 @@
 namespace {
 /** computes the linear id for 1 dimension
 */
-size_t compute_linear_id(sycl::id<1> id, sycl::range<1> r) {
+inline size_t compute_linear_id(sycl::id<1> id, sycl::range<1> r) {
   return id[0];
 }
 
 /** computes the linear id for 2 dimension
 */
-size_t compute_linear_id(sycl::id<2> id, sycl::range<2> r) {
+inline size_t compute_linear_id(sycl::id<2> id, sycl::range<2> r) {
   return id[1] + (id[0] * r[1]);
 }
 
 /** computes the linear id for 3 dimension
 */
-size_t compute_linear_id(sycl::id<3> id, sycl::range<3> r) {
+inline size_t compute_linear_id(sycl::id<3> id, sycl::range<3> r) {
   return id[2] + (id[1] * r[2]) + (id[0] * r[2] * r[1]);
 }
-};
+}
 
 namespace accessor_utility {
 
@@ -757,7 +757,7 @@ std::unique_ptr<T[]> get_buffer_input_data(size_t count, int dims,
  * @param count Number of error categories
  * @return unique_ptr to initialized array
  */
-std::unique_ptr<int[]> get_error_data(size_t count) {
+inline std::unique_ptr<int[]> get_error_data(size_t count) {
   static constexpr int dims = 1;
   static constexpr bool useIndexes = false;
   return get_buffer_input_data<int>(count, dims, useIndexes);
