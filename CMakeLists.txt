@@ -35,37 +35,49 @@ add_cts_option(SYCL_CTS_ENABLE_FULL_CONFORMANCE
     "Enable full conformance with extensive tests" OFF
     WARN_IF_OFF "Full conformance mode (SYCL_CTS_ENABLE_FULL_CONFORMANCE) should be used for conformance submission")
 
-add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS
-    "Enable extension oneAPI compile-time property list tests" OFF)
-
 # TODO: Should SYCL_CTS_ENABLE_FULL_CONFORMANCE=ON imply this?
 add_cts_option(SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     "Enable tests for deprecated SYCL features" ON
     WARN_IF_OFF "Tests for deprecated SYCL features should be enabled for conformance submission")
 
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS
+    "Enable all extension oneAPI tests" OFF)
+
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS
+    "Enable extension oneAPI compile-time property list tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
+
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS
-    "Enable extension oneAPI sub_group_mask tests" OFF)
+    "Enable extension oneAPI sub_group_mask tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS
-    "Enable extension oneAPI device_global tests" OFF)
+    "Enable extension oneAPI device_global tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_MEMCPY2D_TESTS
-    "Enable extension oneAPI memcpy2d tests" OFF)
+    "Enable extension oneAPI memcpy2d tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_ENQUEUE_BARRIER_TESTS
-    "Enable extension oneAPI enqueue_barrier tests" OFF)
+    "Enable extension oneAPI enqueue_barrier tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_WEAK_OBJECT_TESTS
-    "Enable extension oneAPI weak_object tests" OFF)
+    "Enable extension oneAPI weak_object tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_QUEUE_EMPTY
-    "Enable extension oneAPI queue_empty tests" OFF)
+    "Enable extension oneAPI queue_empty tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_DISCARD_QUEUE_EVENTS_TESTS
-    "Enable extension oneAPI discard_queue_events tests" OFF)
+    "Enable extension oneAPI discard_queue_events tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_BFLOAT16_TESTS
-    "Enable extension oneAPI bfloat16 tests" OFF)
+    "Enable extension oneAPI bfloat16 tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
 # TODO: Deprecated - remove
 add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG

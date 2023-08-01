@@ -11,10 +11,12 @@ set(SYCL_CTS_DETAIL_OPTION_COMPILE_DEFINITIONS "")
 #            Use `#if <OPTION>` instead of `#ifdef <OPTION>`.
 #
 # Optional parameters:
-#  - WARN_IF_OFF <msg>     Print a warning message if this option is set to OFF.
+#  - WARN_IF_OFF <msg>    Print a warning message if this option is set to OFF.
+#  - FORCE_ON <value>     If <value> is ON the option will be overwritten as ON.
 #
 function(add_cts_option option_name option_description option_default)
     cmake_parse_arguments(PARSE_ARGV 3 args "" "WARN_IF_OFF" "")
+    cmake_parse_arguments(PARSE_ARGV 3 args "" "FORCE_ON" "")
 
     option(${option_name} ${option_description} ${option_default})
     list(APPEND SYCL_CTS_DETAIL_AVAILABLE_OPTIONS ${option_name})
@@ -24,6 +26,10 @@ function(add_cts_option option_name option_description option_default)
 
     if(args_WARN_IF_OFF)
         set("${option_name}_WARN_IF_OFF" ${args_WARN_IF_OFF} PARENT_SCOPE)
+    endif()
+
+    if (args_FORCE_ON)
+        set(${option_name} ON CACHE BOOL "" FORCE)
     endif()
 
     list(APPEND SYCL_CTS_DETAIL_OPTION_COMPILE_DEFINITIONS "${option_name}=$<BOOL:${${option_name}}>")
