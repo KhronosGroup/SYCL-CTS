@@ -34,7 +34,7 @@ namespace {
  *  return <  0  : device will never be selected
  *  return >= 0  : positive device rating
  */
-int cts_selector(const sycl::device& dev) {
+inline int cts_selector(const sycl::device& dev) {
   using namespace sycl_cts;
   using namespace sycl_cts::util;
 
