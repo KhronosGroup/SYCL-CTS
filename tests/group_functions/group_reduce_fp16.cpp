@@ -20,20 +20,7 @@
 
 #include "group_reduce.h"
 
-// FIXME: ComputeCpp does not implement reduce for unsigned long long int and
-//        long long int
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-using ReduceTypes =
-    unnamed_type_pack<size_t, float, char, signed char, unsigned char,
-                      short int, unsigned short int, int, unsigned int,
-                      long int, unsigned long int>;
-#else
-using ReduceTypes = unnamed_type_pack<float, char, int>;
-#endif
-#else
 using ReduceTypes = Types;
-#endif
 
 using HalfExtendedTypes = concatenation<ReduceTypes, sycl::half>::type;
 // 2-dim Cartesian product of type lists
@@ -50,14 +37,8 @@ TEST_CASE("Group and sub-group joint reduce functions",
       "std::iterator_traits<Ptr>::value_type joint_reduce(sub_group g, "
       "Ptr first, Ptr last, BinaryOperation binary_op) over sub-groups. "
       "Skipping the test case.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN("ComputeCpp cannot handle half type. Skipping the test.");
 #endif
 
-  // FIXME: ComputeCpp has no half
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   if (queue.get_device().has(sycl::aspect::fp16)) {
     // Get binary operators from TestType
     const auto Operators = get_op_types<sycl::half>();
@@ -67,7 +48,6 @@ TEST_CASE("Group and sub-group joint reduce functions",
   } else {
     WARN("Device does not support half precision floating point operations.");
   }
-#endif
 }
 
 TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
@@ -79,55 +59,32 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
   // check types to only print warning once
   if constexpr (std::is_same_v<T, char> && std::is_same_v<U, char>) {
     // FIXME: hipSYCL omission
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
+#if SYCL_CTS_COMPILING_WITH_HIPSYCL
     WARN(
         "hipSYCL has no implementation of T joint_reduce(sub_group g, Ptr "
         "first, Ptr last, T init, "
         "BinaryOperation binary_op) over sub-groups. Skipping the test case.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCpp does not implement reduce for unsigned long long int and "
-        "long long int. Skipping the test cases.");
-    WARN(
-        "ComputeCpp cannot handle cases of different types. "
-        "Skipping such test cases.");
-    WARN("ComputeCpp cannot handle half type. Skipping the test.");
 #endif
   }
 
-  // FIXME: ComputeCpp has no half
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
-  // FIXME: ComputeCpp cannot handle cases of different types
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  if constexpr (std::is_same_v<T, U>)
-#endif
-  {
-    if (queue.get_device().has(sycl::aspect::fp16)) {
-      if constexpr (std::is_same_v<T, sycl::half> ||
-                    std::is_same_v<U, sycl::half>) {
-        // Get binary operators from T
-        const auto Operators = get_op_types<T>();
-        const auto RetType = unnamed_type_pack<T>();
-        const auto ReducedType = unnamed_type_pack<U>();
-        // check all work group dimensions
-        for_all_combinations<invoke_init_joint_reduce_group>(
-            Dims, RetType, ReducedType, Operators, queue);
-      }
-    } else {
-      WARN("Device does not support half precision floating point operations.");
+  if (queue.get_device().has(sycl::aspect::fp16)) {
+    if constexpr (std::is_same_v<T, sycl::half> ||
+                  std::is_same_v<U, sycl::half>) {
+      // Get binary operators from T
+      const auto Operators = get_op_types<T>();
+      const auto RetType = unnamed_type_pack<T>();
+      const auto ReducedType = unnamed_type_pack<U>();
+      // check all work group dimensions
+      for_all_combinations<invoke_init_joint_reduce_group>(
+          Dims, RetType, ReducedType, Operators, queue);
     }
+  } else {
+    WARN("Device does not support half precision floating point operations.");
   }
-#endif
 }
 
 TEST_CASE("Group and sub-group reduce functions", "[group_func][fp16][dim]") {
   auto queue = once_per_unit::get_queue();
-  // FIXME: ComputeCpp has no half
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  WARN("ComputeCpp cannot handle half type. Skipping the test.");
-#else
   if (queue.get_device().has(sycl::aspect::fp16)) {
     // Get binary operators from TestType
     const auto Operators = get_op_types<sycl::half>();
@@ -137,7 +94,6 @@ TEST_CASE("Group and sub-group reduce functions", "[group_func][fp16][dim]") {
   } else {
     WARN("Device does not support half precision floating point operations.");
   }
-#endif
 }
 
 TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
@@ -146,42 +102,18 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
   using T = std::tuple_element_t<0, TestType>;
   using U = std::tuple_element_t<1, TestType>;
 
-  // check types to only print warning once
-  if constexpr (std::is_same_v<T, char> && std::is_same_v<U, char>) {
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCpp does not implement reduce for unsigned long long int and "
-        "long long int. Skipping the test cases.");
-    WARN(
-        "ComputeCpp cannot handle cases of different types. "
-        "Skipping such test cases.");
-    WARN("ComputeCpp cannot handle half type. Skipping the test.");
-#endif
-  }
-
-  // FIXME: ComputeCpp has no half
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   if (queue.get_device().has(sycl::aspect::fp16)) {
-    // FIXME: ComputeCpp cannot handle cases of different types
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    if constexpr (std::is_same_v<T, U>)
-#endif
-    {
-      if constexpr (std::is_same_v<T, sycl::half> ||
-                    std::is_same_v<U, sycl::half>) {
-        // Get binary operators from T
-        const auto Operators = get_op_types<T>();
-        const auto RetType = unnamed_type_pack<T>();
-        const auto ReducedType = unnamed_type_pack<U>();
-        // check all work group dimensions
-        for_all_combinations<invoke_init_reduce_over_group>(
-            Dims, RetType, ReducedType, Operators, queue);
-      }
+    if constexpr (std::is_same_v<T, sycl::half> ||
+                  std::is_same_v<U, sycl::half>) {
+      // Get binary operators from T
+      const auto Operators = get_op_types<T>();
+      const auto RetType = unnamed_type_pack<T>();
+      const auto ReducedType = unnamed_type_pack<U>();
+      // check all work group dimensions
+      for_all_combinations<invoke_init_reduce_over_group>(
+          Dims, RetType, ReducedType, Operators, queue);
     }
   } else {
     WARN("Device does not support half precision floating point operations.");
   }
-#endif
 }

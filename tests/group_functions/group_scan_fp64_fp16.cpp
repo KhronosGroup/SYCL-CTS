@@ -27,20 +27,7 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "group_scan.h"
 
-// FIXME: ComputeCpp does not implement scan for unsigned long long int and long
-// long int
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-using ScanTypes =
-    unnamed_type_pack<size_t, float, char, signed char, unsigned char,
-                      short int, unsigned short int, int, unsigned int,
-                      long int, unsigned long int>;
-#else
-using ScanTypes = unnamed_type_pack<float, char, int>;
-#endif
-#else
 using ScanTypes = Types;
-#endif
 
 using DoubleHalfTypes = unnamed_type_pack<double, sycl::half>;
 using DoubleHalfExtendedTypes = concatenation<ScanTypes, DoubleHalfTypes>::type;
@@ -72,15 +59,10 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
       "hipSYCL joint_exclusive_scan and joint_inclusive_scan cannot process "
       "over several sub-groups simultaneously. Using one sub-group only.");
   WARN("hipSYCL does not support sycl::known_identity_v yet.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN("ComputeCpp does not implement joint scan. Skipping the test.");
-  WARN("ComputeCpp cannot handle half type. Skipping the test.");
 #endif
 
-  // FIXME: ComputeCpp does not implement joint scan and half type
   // FIXME: hipSYCL cannot handle cases of different types
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if SYCL_CTS_COMPILING_WITH_HIPSYCL
   return;
 #else
   auto queue = once_per_unit::get_queue();
@@ -119,15 +101,10 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
       "hipSYCL joint_exclusive_scan and joint_inclusive_scan with init values "
       "cannot process over several sub-groups simultaneously. Using one "
       "sub-group only.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN("ComputeCpp does not implement joint scan. Skipping the test.");
-  WARN("ComputeCpp cannot handle half type. Skipping the test.");
 #endif
 
-  // FIXME: ComputeCpp does not implement joint scan and half type
   // FIXME: hipSYCL cannot handle cases of different types
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if SYCL_CTS_COMPILING_WITH_HIPSYCL
   return;
 #else
   auto queue = once_per_unit::get_queue();
@@ -160,18 +137,6 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("Group and sub-group scan functions with init",
  "[group_func][fp16][fp64][dim]", TestCombinations2Types)({
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN(
-      "ComputeCpp cannot handle cases of different types for T and V. Skipping "
-      "the test.");
-  WARN("ComputeCpp cannot handle half type. Skipping the test.");
-#endif
-
-  // FIXME: ComputeCpp has no half
-  // FIXME: ComputeCpp cannot handle cases of different types
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   auto queue = once_per_unit::get_queue();
 
   // Get the packs from the test combination type.
@@ -194,7 +159,6 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
         "Device does not support half and double precision floating point "
         "operations simultaneously.");
   }
-#endif
 });
 
 #endif

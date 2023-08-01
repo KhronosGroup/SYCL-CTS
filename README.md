@@ -24,7 +24,7 @@ To compile the CTS, the following dependencies are required:
 - Python 3.7 or higher
 - CMake 3.15 or higher
 - A SYCL implementation
-  - The CTS currently supports ComputeCpp, DPC++ and hipSYCL
+  - The CTS currently supports DPC++ and hipSYCL
   - See the [AddSYCLExecutable.cmake](cmake/AddSYCLExecutable.cmake) module on
     how to add support for additional SYCL implementations
 
@@ -35,7 +35,7 @@ cloning this repository and its submodules:
 
 Then enter the `SYCL-CTS` folder and configure the build using CMake:
 
-`cmake -S . -B build -DSYCL_IMPLEMENTATION=<ComputeCpp|DPCPP|hipSYCL>`
+`cmake -S . -B build -DSYCL_IMPLEMENTATION=<DPCPP|hipSYCL>`
 
 See [CMake Configuration Options](#cmake-configuration-options) for additional
 configuration options that can be passed here.
@@ -53,7 +53,7 @@ for all categories.
 The CTS can be configured using the following CMake configuration options:
 
 `SYCL_IMPLEMENTATION` (default: None)
- One of `ComputeCpp`, `DPCPP` or `hipSYCL`.
+ `DPCPP` or `hipSYCL`.
 
 `SYCL_CTS_EXCLUDE_TEST_CATEGORIES` (default: None)
  Optional file specifying a list of test categories to be excluded from the build.
@@ -79,8 +79,6 @@ The CTS can be configured using the following CMake configuration options:
  Enable OpenCL interoperability tests.
 
 Additionally, the following SYCL implementation-specific options can be used:
-
-`COMPUTECPP_INSTALL_DIR` (default: None)
 
 `DPCPP_INSTALL_DIR` (default: None)
 

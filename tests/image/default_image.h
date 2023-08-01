@@ -21,8 +21,7 @@
 #ifndef SYCL_CTS_IMAGE_DEFAULT_IMAGE_H
 #define SYCL_CTS_IMAGE_DEFAULT_IMAGE_H
 
-#if !(defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
-      defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 /**
  * Provides functionality to construct a default sampled_image and associated

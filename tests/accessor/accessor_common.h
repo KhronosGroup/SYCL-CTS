@@ -354,7 +354,7 @@ void check_empty_accessor_constructor_post_conditions(
 
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
 // hipsycl and computcpp
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 /**
  * @brief Common function that constructs accessor with default constructor
@@ -500,8 +500,7 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
   }
 #endif
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
-        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 namespace detail {
 /**
@@ -550,8 +549,8 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
   }
 }
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
-// hipsycl and computecpp
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+// hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 /**
  * @brief Function helps to check zero dimension constructor of accessor
@@ -638,8 +637,7 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
     }
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
-        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 /**
  * @brief Function that tries to read or/and write depending on AccessMode
@@ -668,8 +666,8 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
 }
 
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
-// hipsycl and computecpp
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+// hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 /**
  * @brief Function helps to check common constructor of accessor
@@ -773,8 +771,8 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
     }
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
-        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+
 /**
  * @brief Function mainly for testing no_init property. The function tries to
  * write to the accessor and only after that tries to read from the accessor.
@@ -803,7 +801,7 @@ void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
   }
 }
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 template <accessor_type AccType, typename DataT, int Dimension,
           sycl::access_mode AccessMode, sycl::target Target>
@@ -890,8 +888,7 @@ void check_no_init_prop_exception(GetAccFunctorT construct_acc) {
     }
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
-        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Function tests AccT::get_pointer() method
 
@@ -908,8 +905,8 @@ void test_accessor_ptr(AccT& accessor, T expected_data) {
 }
 
 // FIXME: re-enable when sycl::access::decorated enumeration is implemented in
-// hipsycl and computecpp
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+// hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 template <typename T, typename AccT, typename AccRes>
 void test_accessor_ptr_device(AccT& accessor, T& expected_data,
                               AccRes& res_acc) {
@@ -932,8 +929,7 @@ void test_accessor_ptr_device(AccT& accessor, T& expected_data,
   res_acc[0] &= std::is_same_v<decltype(acc_pointer), sycl::global_ptr<T>>;
   res_acc[0] &= value_operations::are_equal(*acc_pointer, expected_data);
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
-        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Function checks common buffer and local accessor member functions
  */
@@ -1087,8 +1083,8 @@ void check_get_property_member_func(GetAccFunctorT construct_acc) {
 }
 
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
-// hipsycl and computecpp
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+// hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Function invokes \c get_property() member function without \c PropT
  * property and verifies that false returns
@@ -1123,8 +1119,7 @@ void check_get_property_member_without_no_init(GetAccFunctorT construct_acc) {
                          sycl_cts::util::equals_exception(sycl::errc::invalid));
   }
 }
-#endif  // SYCL_CTS_COMPILING_WITH_HIPSYCL &&
-        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#endif  // SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Function checks common buffer and local accessor member types
  */

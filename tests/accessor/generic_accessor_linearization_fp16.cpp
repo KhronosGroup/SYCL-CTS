@@ -23,7 +23,7 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 #include "accessor_common.h"
 #include "generic_accessor_linearization.h"
@@ -36,7 +36,7 @@ using namespace generic_accessor_linearization;
 
 namespace generic_accessor_linearization_fp16 {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("Generic sycl::accessor linearization test. fp16 type", "[accessor]",
  test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();

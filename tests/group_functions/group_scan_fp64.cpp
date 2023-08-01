@@ -24,20 +24,7 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "group_scan.h"
 
-// FIXME: ComputeCpp does not implement scan for unsigned long long int and long
-// long int
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-using ScanTypes =
-    unnamed_type_pack<size_t, float, char, signed char, unsigned char,
-                      short int, unsigned short int, int, unsigned int,
-                      long int, unsigned long int>;
-#else
-using ScanTypes = unnamed_type_pack<float, char, int>;
-#endif
-#else
 using ScanTypes = Types;
-#endif
 
 using DoubleType = unnamed_type_pack<double>;
 using DoubleExtendedTypes = concatenation<ScanTypes, double>::type;
@@ -71,14 +58,8 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
       "hipSYCL joint_exclusive_scan and joint_inclusive_scan cannot process "
       "over several sub-groups simultaneously. Using one sub-group only.");
   WARN("hipSYCL does not support sycl::known_identity_v yet.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN("ComputeCpp does not implement joint scan. Skipping the test.");
 #endif
 
-  // FIXME: ComputeCpp does not implement joint scan
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   auto queue = once_per_unit::get_queue();
 
   // Get the packs from the test combination type.
@@ -102,7 +83,6 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
   } else {
     WARN("Device does not support double precision floating point operations.");
   }
-#endif
 });
 
 // FIXME: known_identity is not impemented yet for hipSYCL.
@@ -117,14 +97,8 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
       "hipSYCL joint_exclusive_scan and joint_inclusive_scan with init values "
       "cannot process over several sub-groups simultaneously. Using one "
       "sub-group only.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN("ComputeCpp does not implement joint scan. Skipping the test.");
 #endif
 
-  // FIXME: ComputeCpp does not implement joint scan
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   auto queue = once_per_unit::get_queue();
 
   // Get the packs from the test combination type.
@@ -150,26 +124,12 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
   } else {
     WARN("Device does not support double precision floating point operations.");
   }
-#endif
 });
 
 // FIXME: known_identity is not impemented yet for hipSYCL.
 DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("Group and sub-group scan functions", "[group_func][fp64][dim]",
  TestCombinations1Type)({
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN(
-      "ComputeCpp fails to compile with segfault in the compiler. "
-      "Skipping the test.");
-#endif
-
-  // FIXME: Codeplay ComputeCpp - CE 2.11.0
-  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
-  //        clang-8: error: unable to execute command: Segmentation fault
-  //        clang-8: error: spirv-ll-tool command failed due to signal
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   auto queue = once_per_unit::get_queue();
 
   // Get the packs from the test combination type.
@@ -183,7 +143,6 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
   } else {
     WARN("Device does not support double precision floating point operations.");
   }
-#endif
 });
 
 // FIXME: hipSYCL has wrong arguments order for inclusive_scan_over_group: init
@@ -191,25 +150,6 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("Group and sub-group scan functions with init",
  "[group_func][type_list][fp64][dim]", TestCombinations2Types)({
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN(
-      "ComputeCpp does not implement scan for unsigned long long int and "
-      "long long int. Skipping the test cases.");
-  WARN(
-      "ComputeCpp cannot handle cases of different types for T and V. Skipping "
-      "such test cases.");
-  WARN(
-      "ComputeCpp fails to compile with segfault in the compiler. "
-      "Skipping the test.");
-#endif
-
-  // FIXME: Codeplay ComputeCpp - CE 2.11.0
-  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
-  //        clang-8: error: unable to execute command: Segmentation fault
-  //        clang-8: error: spirv-ll-tool command failed due to signal
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   auto queue = once_per_unit::get_queue();
 
   // Get the packs from the test combination type.
@@ -219,19 +159,12 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
   const auto Types1 = Type1Pack{};
 
   if (queue.get_device().has(sycl::aspect::fp64)) {
-    // FIXME: ComputeCpp cannot handle cases of different types
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    for_all_combinations<invoke_init_scan_over_group_same_type>(Dimensions,
-                                                                Types1, queue);
-#else
     using Type2Pack = std::tuple_element_t<2, TestType>;
     const auto Types2 = Type2Pack{};
 
     for_all_combinations_with<invoke_init_scan_over_group, double>(
         Dimensions, Types1, Types2, queue);
-#endif
   } else {
     WARN("Device does not support double precision floating point operations.");
   }
-#endif
 });

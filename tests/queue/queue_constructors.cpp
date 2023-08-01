@@ -21,7 +21,6 @@
 
 #include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 
 namespace queue_constructors {
 
@@ -204,9 +203,8 @@ TEST_CASE("Check queue (context, device, async_handler, property_list)",
   CHECK(queue.has_property<sycl::property::queue::in_order>());
 }
 
-// FIXME: re-enable when sycl::errc is implemented in computecpp
-DISABLED_FOR_TEST_CASE(ComputeCpp)
-("Check exceptions thrown for mismatched context and device", "[queue]")({
+TEST_CASE("Check exceptions thrown for mismatched context and device",
+          "[queue]") {
   const sycl::device device(cts_selector);
   sycl::device otherDevice = device;
   auto platforms = sycl::platform::get_platforms();
@@ -248,6 +246,6 @@ DISABLED_FOR_TEST_CASE(ComputeCpp)
                          sycl::exception,
                          sycl_cts::util::equals_exception(sycl::errc::invalid));
   }
-});
+}
 
 } /* namespace queue_constructors */
