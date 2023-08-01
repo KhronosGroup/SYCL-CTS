@@ -63,8 +63,7 @@ static size_t get_idx(size_t id, member_function member_func) {
  * work-group may have such that it is a power of two and
  * smaller or equal to 1024. */
 static std::vector<size_t> get_3d_work_group_sizes(const sycl::device& device) {
-#if !(defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
-      defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
   const sycl::id<3> max_work_item_sizes =
       device.get_info<sycl::info::device::max_work_item_sizes<3>>();
 #else
@@ -219,14 +218,8 @@ void register_member_function_no_type_check(size_t linear_execution_range,
   }
   // calculate the unique index of this work-item and member function
   const size_t idx = get_idx(linear_global_id, member);
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  // ComputeCPP cannot implicitly convert sycl::id to size_t.
-  // Set the result to some bogus value so that the workaround is removed.
-  accessor[idx] = std::numeric_limits<size_t>::max() - 1;
-#else
   // returned value of the function is converted to size_t for uniform storage
   accessor[idx] = to_size_t(returned_value);
-#endif
 }
 
 /**
@@ -245,12 +238,6 @@ void register_member_function(size_t linear_execution_range,
 }
 
 TEST_CASE("sub-group api", "[sub_group]") {
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  WARN(
-      "ComputeCpp cannot implicitly convert sycl::id to size_t. "
-      "The test that requires this functionality is set to fail.");
-#endif
-
   sycl::device device = sycl_cts::util::get_cts_object::device();
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   const sycl::range<3> local_range{2, 3, 5};

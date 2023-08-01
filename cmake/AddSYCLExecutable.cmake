@@ -1,8 +1,8 @@
-set (KNOWN_SYCL_IMPLEMENTATIONS "Intel_SYCL;DPCPP;ComputeCpp;hipSYCL")
+set (KNOWN_SYCL_IMPLEMENTATIONS "Intel_SYCL;DPCPP;hipSYCL")
 if (NOT ${SYCL_IMPLEMENTATION} IN_LIST KNOWN_SYCL_IMPLEMENTATIONS)
     message(FATAL_ERROR
         "The SYCL CTS requires specifying a SYCL implementation with "
-        "-DSYCL_IMPLEMENTATION=[Intel_SYCL,DPCPP;ComputeCpp,hipSYCL]")
+        "-DSYCL_IMPLEMENTATION=[Intel_SYCL,DPCPP;hipSYCL]")
 endif()
 
 if(NOT TARGET OpenCL_Proxy)

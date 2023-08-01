@@ -22,17 +22,15 @@
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
-// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
-// ComputeCpp
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "reduction_with_identity_param.h"
 #endif
 
 namespace reduction_with_identity_param_fp64 {
 
-// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
-// ComputeCpp
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("reduction_with_identity_param_fp64", "[reduction]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
 
@@ -42,9 +40,8 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
   reduction_with_identity_param::run_test_for_type<double>()(queue, "double");
 });
 
-// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
-// ComputeCpp
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("reduction_with_identity_param_item_twice_fp64", "[reduction]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
 
@@ -55,9 +52,8 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
       queue, "double");
 });
 
-// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
-// ComputeCpp
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("reduction_with_identity_param_even_item_fp64", "[reduction]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
 
@@ -68,9 +64,8 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
       queue, "double");
 });
 
-// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
-// ComputeCpp
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("reduction_with_identity_param_no_one_fp64", "[reduction]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
 

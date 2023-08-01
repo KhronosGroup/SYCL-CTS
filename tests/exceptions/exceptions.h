@@ -16,7 +16,7 @@
  */
 namespace {
 
-const std::array<sycl::errc, 15>& get_err_codes() {
+inline const std::array<sycl::errc, 15>& get_err_codes() {
   static const std::array all_err_codes{
       sycl::errc::success,
       sycl::errc::runtime,
@@ -36,7 +36,7 @@ const std::array<sycl::errc, 15>& get_err_codes() {
   return all_err_codes;
 }
 
-std::string errc_to_string(const sycl::errc& errc) {
+inline std::string errc_to_string(const sycl::errc& errc) {
   switch (errc) {
     case sycl::errc::success:
       return "success";

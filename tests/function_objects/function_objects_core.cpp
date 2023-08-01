@@ -27,13 +27,13 @@
 #include "function_objects.h"
 #endif
 
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("function objects void specializations scalar core", "[function_objects]")({
   const auto types = named_type_pack<TYPES>::generate(TYPE_NAMES);
   for_all_combinations<check_scalar_return_type>(get_op_types(), types, types);
 });
 
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("function objects void specializations vector core", "[function_objects]")({
   const auto types_vector =
       named_type_pack<TYPES_VECTOR>::generate(TYPE_NAMES_VECTOR);

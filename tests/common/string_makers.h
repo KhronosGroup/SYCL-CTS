@@ -62,7 +62,7 @@ struct StringMaker<sycl::target> {
       case type::device:
         return "target::device";
 // FIXME: re-enable when target::host_task is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
       case type::host_task:
         return "target::host_task";
 #endif
@@ -179,12 +179,8 @@ struct StringMaker<sycl::access::address_space> {
         return "address_space::global_space";
       case type::local_space:
         return "address_space::local_space";
-// FIXME: re-enable when sycl::access::address_space::generic_space is
-// implemented in computecpp
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
       case type::generic_space:
         return "address_space::generic_space";
-#endif  // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
       case type::private_space:
         return "address_space::private_space";
       default:
@@ -194,9 +190,8 @@ struct StringMaker<sycl::access::address_space> {
   }
 };
 
-// FIXME: re-enable when sycl::access::decorated is implemented in computecpp
-// and hipsycl
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: re-enable when sycl::access::decorated is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 template <>
 struct StringMaker<sycl::access::decorated> {
   using type = sycl::access::decorated;

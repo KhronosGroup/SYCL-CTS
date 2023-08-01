@@ -42,7 +42,7 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     {
       // FIXME: Reenable when struct information descriptors are implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
       /** check get_info parameters
        */
       {

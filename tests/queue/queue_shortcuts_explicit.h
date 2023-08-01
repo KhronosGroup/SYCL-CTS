@@ -22,7 +22,6 @@
 #define SYCL_CTS_QUEUE_QUEUE_SHORTCUTS_EXPLICIT_H
 
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 #include "../common/get_cts_object.h"
 #include "../common/value_operations.h"
 #include "queue_shortcuts_common.h"
@@ -73,8 +72,6 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
     iota_comp(expected.begin(), expected.end(), t_test);
     CHECK(value_operations::are_equal(host_accessor, expected));
   }
-  // ComputeCpp requested kernel name could not be found
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
   //  copy (accessor, host raw pointer)
   {
     sycl::buffer<T, 1> buffer(range);
@@ -140,13 +137,6 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
     iota_comp(expected.begin(), expected.end(), t_test);
     CHECK(value_operations::are_equal(host_accessor, expected));
   }
-#else
-  WARN(
-      "queue.copy() test does not compile for ComputeCPP"
-      "Skipping the test case.");
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  // ComputeCpp gives an error next time the function is called
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
   //  update_host
   {
     std::unique_ptr<T[]> src = std::make_unique<T[]>(element_count);
@@ -155,13 +145,6 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
     sycl::event e = q.update_host(accessor);
     e.wait();
   }
-#else
-  WARN(
-      "queue.update_host() test does not compile for ComputeCPP"
-      "Skipping the test case.");
-#endif
-  // ComputeCpp function not defined
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
   //  fill
   {
     sycl::buffer<T, 1> buffer(range);
@@ -172,11 +155,6 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
     sycl::host_accessor host_accessor(buffer, sycl::read_only);
     CHECK(value_operations::are_equal(host_accessor, t_test));
   }
-#else
-  WARN(
-      "queue.fill() test does not compile for ComputeCPP"
-      "Skipping the test case.");
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
 }
 
 template <typename T>

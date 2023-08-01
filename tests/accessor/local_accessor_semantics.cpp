@@ -49,11 +49,6 @@ struct storage {
 
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("local_accessor common reference semantics (host)", "[local_accessor]")({
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN(
-      "Implementation does not define std::hash for accessor. "
-      "Affected test cases set to fail.");
-#endif
   sycl_cts::util::get_cts_object::queue().submit([&](sycl::handler& cgh) {
     sycl::local_accessor<int, 0> local_accessor_0{cgh};
     sycl::local_accessor<int, 0> local_accessor_1{cgh};
@@ -62,7 +57,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   });
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("local_accessor common reference semantics (kernel)", "[local_accessor]")({
   using type = sycl::local_accessor<int, 0>;
   common_reference_semantics::check_kernel<storage<0>, type>(
@@ -79,13 +74,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   int result = 0;
 
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  int val = 1;
-  int new_val = 2;
-#else
   constexpr int val = 1;
   constexpr int new_val = 2;
-#endif
 
   SECTION("mutation to copy") {
     {

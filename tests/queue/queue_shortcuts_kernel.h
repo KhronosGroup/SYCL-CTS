@@ -22,7 +22,6 @@
 #define SYCL_CTS_QUEUE_QUEUE_SHORTCUTS_KERNEL_H
 
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 #include "../common/get_cts_object.h"
 
 namespace queue_shortcuts_kernel {

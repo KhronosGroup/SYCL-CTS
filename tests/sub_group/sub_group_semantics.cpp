@@ -116,7 +116,7 @@ TEST_CASE("sub_group by-value semantics", "[sub_group]") {
 }
 
 // FIXME: re-enable when == and != operators is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 TEST_CASE("Check sycl::sub_group equality", "[sub_group]") {
   size_t code_count =
       to_integral(common_by_value_semantics::current_check::size);
@@ -141,6 +141,5 @@ TEST_CASE("Check sycl::sub_group equality", "[sub_group]") {
     CHECK(result[i]);
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
-        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 }  // namespace sub_group_semantics

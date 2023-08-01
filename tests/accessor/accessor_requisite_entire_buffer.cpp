@@ -21,7 +21,6 @@
 //  Provide checks that ranged accessor still creates a requisite for the entire
 //  underlying buffer
 
-#include "../common/disabled_for_test_case.h"
 #include "../common/get_cts_object.h"
 #include "catch2/catch_test_macros.hpp"
 
@@ -29,11 +28,8 @@
 
 namespace accessor_requisite_entire_buffer {
 
-// FIXME: re-enable when possibility of a SYCL kernel with an unnamed type is
-// implemented in computecpp
-DISABLED_FOR_TEST_CASE(ComputeCpp)
-("requisite for the entire underlying buffer for sycl::accessor ",
- "[accessor]")({
+TEST_CASE("requisite for the entire underlying buffer for sycl::accessor ",
+          "[accessor]") {
   auto q = sycl_cts::util::get_cts_object::queue();
 
   if (!q.get_device().has(sycl::aspect::usm_shared_allocations))
@@ -83,6 +79,6 @@ DISABLED_FOR_TEST_CASE(ComputeCpp)
     q.wait_and_throw();
     CHECK(*check_data == accessor_tests_common::changed_val);
   }
-});
+}
 
 }  // namespace accessor_requisite_entire_buffer

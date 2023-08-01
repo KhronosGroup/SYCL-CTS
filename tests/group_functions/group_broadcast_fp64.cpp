@@ -23,53 +23,19 @@
 TEMPLATE_TEST_CASE_SIG("Group broadcast", "[group_func][fp64][dim]",
                        ((int D), D), 1, 2, 3) {
   auto queue = once_per_unit::get_queue();
-  // check dimension to only print warning once
-  if constexpr (D == 1) {
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCpp fails to compile with segfault in the compiler. "
-        "Skipping the test.");
-#endif
-  }
-
-  // FIXME: Codeplay ComputeCpp - CE 2.11.0
-  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
-  //        clang-8: error: unable to execute command: Segmentation fault
-  //        clang-8: error: spirv-ll-tool command failed due to signal
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   if (queue.get_device().has(sycl::aspect::fp64)) {
     broadcast_group<D, double>(queue);
   } else {
     WARN("Device does not support double precision floating point operations.");
   }
-#endif
 }
 
 TEMPLATE_TEST_CASE_SIG("Sub-group broadcast and select",
                        "[group_func][fp64][dim]", ((int D), D), 1, 2, 3) {
   auto queue = once_per_unit::get_queue();
-  // check dimension to only print warning once
-  if constexpr (D == 1) {
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCpp fails to compile with segfault in the compiler. "
-        "Skipping the test.");
-#endif
-  }
-
-  // FIXME: Codeplay ComputeCpp - CE 2.11.0
-  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
-  //        clang-8: error: unable to execute command: Segmentation fault
-  //        clang-8: error: spirv-ll-tool command failed due to signal
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   if (queue.get_device().has(sycl::aspect::fp64)) {
     broadcast_sub_group<D, double>(queue);
   } else {
     WARN("Device does not support double precision floating point operations.");
   }
-#endif
 }

@@ -21,7 +21,6 @@
 
 #include "../../../util/sycl_exceptions.h"
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 
 #define TEST_NAME queue_properties
 
@@ -110,27 +109,21 @@ void check_props(sycl::queue& queue) {
 }
 
 void check_in_order_throws(sycl::queue& queue) {
-// Enable when SYCL_CTS_SUPPORT_HAS_ERRC_ENUM is defined for ComputeCPP
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
   auto action = [&] {
     auto get_prop =
         queue.template get_property<sycl::property::queue::enable_profiling>();
   };
   CHECK_THROWS_MATCHES(action(), sycl::exception,
                        sycl_cts::util::equals_exception(sycl::errc::invalid));
-#endif
 }
 
 void check_enable_profiling_throws(sycl::queue& queue) {
-// Enable when SYCL_CTS_SUPPORT_HAS_ERRC_ENUM is defined for ComputeCPP
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
   auto action = [&] {
     auto get_prop =
         queue.template get_property<sycl::property::queue::in_order>();
   };
   CHECK_THROWS_MATCHES(action(), sycl::exception,
                        sycl_cts::util::equals_exception(sycl::errc::invalid));
-#endif
 }
 
 TEST_CASE("check property::queue::enable_profiling", "[queue]") {

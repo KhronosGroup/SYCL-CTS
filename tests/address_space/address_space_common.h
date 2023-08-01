@@ -181,7 +181,7 @@ class check_types {
           localAcc[0] = initAcc[2];
           T priv = initAcc[3];
 // FIXME: re-enable when sycl::access::decorated is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
           pass &= test_duplication(
               globalAcc
                   .template get_multi_ptr<sycl::access::decorated::legacy>(),

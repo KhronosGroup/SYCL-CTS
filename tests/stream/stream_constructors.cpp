@@ -20,7 +20,6 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 
 struct stream_kernel {
   void operator()() const {}
