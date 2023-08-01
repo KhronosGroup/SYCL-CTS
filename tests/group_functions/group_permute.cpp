@@ -23,27 +23,9 @@
 // hipSYCL does not permute right 8-bit types inside groups
 TEMPLATE_LIST_TEST_CASE("Group and sub-group permute",
                         "[group_func][type_list][dim]", CustomTypes) {
-  // check types to only print warning once
-  if constexpr (std::is_same_v<TestType, char>) {
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
-    WARN(
-        "hipSYCL has not implemented sycl::marray type yet. Skipping the test "
-        "cases.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCpp does not implement permute functions. "
-        "Skipping the test.");
-#endif
-  }
-
-  // FIXME: ComputeCpp do not implement permute functions
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   auto queue = once_per_unit::get_queue();
 
   permute_sub_group<1, TestType>(queue);
   permute_sub_group<2, TestType>(queue);
   permute_sub_group<3, TestType>(queue);
-#endif
 }

@@ -19,7 +19,6 @@
 *******************************************************************************/
 
 #include "../../util/extensions.h"
-#include "../common/disabled_for_test_case.h"
 #include "marray_common.h"
 
 namespace marray_alignment {
@@ -43,8 +42,7 @@ using namespace sycl_cts;
 #define TEST_NAME marray_alignment
 
 // have no type "mbool2", "mbool3", "mbool4", "mbool8", "mbool16"
-DISABLED_FOR_TEST_CASE(ComputeCpp)
-("marray_alignment", "[marray]")({
+TEST_CASE("marray_alignment", "[marray]") {
   ALIAS_TEST(char, int8_t);
   ALIAS_TEST(uchar, uint8_t);
   ALIAS_TEST(short, int16_t);
@@ -81,6 +79,6 @@ DISABLED_FOR_TEST_CASE(ComputeCpp)
     ALIAS_TEST(double, double);
   }
 #endif  // SYCL_CTS_ENABLE_DOUBLE_TESTS
-});
+}
 
 }  // namespace marray_alignment

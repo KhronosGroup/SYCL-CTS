@@ -110,8 +110,8 @@ struct get_cts_object {
     */
     template <class kernel_name>
     static sycl::kernel prebuilt(sycl::queue &queue) {
-// ComputeCpp and hipSYCL do not yet support sycl::get_kernel_bundle
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// hipSYCL does not yet support sycl::get_kernel_bundle
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
       auto ctx = queue.get_context();
       auto kb_exe =
           sycl::get_kernel_bundle<kernel_name, sycl::bundle_state::executable>(

@@ -49,10 +49,6 @@ TEST_CASE("predefined selectors", "[device_selector]") {
   const bool noneAvailable =
       !cpuAvailable && !gpuAvailable && !acceleratorAvailable;
 
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  WARN("ComputeCPP cannot compare exception code. Workaround is in place.");
-#endif
-
   // Compatibility with old SYCL 1.2.1 device selectors.
 
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
@@ -131,11 +127,8 @@ TEST_CASE("predefined selectors", "[device_selector]") {
         if (is_host(defaultDevice)) {
           FAIL("selected non-host device when no devices are available");
         }
-      } catch (const sycl::exception &e) {
-// ComputeCpp cannot make comparison
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+      } catch (const sycl::exception& e) {
         CHECK((sycl::errc::runtime == e.code()));
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
       }
     }
   }
@@ -148,11 +141,8 @@ TEST_CASE("predefined selectors", "[device_selector]") {
       try {
         auto cpuDevice = util::get_cts_object::device(cpuSelector);
         FAIL("selected a CPU device when none are available");
-      } catch (const sycl::exception &e) {
-// ComputeCpp cannot make comparison
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+      } catch (const sycl::exception& e) {
         CHECK((sycl::errc::runtime == e.code()));
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
       }
     }
   }
@@ -165,11 +155,8 @@ TEST_CASE("predefined selectors", "[device_selector]") {
       try {
         auto gpuDevice = util::get_cts_object::device(gpuSelector);
         FAIL("selected a GPU device when none are available");
-      } catch (const sycl::exception &e) {
-// ComputeCpp cannot make comparison
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+      } catch (const sycl::exception& e) {
         CHECK((sycl::errc::runtime == e.code()));
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
       }
     }
   }
@@ -184,11 +171,8 @@ TEST_CASE("predefined selectors", "[device_selector]") {
         auto acceleratorDevice =
             util::get_cts_object::device(acceleratorSelector);
         FAIL("selected an accelerator device when none are available");
-      } catch (const sycl::exception &e) {
-        // ComputeCpp cannot make comparison
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+      } catch (const sycl::exception& e) {
         CHECK(sycl::errc::runtime == e.code());
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
       }
     }
   }

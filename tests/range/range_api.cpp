@@ -119,9 +119,7 @@ void test_range_kernels(
 
   // friend range operatorOP(const range& rhs)
   UNARY_INDEX_KERNEL_TEST(+, range, result);
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
   UNARY_INDEX_KERNEL_TEST(-, range, result);
-#endif
 
   // friend range& operatorOP(range& rhs)
   PREFIX_INDEX_KERNEL_TEST(++, range, result);
@@ -213,7 +211,6 @@ class test_range {
 };
 
 // The tests are using unnamed lambda
-#if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
 // This tests is only here to check if one can submit a large kernel.
 // We don't use an `empty kernel` to avoid smart compiler
 // optimizing the submission away
@@ -227,7 +224,6 @@ void test_launch_kernel_1d_range(std::size_t N, sycl::queue q) {
   CHECK_VALUE_SCALAR(log, a[0], 1);
   sycl::free(a, q);
 }
-#endif
 
 /** test sycl::range::get(int index) return size_t
  */
@@ -242,61 +238,45 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
+    // use across all the dimensions
+    auto my_queue = util::get_cts_object::queue();
+    // templated approach
     {
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-      WARN(
-          "ComputeCpp does not implement unary minus operation. "
-          "Skipping the test for this operation.");
-#endif
+      sycl::range<1> range_1d_g(test_range<1>::m_x);
+      sycl::range<2> range_2d_g(test_range<2>::m_x, test_range<2>::m_y);
+      sycl::range<3> range_3d_g(test_range<3>::m_x, test_range<3>::m_y,
+                                test_range<3>::m_z);
 
-      // use across all the dimensions
-      auto my_queue = util::get_cts_object::queue();
-      // templated approach
-      {
-        sycl::range<1> range_1d_g(test_range<1>::m_x);
-        sycl::range<2> range_2d_g(test_range<2>::m_x, test_range<2>::m_y);
-        sycl::range<3> range_3d_g(test_range<3>::m_x, test_range<3>::m_y,
-                                  test_range<3>::m_z);
+      sycl::range<1> range_1d_l(test_range<1>::m_local);
+      sycl::range<2> range_2d_l(test_range<2>::m_local, test_range<2>::m_local);
+      sycl::range<3> range_3d_l(test_range<3>::m_local, test_range<3>::m_local,
+                                test_range<3>::m_local);
 
-        sycl::range<1> range_1d_l(test_range<1>::m_local);
-        sycl::range<2> range_2d_l(test_range<2>::m_local,
-                                  test_range<2>::m_local);
-        sycl::range<3> range_3d_l(test_range<3>::m_local,
-                                  test_range<3>::m_local,
-                                  test_range<3>::m_local);
-
-        test_range<1> test1d;
-        test1d(log, range_1d_g, range_1d_l, my_queue);
-        test_range<2> test2d;
-        test2d(log, range_2d_g, range_2d_l, my_queue);
-        test_range<3> test3d;
-        test3d(log, range_3d_g, range_3d_l, my_queue);
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-        WARN(
-            "ComputeCpp does not implement unary minus operation. "
-            "Skipping the test for this operation.");
-#endif
+      test_range<1> test1d;
+      test1d(log, range_1d_g, range_1d_l, my_queue);
+      test_range<2> test2d;
+      test2d(log, range_2d_g, range_2d_l, my_queue);
+      test_range<3> test3d;
+      test3d(log, range_3d_g, range_3d_l, my_queue);
 
 // The tests are using unnamed lambda
-#if SYCL_CTS_ENABLE_FULL_CONFORMANCE && \
-    !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-        // 32 bits, it's trivial. Sanity test.
-        test_launch_kernel_1d_range(std::numeric_limits<uint32_t>::max(),
-                                    my_queue);
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+      // 32 bits, it's trivial. Sanity test.
+      test_launch_kernel_1d_range(std::numeric_limits<uint32_t>::max(),
+                                  my_queue);
 
-        if constexpr (sizeof(size_t) > 4) {
-          // Prime number bigger than UINT32_MAX
-          test_launch_kernel_1d_range(4'294'967'311ULL, my_queue);
+      if constexpr (sizeof(size_t) > 4) {
+        // Prime number bigger than UINT32_MAX
+        test_launch_kernel_1d_range(4'294'967'311ULL, my_queue);
 
-          // Most GPU hardware have limitation to 32bits * 1024 for their native
-          // API so lets try more
-          test_launch_kernel_1d_range(
-              std::numeric_limits<uint32_t>::max() * 2024ULL, my_queue);
-        } else {
-          WARN("Some parameters not tested because size_t is 32bits");
-        }
-#endif
+        // Most GPU hardware have limitation to 32bits * 1024 for their native
+        // API so lets try more
+        test_launch_kernel_1d_range(
+            std::numeric_limits<uint32_t>::max() * 2024ULL, my_queue);
+      } else {
+        WARN("Some parameters not tested because size_t is 32bits");
       }
+#endif
     }
   }
 };

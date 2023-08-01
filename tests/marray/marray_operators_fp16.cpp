@@ -19,7 +19,6 @@
 *******************************************************************************/
 
 #include "../../util/extensions.h"
-#include "../common/disabled_for_test_case.h"
 #include "../common/type_coverage.h"
 #include "marray_common.h"
 #include "marray_operators.h"
@@ -29,9 +28,7 @@ namespace marray_operators_fp16 {
 using namespace sycl_cts;
 using namespace marray_operators;
 
-// ComputeCpp some operations are not defined for sycl::half, such as ++
-DISABLED_FOR_TEST_CASE(ComputeCpp)
-("operators fp16", "[marray]")({
+TEST_CASE("operators fp16", "[marray]") {
   auto queue = util::get_cts_object::queue();
   using availability =
       util::extensions::availability<util::extensions::tag::fp16>;
@@ -43,6 +40,6 @@ DISABLED_FOR_TEST_CASE(ComputeCpp)
   }
 
   check_marray_operators_for_type<sycl::half>{}("sycl::half");
-})
+}
 
 }  // namespace marray_operators_fp16

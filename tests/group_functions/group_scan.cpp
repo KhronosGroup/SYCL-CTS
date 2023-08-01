@@ -22,20 +22,7 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "group_scan.h"
 
-// FIXME: ComputeCpp does not implement scan for unsigned long long int and long
-// long int
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-using ScanTypes =
-    unnamed_type_pack<size_t, float, char, signed char, unsigned char,
-                      short int, unsigned short int, int, unsigned int,
-                      long int, unsigned long int>;
-#else
-using ScanTypes = unnamed_type_pack<float, char, int>;
-#endif
-#else
 using ScanTypes = Types;
-#endif
 
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
@@ -50,16 +37,11 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       "hipSYCL joint_exclusive_scan and joint_inclusive_scan cannot process "
       "over several sub-groups simultaneously. Using one sub-group only.");
   WARN("hipSYCL does not support sycl::known_identity_v yet.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN("ComputeCpp does not implement joint scan. Skipping the test.");
 #endif
 
   auto queue = once_per_unit::get_queue();
-  // FIXME: ComputeCpp does not implement joint scan
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
   // FIXME: hipSYCL cannot handle cases of different types
-#elif defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
+#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   for_all_combinations<invoke_joint_scan_group_same_type>(Dims, ScanTypes{},
                                                           queue);
 #else
@@ -80,16 +62,11 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       "hipSYCL joint_exclusive_scan and joint_inclusive_scan with init values "
       "cannot process over several sub-groups simultaneously. Using one "
       "sub-group only.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN("ComputeCpp does not implement joint scan. Skipping the test.");
 #endif
 
   auto queue = once_per_unit::get_queue();
-  // FIXME: ComputeCpp does not implement joint scan
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
   // FIXME: hipSYCL cannot handle cases of different types
-#elif defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
+#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   for_all_combinations<invoke_init_joint_scan_group_same_type>(
       Dims, ScanTypes{}, queue);
 #else
@@ -101,25 +78,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 // FIXME: known_identity is not impemented yet for hipSYCL.
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("Group and sub-group scan functions", "[group_func][type_list][dim]")({
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN(
-      "ComputeCpp does not implement scan for unsigned long long int and "
-      "long long int. Skipping the test cases.");
-  WARN(
-      "ComputeCpp fails to compile with segfault in the compiler. "
-      "Skipping the test.");
-#endif
-
   auto queue = once_per_unit::get_queue();
-  // FIXME: Codeplay ComputeCpp - CE 2.11.0
-  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
-  //        clang-8: error: unable to execute command: Segmentation fault
-  //        clang-8: error: spirv-ll-tool command failed due to signal
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   for_all_combinations<invoke_scan_over_group>(Dims, ScanTypes{}, queue);
-#endif
 });
 
 // FIXME: hipSYCL has wrong arguments order for inclusive_scan_over_group: init
@@ -127,31 +87,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("Group and sub-group scan functions with init",
  "[group_func][type_list][dim]")({
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  WARN(
-      "ComputeCpp does not implement scan for unsigned long long int and "
-      "long long int. Skipping the test cases.");
-  WARN(
-      "ComputeCpp cannot handle cases of different types for T and V. Skipping "
-      "such test cases.");
-  WARN(
-      "ComputeCpp fails to compile with segfault in the compiler. "
-      "Skipping the test.");
-#endif
-
   auto queue = once_per_unit::get_queue();
-  // FIXME: Codeplay ComputeCpp - CE 2.11.0
-  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
-  //        clang-8: error: unable to execute command: Segmentation fault
-  //        clang-8: error: spirv-ll-tool command failed due to signal
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-  // FIXME: ComputeCpp cannot handle cases of different types
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  for_all_combinations<invoke_init_scan_over_group_same_type>(Dims, ScanTypes{},
-                                                              queue);
-#else
   for_all_combinations<invoke_init_scan_over_group>(Dims, ScanTypes{},
                                                     ScanTypes{}, queue);
-#endif
 });

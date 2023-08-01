@@ -19,9 +19,8 @@
 *******************************************************************************/
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
-// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
-// ComputeCpp
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "reducer_api.h"
 #endif
 
@@ -32,9 +31,8 @@
 
 struct kernel_name;
 
-// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
-// ComputeCpp
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("reducer class", "[reducer]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
 
@@ -68,8 +66,8 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
       std::all_of(results.begin(), results.end(), [](int val) { return val; }));
 });
 
-// FIXME: re-enable when reducer is fully implemented in hipSYCL, ComputeCpp
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+// FIXME: re-enable when reducer is fully implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("reducer api core", "[reducer]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
 

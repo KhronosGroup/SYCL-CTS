@@ -41,8 +41,6 @@ class run_marray_constructor_test {
   template <size_t num_elements = NumElements,
             std::enable_if_t<num_elements != 1, bool> = true>
   void check_constexpr_single_element() {
-    // cannot construct a constexpr instance using another constexpr instance
-#if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     //  one DataT instance, one marray instance
     {
       constexpr sycl::marray<DataT, num_elements - 1> ma_const =
@@ -62,11 +60,6 @@ class run_marray_constructor_test {
       std::iota(ma_inc.begin(), ma_inc.end(), 1);
       CHECK(value_operations::are_equal(ma_inc, ma));
     }
-#else
-    WARN(
-        "ComputeCPP do not support constexpr constructors that use"
-        "other constexpr instances. Skipping the test case.");
-#endif
   }
 
  public:

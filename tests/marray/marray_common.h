@@ -37,35 +37,24 @@ inline auto get_num_elements() {
 
 /** @brief Execute the tests with the same values for DataT. */
 inline auto get_types() {
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  WARN(
-      "ComputeCPP does not support custom types other than sycl::half."
-      "Skipping the test case for custom types.");
-#endif
-  return named_type_pack<
-      char, int, float, std::int8_t, std::int32_t
-  // does not work with any custom type other than sycl::half
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-      ,
-      custom_int
-#endif
+  return named_type_pack<char, int, float, std::int8_t, std::int32_t, custom_int
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-      ,
-      unsigned char, short, unsigned short, unsigned int, long, unsigned long,
-      long long, unsigned long long, bool, std::uint8_t, std::int16_t,
-      std::uint16_t, std::uint32_t, std::int64_t, std::uint64_t
+                         ,
+                         unsigned char, short, unsigned short, unsigned int,
+                         long, unsigned long, long long, unsigned long long,
+                         bool, std::uint8_t, std::int16_t, std::uint16_t,
+                         std::uint32_t, std::int64_t, std::uint64_t
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
-      >::generate("char", "int", "float", "std::int8_t", "std::int32_t"
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-                  ,
-                  "custom_type"
-#endif
+                         >::generate("char", "int", "float", "std::int8_t",
+                                     "std::int32_t", "custom_type"
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-                  ,
-                  "unsigned char", "short", "unsigned short", "unsigned int",
-                  "long", "unsigned long", "long long", "unsigned long long",
-                  "bool", "std::uint8_t", "std::int16_t", "std::uint16_t",
-                  "std::uint32_t", "std::int64_t", "std::uint64_t"
+                                     ,
+                                     "unsigned char", "short", "unsigned short",
+                                     "unsigned int", "long", "unsigned long",
+                                     "long long", "unsigned long long", "bool",
+                                     "std::uint8_t", "std::int16_t",
+                                     "std::uint16_t", "std::uint32_t",
+                                     "std::int64_t", "std::uint64_t"
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   );
 }

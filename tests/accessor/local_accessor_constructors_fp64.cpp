@@ -22,7 +22,7 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::local_accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "accessor_common.h"
 #include "local_accessor_constructors.h"
 
@@ -34,7 +34,7 @@ using namespace local_accessor_constructors;
 
 namespace local_accessor_constructors_fp64 {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("sycl::local_accessor constructors. fp64 type", "[accessor]",
  test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();

@@ -19,7 +19,6 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 #include "../common/semantics_reference.h"
 #include "../image/default_image.h"
 

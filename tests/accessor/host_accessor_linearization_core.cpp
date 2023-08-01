@@ -23,7 +23,7 @@
 #include "catch2/catch_test_macros.hpp"
 
 // FIXME: re-enable when sycl::host_accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 #include "accessor_common.h"
 #include "host_accessor_linearization.h"
@@ -33,7 +33,7 @@ using namespace host_accessor_linearization;
 
 namespace host_accessor_liniarization_core {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 ("sycl::host_accessor linearization. core types", "[accessor]",
  test_combinations)({
   common_run_tests<run_host_linearization_for_type, TestType>();

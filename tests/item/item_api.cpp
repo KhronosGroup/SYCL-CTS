@@ -23,7 +23,6 @@
 #include "catch2/catch_test_macros.hpp"
 
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 
 namespace item_api_test {
 using namespace sycl_cts;
@@ -160,14 +159,12 @@ class kernel_item {
     type_acc[get_range_dim] =
         std::is_same_v<size_t, decltype(item.get_range(0))>;
 
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
     // operator size_t()
     if constexpr (dims == 1) {
       size_t val = item;
       api_acc[size_t_operator] = (val == item.get_id(0));
       type_acc[size_t_operator] = std::is_same_v<size_t, decltype(val)>;
     }
-#endif
 
     // get_linear_id
     size_t index = compute_linear_id(item);
@@ -289,13 +286,10 @@ void test_item() {
   STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::item<3>>);
 }
 
-DISABLED_FOR_TEST_CASE(ComputeCpp)
-("sycl::item<1> api", "[item]")({ test_item<1>(); });
+TEST_CASE("sycl::item<1> api", "[item]") { test_item<1>(); }
 
-DISABLED_FOR_TEST_CASE(ComputeCpp)
-("sycl::item<2> api", "[item]")({ test_item<2>(); });
+TEST_CASE("sycl::item<2> api", "[item]") { test_item<2>(); }
 
-DISABLED_FOR_TEST_CASE(ComputeCpp)
-("sycl::item<3> api", "[item]")({ test_item<3>(); });
+TEST_CASE("sycl::item<3> api", "[item]") { test_item<3>(); }
 
 }  // namespace item_api_test

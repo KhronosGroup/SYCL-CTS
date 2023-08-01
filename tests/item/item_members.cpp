@@ -18,7 +18,6 @@
 //  limitations under the License.
 //
 *******************************************************************************/
-#include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
 #include "../common/common.h"
@@ -34,11 +33,10 @@ void run_test() {
   range_index_space_id::check_members_test<sycl::item<Dim>, Dim>(type_name);
 }
 
-DISABLED_FOR_TEST_CASE(ComputeCpp)
-("sycl::item members", "[item]")({
+TEST_CASE("sycl::item members", "[item]") {
   run_test<1>();
   run_test<2>();
   run_test<3>();
-});
+}
 
 }  // namespace item_members

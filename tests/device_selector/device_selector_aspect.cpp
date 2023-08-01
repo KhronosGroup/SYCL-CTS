@@ -19,7 +19,6 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 #include "../common/type_coverage.h"
 
 #include <random>
@@ -135,10 +134,7 @@ void check_selector_exception(const Selector& s) {
     sycl::device device{s};
     FAIL("selected a device when none are available");
   } catch (const sycl::exception& e) {
-    // ComputeCpp cannot make comparison
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
     CHECK(sycl::errc::runtime == e.code());
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
   }
 }
 
@@ -388,7 +384,6 @@ constexpr void check_for_random_set(const named_type_pack<AspectsT...>&) {
 
 template <typename AspectT>
 class kernel_aspect;
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  Functor that checks any_device_has and all_devices_have functionality. */
 template <typename AspectT>
@@ -427,12 +422,8 @@ class check_any_device_has_all_devices_have {
     }
   }
 };
-#endif
-TEST_CASE("aspect", "[device_selector]") {
-#if SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  WARN("ComputeCPP cannot compare exception code. Workaround is in place.");
-#endif
 
+TEST_CASE("aspect", "[device_selector]") {
   // check whether all constructors compile when no aspects are specified
   check_no_aspects();
 
@@ -454,13 +445,10 @@ TEST_CASE("aspect", "[device_selector]") {
   check_for_random_set<random_aspects_count>(aspect_pack);
 }
 
-// FIXME: re-enable when any_device_has and all_devices_have are implemented for
-// ComputeCpp
-DISABLED_FOR_TEST_CASE(ComputeCpp)
-("Check any_device_has and all_devices_have", "[device_selector]")({
+TEST_CASE("Check any_device_has and all_devices_have", "[device_selector]") {
   const auto aspect_pack = get_aspect_pack();
 
   for_all_combinations<check_any_device_has_all_devices_have>(aspect_pack);
-});
+}
 
 }  // namespace device_selector_aspect

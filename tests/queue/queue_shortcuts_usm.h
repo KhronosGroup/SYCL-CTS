@@ -24,7 +24,6 @@
 #include <utility>
 
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 #include "../common/get_cts_object.h"
 #include "queue_shortcuts_common.h"
 
@@ -240,18 +239,12 @@ void test_unified_shared_memory(sycl::queue q, unsigned int element_count) {
   if (has_usm_shared_allocations) {
     T* ptr = sycl::malloc_shared<T>(element_count, q);
     sycl::event prefetch_no_events = q.prefetch(ptr, element_count * sizeof(T));
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
     sycl::event prefetch_single_event =
         q.prefetch(ptr, element_count * sizeof(T), prefetch_no_events);
     sycl::event prefetch_multiple_events =
         q.prefetch(ptr, element_count * sizeof(T),
                    {prefetch_no_events, prefetch_single_event});
     prefetch_multiple_events.wait();
-#else
-    WARN(
-        "queue.prefetch() test does not compile for ComputeCPP"
-        "Skipping the test case.");
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
     prefetch_no_events.wait();
     sycl::free(ptr, q);
   } else {
@@ -266,18 +259,12 @@ void test_unified_shared_memory(sycl::queue q, unsigned int element_count) {
     constexpr int advice = 0;
     sycl::event advise_no_events =
         q.mem_advise(ptr, element_count * sizeof(int), advice);
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
     sycl::event advise_single_event = q.mem_advise(
         ptr, element_count * sizeof(int), advice, advise_no_events);
     sycl::event advise_multiple_events =
         q.mem_advise(ptr, element_count * sizeof(int), advice,
                      {advise_no_events, advise_single_event});
     advise_multiple_events.wait();
-#else
-    WARN(
-        "queue.mem_advise() test does not compile for ComputeCPP"
-        "Skipping the test case.");
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
     advise_no_events.wait();
     sycl::free(ptr, q);
   } else {

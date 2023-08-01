@@ -23,17 +23,9 @@
 #include <system_error>
 #include <utility>
 
-// TODO: Remove when all three implementations support the sycl::exception API
+// TODO: Remove when all implementations support the sycl::exception API
 // entirely
-#if SYCL_CTS_COMPILING_WITH_COMPUTECPP
-
-#define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE 0
-#define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY 0
-#define SYCL_CTS_SUPPORT_HAS_ERRC_FOR 0
-#define SYCL_CTS_SUPPORT_HAS_ERROR_CATEGORY_FOR 0
-#define SYCL_CTS_SUPPORT_HAS_MAKE_ERROR_CODE 0
-
-#elif SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 #define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE 1
 #define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY 0

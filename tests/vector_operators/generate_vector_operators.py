@@ -183,8 +183,6 @@ all_type_test_template = Template("""
   if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
-// FIXME: re-enable when unary opeartor+ is implemented
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
   for (int i = 0; i < ${size}; ++i) {
     resArr[i] = static_cast<${type}>(${test_value_1});
   }
@@ -196,7 +194,6 @@ all_type_test_template = Template("""
   if (!check_vector_values(resVec, resArr)) {
     resAcc[0] = false;
   }
-#endif
   for (int i = 0; i < ${size}; ++i) {
     resArr[i] = -(static_cast<${type}>(${test_value_1}));
   }
@@ -1251,11 +1248,8 @@ subscript_operator_test_template = Template("""
     // check subscript operator value
     for (int i = 0; i < ${size}; ++i) {
       if (subscriptVec1[i] != data[i] || subscriptVec2[i] != data[i]
-// FIXME: re-enable when subscript operator for swizzle vec is implemented
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
         || subscriptVec1.${swizzle}[i] != data[i]
         || subscriptVec2.${swizzle}[i] != data[i]
-#endif
         )
       {
         resAcc[0] = false;
@@ -1272,14 +1266,11 @@ vector_t_operator_test_template = Template("""
     const sycl::vec<${type}, 1> testVec(val);
     sycl::vec<${type}, ${size}>::vector_t data = testVec;
 
-// FIXME: re-enable when vec(vector_t) constructor is implemented
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
     const sycl::vec<${type}, 1> testVec2(data);
 
     if (!(testVec == testVec2)) {
       resAcc[0] = false;
     }
-#endif
   }
 #endif  // __SYCL_DEVICE_ONLY__
 """)
@@ -1289,8 +1280,6 @@ dataT_operator_test_template = Template("""
   {
     ${type} val = ${val};
     const sycl::vec<${type}, 1> testVec(${val});
-// FIXME: re-enable when subscript operator DataT() is implemented
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
     ${type} data = testVec;
     if (data != val) {
       resAcc[0] = false;
@@ -1300,7 +1289,6 @@ dataT_operator_test_template = Template("""
     if (data != val) {
       resAcc[0] = false;
     }
-#endif
   }
 """)
 

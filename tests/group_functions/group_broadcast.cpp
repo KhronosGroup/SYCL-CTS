@@ -20,78 +20,22 @@
 
 #include "group_broadcast.h"
 
-// FIXME: ComputeCpp does not implement group_broadcast for sycl::vec,
-//        sycl::marray, unsigned long long int, and long long int
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-
-using BroadcastTypes =
-    std::tuple<size_t, float, char, signed char, unsigned char, short int,
-               unsigned short int, int, unsigned int, long int,
-               unsigned long int, bool, util::custom_type>;
-#else
-using BroadcastTypes = std::tuple<float, char, int, bool, util::custom_type>;
-#endif
-#else
 using BroadcastTypes = CustomTypes;
-#endif
 
 TEMPLATE_LIST_TEST_CASE("Group broadcast", "[group_func][type_list][dim]",
                         BroadcastTypes) {
   auto queue = once_per_unit::get_queue();
-  // check type to only print warning once
-  if constexpr (std::is_same_v<TestType, char>) {
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCpp does not implement group_broadcast for vec, marray, "
-        "unsigned long long int, and long long int types. Skipping those test "
-        "cases.");
-    WARN(
-        "ComputeCpp fails to compile with segfault in the compiler. "
-        "Skipping the test.");
-#endif
-  }
-
-  // FIXME: Codeplay ComputeCpp - CE 2.11.0
-  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
-  //        clang-8: error: unable to execute command: Segmentation fault
-  //        clang-8: error: spirv-ll-tool command failed due to signal
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   // check all work group dimensions
   broadcast_group<1, TestType>(queue);
   broadcast_group<2, TestType>(queue);
   broadcast_group<3, TestType>(queue);
-#endif
 }
 
 TEMPLATE_LIST_TEST_CASE("Sub-group broadcast and select",
                         "[group_func][type_list][dim]", BroadcastTypes) {
   auto queue = once_per_unit::get_queue();
-  // check type to only print warning once
-  if constexpr (std::is_same_v<TestType, char>) {
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCpp does not implement group_broadcast for vec, marray, "
-        "unsigned long long int, and long long int types. Skipping those test "
-        "cases.");
-    WARN(
-        "ComputeCpp fails to compile with segfault in the compiler. "
-        "Skipping the test.");
-#endif
-  }
-
-  // FIXME: Codeplay ComputeCpp - CE 2.11.0
-  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
-  //        clang-8: error: unable to execute command: Segmentation fault
-  //        clang-8: error: spirv-ll-tool command failed due to signal
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   // check all work group dimensions
   broadcast_sub_group<1, TestType>(queue);
   broadcast_sub_group<2, TestType>(queue);
   broadcast_sub_group<3, TestType>(queue);
-#endif
 }

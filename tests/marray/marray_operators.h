@@ -22,7 +22,6 @@
 #define SYCLCTS_TESTS_MARRAY_MARRAY_OPERATOR_H
 
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 #include "../common/section_name_builder.h"
 #include "marray_common.h"
 #include "marray_operator_helper.h"
@@ -480,26 +479,10 @@ class check_marray_operators_for_type {
 
     const auto num_elements = marray_common::get_num_elements();
 
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-    WARN(
-        "ComputeCPP gives runtime error for binary negation (~)."
-        "Skipping the test case for binary negation.");
-#endif
-
     static const auto unary_operators =
-        named_type_pack<op_upos, op_uneg, op_pre_inc, op_pre_dec, op_lnot
-    // ~ gives segmentation fault with char
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-                        ,
-                        op_bnot
-#endif
-                        >::generate("unary +", "unary -", "pre ++", "pre --",
-                                    "!"
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-                                    ,
-                                    "~"
-#endif
-        );
+        named_type_pack<op_upos, op_uneg, op_pre_inc, op_pre_dec, op_lnot,
+                        op_bnot>::generate("unary +", "unary -", "pre ++",
+                                           "pre --", "!", "~");
     for_all_combinations<run_unary, DataT>(num_elements, unary_operators);
 
     static const auto unary_post_operators =
@@ -507,40 +490,13 @@ class check_marray_operators_for_type {
                                                             "post --");
     for_all_combinations<run_unary_post, DataT>(num_elements,
                                                 unary_post_operators);
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCPP does not compile for logical AND (&&) and logical "
-        "OR "
-        "(||). Skipping the test case.");
-#endif
-
     static const auto binary_operators =
         named_type_pack<op_add, op_sub, op_mul, op_div, op_mod, op_bor, op_band,
-                        op_bxor, op_sl, op_sr
-    // <=, >=, <, > are not being compiled in computecpp for double type
-    // <=, >=, <, > are ambiguous for 'const double' and
-    // 'const sycl::marray<double, 1>'
-#if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-                        ,
-                        op_eq, op_not_eq, op_less, op_grater, op_less_eq,
-                        op_grater_eq
-#endif
-    // && and || are not defined for floating-point types
-    // && and || are ambiguous for 'const bool' and
-    //  'const cl::sycl::marray<bool, 1>'
-    // && and || for any? type 'static_assert failed due to
-    //  requirement 'num_elements<bool>() == 2UL'
-#if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-                        ,
-                        op_land, op_lor
-#endif
-                        >::generate("+", "-", "*", "/", "%", "|", "&", "^",
-                                    "<<", ">>"
-#if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-                                    ,
-                                    "==", "!=", "<", ">", "<=", ">=", "&&", "||"
-#endif
-        );
+                        op_bxor, op_sl, op_sr, op_eq, op_not_eq, op_less,
+                        op_grater, op_less_eq, op_grater_eq, op_land,
+                        op_lor>::generate("+", "-", "*", "/", "%", "|", "&",
+                                          "^", "<<", ">>", "==", "!=", "<", ">",
+                                          "<=", ">=", "&&", "||");
 
     for_all_combinations<run_binary, DataT>(num_elements, binary_operators);
 

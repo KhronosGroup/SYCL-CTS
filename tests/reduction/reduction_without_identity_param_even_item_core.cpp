@@ -24,9 +24,8 @@
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
-// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
-// ComputeCpp
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "reduction_without_identity_param_common.h"
 
 namespace reduction_without_identity_param_even_item_core {
@@ -111,14 +110,13 @@ void run_tests_for_identity_type(sycl::queue& queue) {
 }
 }  // namespace reduction_without_identity_param_even_item_core
 
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
-        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 namespace reduction_without_identity_param_even_item_core {
 
 // FIXME: re-enable when compilation failure for reduction with custom type is
-// fixed and sycl::reduction is implemented in hipSYCL and ComputeCpp
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+// fixed and sycl::reduction is implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("reduction_without_identity_param_even_item_core", "[reduction]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
 
