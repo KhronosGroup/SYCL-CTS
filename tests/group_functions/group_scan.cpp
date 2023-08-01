@@ -135,17 +135,11 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
   // Get the packs from the test combination type.
   using DimensionsPack = std::tuple_element_t<0, TestType>;
   using Type1Pack = std::tuple_element_t<1, TestType>;
+  using Type2Pack = std::tuple_element_t<2, TestType>;
   const auto Dimensions = DimensionsPack::generate_unnamed();
   const auto Types1 = Type1Pack{};
-
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  for_all_combinations<invoke_init_scan_over_group_same_type>(Dimensions,
-                                                              Types1, queue);
-#else
-  using Type2Pack = std::tuple_element_t<2, TestType>;
   const auto Types2 = Type2Pack{};
 
   for_all_combinations<invoke_init_scan_over_group>(Dimensions, Types1, Types2,
                                                     queue);
-#endif
 });
