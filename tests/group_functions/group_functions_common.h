@@ -44,14 +44,18 @@ bool equal_impl(const T& a, const U& b) {
 template <typename T, int N>
 bool equal_impl(const sycl::vec<T, N>& a, const sycl::vec<T, N>& b) {
   bool res = true;
-  for (int i = 0; i < N; ++i) res &= (a[i] == b[i]);
+  for (int i = 0; i < N; ++i) {
+    res &= (a[i] == b[i]);
+  }
   return res;
 }
 
 template <typename T, int N, typename U>
 bool equal_impl(const sycl::vec<T, N>& a, const U& b) {
   bool res = true;
-  for (int i = 0; i < N; ++i) res &= (a[i] == b);
+  for (int i = 0; i < N; ++i) {
+    res &= (a[i] == b);
+  }
   return res;
 }
 
@@ -61,14 +65,18 @@ bool equal_impl(const sycl::vec<T, N>& a, const U& b) {
 template <typename T, size_t N>
 bool equal_impl(const sycl::marray<T, N>& a, const sycl::marray<T, N>& b) {
   bool res = true;
-  for (int i = 0; i < N; ++i) res &= (a[i] == b[i]);
+  for (int i = 0; i < N; ++i) {
+    res &= (a[i] == b[i]);
+  }
   return res;
 }
 
 template <typename T, size_t N, typename U>
 bool equal_impl(const sycl::marray<T, N>& a, const U& b) {
   bool res = true;
-  for (size_t i = 0; i < N; ++i) res &= (a[i] == b);
+  for (size_t i = 0; i < N; ++i) {
+    res &= (a[i] == b);
+  }
   return res;
 }
 #endif
