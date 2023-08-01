@@ -23,7 +23,7 @@ set(DPCPP_FLAGS "-fsycl;-sycl-std=2020;${DPCPP_FLAGS}")
 # -fsycl-id-queries-fit-in-int is an optimization enabled by default, but
 # adds non-conformant behavior that limits the number of work-items in an
 # invocation of a kernel, so we disable this behavior here.
-set(DPCPP_FLAGS "-fno-sycl-id-queries-fit-in-int;${DPCPP_FLAGS}")
+set(DPCPP_FLAGS "${DPCPP_FLAGS};-fno-sycl-id-queries-fit-in-int")
 
 # Set target triple(s) if specified
 if(DEFINED DPCPP_TARGET_TRIPLES)
