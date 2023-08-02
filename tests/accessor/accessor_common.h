@@ -575,9 +575,6 @@ template <accessor_type AccType, typename DataT, int Dimension,
           sycl::access_mode AccessMode = sycl::access_mode::read_write,
           sycl::target Target = sycl::target::device, typename GetAccFunctorT>
 void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
-// FIXME Check is disabled due to unresolved issue
-//       https://github.com/KhronosGroup/SYCL-Docs/issues/408
-#if !SYCL_CTS_COMPILING_WITH_DPCPP
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
   auto queue = once_per_unit::get_queue();
   sycl::range<dim_buf> buf_range =
@@ -621,7 +618,6 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
   for (size_t i = 0; i < conditions_checks_size; i++) {
     CHECK(conditions_check[i]);
   }
-#endif
 }
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
