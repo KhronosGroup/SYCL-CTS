@@ -303,6 +303,10 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op,
   bool ret_type_e = false;
   bool ret_type_i = false;
 
+  if (std::sqrt(std::numeric_limits<T>::max()) + T(init) <= range.size()) {
+    return;
+  }
+
   std::vector<size_t> local_id(range_size, 0);
 
   sycl::nd_range<D> executionRange(range, range);
