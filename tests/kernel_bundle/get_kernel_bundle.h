@@ -94,6 +94,7 @@ struct run_tests_for_overloads_that_obtain_kernel_name {
         kernel_bundle::get_restrictions<KernelDescriptorT,
                                         sycl::bundle_state::executable>()};
     using kernel = typename KernelDescriptorT::type;
+    if (!sycl::is_compatible<kernel>(device)) return;
     auto k_id{sycl::get_kernel_id<kernel>()};
 
     // verifications for
@@ -131,13 +132,14 @@ struct helper_device_image_has_kernel {
   /**
    * Sets \p has_kernel[index] if \p device_image.has_kernel(id)
    * for the kernel \p id described by \p KernelDescriptorT. */
-  void operator()(const sycl::device_image<BundleState> &device_image,
-                  std::bitset<KernelDescriptorCount> &has_kernel,
-                  unsigned int index) {
+  void operator()(const sycl::device_image<BundleState>& device_image,
+                  std::bitset<KernelDescriptorCount>& has_kernel,
+                  unsigned int index, const sycl::device& device) {
     using kernel = typename KernelDescriptorT::type;
     auto kernel_id{sycl::get_kernel_id<kernel>()};
 
-    if (device_image.has_kernel(kernel_id)) {
+    if (device_image.has_kernel(kernel_id) ||
+        !sycl::is_compatible({kernel_id}, device)) {
       has_kernel[index] = true;
     }
   }
@@ -155,7 +157,8 @@ struct helper_device_image_has_kernel_dev {
     using kernel = typename KernelDescriptorT::type;
     auto kernel_id{sycl::get_kernel_id<kernel>()};
 
-    if (device_image.has_kernel(kernel_id, device)) {
+    if (device_image.has_kernel(kernel_id, device) ||
+        !sycl::is_compatible({kernel_id}, device)) {
       has_kernel_dev[index] = true;
     }
   }
@@ -197,7 +200,7 @@ inline void run_test_for_all_overload_types(
         index = 0;
         ((helper_device_image_has_kernel<KernelDescriptorsT, BundleState,
                                          kernel_descriptor_count>{}(
-              device_image, has_kernel, index),
+              device_image, has_kernel, index, device),
           ++index),
          ...);
 
