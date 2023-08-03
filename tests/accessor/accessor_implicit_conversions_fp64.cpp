@@ -9,7 +9,7 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-#if !defined(__HIPSYCL__)
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 #include "accessor_common.h"
 #include "accessor_implicit_conversions.h"
