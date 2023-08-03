@@ -298,8 +298,11 @@ class run_api_tests {
             })
             .wait_and_throw();
       }
-      if constexpr (Target == sycl::target::device)
-        for (size_t i = 0; i < res_size; ++i) CHECK(res[i]);
+      if constexpr (Target == sycl::target::device) {
+        for (size_t i = 0; i < res_size; ++i) {
+          CHECK(res[i]);
+        }
+      }
       if constexpr (AccessMode != sycl::access_mode::read)
         CHECK(value_operations::are_equal(data, changed_val));
     }
@@ -396,8 +399,11 @@ class run_api_tests {
               })
               .wait_and_throw();
         }
-        if constexpr (Target == sycl::target::device)
-          for (size_t i = 0; i < res_size; ++i) CHECK(res[i]);
+        if constexpr (Target == sycl::target::device) {
+          for (size_t i = 0; i < res_size; ++i) {
+            CHECK(res[i]);
+          }
+        }
         if constexpr (AccessMode != sycl::access_mode::read) {
           CHECK(value_operations::are_equal(data[linear_index], changed_val));
           CHECK(value_operations::are_equal(data[first_elem], expected_val));
