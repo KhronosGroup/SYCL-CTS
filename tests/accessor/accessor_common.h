@@ -1027,26 +1027,27 @@ void test_accessor_ptr(AccT& accessor, T expected_data) {
 // hipsycl
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 template <typename T, typename AccT, typename AccRes>
-void test_accessor_ptr_device(AccT& accessor, T& expected_data,
-                              AccRes& res_acc) {
+void test_accessor_ptr_device(AccT& accessor, T& expected_data, AccRes& res_acc,
+                              size_t& res_i) {
   auto acc_multi_ptr_no =
       accessor.template get_multi_ptr<sycl::access::decorated::no>();
-  res_acc[0] = std::is_same_v<
+  res_acc[res_i++] = std::is_same_v<
       decltype(acc_multi_ptr_no),
       typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
-  res_acc[0] &= value_operations::are_equal(*acc_multi_ptr_no, expected_data);
+  res_acc[res_i++] =
+      value_operations::are_equal(*acc_multi_ptr_no, expected_data);
 
   auto acc_multi_ptr_yes =
       accessor.template get_multi_ptr<sycl::access::decorated::yes>();
-  res_acc[0] &= std::is_same_v<
+  res_acc[res_i++] = std::is_same_v<
       decltype(acc_multi_ptr_yes),
       typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
-  res_acc[0] &= value_operations::are_equal(*(acc_multi_ptr_yes.get_raw()),
-                                            expected_data);
+  res_acc[res_i++] = value_operations::are_equal(*(acc_multi_ptr_yes.get_raw()),
+                                                 expected_data);
 
   auto acc_pointer = accessor.get_pointer();
-  res_acc[0] &= std::is_same_v<decltype(acc_pointer), sycl::global_ptr<T>>;
-  res_acc[0] &= value_operations::are_equal(*acc_pointer, expected_data);
+  res_acc[res_i++] = std::is_same_v<decltype(acc_pointer), sycl::global_ptr<T>>;
+  res_acc[res_i++] = value_operations::are_equal(*acc_pointer, expected_data);
 }
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
