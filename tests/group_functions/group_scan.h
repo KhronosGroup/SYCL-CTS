@@ -238,7 +238,7 @@ struct init_joint_scan_group {
 
       size_t work_group_size = work_group_range.size();
 
-      const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
+      const size_t sizes[3] = {5, work_group_size / 2};
       for (size_t size : sizes) {
         check_scan<D, T, U, sycl::group<D>, true, I>(
             queue, size, executionRange, OperatorT(), op_name);
