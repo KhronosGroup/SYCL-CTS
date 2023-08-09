@@ -303,7 +303,8 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op,
   bool ret_type_e = false;
   bool ret_type_i = false;
 
-  if (std::sqrt(std::numeric_limits<T>::max()) + T(init) <= range.size()) {
+  if (((range_size * (range_size + 1) / 2) + T(init)) >
+      std::numeric_limits<T>::max()) {
     return;
   }
 
