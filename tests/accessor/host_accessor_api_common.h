@@ -116,13 +116,13 @@ class run_api_tests {
       SECTION(get_section_name<dims>(
           type_name, access_mode_name,
           "Check api for ranged host_accessor with offset")) {
-        constexpr size_t acc_range_size = 4;
-        constexpr size_t buff_range_size = 8;
-        constexpr size_t buff_size = (dims == 3)   ? 8 * 8 * 8
-                                     : (dims == 2) ? 8 * 8
-                                                   : 8;
-        constexpr size_t offset = 4;
-        constexpr size_t index = 2;
+        constexpr size_t acc_range_size = 2;
+        constexpr size_t buff_range_size = 4;
+        constexpr size_t buff_size = (dims == 3)   ? 4 * 4 * 4
+                                     : (dims == 2) ? 4 * 4
+                                                   : 4;
+        constexpr size_t offset = 2;
+        constexpr size_t index = 1;
         int linear_index = 0;
         for (size_t i = 0; i < dims; i++) {
           linear_index += (offset + index) * pow(buff_range_size, dims - i - 1);
