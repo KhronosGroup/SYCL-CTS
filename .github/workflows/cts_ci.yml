@@ -59,7 +59,7 @@ jobs:
           # - sycl-impl: computecpp
           # version: 2.11.0
           - sycl-impl: dpcpp
-            version: ea2e6e0fc64a612880e4acb27fef4cedca3c3db6
+            version: c4db251179dcd1b30a1043d4780634dbe39b3e3a
           - sycl-impl: hipsycl
             version: 3d8b1cd
     steps:
@@ -119,7 +119,7 @@ jobs:
           - sycl-impl: computecpp
             version: 2.11.0
           - sycl-impl: dpcpp
-            version: ea2e6e0fc64a612880e4acb27fef4cedca3c3db6
+            version: c4db251179dcd1b30a1043d4780634dbe39b3e3a
           - sycl-impl: hipsycl
             version: 3d8b1cd
     env:
