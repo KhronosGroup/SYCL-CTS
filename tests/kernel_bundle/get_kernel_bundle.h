@@ -94,6 +94,8 @@ struct run_tests_for_overloads_that_obtain_kernel_name {
         kernel_bundle::get_restrictions<KernelDescriptorT,
                                         sycl::bundle_state::executable>()};
     using kernel = typename KernelDescriptorT::type;
+    // Need to check for compatibility before calling get_kernel_bundle() for a
+    // certain kernel as it leads to exception if the kernel is not compatible.
     if (!sycl::is_compatible<kernel>(device)) return;
     auto k_id{sycl::get_kernel_id<kernel>()};
 
@@ -138,6 +140,10 @@ struct helper_device_image_has_kernel {
     using kernel = typename KernelDescriptorT::type;
     auto kernel_id{sycl::get_kernel_id<kernel>()};
 
+    // This helper is part of the selector. Device images may already be
+    // filtered before the selector call wrt the device, so Selector may not
+    // face all the kernels. Hence there is need to check if the kernel is
+    // compatible with the device to see if it was already filtered out.
     if (device_image.has_kernel(kernel_id) ||
         !sycl::is_compatible({kernel_id}, device)) {
       has_kernel[index] = true;
@@ -157,6 +163,10 @@ struct helper_device_image_has_kernel_dev {
     using kernel = typename KernelDescriptorT::type;
     auto kernel_id{sycl::get_kernel_id<kernel>()};
 
+    // This helper is part of the selector. Device images may already be
+    // filtered before the selector call wrt the device, so Selector may not
+    // face all the kernels. Hence there is need to check if the kernel is
+    // compatible with the device to see if it was already filtered out.
     if (device_image.has_kernel(kernel_id, device) ||
         !sycl::is_compatible({kernel_id}, device)) {
       has_kernel_dev[index] = true;
