@@ -116,6 +116,11 @@ class run_api_tests {
       SECTION(get_section_name<dims>(
           type_name, access_mode_name,
           "Check api for ranged host_accessor with offset")) {
+        // The maximum value of the linear_index variable should not be more
+        // than CHAR_MAX (usually 127 for schar). Otherwise the test fails here
+        // with the char type:
+        // CHECK(value_operations::are_equal(acc_ref1, linear_index));
+        // As acc_ref1 contains corrupted by the overflow value.
         constexpr size_t acc_range_size = 2;
         constexpr size_t buff_range_size = 4;
         constexpr size_t buff_size = (dims == 3)   ? 4 * 4 * 4
