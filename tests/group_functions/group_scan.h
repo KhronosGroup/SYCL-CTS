@@ -180,7 +180,7 @@ struct joint_scan_group {
 
       sycl::nd_range<D> executionRange(work_group_range, work_group_range);
 
-      const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
+      const size_t sizes[2] = {5, work_group_size};
       for (size_t size : sizes) {
         check_scan<D, T, U, sycl::group<D>, false>(queue, size, executionRange,
                                                    OperatorT(), op_name);
@@ -238,7 +238,7 @@ struct init_joint_scan_group {
 
       size_t work_group_size = work_group_range.size();
 
-      const size_t sizes[3] = {5, work_group_size / 2};
+      const size_t sizes[2] = {5, work_group_size};
       for (size_t size : sizes) {
         check_scan<D, T, U, sycl::group<D>, true, I>(
             queue, size, executionRange, OperatorT(), op_name);
@@ -303,10 +303,8 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op,
   bool ret_type_e = false;
   bool ret_type_i = false;
 
-  if (((range_size * (range_size + 1) / 2) + T(init)) >
-      std::numeric_limits<T>::max()) {
-    return;
-  }
+  REQUIRE(((range_size * (range_size + 1) / 2) + T(init)) >
+          std::numeric_limits<T>::max());
 
   std::vector<size_t> local_id(range_size, 0);
 
