@@ -24,9 +24,6 @@
 
 using namespace kernel_attributes;
 
-// FIXME: enable when [[sycl::vec_type_hint(<type>)]] is implemented
-// https://github.com/intel/llvm/issues/9836
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
 
 #define RUN_TEST(K_NAME1, K_NAME2, K_NAME3, VEC_T, FUNC1, FUNC2, FUNC3)       \
   {                                                                           \
@@ -197,7 +194,7 @@ void run_tests_for_type() {
 }
 
 // Enable when https://github.com/intel/llvm/issues/9836 is fixed
-DISABLED_FOR_TEST_CASE(hipSYCL, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("Behavior of kernel attribute vec_type_hint", "[kernel]")({
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   run_tests_for_type<int>();
@@ -207,5 +204,3 @@ DISABLED_FOR_TEST_CASE(hipSYCL, DPCPP)
   SKIP("Tests for deprecated features are disabled.");
 #endif  // SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
 })
-
-#endif  // SYCL_CTS_COMPILING_WITH_DPCPP
