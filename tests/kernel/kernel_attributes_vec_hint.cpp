@@ -24,7 +24,6 @@
 
 using namespace kernel_attributes;
 
-
 #define RUN_TEST(K_NAME1, K_NAME2, K_NAME3, VEC_T, FUNC1, FUNC2, FUNC3)       \
   {                                                                           \
     auto queue = sycl_cts::util::get_cts_object::queue();                     \
