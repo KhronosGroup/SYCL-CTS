@@ -192,7 +192,6 @@ void run_tests_for_type() {
   run_tests_for_size<T, 16>();
 }
 
-// Enable when https://github.com/intel/llvm/issues/9836 is fixed
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("Behavior of kernel attribute vec_type_hint", "[kernel]")({
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
