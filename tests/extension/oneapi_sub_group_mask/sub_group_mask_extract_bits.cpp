@@ -52,7 +52,7 @@ void get_expected_bits(T &out, uint32_t mask_size, int pos) {
 // For marray the extracted bits start from the first element and moves position
 // into the consecutive elements.
 template <typename T, size_t N>
-void get_expected_bits(sycl::marray<T, N> &out, uint32_t mask_size, int pos) {
+void get_expected_bits(sycl::marray<T, N>& out, uint32_t mask_size, int pos) {
   for (size_t i = 0; i < N; ++i)
     get_expected_bits(out[i], mask_size, pos + i * sizeof(T) * CHAR_BIT);
 }
@@ -60,7 +60,7 @@ void get_expected_bits(sycl::marray<T, N> &out, uint32_t mask_size, int pos) {
 template <typename T>
 struct check_result_extract_bits {
   bool operator()(const sycl::ext::oneapi::sub_group_mask sub_group_mask,
-                  const sycl::sub_group &) {
+                  const sycl::sub_group&) {
     for (size_t pos = 0; pos <= sub_group_mask.size(); pos++) {
       T bits;
       sub_group_mask.extract_bits(bits, sycl::id(pos));
