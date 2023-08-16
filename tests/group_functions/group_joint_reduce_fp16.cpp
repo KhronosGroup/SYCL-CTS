@@ -82,38 +82,3 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
     WARN("Device does not support half precision floating point operations.");
   }
 }
-
-TEST_CASE("Group and sub-group reduce functions", "[group_func][fp16][dim]") {
-  auto queue = once_per_unit::get_queue();
-  if (queue.get_device().has(sycl::aspect::fp16)) {
-    // Get binary operators from TestType
-    const auto Operators = get_op_types<sycl::half>();
-    const auto Type = unnamed_type_pack<sycl::half>();
-    for_all_combinations<invoke_reduce_over_group>(Dims, Type, Operators,
-                                                   queue);
-  } else {
-    WARN("Device does not support half precision floating point operations.");
-  }
-}
-
-TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
-                        "[group_func][type_list][fp16][dim]", prod2) {
-  auto queue = once_per_unit::get_queue();
-  using T = std::tuple_element_t<0, TestType>;
-  using U = std::tuple_element_t<1, TestType>;
-
-  if (queue.get_device().has(sycl::aspect::fp16)) {
-    if constexpr (std::is_same_v<T, sycl::half> ||
-                  std::is_same_v<U, sycl::half>) {
-      // Get binary operators from T
-      const auto Operators = get_op_types<T>();
-      const auto RetType = unnamed_type_pack<T>();
-      const auto ReducedType = unnamed_type_pack<U>();
-      // check all work group dimensions
-      for_all_combinations<invoke_init_reduce_over_group>(
-          Dims, RetType, ReducedType, Operators, queue);
-    }
-  } else {
-    WARN("Device does not support half precision floating point operations.");
-  }
-}

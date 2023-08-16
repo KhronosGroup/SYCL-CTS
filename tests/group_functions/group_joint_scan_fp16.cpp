@@ -89,28 +89,3 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
     WARN("Device does not support half precision floating point operations.");
   }
 });
-
-// FIXME: known_identity is not impemented yet for hipSYCL.
-DISABLED_FOR_TEST_CASE(hipSYCL)
-("Group and sub-group scan functions", "[group_func][fp16][dim]")({
-  auto queue = once_per_unit::get_queue();
-  if (queue.get_device().has(sycl::aspect::fp16)) {
-    for_all_combinations<invoke_scan_over_group>(Dims, HalfType{}, queue);
-  } else {
-    WARN("Device does not support half precision floating point operations.");
-  }
-});
-
-// FIXME: hipSYCL has wrong arguments order for inclusive_scan_over_group: init
-// and op are interchanged. known_identity is not impemented yet.
-DISABLED_FOR_TEST_CASE(hipSYCL)
-("Group and sub-group scan functions with init",
- "[group_func][type_list][fp16][dim]")({
-  auto queue = once_per_unit::get_queue();
-  if (queue.get_device().has(sycl::aspect::fp16)) {
-    for_all_combinations_with<invoke_init_scan_over_group, sycl::half>(
-        Dims, HalfExtendedTypes{}, HalfExtendedTypes{}, queue);
-  } else {
-    WARN("Device does not support half precision floating point operations.");
-  }
-});

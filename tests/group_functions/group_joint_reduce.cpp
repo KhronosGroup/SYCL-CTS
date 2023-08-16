@@ -50,27 +50,3 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
   for_all_combinations<invoke_init_joint_reduce_group>(
       Dims, RetType, ReducedType, Operators, queue);
 }
-
-TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions",
-                        "[group_func][type_list][dim]", ReduceTypes) {
-  auto queue = once_per_unit::get_queue();
-  // Get binary operators from TestType
-  const auto Operators = get_op_types<TestType>();
-  const auto Type = unnamed_type_pack<TestType>();
-  for_all_combinations<invoke_reduce_over_group>(Dims, Type, Operators, queue);
-}
-
-TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
-                        "[group_func][type_list][dim]", prod2) {
-  auto queue = once_per_unit::get_queue();
-  using T = std::tuple_element_t<0, TestType>;
-  using U = std::tuple_element_t<1, TestType>;
-
-  // Get binary operators from T
-  const auto Operators = get_op_types<T>();
-  const auto RetType = unnamed_type_pack<T>();
-  const auto ReducedType = unnamed_type_pack<U>();
-  // check all work group dimensions
-  for_all_combinations<invoke_init_reduce_over_group>(
-      Dims, RetType, ReducedType, Operators, queue);
-}
