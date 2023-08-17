@@ -67,7 +67,7 @@ TEST_CASE("Special values", "[bfloat16]") {
   }
 
   SECTION("Check minimum positive normal value") {
-    bfloat16 bf_min = sycl::bit_cast<bfloat16>(0b0000000010000000);
+    bfloat16 bf_min = sycl::bit_cast<bfloat16>(uint16_t(0b0000000010000000));
 
     CHECK(bf_min == std::numeric_limits<float>::min());
   }
