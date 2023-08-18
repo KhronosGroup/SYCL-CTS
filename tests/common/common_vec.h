@@ -505,7 +505,9 @@ template <typename vecType, int N>
 bool check_convert_as_all_types(sycl::vec<vecType, N> inputVec) {
   bool result = true;
 
-  result &= check_convert_as_all_dims<vecType, N, bool>(inputVec);
+  // Should not run all checks from check_convert_as_all_dims() for bool type,
+  // because calling sycl::vec::as<bool>() is UB
+  result &= check_vector_convert<vecType, N, bool>(inputVec);
   result &= check_convert_as_all_dims<vecType, N, char>(inputVec);
   result &= check_convert_as_all_dims<vecType, N, signed char>(inputVec);
   result &= check_convert_as_all_dims<vecType, N, unsigned char>(inputVec);
