@@ -66,8 +66,11 @@ class check_buffer_accessor_api_methods {
 
     // Ensure accessor doesn't target an empty range. If it were the case, even
     // get_pointer() would return unspecified value.
-    for (int i = 0; i < dims; ++i)
-      if (accessRange[i] == 0) accessRange[i] = 1;
+    for (int i = 0; i < dims; ++i) {
+      if (accessRange[i] == 0) {
+        accessRange[i] = 1;
+      }
+    }
 
     const size_t accessedCount = dims == 0 ? 1 : accessRange.size();
     const size_t accessedSize = accessedCount * sizeof(T);
