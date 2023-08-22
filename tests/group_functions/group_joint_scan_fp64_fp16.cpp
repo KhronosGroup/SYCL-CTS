@@ -99,24 +99,4 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #endif
 });
 
-// FIXME: hipSYCL has wrong arguments order for inclusive_scan_over_group: init
-// and op are interchanged. known_identity is not impemented yet.
-DISABLED_FOR_TEST_CASE(hipSYCL)
-("Group and sub-group scan functions with init",
- "[group_func][fp16][fp64][dim]")({
-  auto queue = once_per_unit::get_queue();
-  if (queue.get_device().has(sycl::aspect::fp16) &&
-      queue.get_device().has(sycl::aspect::fp64)) {
-    // here DoubleHalfTypes can be used as only half+double combinations are
-    // untested
-    for_all_combinations_with_two<invoke_init_scan_over_group, double,
-                                  sycl::half>(Dims, DoubleHalfTypes{},
-                                              DoubleHalfTypes{}, queue);
-  } else {
-    WARN(
-        "Device does not support half and double precision floating point "
-        "operations simultaneously.");
-  }
-});
-
 #endif

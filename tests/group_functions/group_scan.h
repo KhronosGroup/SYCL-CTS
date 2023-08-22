@@ -22,139 +22,161 @@
 
 #include "group_functions_common.h"
 
-template <int D, typename T, typename U, typename Group, bool with_init,
-          typename I, typename OpT>
+template <int D, typename T, typename U, typename I, typename OpT>
 class joint_scan_group_kernel;
 
 constexpr int init = 42;
 constexpr size_t test_size = 12;
 
-template <typename Group, int D>
-Group get_group(const sycl::nd_item<D>& item) {
-  if constexpr (std::is_same_v<std::decay_t<Group>, sycl::sub_group>)
-    return item.get_sub_group();
-  else
-    return item.get_group();
-}
-
-template <bool with_init, typename I, typename T, typename U, typename Group,
-          typename OpT>
+template <typename I, typename T, typename U, typename Group, typename OpT>
 auto joint_inclusive_scan_helper(Group group, T* v_begin, T* v_end,
-                                 U* r_i_begin, OpT op) {
-  if constexpr (with_init) {
+                                 U* r_i_begin, OpT op, bool with_init) {
+  if (with_init) {
     return sycl::joint_inclusive_scan(group, v_begin, v_end, r_i_begin, op,
                                       I(init));
-  } else
-    return sycl::joint_inclusive_scan(group, v_begin, v_end, r_i_begin, op);
+  }
+  assert((std::is_same_v<I, U> &&
+          "Without init value I and U should be the same type."));
+  return (U*)sycl::joint_inclusive_scan(group, v_begin, v_end, (I*)r_i_begin,
+                                        op);
 }
 
-template <bool with_init, typename I, typename T, typename U, typename Group,
-          typename OpT>
+template <typename I, typename T, typename U, typename Group, typename OpT>
 auto joint_exclusive_scan_helper(Group group, T* v_begin, T* v_end,
-                                 U* r_e_begin, OpT op) {
-  if constexpr (with_init) {
+                                 U* r_e_begin, OpT op, bool with_init) {
+  if (with_init) {
     return sycl::joint_exclusive_scan(group, v_begin, v_end, r_e_begin, I(init),
                                       op);
-  } else
-    return sycl::joint_exclusive_scan(group, v_begin, v_end, r_e_begin, op);
+  }
+  assert((std::is_same_v<I, U> &&
+          "Without init value I and U should be the same type."));
+  return (U*)sycl::joint_exclusive_scan(group, v_begin, v_end, (I*)r_e_begin,
+                                        op);
 }
 
-template <int D, typename T, typename U, typename Group, bool with_init,
-          typename I = U, typename OpT>
+template <typename T, typename U>
+struct JointScanDataStruct {
+  JointScanDataStruct(size_t range_size)
+      : ref_input(range_size), res(range_size * 4, T(-1)) {
+    std::iota(ref_input.begin(), ref_input.end(), U(1));
+  }
+
+  template <typename I, typename OpT>
+  void check_results(size_t range_size, OpT op, const std::string& op_name,
+                     bool with_init) {
+    CHECK(end[0]);
+    CHECK(end[1]);
+    CHECK(end[2]);
+    CHECK(end[3]);
+    CHECK(ret_type[0]);
+    CHECK(ret_type[1]);
+    CHECK(ret_type[2]);
+    CHECK(ret_type[3]);
+
+    I init_value = with_init ? I(init) : sycl::known_identity<OpT, I>::value;
+
+    std::vector<T> reference_e(range_size, T(-1));
+    std::vector<T> reference_i(range_size, T(-1));
+    std::exclusive_scan(ref_input.begin(), ref_input.end(), reference_e.begin(),
+                        init_value, op);
+    std::inclusive_scan(ref_input.begin(), ref_input.end(), reference_i.begin(),
+                        op, init_value);
+    for (int group_i = 0; group_i < 2; group_i++) {
+      std::string group_name = group_i == 0 ? "group" : "sub_group";
+      size_t group_offset = range_size * group_i;
+      for (int i = 0; i < range_size; i++) {
+        {
+          INFO("Check joint_exclusive_scan on " + group_name + " for element " +
+               std::to_string(i) + " (Operator: " + op_name + ")");
+          INFO("Result: " + std::to_string(res[group_offset]));
+          INFO("Expected: " + std::to_string(reference_e[i]));
+          CHECK(res[group_offset] == reference_e[i]);
+        }
+        {
+          INFO("Check joint_inclusive_scan on " + group_name + " for element " +
+               std::to_string(i) + " (Operator: " + op_name + ")");
+          INFO("Result: " + std::to_string(res[group_offset + range_size]));
+          INFO("Expected: " + std::to_string(reference_i[i]));
+          CHECK(res[group_offset + range_size] == reference_i[i]);
+        }
+      }
+    }
+  }
+
+  sycl::buffer<U, 1> create_ref_input_buffer() {
+    return {ref_input.data(), ref_input.size()};
+  }
+
+  sycl::buffer<T, 1> create_res_buffer() { return {res.data(), res.size()}; }
+
+  sycl::buffer<bool, 1> create_end_buffer() { return {end, 4}; }
+
+  sycl::buffer<bool, 1> create_ret_type_buffer() { return {ret_type, 4}; }
+
+  std::vector<U> ref_input;
+  std::vector<T> res;
+  bool end[4] = {false, false, false, false};
+  bool ret_type[4] = {false, false, false, false};
+  std::vector<size_t> local_id;
+};
+
+template <int D, typename T, typename U, typename I = U, typename OpT>
 void check_scan(sycl::queue& queue, size_t size,
                 sycl::nd_range<D> executionRange, OpT op,
-                const std::string& op_name) {
-  std::vector<T> v(size);
-  std::iota(v.begin(), v.end(), T(1));
-  std::vector<U> res_e(size, U(-1));
-  std::vector<U> res_i(size, U(-1));
-  bool res_e_end = false;
-  bool res_i_end = false;
-  bool ret_type_e = false;
-  bool ret_type_i = false;
+                const std::string& op_name, bool with_init) {
+  JointScanDataStruct<T, U> host_data{size};
   {
-    sycl::buffer<T, 1> v_sycl(v.data(), sycl::range<1>(size));
-    sycl::buffer<U, 1> res_e_sycl(res_e.data(), sycl::range<1>(size));
-    sycl::buffer<U, 1> res_i_sycl(res_i.data(), sycl::range<1>(size));
-    sycl::buffer<bool, 1> end_e_sycl(&res_e_end, sycl::range<1>(1));
-    sycl::buffer<bool, 1> end_i_sycl(&res_i_end, sycl::range<1>(1));
-    sycl::buffer<bool, 1> ret_type_e_sycl(&ret_type_e, sycl::range<1>(1));
-    sycl::buffer<bool, 1> ret_type_i_sycl(&ret_type_i, sycl::range<1>(1));
+    sycl::buffer<U, 1> ref_input_sycl = host_data.create_ref_input_buffer();
+    sycl::buffer<T, 1> res_sycl = host_data.create_res_buffer();
+    sycl::buffer<bool, 1> end_sycl = host_data.create_end_buffer();
+    sycl::buffer<bool, 1> ret_type_sycl = host_data.create_ret_type_buffer();
 
     queue
         .submit([&](sycl::handler& cgh) {
-          auto v_acc =
-              v_sycl.template get_access<sycl::access::mode::read_write>(cgh);
-          auto res_e_acc =
-              res_e_sycl.template get_access<sycl::access::mode::read_write>(
-                  cgh);
-          auto res_i_acc =
-              res_i_sycl.template get_access<sycl::access::mode::read_write>(
-                  cgh);
-          auto end_e_acc =
-              end_e_sycl.template get_access<sycl::access::mode::read_write>(
-                  cgh);
-          auto end_i_acc =
-              end_i_sycl.template get_access<sycl::access::mode::read_write>(
-                  cgh);
-          auto ret_type_e_acc =
-              ret_type_e_sycl
-                  .template get_access<sycl::access::mode::read_write>(cgh);
-          auto ret_type_i_acc =
-              ret_type_i_sycl
-                  .template get_access<sycl::access::mode::read_write>(cgh);
+          sycl::accessor<U, 1> ref_input_acc(ref_input_sycl, cgh);
+          sycl::accessor<T, 1> res_acc(res_sycl, cgh);
+          sycl::accessor<bool, 1> end_acc(end_sycl, cgh);
+          sycl::accessor<bool, 1> ret_type_acc(ret_type_sycl, cgh);
 
-          cgh.parallel_for<
-              joint_scan_group_kernel<D, T, U, Group, with_init, I, OpT>>(
+          cgh.parallel_for<joint_scan_group_kernel<D, T, U, I, OpT>>(
               executionRange, [=](sycl::nd_item<D> item) {
-                Group group = get_group<Group>(item);
+                sycl::group<D> group = item.get_group();
+                sycl::sub_group sub_group = item.get_sub_group();
 
-                T* v_begin = v_acc.get_pointer();
-                T* v_end = v_begin + v_acc.size();
-                U* r_e_begin = res_e_acc.get_pointer();
-                U* r_i_begin = res_i_acc.get_pointer();
+                U* v_begin = ref_input_acc.get_pointer();
+                U* v_end = v_begin + ref_input_acc.size();
 
-                auto r_e_end = joint_exclusive_scan_helper<with_init, I>(
-                    group, v_begin, v_end, r_e_begin, op);
-                ret_type_e_acc[0] = std::is_same_v<U*, decltype(r_e_end)>;
+                T* r_g_e_begin = res_acc.get_pointer();
+                T* r_g_i_begin = res_acc.get_pointer() + size;
+                T* r_sg_e_begin = res_acc.get_pointer() + size * 2;
+                T* r_sg_i_begin = res_acc.get_pointer() + size * 3;
 
-                auto r_i_end = joint_inclusive_scan_helper<with_init, I>(
-                    group, v_begin, v_end, r_i_begin, op);
-                ret_type_i_acc[0] = std::is_same_v<U*, decltype(r_i_end)>;
+                auto r_g_e_end = joint_exclusive_scan_helper<I>(
+                    group, v_begin, v_end, r_g_e_begin, op, with_init);
+                ret_type_acc[0] = std::is_same_v<U*, decltype(r_g_e_end)>;
 
-                end_e_acc[0] = (r_e_begin + res_e_acc.size() == r_e_end);
-                end_i_acc[0] = (r_i_begin + res_i_acc.size() == r_i_end);
+                auto r_g_i_end = joint_inclusive_scan_helper<I>(
+                    group, v_begin, v_end, r_g_i_begin, op, with_init);
+                ret_type_acc[1] = std::is_same_v<U*, decltype(r_g_i_end)>;
+
+                auto r_sg_e_end = joint_exclusive_scan_helper<I>(
+                    sub_group, v_begin, v_end, r_sg_e_begin, op, with_init);
+                ret_type_acc[2] = std::is_same_v<U*, decltype(r_sg_e_end)>;
+
+                auto r_sg_i_end = joint_inclusive_scan_helper<I>(
+                    sub_group, v_begin, v_end, r_sg_i_begin, op, with_init);
+                ret_type_acc[3] = std::is_same_v<U*, decltype(r_sg_i_end)>;
+
+                end_acc[0] = (r_g_e_begin + size == r_g_e_end);
+                end_acc[1] = (r_g_i_begin + size == r_g_i_end);
+                end_acc[2] = (r_sg_e_begin + size == r_sg_e_end);
+                end_acc[3] = (r_sg_i_begin + size == r_sg_i_end);
               });
         })
         .wait_and_throw();
   }
-  CHECK(res_e_end);
-  CHECK(res_i_end);
-  CHECK(ret_type_e);
-  CHECK(ret_type_i);
-  std::vector<U> reference_e(size, U(-1));
-  std::vector<U> reference_i(size, U(-1));
 
-  I init_value = (with_init) ? I(init) : sycl::known_identity<OpT, I>::value;
-
-  std::exclusive_scan(v.begin(), v.end(), reference_e.begin(), init_value, op);
-  std::inclusive_scan(v.begin(), v.end(), reference_i.begin(), op, init_value);
-  for (int i = 0; i < size; i++) {
-    {
-      INFO("Check joint_exclusive_scan for element " + std::to_string(i) +
-           " (Operator: " + op_name + ")");
-      INFO("Result: " + std::to_string(res_e[i]));
-      INFO("Expected: " + std::to_string(reference_e[i]));
-      CHECK(res_e[i] == reference_e[i]);
-    }
-    {
-      INFO("Check joint_inclusive_scan for element " + std::to_string(i) +
-           " (Operator: " + op_name + ")");
-      INFO("Result: " + std::to_string(res_i[i]));
-      INFO("Expected: " + std::to_string(reference_i[i]));
-      CHECK(res_i[i] == reference_i[i]);
-    }
-  }
+  host_data.template check_results<I>(size, op, op_name, with_init);
 }
 
 /**
@@ -182,11 +204,8 @@ struct joint_scan_group {
 
       const size_t sizes[2] = {5, 2};
       for (size_t size : sizes) {
-        check_scan<D, T, U, sycl::group<D>, false>(queue, size, executionRange,
-                                                   OperatorT(), op_name);
-
-        check_scan<D, T, U, sycl::sub_group, false>(queue, size, executionRange,
-                                                    OperatorT(), op_name);
+        check_scan<D, T, U>(queue, size, executionRange, OperatorT(), op_name,
+                            false);
       }
     }
   }
@@ -240,11 +259,8 @@ struct init_joint_scan_group {
 
       const size_t sizes[2] = {5, 2};
       for (size_t size : sizes) {
-        check_scan<D, T, U, sycl::group<D>, true, I>(
-            queue, size, executionRange, OperatorT(), op_name);
-
-        check_scan<D, T, U, sycl::sub_group, true, I>(
-            queue, size, executionRange, OperatorT(), op_name);
+        check_scan<D, T, U, I>(queue, size, executionRange, OperatorT(),
+                               op_name, true);
       }
     }
   }
@@ -271,123 +287,157 @@ class invoke_init_joint_scan_group_same_type {
   }
 };
 
-template <int D, typename T, typename Group, bool with_init, typename U,
-          typename OpT>
+template <int D, typename T, typename U, typename OpT>
 class scan_over_group_kernel;
 
-template <bool with_init, typename T, typename U, typename Group, typename OpT>
-auto inclusive_scan_over_group_helper(Group group, U x, OpT op) {
-  if constexpr (with_init) {
+template <typename T, typename U, typename Group, typename OpT>
+auto inclusive_scan_over_group_helper(Group group, U x, OpT op,
+                                      bool with_init) {
+  if (with_init) {
     return sycl::inclusive_scan_over_group(group, x, op, T(init));
-  } else
-    return sycl::inclusive_scan_over_group(group, x, op);
+  }
+  assert((std::is_same_v<T, U> &&
+          "Without init value T and U should be the same type."));
+  return sycl::inclusive_scan_over_group(group, T(x), op);
 }
 
-template <bool with_init, typename T, typename U, typename Group, typename OpT>
-auto exclusive_scan_over_group_helper(Group group, U x, OpT op) {
-  if constexpr (with_init) {
+template <typename T, typename U, typename Group, typename OpT>
+auto exclusive_scan_over_group_helper(Group group, U x, OpT op,
+                                      bool with_init) {
+  if (with_init) {
     return sycl::exclusive_scan_over_group(group, x, T(init), op);
-  } else
-    return sycl::exclusive_scan_over_group(group, x, op);
+  }
+  assert((std::is_same_v<T, U> &&
+          "Without init value T and U should be the same type."));
+  return sycl::exclusive_scan_over_group(group, T(x), op);
 }
 
-template <int D, typename T, typename Group, bool with_init, typename U = T,
-          typename OpT>
-void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op,
-                           const std::string& op_name) {
-  auto range_size = range.size();
-  std::vector<U> v(range_size);
-  std::iota(v.begin(), v.end(), T(1));
-  std::vector<T> res_e(range_size, T(-1));
-  std::vector<T> res_i(range_size, T(-1));
-  bool ret_type_e = false;
-  bool ret_type_i = false;
+template <typename T, typename U>
+struct ScanOverGroupDataStruct {
+  ScanOverGroupDataStruct(size_t range_size)
+      : ref_input(range_size),
+        res(range_size * 4, T(-1)),
+        local_id(range_size * 2, 0) {
+    std::iota(ref_input.begin(), ref_input.end(), U(1));
+  }
 
+  template <typename OpT>
+  void check_results(size_t range_size, OpT op, const std::string& op_name,
+                     bool with_init) {
+    CHECK(ret_type[0]);
+    CHECK(ret_type[1]);
+    CHECK(ret_type[2]);
+    CHECK(ret_type[3]);
+
+    T init_value = with_init ? T(init) : sycl::known_identity<OpT, T>::value;
+    for (int group_i = 0; group_i < 2; group_i++) {
+      std::string group_name = group_i == 0 ? "group" : "sub_group";
+      size_t group_offset = range_size * group_i;
+      for (int i = 0; i < range_size; i++) {
+        int shift = i - local_id[i + group_offset];
+        auto startIter = ref_input.begin() + shift;
+        size_t res_i = i + group_offset;
+        {
+          INFO("Check exclusive_scan_over_group on " + group_name +
+               " for element " + std::to_string(i) + " (Operator: " + op_name +
+               ")");
+          std::vector<T> reference(i + 1, T(-1));
+          std::exclusive_scan(startIter, ref_input.begin() + i + 1,
+                              reference.begin(), init_value, op);
+          INFO("Result: " + std::to_string(res[res_i]));
+          INFO("Expected: " + std::to_string(reference[i - shift]));
+          CHECK(res[res_i] == reference[i - shift]);
+        }
+        {
+          INFO("Check inclusive_scan_over_group on " + group_name +
+               " for element " + std::to_string(i) + " (Operator: " + op_name +
+               ")");
+          std::vector<T> reference(i + 1, T(-1));
+          std::inclusive_scan(startIter, ref_input.begin() + i + 1,
+                              reference.begin(), op, init_value);
+          INFO("Result: " + std::to_string(res[res_i + range_size]));
+          INFO("Expected: " + std::to_string(reference[i - shift]));
+          CHECK(res[res_i + range_size] == reference[i - shift]);
+        }
+      }
+    }
+  }
+
+  sycl::buffer<U, 1> create_ref_input_buffer() {
+    return {ref_input.data(), ref_input.size()};
+  }
+
+  sycl::buffer<T, 1> create_res_buffer() { return {res.data(), res.size()}; }
+
+  sycl::buffer<bool, 1> create_ret_type_buffer() { return {ret_type, 4}; }
+
+  sycl::buffer<size_t, 1> create_local_id_buffer() {
+    return {local_id.data(), local_id.size()};
+  }
+
+  std::vector<U> ref_input;
+  std::vector<T> res;
+  bool ret_type[4] = {false, false, false, false};
+  std::vector<size_t> local_id;
+};
+
+template <int D, typename T, typename U = T, typename OpT>
+void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op,
+                           const std::string& op_name, bool with_init) {
+  auto range_size = range.size();
   REQUIRE(((range_size * (range_size + 1) / 2) + T(init)) <=
           std::numeric_limits<T>::max());
 
-  std::vector<size_t> local_id(range_size, 0);
-
-  sycl::nd_range<D> executionRange(range, range);
+  ScanOverGroupDataStruct<T, U> host_data{range_size};
   {
-    sycl::buffer<U, 1> v_sycl(v.data(), sycl::range<1>(range_size));
-    sycl::buffer<T, 1> res_e_sycl(res_e.data(), sycl::range<1>(range_size));
-    sycl::buffer<T, 1> res_i_sycl(res_i.data(), sycl::range<1>(range_size));
-    sycl::buffer<bool, 1> ret_type_e_sycl(&ret_type_e, sycl::range<1>(1));
-    sycl::buffer<bool, 1> ret_type_i_sycl(&ret_type_i, sycl::range<1>(1));
-
-    sycl::buffer<size_t, 1> local_id_sycl(local_id.data(),
-                                          sycl::range<1>(range_size));
+    auto ref_input_sycl = host_data.create_ref_input_buffer();
+    auto res_sycl = host_data.create_res_buffer();
+    auto ret_type_sycl = host_data.create_ret_type_buffer();
+    auto local_id_sycl = host_data.create_local_id_buffer();
 
     queue
         .submit([&](sycl::handler& cgh) {
-          auto v_acc =
-              v_sycl.template get_access<sycl::access::mode::read>(cgh);
-          auto res_e_acc =
-              res_e_sycl.template get_access<sycl::access::mode::read_write>(
-                  cgh);
-          auto res_i_acc =
-              res_i_sycl.template get_access<sycl::access::mode::read_write>(
-                  cgh);
-          auto ret_type_e_acc =
-              ret_type_e_sycl
-                  .template get_access<sycl::access::mode::read_write>(cgh);
-          auto ret_type_i_acc =
-              ret_type_i_sycl
-                  .template get_access<sycl::access::mode::read_write>(cgh);
-          auto local_id_acc =
-              local_id_sycl.template get_access<sycl::access::mode::write>(cgh);
+          sycl::accessor<U, 1, sycl::access_mode::read> ref_input_acc(
+              ref_input_sycl, cgh);
+          sycl::accessor<T, 1> res_acc(res_sycl, cgh);
+          sycl::accessor<bool, 1> ret_type_acc(ret_type_sycl, cgh);
+          sycl::accessor<size_t, 1> local_id_acc(local_id_sycl, cgh);
 
-          cgh.parallel_for<
-              scan_over_group_kernel<D, T, Group, with_init, U, OpT>>(
-              executionRange, [=](sycl::nd_item<D> item) {
-                Group group = get_group<Group>(item);
+          cgh.parallel_for<scan_over_group_kernel<D, T, U, OpT>>(
+              sycl::nd_range<D>(range, range), [=](sycl::nd_item<D> item) {
+                sycl::group<D> group = item.get_group();
+                sycl::sub_group sub_group = item.get_sub_group();
 
                 auto index = item.get_global_linear_id();
                 local_id_acc[index] = group.get_local_linear_id();
+                local_id_acc[range_size + index] =
+                    sub_group.get_local_linear_id();
 
-                auto res_e = exclusive_scan_over_group_helper<with_init, T>(
-                    group, v_acc[index], op);
-                res_e_acc[index] = res_e;
-                ret_type_e_acc[0] = std::is_same_v<T, decltype(res_e)>;
+                auto res_g_e = exclusive_scan_over_group_helper<T>(
+                    group, ref_input_acc[index], op, with_init);
+                res_acc[index] = res_g_e;
+                ret_type_acc[0] = std::is_same_v<T, decltype(res_g_e)>;
 
-                auto res_i = inclusive_scan_over_group_helper<with_init, T>(
-                    group, v_acc[index], op);
-                res_i_acc[index] = res_i;
-                ret_type_i_acc[0] = std::is_same_v<T, decltype(res_i)>;
+                auto res_g_i = inclusive_scan_over_group_helper<T>(
+                    group, ref_input_acc[index], op, with_init);
+                res_acc[range_size + index] = res_g_i;
+                ret_type_acc[1] = std::is_same_v<T, decltype(res_g_i)>;
+
+                auto res_sg_e = exclusive_scan_over_group_helper<T>(
+                    sub_group, ref_input_acc[index], op, with_init);
+                res_acc[range_size * 2 + index] = res_sg_e;
+                ret_type_acc[2] = std::is_same_v<T, decltype(res_sg_e)>;
+
+                auto res_sg_i = inclusive_scan_over_group_helper<T>(
+                    sub_group, ref_input_acc[index], op, with_init);
+                res_acc[range_size * 3 + index] = res_sg_i;
+                ret_type_acc[3] = std::is_same_v<T, decltype(res_sg_i)>;
               });
         })
         .wait_and_throw();
   }
-  CHECK(ret_type_e);
-  CHECK(ret_type_i);
 
-  T init_value = (with_init) ? T(init) : sycl::known_identity<OpT, T>::value;
-
-  for (int i = 0; i < range_size; i++) {
-    int shift = i - local_id[i];
-    auto startIter = v.begin() + shift;
-    {
-      INFO("Check exclusive_scan_over_group for element " + std::to_string(i) +
-           " (Operator: " + op_name + ")");
-      std::vector<T> reference(i + 1, T(-1));
-      std::exclusive_scan(startIter, v.begin() + i + 1, reference.begin(),
-                          init_value, op);
-      INFO("Result: " + std::to_string(res_e[i]));
-      INFO("Expected: " + std::to_string(reference[i - shift]));
-      CHECK(res_e[i] == reference[i - shift]);
-    }
-    {
-      INFO("Check inclusive_scan_over_group for element " + std::to_string(i) +
-           " (Operator: " + op_name + ")");
-      std::vector<T> reference(i + 1, T(-1));
-      std::inclusive_scan(startIter, v.begin() + i + 1, reference.begin(), op,
-                          init_value);
-      INFO("Result: " + std::to_string(res_i[i]));
-      INFO("Expected: " + std::to_string(reference[i - shift]));
-      CHECK(res_i[i] == reference[i - shift]);
-    }
-  }
+  host_data.check_results(range_size, op, op_name, with_init);
 }
 
 /**
@@ -409,11 +459,8 @@ struct scan_over_group {
           sycl_cts::util::work_group_range<D>(queue, test_size);
       size_t work_group_size = work_group_range.size();
 
-      check_scan_over_group<D, T, sycl::group<D>, false>(
-          queue, work_group_range, OperatorT(), op_name);
-
-      check_scan_over_group<D, T, sycl::sub_group, false>(
-          queue, work_group_range, OperatorT(), op_name);
+      check_scan_over_group<D, T>(queue, work_group_range, OperatorT(), op_name,
+                                  false);
     }
   }
 };
@@ -451,11 +498,8 @@ struct init_scan_over_group {
       sycl::range<D> work_group_range =
           sycl_cts::util::work_group_range<D>(queue, test_size);
 
-      check_scan_over_group<D, T, sycl::group<D>, true, U>(
-          queue, work_group_range, OperatorT(), op_name);
-
-      check_scan_over_group<D, T, sycl::sub_group, true, U>(
-          queue, work_group_range, OperatorT(), op_name);
+      check_scan_over_group<D, T, U>(queue, work_group_range, OperatorT(),
+                                     op_name, true);
     }
   }
 };

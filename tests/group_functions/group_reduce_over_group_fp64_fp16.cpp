@@ -28,28 +28,6 @@ using ReduceTypes = unnamed_type_pack<double, sycl::half>;
 // 2-dim Cartesian product of type lists
 using prod2 = product<std::tuple, ReduceTypes, ReduceTypes>::type;
 
-TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
-                        "[group_func][fp16][fp64][dim]", prod2) {
-  auto queue = once_per_unit::get_queue();
-  using T = std::tuple_element_t<0, TestType>;
-  using U = std::tuple_element_t<1, TestType>;
-
-  if (queue.get_device().has(sycl::aspect::fp16) &&
-      queue.get_device().has(sycl::aspect::fp64)) {
-    // Get binary operators from T
-    const auto Operators = get_op_types<T>();
-    const auto RetType = unnamed_type_pack<T>();
-    const auto ReducedType = unnamed_type_pack<U>();
-    // check all work group dimensions
-    for_all_combinations<invoke_init_joint_reduce_group>(
-        Dims, RetType, ReducedType, Operators, queue);
-  } else {
-    WARN(
-        "Device does not support half and double precision floating point "
-        "operations simultaneously.");
-  }
-}
-
 TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
                         "[group_func][fp16][fp64][dim]", prod2) {
   auto queue = once_per_unit::get_queue();
