@@ -18,11 +18,9 @@
 //  limitations under the License.
 //
 *******************************************************************************/
-#include "../common/disabled_for_test_case.h"
 #include "handler_invoke_api.h"
 
-DISABLED_FOR_TEST_CASE(DPCPP)
-("handler.parallel_for(range) with size_t", "[handler]")({
+TEST_CASE("handler.parallel_for(range) with size_t", "[handler]") {
   using handler = sycl::handler;
 
   TestConstants constants;
@@ -103,4 +101,4 @@ DISABLED_FOR_TEST_CASE(DPCPP)
       constants.offset[0], constants.offsetRange[0]);
 #endif  // SYCL_CTS_ENABLE_FEATURE_SET_FULL
 #endif  // SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-});
+}
