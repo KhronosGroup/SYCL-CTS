@@ -74,20 +74,3 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       Dims, ScanTypes{}, ScanTypes{}, ScanTypes{}, queue);
 #endif
 });
-
-// FIXME: known_identity is not impemented yet for hipSYCL.
-DISABLED_FOR_TEST_CASE(hipSYCL)
-("Group and sub-group scan functions", "[group_func][type_list][dim]")({
-  auto queue = once_per_unit::get_queue();
-  for_all_combinations<invoke_scan_over_group>(Dims, ScanTypes{}, queue);
-});
-
-// FIXME: hipSYCL has wrong arguments order for inclusive_scan_over_group: init
-// and op are interchanged. known_identity is not implemented yet.
-DISABLED_FOR_TEST_CASE(hipSYCL)
-("Group and sub-group scan functions with init",
- "[group_func][type_list][dim]")({
-  auto queue = once_per_unit::get_queue();
-  for_all_combinations<invoke_init_scan_over_group>(Dims, ScanTypes{},
-                                                    ScanTypes{}, queue);
-});
