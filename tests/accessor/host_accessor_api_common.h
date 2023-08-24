@@ -116,6 +116,7 @@ class run_api_tests {
       SECTION(get_section_name<dims>(
           type_name, access_mode_name,
           "Check api for ranged host_accessor with offset")) {
+        // Partially duplicates tests/accessor/generic_accessor_api_common.h
         // The maximum value of the linear_index variable should not be more
         // than CHAR_MAX (usually 127 for schar). Otherwise the test fails here
         // with the char type:
