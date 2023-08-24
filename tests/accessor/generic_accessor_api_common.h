@@ -310,18 +310,24 @@ class run_api_tests {
       SECTION(
           get_section_name<dims>(type_name, access_mode_name, target_name,
                                  "Check api for ranged accessor with offset")) {
-        constexpr size_t acc_range_size = 4;
-        constexpr size_t buff_range_size = 8;
-        constexpr size_t buff_size = (dims == 3)   ? 8 * 8 * 8
-                                     : (dims == 2) ? 8 * 8
-                                                   : 8;
-        constexpr size_t offset = 4;
-        constexpr size_t index = 2;
-        constexpr size_t first_elem = (dims == 3 ? offset * 8 * 8 : 0) +
-                                      (dims >= 2 ? offset * 8 : 0) + offset;
+        // The maximum value of the linear_index variable should not be more
+        // than CHAR_MAX (usually 127 for schar). Otherwise the test fails here
+        // with the char type:
+        // CHECK(value_operations::are_equal(acc_ref1, linear_index));
+        // CHECK(value_operations::are_equal(acc_ref2, first_elem));
+        // As data[x] contains corrupted by the overflow value.
+        constexpr size_t acc_range_size = 2;
+        constexpr size_t buff_range_size = 4;
+        constexpr size_t buff_size = (dims == 3)   ? 4 * 4 * 4
+                                     : (dims == 2) ? 4 * 4
+                                                   : 4;
+        constexpr size_t offset = 2;
+        constexpr size_t index = 1;
+        constexpr size_t first_elem = (dims == 3 ? offset * 4 * 4 : 0) +
+                                      (dims >= 2 ? offset * 4 : 0) + offset;
         constexpr size_t last_elem =
-            (dims == 3 ? (acc_range_size - 1) * 8 * 8 : 0) +
-            (dims >= 2 ? (acc_range_size - 1) * 8 : 0) + (acc_range_size - 1) +
+            (dims == 3 ? (acc_range_size - 1) * 4 * 4 : 0) +
+            (dims >= 2 ? (acc_range_size - 1) * 4 : 0) + (acc_range_size - 1) +
             first_elem;
         int linear_index = 0;
         for (size_t i = 0; i < dims; i++) {
