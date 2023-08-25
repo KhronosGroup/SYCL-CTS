@@ -81,23 +81,27 @@ struct JointScanDataStruct {
                         init_value, op);
     std::inclusive_scan(ref_input.begin(), ref_input.end(), reference_i.begin(),
                         op, init_value);
+    // res consists of 4 series of results: two pairs of exclusive and inclusive
+    // scan results made over 'group' and 'sub_group' accordingly.
     for (int group_i = 0; group_i < 2; group_i++) {
       std::string group_name = group_i == 0 ? "group" : "sub_group";
-      size_t group_offset = range_size * group_i;
+      // Each group contains two sets of results.
+      size_t group_offset = 2 * range_size * group_i;
       for (int i = 0; i < range_size; i++) {
+        size_t res_i = i + group_offset;
         {
           INFO("Check joint_exclusive_scan on " + group_name + " for element " +
                std::to_string(i) + " (Operator: " + op_name + ")");
-          INFO("Result: " + std::to_string(res[group_offset]));
+          INFO("Result: " + std::to_string(res[res_i]));
           INFO("Expected: " + std::to_string(reference_e[i]));
-          CHECK(res[group_offset] == reference_e[i]);
+          CHECK(res[res_i] == reference_e[i]);
         }
         {
           INFO("Check joint_inclusive_scan on " + group_name + " for element " +
                std::to_string(i) + " (Operator: " + op_name + ")");
-          INFO("Result: " + std::to_string(res[group_offset + range_size]));
+          INFO("Result: " + std::to_string(res[res_i + range_size]));
           INFO("Expected: " + std::to_string(reference_i[i]));
-          CHECK(res[group_offset + range_size] == reference_i[i]);
+          CHECK(res[res_i + range_size] == reference_i[i]);
         }
       }
     }
@@ -330,9 +334,12 @@ struct ScanOverGroupDataStruct {
     CHECK(ret_type[3]);
 
     T init_value = with_init ? T(init) : sycl::known_identity<OpT, T>::value;
+    // res consists of 4 series of results: two pairs of exclusive and inclusive
+    // scan results made over 'group' and 'sub_group' accordingly.
     for (int group_i = 0; group_i < 2; group_i++) {
       std::string group_name = group_i == 0 ? "group" : "sub_group";
-      size_t group_offset = range_size * group_i;
+      // Each group contains two sets of results.
+      size_t group_offset = 2 * range_size * group_i;
       for (int i = 0; i < range_size; i++) {
         int shift = i - local_id[i + group_offset];
         auto startIter = ref_input.begin() + shift;
