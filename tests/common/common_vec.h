@@ -143,7 +143,7 @@ sycl::vec<convertType, N> rte(sycl::vec<vecType, N> inputVec) {
     sycl::vec<vecType, N> roundedVec = reference::rint(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(inputVec, i);
+      vecType elem = getElement(roundedVec, i);
       setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
     }
     return resVec;
@@ -158,7 +158,7 @@ sycl::vec<convertType, N> rtz(sycl::vec<vecType, N> inputVec) {
     sycl::vec<vecType, N> roundedVec = reference::trunc(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(inputVec, i);
+      vecType elem = getElement(roundedVec, i);
       setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
     }
     return resVec;
@@ -173,7 +173,7 @@ sycl::vec<convertType, N> rtp(sycl::vec<vecType, N> inputVec) {
     sycl::vec<vecType, N> roundedVec = reference::ceil(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(inputVec, i);
+      vecType elem = getElement(roundedVec, i);
       setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
     }
     return resVec;
@@ -188,7 +188,7 @@ sycl::vec<convertType, N> rtn(sycl::vec<vecType, N> inputVec) {
     sycl::vec<vecType, N> roundedVec = reference::floor(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(inputVec, i);
+      vecType elem = getElement(roundedVec, i);
       setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
     }
     return resVec;
