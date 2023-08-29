@@ -338,12 +338,12 @@ struct ScanOverGroupDataStruct {
     // scan results made over 'group' and 'sub_group' accordingly.
     for (int group_i = 0; group_i < 2; group_i++) {
       std::string group_name = group_i == 0 ? "group" : "sub_group";
-      // Each group contains two sets of results.
-      size_t group_offset = 2 * range_size * group_i;
+      size_t group_offset = range_size * group_i;
       for (int i = 0; i < range_size; i++) {
         int shift = i - local_id[i + group_offset];
         auto startIter = ref_input.begin() + shift;
-        size_t res_i = i + group_offset;
+        // Each group contains two sets of results.
+        size_t res_i = i + 2 * group_offset;
         {
           INFO("Check exclusive_scan_over_group on " + group_name +
                " for element " + std::to_string(i) + " (Operator: " + op_name +
