@@ -26,7 +26,7 @@
 #include <sycl/sycl.hpp>
 
 #include "../../util/accuracy.h"
-#include "../../util/math_vector.h"
+#include "../../util/math_reference.h"
 #include "../../util/math_vector.h"
 #include "../../util/proxy.h"
 #include "../../util/test_base.h"
@@ -122,17 +122,6 @@ bool check_single_vector_op(vectorType vector1, lambdaFunc lambda) {
   return true;
 }
 
-// match float values to expected integer value
-template <typename T1, typename T2>
-T2 float_map_match(T1 floats[], T2 vals[], int size, T1 src) {
-  for (int i = 0; i < size; ++i) {
-    if (floats[i] == src) {
-      return vals[i];
-    }
-  }
-  return T2{};
-}
-
 template <typename sourceType, typename targetType>
 static constexpr bool if_FP_to_non_FP_conv_v =
     is_sycl_floating_point<sourceType>::value && !is_sycl_floating_point<targetType>::value;
@@ -151,18 +140,11 @@ sycl::vec<convertType, N> convert_vec(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rte(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    const int size = 8;
-    vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {
-        static_cast<convertType>(2),  static_cast<convertType>(4),
-        static_cast<convertType>(2),  static_cast<convertType>(2),
-        static_cast<convertType>(-2), static_cast<convertType>(-4),
-        static_cast<convertType>(-2), static_cast<convertType>(-2)};
+    sycl::vec<vecType, N> roundedVec = reference::rint(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(inputVec, i);
-      auto elemConvert = float_map_match(floats, vals, size, elem);
-      setElement<convertType, N>(resVec, i, elemConvert);
+      vecType elem = getElement(roundedVec, i);
+      setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
     }
     return resVec;
   }
@@ -173,18 +155,11 @@ sycl::vec<convertType, N> rte(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rtz(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    const int size = 8;
-    vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {
-        static_cast<convertType>(2),  static_cast<convertType>(3),
-        static_cast<convertType>(1),  static_cast<convertType>(2),
-        static_cast<convertType>(-2), static_cast<convertType>(-3),
-        static_cast<convertType>(-1), static_cast<convertType>(-2)};
+    sycl::vec<vecType, N> roundedVec = reference::trunc(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(inputVec, i);
-      auto elemConvert = float_map_match(floats, vals, size, elem);
-      setElement<convertType, N>(resVec, i, elemConvert);
+      vecType elem = getElement(roundedVec, i);
+      setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
     }
     return resVec;
   }
@@ -195,18 +170,11 @@ sycl::vec<convertType, N> rtz(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rtp(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    const int size = 8;
-    vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {
-        static_cast<convertType>(3),  static_cast<convertType>(4),
-        static_cast<convertType>(2),  static_cast<convertType>(3),
-        static_cast<convertType>(-2), static_cast<convertType>(-3),
-        static_cast<convertType>(-1), static_cast<convertType>(-2)};
+    sycl::vec<vecType, N> roundedVec = reference::ceil(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(inputVec, i);
-      auto elemConvert = float_map_match(floats, vals, size, elem);
-      setElement<convertType, N>(resVec, i, elemConvert);
+      vecType elem = getElement(roundedVec, i);
+      setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
     }
     return resVec;
   }
@@ -217,18 +185,11 @@ sycl::vec<convertType, N> rtp(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rtn(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    const int size = 8;
-    vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {
-        static_cast<convertType>(2),  static_cast<convertType>(3),
-        static_cast<convertType>(1),  static_cast<convertType>(2),
-        static_cast<convertType>(-3), static_cast<convertType>(-4),
-        static_cast<convertType>(-2), static_cast<convertType>(-3)};
+    sycl::vec<vecType, N> roundedVec = reference::floor(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(inputVec, i);
-      auto elemConvert = float_map_match(floats, vals, size, elem);
-      setElement<convertType, N>(resVec, i, elemConvert);
+      vecType elem = getElement(roundedVec, i);
+      setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
     }
     return resVec;
   }
@@ -279,10 +240,7 @@ bool check_vector_convert_result(sycl::vec<vecType, N> inputVec) {
       expectedVec = rtn<vecType, N, convertType>(inputVec);
       break;
   }
-  if (!check_equal_values(convertedVec, expectedVec)) {
-    return false;
-  }
-  return true;
+  return value_operations::are_equal(convertedVec, expectedVec);
 }
 
 template <typename vecType, int N, typename convertType>
