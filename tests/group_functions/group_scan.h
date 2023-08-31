@@ -57,8 +57,8 @@ auto joint_exclusive_scan_helper(Group group, T* v_begin, T* v_end,
 template <typename T, typename U>
 struct JointScanDataStruct {
   JointScanDataStruct(size_t range_size)
-      : ref_input(range_size), res(range_size * 4, T(-1)) {
-    std::iota(ref_input.begin(), ref_input.end(), U(1));
+      : ref_input(range_size), res(range_size * 4, U(-1)) {
+    std::iota(ref_input.begin(), ref_input.end(), T(1));
   }
 
   template <typename I, typename OpT>
