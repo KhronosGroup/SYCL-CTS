@@ -15,8 +15,7 @@ set(SYCL_CTS_DETAIL_OPTION_COMPILE_DEFINITIONS "")
 #  - FORCE_ON <value>     If <value> is ON the option will be overwritten as ON.
 #
 function(add_cts_option option_name option_description option_default)
-    cmake_parse_arguments(PARSE_ARGV 3 args "" "WARN_IF_OFF" "")
-    cmake_parse_arguments(PARSE_ARGV 3 args "" "FORCE_ON" "")
+    cmake_parse_arguments(PARSE_ARGV 3 args "" "WARN_IF_OFF;FORCE_ON" "")
 
     option(${option_name} ${option_description} ${option_default})
     list(APPEND SYCL_CTS_DETAIL_AVAILABLE_OPTIONS ${option_name})
