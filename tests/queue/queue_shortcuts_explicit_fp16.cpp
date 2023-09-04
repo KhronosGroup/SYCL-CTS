@@ -20,7 +20,6 @@
 
 #include "../../util/extensions.h"
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 #include "queue_shortcuts_explicit.h"
 
 namespace queue_shortcuts_explicit_fp16 {

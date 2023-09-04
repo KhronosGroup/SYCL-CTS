@@ -26,49 +26,16 @@ using WideTypes = std::tuple<int32_t, uint32_t, int64_t, uint64_t, float>;
 TEMPLATE_LIST_TEST_CASE("Group and sub_group joint of bool functions",
                         "[group_func][type_list][dim]", WideTypes) {
   auto queue = once_per_unit::get_queue();
-  // check type to only print warning once
-  if constexpr (std::is_same_v<TestType, float>) {
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCpp fails to compile with segfault in the compiler. "
-        "Skipping the test.");
-#endif
-  }
-
-  // FIXME: Codeplay ComputeCpp - CE 2.11.0
-  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
-  //        clang-8: error: unable to execute command: Segmentation fault
-  //        clang-8: error: spirv-ll-tool command failed due to signal
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   // check all work group dimensions
   joint_of_group<1, TestType>(queue);
   joint_of_group<2, TestType>(queue);
   joint_of_group<3, TestType>(queue);
-#endif
 }
 
 TEMPLATE_LIST_TEST_CASE(
     "Group and sub_group of bool functions with predicate functions",
     "[group_func][type_list][dim]", WideTypes) {
   auto queue = once_per_unit::get_queue();
-  // check type to only print warning once
-  if constexpr (std::is_same_v<TestType, float>) {
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCpp fails to compile with segfault in the compiler. "
-        "Skipping the test.");
-#endif
-  }
-
-  // FIXME: Codeplay ComputeCpp - CE 2.11.0
-  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
-  //        clang-8: error: unable to execute command: Segmentation fault
-  //        clang-8: error: spirv-ll-tool command failed due to signal
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   // check all work group dimensions
   predicate_function_of_group<1, TestType>(queue);
   predicate_function_of_group<2, TestType>(queue);
@@ -77,29 +44,11 @@ TEMPLATE_LIST_TEST_CASE(
   predicate_function_of_sub_group<1, TestType>(queue);
   predicate_function_of_sub_group<2, TestType>(queue);
   predicate_function_of_sub_group<3, TestType>(queue);
-#endif
 }
 
 TEMPLATE_TEST_CASE_SIG("Group and sub_group of bool functions",
                        "[group_func][dim]", ((int D), D), 1, 2, 3) {
   auto queue = once_per_unit::get_queue();
-  // check dimension to only print warning once
-  if constexpr (D == 1) {
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "ComputeCpp fails to compile with segfault in the compiler. "
-        "Skipping the test.");
-#endif
-  }
-
-  // FIXME: Codeplay ComputeCpp - CE 2.11.0
-  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
-  //        clang-8: error: unable to execute command: Segmentation fault
-  //        clang-8: error: spirv-ll-tool command failed due to signal
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-  return;
-#else
   bool_function_of_group<D>(queue);
   bool_function_of_sub_group<D>(queue);
-#endif
 }

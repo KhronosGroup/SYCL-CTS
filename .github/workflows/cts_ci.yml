@@ -55,11 +55,8 @@ jobs:
       # NB: Don't forget to update versions in compile-cts step as well
       matrix:
         include:
-          # ComputeCpp images are built by Codeplay for the time being
-          # - sycl-impl: computecpp
-          # version: 2.11.0
           - sycl-impl: dpcpp
-            version: 8d87832f2eccc0c8dae11e1ae8009a3816f2018a
+            version: c4db251179dcd1b30a1043d4780634dbe39b3e3a
           - sycl-impl: hipsycl
             version: 3d8b1cd
     steps:
@@ -116,19 +113,15 @@ jobs:
       # NB: Don't forget to update versions in build-image-for-sycl-impl step as well
       matrix:
         include:
-          - sycl-impl: computecpp
-            version: 2.11.0
           - sycl-impl: dpcpp
-            version: 8d87832f2eccc0c8dae11e1ae8009a3816f2018a
+            version: c4db251179dcd1b30a1043d4780634dbe39b3e3a
           - sycl-impl: hipsycl
             version: 3d8b1cd
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
       parallel-build-jobs: 2
     container:
-      # image: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
-      # ComputeCpp images are hosted by Codeplay
-      image: ${{ format('{0}/sycl-cts-ci:{1}-{2}', matrix.sycl-impl != 'computecpp' && 'khronosgroup' || 'scottstraughan', matrix.sycl-impl, matrix.version) }}
+      image: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3

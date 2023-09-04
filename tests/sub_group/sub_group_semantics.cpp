@@ -116,23 +116,37 @@ TEST_CASE("sub_group by-value semantics", "[sub_group]") {
 }
 
 // FIXME: re-enable when == and != operators is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 TEST_CASE("Check sycl::sub_group equality", "[sub_group]") {
   size_t code_count =
       to_integral(common_by_value_semantics::current_check::size);
   bool result[code_count];
   std::fill(result, result + code_count, false);
-  auto items = store_instances<2, invoke_sub_group<3, setup_kernel>>();
   {
     sycl::buffer<bool, 1> res_buf(result, sycl::range(code_count));
     auto queue = once_per_unit::get_queue();
     queue
         .submit([&](sycl::handler& cgh) {
           auto res_acc = res_buf.get_access(cgh);
-          cgh.single_task<sub_group_equality_kernel>([=] {
-            common_by_value_semantics::check_equality(items[0], items[1],
-                                                      res_acc);
-          });
+          cgh.parallel_for<sub_group_equality_kernel>(
+              sycl::nd_range<3>({1, 1, 1}, {1, 1, 1}),
+              [=](sycl::nd_item<3> item) {
+                sycl::sub_group sub_group1 = item.get_sub_group();
+                sycl::sub_group sub_group2 = item.get_sub_group();
+                common_by_value_semantics::check_equality(sub_group1, res_acc);
+                res_acc[to_integral(
+                    common_by_value_semantics::current_check::equal_other)] =
+                    (sub_group1 == sub_group2);
+                res_acc[to_integral(common_by_value_semantics::current_check::
+                                        equal_other_symmetry)] =
+                    (sub_group2 == sub_group1);
+                res_acc[to_integral(common_by_value_semantics::current_check::
+                                        not_equal_other)] =
+                    !(sub_group1 != sub_group2);
+                res_acc[to_integral(common_by_value_semantics::current_check::
+                                        not_equal_other_symmetry)] =
+                    !(sub_group2 != sub_group1);
+              });
         })
         .wait_and_throw();
   }
@@ -141,6 +155,5 @@ TEST_CASE("Check sycl::sub_group equality", "[sub_group]") {
     CHECK(result[i]);
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
-        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 }  // namespace sub_group_semantics

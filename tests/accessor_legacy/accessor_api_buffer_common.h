@@ -62,7 +62,16 @@ class check_buffer_accessor_api_methods {
     buffer_t<T, dims> buffer(data.get(), range);
 
     // Prepare access range and access offset
-    const auto accessRange = range / 2;
+    auto accessRange = range / 2;
+
+    // Ensure accessor doesn't target an empty range. If it were the case, even
+    // get_pointer() would return unspecified value.
+    for (int i = 0; i < dims; ++i) {
+      if (accessRange[i] == 0) {
+        accessRange[i] = 1;
+      }
+    }
+
     const size_t accessedCount = dims == 0 ? 1 : accessRange.size();
     const size_t accessedSize = accessedCount * sizeof(T);
     auto accessOffset = sycl_id_t<dims>{};

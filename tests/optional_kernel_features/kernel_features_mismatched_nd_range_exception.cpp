@@ -28,7 +28,7 @@ class Functor {
       sycl::nd_item<1>) const {}
 };
 
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("Submitting a kernel with an nd-range that does not match."
  "[[sycl::reqd_work_group_size]] throws an exception",
  "[kernel_features]")({

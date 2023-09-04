@@ -97,13 +97,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 ("generic accessor common reference semantics, mutation (host)", "[accessor]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   int result = 0;
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  int val = 1;
-  int new_val = 2;
-#else
   constexpr int val = 1;
   constexpr int new_val = 2;
-#endif
   sycl::buffer<int> buffer{&val, sycl::range<1>{1}};
 
   SECTION("mutation to copy") {
@@ -176,7 +171,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   }
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("generic accessor common reference semantics (kernel)", "[accessor]")({
   sycl::buffer<int> buffer{sycl::range<1>{1}};
   using type =
@@ -200,13 +195,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   int result = 0;
 
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  int val = 1;
-  int new_val = 2;
-#else
   constexpr int val = 1;
   constexpr int new_val = 2;
-#endif
   sycl::buffer<int> buffer{sycl::range<1>{1}};
 
   SECTION("mutation to copy") {

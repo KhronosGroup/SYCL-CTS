@@ -130,7 +130,7 @@ if(SYCL_CTS_MEASURE_BUILD_TIMES)
     if(CMAKE_GENERATOR MATCHES "Makefiles|Ninja")
         # Wrap compiler calls in utility script to measure build times.
         # Note that SYCL implementations that require custom build steps, e.g. for dedicated
-        # device compiler passes (such as ComputeCpp), may require special handling.
+        # device compiler passes may require special handling.
         # In case the user already specified a compiler launcher, make sure ours comes first.
         list(PREPEND CMAKE_CXX_COMPILER_LAUNCHER "${CMAKE_SOURCE_DIR}/tools/measure_build_time.py")
     else()

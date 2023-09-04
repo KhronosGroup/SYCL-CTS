@@ -75,7 +75,6 @@ TEST_CASE("property api", "[property]") {
     const auto objects = named_type_pack<sycl::buffer<int>>::generate("buffer");
     for_all_combinations<check_property_object>(properties, objects);
   }
-#if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
   {
     const auto properties = named_type_pack<
         sycl::property::image::use_host_ptr, sycl::property::image::use_mutex,
@@ -88,36 +87,16 @@ TEST_CASE("property api", "[property]") {
                                                            "unsampled_image");
     for_all_combinations<check_property_object>(properties, objects);
   }
-#else
-  WARN(
-      "Implementation does not define sycl::sampled_image and "
-      "sycl::unsampled_image "
-      "Skipping the test case.");
-#endif
   {
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-    WARN(
-        "Implementation does not define sycl::unsampled_image_accessor and "
-        "sycl::host_unsampled_image_accessor "
-        "Skipping the test case.");
-#endif
-
     const auto properties =
         named_type_pack<sycl::property::no_init>::generate("property::no_init");
     // provide any template argument for the types that require it
     const auto objects = named_type_pack<
-        sycl::accessor<int>, sycl::host_accessor<int>
-#if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
-        ,
+        sycl::accessor<int>, sycl::host_accessor<int>,
         sycl::unsampled_image_accessor<sycl::int4, 1, sycl::access_mode::read>,
-        sycl::host_unsampled_image_accessor<sycl::int4, 1>
-#endif
-        >::generate("accessor", "host_accessor"
-#if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
-                    ,
-                    "unsampled_image_accessor", "host_unsampled_image_accessor"
-#endif
-    );
+        sycl::host_unsampled_image_accessor<sycl::int4, 1>>::
+        generate("accessor", "host_accessor", "unsampled_image_accessor",
+                 "host_unsampled_image_accessor");
     for_all_combinations<check_property_object>(properties, objects);
   }
   {

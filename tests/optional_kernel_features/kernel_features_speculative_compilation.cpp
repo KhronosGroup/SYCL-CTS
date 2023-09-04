@@ -42,7 +42,7 @@ using AtomicRefT =
 template <int Case>
 class kernel_speculative;
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEST_CASE(hipSYCL)
 ("Speculative compilation with supported feature", "[kernel_features]")({
   auto queue = util::get_cts_object::queue();
   const sycl::errc errc_expected = sycl::errc::success;

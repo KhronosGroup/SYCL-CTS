@@ -26,8 +26,8 @@
 #include "../common/common.h"
 #include "catch2/matchers/catch_matchers.hpp"
 namespace kernel_features_common {
-// FIXME: re-enable compilation with hipSYCL or computecpp when `sycl::errc` is supported
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+// FIXME: re-enable compilation with hipSYCL when `sycl::errc` is supported
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 enum class call_attribute_type {
   external_decorated,
@@ -65,6 +65,15 @@ inline void use_feature_function_non_decorated() {
 }
 
 /**
+ * @brief Macro for generating code that will use TYPE
+ */
+#define USE_FEATURE(TYPE)           \
+  unsigned long long temp = acc[0]; \
+  TYPE feature(temp);               \
+  feature += 1;                     \
+  acc[0] = feature * 4 / 3 > 2;
+
+/**
  * @brief The function that use T
  *
  * @tparam T The type of variable that will use inside the function
@@ -72,11 +81,7 @@ inline void use_feature_function_non_decorated() {
 template <typename T>
 inline void use_feature_function_non_decorated_with_accessor(
     const sycl::accessor<bool, 1> &acc) {
-  unsigned long long temp = 42;
-  T feature1(temp);
-  T feature2(temp);
-  feature1 += 42;
-  acc[0] = (feature1 == feature2);
+  USE_FEATURE(T)
 }
 
 /**
@@ -88,11 +93,7 @@ inline void use_feature_function_non_decorated_with_accessor(
 template <typename T, sycl::aspect aspect>
 [[sycl::device_has(aspect)]] void use_feature_function_decorated(
     const sycl::accessor<bool, 1> &acc) {
-  unsigned long long temp = 42;
-  T feature1(temp);
-  T feature2(temp);
-  feature1 += 42;
-  acc[0] = (feature1 == feature2);
+  USE_FEATURE(T)
 }
 
 /**
@@ -122,16 +123,6 @@ inline void dummy_function_non_decorated(const sycl::accessor<bool, 1> &acc) {
   var1 += 42;
   acc[0] = (var1 == var2);
 }
-
-/**
- * @brief Macro for generating code that will use TYPE
- */
-#define USE_FEATURE(TYPE)       \
-  unsigned long long temp = 42; \
-  TYPE feature1(temp);          \
-  TYPE feature2(temp);          \
-  feature1 += 42;               \
-  acc[0] = (feature1 == feature2);
 
 /**
  * @brief Not decorated functor that use feature defined in FeatureTypeT
@@ -1001,8 +992,7 @@ class kernel_submission_call;
                                       parallel_for_wg_action);                \
   }
 
-#endif  // #if !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
-        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#endif  // #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 }  // namespace kernel_features_common
 
 #endif  // SYCL_CTS_TEST_KERNEL_FEATURES_COMMON_H

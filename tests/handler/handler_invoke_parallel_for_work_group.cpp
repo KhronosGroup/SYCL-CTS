@@ -64,9 +64,6 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
                  });
 #endif
 
-// FIXME: re-enable for computecpp when sycl::kernel_handler and related version
-// of handler.parallel_for() will be implemented in computecpp
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
   /* parallel_for_work_group (range) with kernel_handler*/
   check_api_call(
       "parallel_for_work_group(range, lambda) with kernel handler", queue,
@@ -112,7 +109,6 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
             parallel_for_work_group_dynamic_with_kern_handler_functor(acc));
       });
 #endif
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
   /* parallel_for_work_group (range, range) */
   check_api_call("parallel_for_work_group(range, range, lambda)", queue,
                  [&](handler& cgh, accessor_t acc) {
@@ -153,9 +149,6 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
       });
 #endif
 
-// FIXME: re-enable for computecpp when sycl::kernel_handler and related version
-// of handler.parallel_for() will be implemented in computecpp
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
   /* parallel_for_work_group (range, range) with kernel handler */
   check_api_call(
       "parallel_for_work_group(range, range, lambda) with kernel handler",
@@ -201,5 +194,4 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
             parallel_for_work_group_fixed_with_kern_handler_functor(acc));
       });
 #endif
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
 }

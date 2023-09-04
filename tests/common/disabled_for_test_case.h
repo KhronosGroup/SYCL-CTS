@@ -23,12 +23,12 @@
  * currently does not compile for a given implementation, while other test cases
  * in the same translation unit would otherwise compile.
  *
- * The following implementations can be specified: ComputeCpp, DPCPP, hipSYCL.
+ * The following implementations can be specified: DPCPP, hipSYCL.
  * A disabled test case will fail automatically at runtime.
  *
  * Usage example:
  * ```
- * DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)("my test case", "[my-tag]")({
+ * DISABLED_FOR_TEST_CASE(hipSYCL)("my test case", "[my-tag]")({
  *  // ...
  * });
  * ```
@@ -49,26 +49,12 @@
 
 // ------------------------------------------------------------------------------------
 
-#if SYCL_CTS_COMPILING_WITH_COMPUTECPP
-#define INTERNAL_CTS_SYCL_IMPL_ComputeCpp ()
-#elif SYCL_CTS_COMPILING_WITH_DPCPP
+#if SYCL_CTS_COMPILING_WITH_DPCPP
 #define INTERNAL_CTS_SYCL_IMPL_DPCPP ()
 #elif SYCL_CTS_COMPILING_WITH_HIPSYCL
 #define INTERNAL_CTS_SYCL_IMPL_hipSYCL ()
 #else
 #error Unknown SYCL implementation
-#endif
-
-// Clang 8 does not properly handle _Pragma inside macro expansions.
-// See https://compiler-explorer.com/z/4WebY11TM.
-// As a crude workaround we disable _Pragma altogether.
-// This is required as of ComputeCpp 2.11.0 non-experimental compiler,
-// which is based on Clang 8.
-#if defined(__clang__) && __clang_major__ <= 8
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wbuiltin-macro-redefined"
-#define _Pragma(...)
-#pragma clang diagnostic pop
 #endif
 
 // ------------------------------------------------------------------------------------

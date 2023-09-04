@@ -72,8 +72,8 @@ SYCL_EXTERNAL void before_aspect_host<sycl::aspect::accelerator>(
 }
 
 template <sycl::aspect aspect>
-[[sycl::device_has(aspect)]] SYCL_EXTERNAL [[noreturn]] void
-between_aspects_device(const accT& acc);
+[[sycl::device_has(aspect)]] SYCL_EXTERNAL void between_aspects_device(
+    const accT& acc);
 template <>
 SYCL_EXTERNAL void between_aspects_device<sycl::aspect::cpu>(const accT& acc) {
   acc[0] = value;
@@ -88,8 +88,8 @@ SYCL_EXTERNAL void between_aspects_device<sycl::aspect::accelerator>(
   acc[0] = value;
 }
 template <sycl::aspect aspect>
-[[sycl::device_has(aspect)]] SYCL_EXTERNAL [[noreturn]] void
-between_aspects_host(hostAccT& acc);
+[[sycl::device_has(aspect)]] SYCL_EXTERNAL void between_aspects_host(
+    hostAccT& acc);
 template <>
 SYCL_EXTERNAL void between_aspects_host<sycl::aspect::cpu>(hostAccT& acc) {
   acc[0] = value;

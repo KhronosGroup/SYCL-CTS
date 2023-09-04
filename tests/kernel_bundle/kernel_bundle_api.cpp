@@ -19,7 +19,6 @@
 //  Provides tests for kernel_bundle api
 //
 *******************************************************************************/
-#include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
 #include "kernel_bundle.h"

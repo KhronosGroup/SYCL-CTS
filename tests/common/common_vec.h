@@ -26,7 +26,7 @@
 #include <sycl/sycl.hpp>
 
 #include "../../util/accuracy.h"
-#include "../../util/math_vector.h"
+#include "../../util/math_reference.h"
 #include "../../util/math_vector.h"
 #include "../../util/proxy.h"
 #include "../../util/test_base.h"
@@ -122,17 +122,6 @@ bool check_single_vector_op(vectorType vector1, lambdaFunc lambda) {
   return true;
 }
 
-// match float values to expected integer value
-template <typename T1, typename T2>
-T2 float_map_match(T1 floats[], T2 vals[], int size, T1 src) {
-  for (int i = 0; i < size; ++i) {
-    if (floats[i] == src) {
-      return vals[i];
-    }
-  }
-  return T2{};
-}
-
 template <typename sourceType, typename targetType>
 static constexpr bool if_FP_to_non_FP_conv_v =
     is_sycl_floating_point<sourceType>::value && !is_sycl_floating_point<targetType>::value;
@@ -147,21 +136,15 @@ sycl::vec<convertType, N> convert_vec(sycl::vec<vecType, N> inputVec) {
   return resVec;
 }
 
+// rte
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rte(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    const int size = 8;
-    vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {
-        static_cast<convertType>(2),  static_cast<convertType>(4),
-        static_cast<convertType>(2),  static_cast<convertType>(2),
-        static_cast<convertType>(-2), static_cast<convertType>(-4),
-        static_cast<convertType>(-2), static_cast<convertType>(-2)};
+    sycl::vec<vecType, N> roundedVec = reference::rint(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(inputVec, i);
-      auto elemConvert = float_map_match(floats, vals, size, elem);
-      setElement<convertType, N>(resVec, i, elemConvert);
+      vecType elem = getElement(roundedVec, i);
+      setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
     }
     return resVec;
   }
@@ -172,18 +155,11 @@ sycl::vec<convertType, N> rte(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rtz(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    const int size = 8;
-    vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {
-        static_cast<convertType>(2),  static_cast<convertType>(3),
-        static_cast<convertType>(1),  static_cast<convertType>(2),
-        static_cast<convertType>(-2), static_cast<convertType>(-3),
-        static_cast<convertType>(-1), static_cast<convertType>(-2)};
+    sycl::vec<vecType, N> roundedVec = reference::trunc(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(inputVec, i);
-      auto elemConvert = float_map_match(floats, vals, size, elem);
-      setElement<convertType, N>(resVec, i, elemConvert);
+      vecType elem = getElement(roundedVec, i);
+      setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
     }
     return resVec;
   }
@@ -194,18 +170,11 @@ sycl::vec<convertType, N> rtz(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rtp(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    const int size = 8;
-    vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {
-        static_cast<convertType>(3),  static_cast<convertType>(4),
-        static_cast<convertType>(2),  static_cast<convertType>(3),
-        static_cast<convertType>(-2), static_cast<convertType>(-3),
-        static_cast<convertType>(-1), static_cast<convertType>(-2)};
+    sycl::vec<vecType, N> roundedVec = reference::ceil(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(inputVec, i);
-      auto elemConvert = float_map_match(floats, vals, size, elem);
-      setElement<convertType, N>(resVec, i, elemConvert);
+      vecType elem = getElement(roundedVec, i);
+      setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
     }
     return resVec;
   }
@@ -216,18 +185,11 @@ sycl::vec<convertType, N> rtp(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rtn(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    const int size = 8;
-    vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {
-        static_cast<convertType>(2),  static_cast<convertType>(3),
-        static_cast<convertType>(1),  static_cast<convertType>(2),
-        static_cast<convertType>(-3), static_cast<convertType>(-4),
-        static_cast<convertType>(-2), static_cast<convertType>(-3)};
+    sycl::vec<vecType, N> roundedVec = reference::floor(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(inputVec, i);
-      auto elemConvert = float_map_match(floats, vals, size, elem);
-      setElement<convertType, N>(resVec, i, elemConvert);
+      vecType elem = getElement(roundedVec, i);
+      setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
     }
     return resVec;
   }
@@ -259,7 +221,11 @@ bool check_vector_convert_result(sycl::vec<vecType, N> inputVec) {
   sycl::vec<convertType, N> expectedVec;
   switch (mode) {
     case sycl::rounding_mode::automatic:
-      expectedVec = convert_vec<vecType, N, convertType>(inputVec);
+      if constexpr (is_sycl_floating_point<vecType>::value) {
+        expectedVec = rte<vecType, N, convertType>(inputVec);
+      } else {
+        expectedVec = rtz<vecType, N, convertType>(inputVec);
+      }
       break;
     case sycl::rounding_mode::rte:
       expectedVec = rte<vecType, N, convertType>(inputVec);
@@ -274,10 +240,7 @@ bool check_vector_convert_result(sycl::vec<vecType, N> inputVec) {
       expectedVec = rtn<vecType, N, convertType>(inputVec);
       break;
   }
-  if (!check_equal_values(convertedVec, expectedVec)) {
-    return false;
-  }
-  return true;
+  return value_operations::are_equal(convertedVec, expectedVec);
 }
 
 template <typename vecType, int N, typename convertType>
@@ -426,8 +389,8 @@ bool check_vector_convert(sycl::vec<vecType, N> inputVec) {
 }
 
 template <typename vecType, int N, typename asType, int asN>
-asType check_as_result(sycl::vec<vecType, N> inputVec,
-                       sycl::vec<asType, asN> asVec) {
+bool check_as_result(sycl::vec<vecType, N> inputVec,
+                     sycl::vec<asType, asN> asVec) {
   vecType tmp_ptr[N];
   for (size_t i = 0; i < N; ++i) {
     tmp_ptr[i] = getElement(inputVec, i);
@@ -467,7 +430,8 @@ bool check_vector_as(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename asType, int asN>
 bool check_vectorN_as(sycl::vec<vecType, N> inputVec) {
   if constexpr (sizeof(sycl::vec<vecType, N>) ==
-                sizeof(sycl::vec<asType, asN>))
+                    sizeof(sycl::vec<asType, asN>) &&
+                (sizeof(vecType) * N) == (sizeof(asType) * asN))
     return check_vector_as<vecType, N, asType, asN>(inputVec);
   else
     return true;
@@ -480,14 +444,14 @@ bool check_vectorN_as(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename newVecType>
 bool check_convert_as_all_dims(sycl::vec<vecType, N> inputVec) {
   bool result = true;
-  result += check_vector_convert<vecType, N, newVecType>(inputVec);
+  result &= check_vector_convert<vecType, N, newVecType>(inputVec);
 
-  result += check_vectorN_as<vecType, N, newVecType, 1>(inputVec);
-  result += check_vectorN_as<vecType, N, newVecType, 2>(inputVec);
-  result += check_vectorN_as<vecType, N, newVecType, 3>(inputVec);
-  result += check_vectorN_as<vecType, N, newVecType, 4>(inputVec);
-  result += check_vectorN_as<vecType, N, newVecType, 8>(inputVec);
-  result += check_vectorN_as<vecType, N, newVecType, 16>(inputVec);
+  result &= check_vectorN_as<vecType, N, newVecType, 1>(inputVec);
+  result &= check_vectorN_as<vecType, N, newVecType, 2>(inputVec);
+  result &= check_vectorN_as<vecType, N, newVecType, 3>(inputVec);
+  result &= check_vectorN_as<vecType, N, newVecType, 4>(inputVec);
+  result &= check_vectorN_as<vecType, N, newVecType, 8>(inputVec);
+  result &= check_vectorN_as<vecType, N, newVecType, 16>(inputVec);
 
   return result;
 }
@@ -499,46 +463,48 @@ template <typename vecType, int N>
 bool check_convert_as_all_types(sycl::vec<vecType, N> inputVec) {
   bool result = true;
 
-  result += check_convert_as_all_dims<vecType, N, bool>(inputVec);
-  result += check_convert_as_all_dims<vecType, N, char>(inputVec);
-  result += check_convert_as_all_dims<vecType, N, signed char>(inputVec);
-  result += check_convert_as_all_dims<vecType, N, unsigned char>(inputVec);
-  result += check_convert_as_all_dims<vecType, N, short int>(inputVec);
-  result += check_convert_as_all_dims<vecType, N, unsigned short int>(inputVec);
-  result += check_convert_as_all_dims<vecType, N, int>(inputVec);
-  result += check_convert_as_all_dims<vecType, N, unsigned int>(inputVec);
-  result += check_convert_as_all_dims<vecType, N, long int>(inputVec);
-  result += check_convert_as_all_dims<vecType, N, unsigned long int>(inputVec);
-  result += check_convert_as_all_dims<vecType, N, long long int>(inputVec);
-  result +=
+  // Should not run all checks from check_convert_as_all_dims() for bool type,
+  // because calling sycl::vec::as<bool>() is UB
+  result &= check_vector_convert<vecType, N, bool>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, char>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, signed char>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, unsigned char>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, short int>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, unsigned short int>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, int>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, unsigned int>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, long int>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, unsigned long int>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, long long int>(inputVec);
+  result &=
       check_convert_as_all_dims<vecType, N, unsigned long long int>(inputVec);
-  result += check_convert_as_all_dims<vecType, N, float>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, float>(inputVec);
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  result += check_convert_as_all_dims<vecType, N, sycl::byte>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, sycl::byte>(inputVec);
 
 #ifdef INT8_MAX
-  result += check_convert_as_all_dims<vecType, N, std::int8_t>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, std::int8_t>(inputVec);
 #endif
 #ifdef INT16_MAX
-  result += check_convert_as_all_dims<vecType, N, std::int16_t>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, std::int16_t>(inputVec);
 #endif
 #ifdef INT32_MAX
-  result += check_convert_as_all_dims<vecType, N, std::int32_t>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, std::int32_t>(inputVec);
 #endif
 #ifdef INT64_MAX
-  result += check_convert_as_all_dims<vecType, N, std::int64_t>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, std::int64_t>(inputVec);
 #endif
 #ifdef UINT8_MAX
-  result += check_convert_as_all_dims<vecType, N, std::uint8_t>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, std::uint8_t>(inputVec);
 #endif
 #ifdef UINT16_MAX
-  result += check_convert_as_all_dims<vecType, N, std::uint16_t>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, std::uint16_t>(inputVec);
 #endif
 #ifdef UINT32_MAX
-  result += check_convert_as_all_dims<vecType, N, std::uint32_t>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, std::uint32_t>(inputVec);
 #endif
 #ifdef UINT64_MAX
-  result += check_convert_as_all_dims<vecType, N, std::uint64_t>(inputVec);
+  result &= check_convert_as_all_dims<vecType, N, std::uint64_t>(inputVec);
 #endif
 #endif  // if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   return result;
