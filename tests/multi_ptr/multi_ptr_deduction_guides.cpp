@@ -78,11 +78,12 @@ class check_multi_ptr_deduction {
       auto queue = once_per_unit::get_queue();
       queue
           .submit([&](sycl::handler& cgh) {
-            acc_t _accessor;
-            if constexpr (accessor_space == global)
-              acc_t(buf_data, cgh);
-            else
-              acc_t(r, cgh);
+            acc_t _accessor = [&]() {
+              if constexpr (accessor_space == global)
+                return acc_t(buf_data, cgh);
+              else
+                return acc_t(r, cgh);
+            }();
             auto acc_res = buf_res.get_access(cgh);
             cgh.parallel_for(sycl::nd_range<1>({1}, {1}), [=](auto item) {
               auto mptr = multi_ptr(_accessor);
