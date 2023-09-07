@@ -197,6 +197,11 @@ void predicate_function_of_group(sycl::queue& queue) {
 
   sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
   size_t work_group_size = work_group_range.size();
+  // Note that the predicates 'one_true' and 'some_true' are in fact 'all_true'
+  // for a work-group size of 1, but we don't consider that an interesting case
+  // to test: assert to make this apparent to anything modifying the test case.
+  assert(work_group_size != 1 &&
+         "Not all test checks hold when the work-group size is 1");
 
   // array to return results: 4 predicates * 3 functions
   bool res[test_matrix * test_cases] = {false};
@@ -322,8 +327,16 @@ void predicate_function_of_sub_group(sycl::queue& queue) {
               bool, sycl::all_of_group(sub_group, local_var, none_true),
               "Return type of all_of_group(Sub_group g, bool pred) is wrong\n");
           res_acc[4] = !sycl::all_of_group(sub_group, local_var, none_true);
-          res_acc[5] = !sycl::all_of_group(sub_group, local_var, one_true);
-          res_acc[6] = !sycl::all_of_group(sub_group, local_var, some_true);
+          // Note that 'one_true' returns true for the first item. Thus in the
+          // case that the sub-group size is 1, check that all items match;
+          // otherwise check that not all items match.
+          res_acc[5] =
+              sycl::all_of_group(sub_group, local_var, one_true) ^ (size != 1);
+          // Note that 'some_true' returns true for the first item if the
+          // sub-group size is 1. In that case, check that all items match;
+          // otherwise check that not all items match.
+          res_acc[6] =
+              sycl::all_of_group(sub_group, local_var, some_true) ^ (size != 1);
           res_acc[7] = sycl::all_of_group(sub_group, local_var, all_true);
 
           ASSERT_RETURN_TYPE(
@@ -373,6 +386,11 @@ void bool_function_of_group(sycl::queue& queue) {
 
   sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
   size_t work_group_size = work_group_range.size();
+  // Note that the predicates 'one_true' and 'some_true' are in fact 'all_true'
+  // for a work-group size of 1, but we don't consider that an interesting case
+  // to test: assert to make this apparent to anyone modifying the test case.
+  assert(work_group_size != 1 &&
+         "Not all test checks hold when the work-group size is 1");
 
   // array to return results: 4 predicates * 3 functions
   bool res[test_matrix * test_cases] = {false};
@@ -497,8 +515,16 @@ void bool_function_of_sub_group(sycl::queue& queue) {
               bool, sycl::all_of_group(sub_group, none_true(local_var)),
               "Return type of all_of_group(sub_group g, bool pred) is wrong\n");
           res_acc[4] = !sycl::all_of_group(sub_group, none_true(local_var));
-          res_acc[5] = !sycl::all_of_group(sub_group, one_true(local_var));
-          res_acc[6] = !sycl::all_of_group(sub_group, some_true(local_var));
+          // Note that 'one_true' returns true for the first item. Thus in the
+          // case that the sub-group size is 1, check that all items match;
+          // otherwise check that not all items match.
+          res_acc[5] =
+              sycl::all_of_group(sub_group, one_true(local_var)) ^ (size != 1);
+          // Note that 'some_true' returns true for the first item if the
+          // sub-group size is 1. In that case, check that all items match;
+          // otherwise check that not all items match.
+          res_acc[6] =
+              sycl::all_of_group(sub_group, some_true(local_var)) ^ (size != 1);
           res_acc[7] = sycl::all_of_group(sub_group, all_true(local_var));
 
           ASSERT_RETURN_TYPE(
