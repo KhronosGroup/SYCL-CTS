@@ -57,8 +57,8 @@ auto joint_exclusive_scan_helper(Group group, T* v_begin, T* v_end,
 template <typename T, typename U>
 struct JointScanDataStruct {
   JointScanDataStruct(size_t range_size)
-      : ref_input(range_size), res(range_size * 4, T(-1)) {
-    std::iota(ref_input.begin(), ref_input.end(), U(1));
+      : ref_input(range_size), res(range_size * 4, U(-1)) {
+    std::iota(ref_input.begin(), ref_input.end(), T(1));
   }
 
   template <typename I, typename OpT>
@@ -75,8 +75,8 @@ struct JointScanDataStruct {
 
     I init_value = with_init ? I(init) : sycl::known_identity<OpT, I>::value;
 
-    std::vector<T> reference_e(range_size, T(-1));
-    std::vector<T> reference_i(range_size, T(-1));
+    std::vector<U> reference_e(range_size, U(-1));
+    std::vector<U> reference_i(range_size, U(-1));
     std::exclusive_scan(ref_input.begin(), ref_input.end(), reference_e.begin(),
                         init_value, op);
     std::inclusive_scan(ref_input.begin(), ref_input.end(), reference_i.begin(),
@@ -85,10 +85,10 @@ struct JointScanDataStruct {
     // scan results made over 'group' and 'sub_group' accordingly.
     for (int group_i = 0; group_i < 2; group_i++) {
       std::string group_name = group_i == 0 ? "group" : "sub_group";
-      // Each group contains two sets of results.
-      size_t group_offset = 2 * range_size * group_i;
+      size_t group_offset = range_size * group_i;
       for (int i = 0; i < range_size; i++) {
-        size_t res_i = i + group_offset;
+        // Each group contains two sets of results.
+        size_t res_i = i + 2 * group_offset;
         {
           INFO("Check joint_exclusive_scan on " + group_name + " for element " +
                std::to_string(i) + " (Operator: " + op_name + ")");
@@ -107,18 +107,18 @@ struct JointScanDataStruct {
     }
   }
 
-  sycl::buffer<U, 1> create_ref_input_buffer() {
+  sycl::buffer<T, 1> create_ref_input_buffer() {
     return {ref_input.data(), ref_input.size()};
   }
 
-  sycl::buffer<T, 1> create_res_buffer() { return {res.data(), res.size()}; }
+  sycl::buffer<U, 1> create_res_buffer() { return {res.data(), res.size()}; }
 
   sycl::buffer<bool, 1> create_end_buffer() { return {end, 4}; }
 
   sycl::buffer<bool, 1> create_ret_type_buffer() { return {ret_type, 4}; }
 
-  std::vector<U> ref_input;
-  std::vector<T> res;
+  std::vector<T> ref_input;
+  std::vector<U> res;
   bool end[4] = {false, false, false, false};
   bool ret_type[4] = {false, false, false, false};
   std::vector<size_t> local_id;
@@ -130,15 +130,15 @@ void check_scan(sycl::queue& queue, size_t size,
                 const std::string& op_name, bool with_init) {
   JointScanDataStruct<T, U> host_data{size};
   {
-    sycl::buffer<U, 1> ref_input_sycl = host_data.create_ref_input_buffer();
-    sycl::buffer<T, 1> res_sycl = host_data.create_res_buffer();
+    sycl::buffer<T, 1> ref_input_sycl = host_data.create_ref_input_buffer();
+    sycl::buffer<U, 1> res_sycl = host_data.create_res_buffer();
     sycl::buffer<bool, 1> end_sycl = host_data.create_end_buffer();
     sycl::buffer<bool, 1> ret_type_sycl = host_data.create_ret_type_buffer();
 
     queue
         .submit([&](sycl::handler& cgh) {
-          sycl::accessor<U, 1> ref_input_acc(ref_input_sycl, cgh);
-          sycl::accessor<T, 1> res_acc(res_sycl, cgh);
+          sycl::accessor<T, 1> ref_input_acc(ref_input_sycl, cgh);
+          sycl::accessor<U, 1> res_acc(res_sycl, cgh);
           sycl::accessor<bool, 1> end_acc(end_sycl, cgh);
           sycl::accessor<bool, 1> ret_type_acc(ret_type_sycl, cgh);
 
@@ -147,13 +147,13 @@ void check_scan(sycl::queue& queue, size_t size,
                 sycl::group<D> group = item.get_group();
                 sycl::sub_group sub_group = item.get_sub_group();
 
-                U* v_begin = ref_input_acc.get_pointer();
-                U* v_end = v_begin + ref_input_acc.size();
+                T* v_begin = ref_input_acc.get_pointer();
+                T* v_end = v_begin + ref_input_acc.size();
 
-                T* r_g_e_begin = res_acc.get_pointer();
-                T* r_g_i_begin = res_acc.get_pointer() + size;
-                T* r_sg_e_begin = res_acc.get_pointer() + size * 2;
-                T* r_sg_i_begin = res_acc.get_pointer() + size * 3;
+                U* r_g_e_begin = res_acc.get_pointer();
+                U* r_g_i_begin = res_acc.get_pointer() + size;
+                U* r_sg_e_begin = res_acc.get_pointer() + size * 2;
+                U* r_sg_i_begin = res_acc.get_pointer() + size * 3;
 
                 auto r_g_e_end = joint_exclusive_scan_helper<I>(
                     group, v_begin, v_end, r_g_e_begin, op, with_init);
