@@ -165,15 +165,15 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 
   if (max_wg_size >= testing_wg_size[0]) {
     {
-      const auto separate_lambda_item_arg =
+      const auto separate_lambda_nd_item_arg =
           [](sycl::nd_item<1>)
               [[sycl::reqd_work_group_size(testing_wg_size[0])]] {};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_work_group_size(testing_wg_size[0])]]{};
 
       run_separate_lambda_nd_range<kernel_speculative<5>>(
-          is_exception_expected, errc_expected, queue, separate_lambda_item_arg,
-          separate_lambda_group_arg);
+          is_exception_expected, errc_expected, queue,
+          separate_lambda_nd_item_arg, separate_lambda_group_arg);
     }
 
     {
@@ -192,15 +192,15 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 
   if (max_wg_size >= testing_wg_size[1]) {
     {
-      const auto separate_lambda_item_arg =
+      const auto separate_lambda_nd_item_arg =
           [](sycl::nd_item<1>)
               [[sycl::reqd_work_group_size(testing_wg_size[1])]] {};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_work_group_size(testing_wg_size[1])]]{};
 
       run_separate_lambda_nd_range<kernel_speculative<6>>(
-          is_exception_expected, errc_expected, queue, separate_lambda_item_arg,
-          separate_lambda_group_arg);
+          is_exception_expected, errc_expected, queue,
+          separate_lambda_nd_item_arg, separate_lambda_group_arg);
     }
 
     {
@@ -225,15 +225,15 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       std::find(sg_sizes_vec.begin(), sg_sizes_vec.end(), testing_sg_size[0]);
   if (find_res != sg_sizes_vec.end()) {
     {
-      const auto separate_lambda_item_arg =
+      const auto separate_lambda_nd_item_arg =
           [](sycl::nd_item<1>)
               [[sycl::reqd_sub_group_size(testing_sg_size[0])]] {};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_sub_group_size(testing_sg_size[0])]]{};
 
       run_separate_lambda_nd_range<kernel_speculative<7>>(
-          is_exception_expected, errc_expected, queue, separate_lambda_item_arg,
-          separate_lambda_group_arg);
+          is_exception_expected, errc_expected, queue,
+          separate_lambda_nd_item_arg, separate_lambda_group_arg);
     }
 
     {
@@ -254,15 +254,15 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       std::find(sg_sizes_vec.begin(), sg_sizes_vec.end(), testing_sg_size[1]);
   if (find_res != sg_sizes_vec.end()) {
     {
-      const auto separate_lambda_item_arg =
+      const auto separate_lambda_nd_item_arg =
           [](sycl::nd_item<1>)
               [[sycl::reqd_sub_group_size(testing_sg_size[1])]] {};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_sub_group_size(testing_sg_size[1])]]{};
 
       run_separate_lambda_nd_range<kernel_speculative<8>>(
-          is_exception_expected, errc_expected, queue, separate_lambda_item_arg,
-          separate_lambda_group_arg);
+          is_exception_expected, errc_expected, queue,
+          separate_lambda_nd_item_arg, separate_lambda_group_arg);
     }
 
     {
