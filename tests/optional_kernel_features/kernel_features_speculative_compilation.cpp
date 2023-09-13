@@ -165,8 +165,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 
   if (max_wg_size >= testing_wg_size[0]) {
     {
-      const auto separate_lambda_item_arg = [](sycl::item<1>)
-          [[sycl::reqd_work_group_size(testing_wg_size[0])]]{};
+      const auto separate_lambda_item_arg =
+          [](sycl::nd_item<1>)
+              [[sycl::reqd_work_group_size(testing_wg_size[0])]] {};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_work_group_size(testing_wg_size[0])]]{};
 
@@ -191,8 +192,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 
   if (max_wg_size >= testing_wg_size[1]) {
     {
-      const auto separate_lambda_item_arg = [](sycl::item<1>)
-          [[sycl::reqd_work_group_size(testing_wg_size[1])]]{};
+      const auto separate_lambda_item_arg =
+          [](sycl::nd_item<1>)
+              [[sycl::reqd_work_group_size(testing_wg_size[1])]] {};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_work_group_size(testing_wg_size[1])]]{};
 
@@ -224,7 +226,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   if (find_res != sg_sizes_vec.end()) {
     {
       const auto separate_lambda_item_arg =
-          [](sycl::item<1>) [[sycl::reqd_sub_group_size(testing_sg_size[0])]]{};
+          [](sycl::nd_item<1>)
+              [[sycl::reqd_sub_group_size(testing_sg_size[0])]] {};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_sub_group_size(testing_sg_size[0])]]{};
 
@@ -252,7 +255,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   if (find_res != sg_sizes_vec.end()) {
     {
       const auto separate_lambda_item_arg =
-          [](sycl::item<1>) [[sycl::reqd_sub_group_size(testing_sg_size[1])]]{};
+          [](sycl::nd_item<1>)
+              [[sycl::reqd_sub_group_size(testing_sg_size[1])]] {};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_sub_group_size(testing_sg_size[1])]]{};
 
