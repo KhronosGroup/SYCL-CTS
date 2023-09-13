@@ -349,9 +349,7 @@ class buffer_accessor_get_pointer {
   void operator()() const {
     check_get_pointer(acc_mode_tag::get<mode>());
   }
-  void operator()(sycl_id_t<dim>) const {
-    operator()();
-  }
+  void operator()(common_id<dim>) const { operator()(); }
 
  private:
   void check_get_pointer(acc_mode_tag::generic) const {
@@ -534,7 +532,7 @@ class buffer_accessor_api_rw {
         m_range(rng),
         size(size_) {}
 
-  void operator()(sycl_id_t<dim> idx) const {
+  void operator()(common_id<dim> idx) const {
     // We do not need work-item synchronization for atomic mode because of:
     // - load-store consistency within single work-item
     // - access to the different elements from different work-items

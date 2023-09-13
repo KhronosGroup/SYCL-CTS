@@ -763,6 +763,23 @@ inline std::unique_ptr<int[]> get_error_data(size_t count) {
   return get_buffer_input_data<int>(count, dims, useIndexes);
 }
 
+/**
+ * @brief Common class for nd_item and item arguments to allow for a common
+ *        kernel definition for different parallel_for.
+ */
+template <int Dimensions>
+struct common_id {
+  common_id(sycl_id_t<Dimensions> I) : Id{I} {}
+  common_id(sycl::item<data_dim<Dimensions>::value> I) : Id{I} {}
+  common_id(sycl::nd_item<data_dim<Dimensions>::value> I)
+      : Id{I.get_global_id()} {}
+
+  operator sycl_id_t<Dimensions>() const { return Id; }
+
+ private:
+  sycl_id_t<Dimensions> Id;
+};
+
 }  // namespace
 
 #endif  // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_API_UTILITY_H
