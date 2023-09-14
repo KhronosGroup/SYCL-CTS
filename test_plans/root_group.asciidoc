@@ -1,0 +1,115 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl_ext_oneapi_root_group
+
+This is a test plan for the APIs described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/proposed/sycl_ext_oneapi_root_group.asciidoc[sycl_ext_oneapi_root_group].
+
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_ROOT_GROUP` so they can be skipped
+if feature is not supported.
+
+== Tests
+
+* All following tests run with `Dimensions` = 1, 2, 3
+* Get root group object by
+[source,c++]
+----
+auto bundle = sycl::get_kernel_bundle(q.get_context());
+auto kernel = bundle.get_kernel<class KernelName>();
+auto maxWGs = kernel.ext_oneapi_get_info<sycl::ext::oneapi::experimental::info::kernel_queue_specific::max_num_work_group_sync>(q);
+REQUIRE(maxWGs >= 1);
+auto nd_range = sycl::nd_range<Dimensions>{global_range, local_range};
+auto props = sycl::ext::oneapi::experimental::properties{sycl::ext::oneapi::experimental::use_root_sync};
+q.parallel_for<class KernelName>(nd_range, props, [=](sycl::nd_item<Dimensions> it) {
+    auto root = it.ext_oneapi_get_root_group();
+});
+----
+where `global_range.size()` = `local_range.size() * maxWGs`.
+
+* Check that `root` is of type `ext::oneapi::experimental::root_group<Dimensions>`
+
+=== The `root_group` class API
+
+==== Members
+
+Check the following:
+
+* `id_type` is same as `id<Dimensions>`
+* `range_type` is same as `range<Dimensions>`
+* `linear_id_type` is same as `size_t`
+* `dimensions` is `int` and is equal to Dimensions
+* `fence_scope` is `memory_scope` and is equal to `memory_scope::device`
+
+==== get_group_id
+
+Check that `get_group_id()` return type is `id<Dimensions>` and return value is equal to `id<Dimensions>()`.
+
+==== get_local_id
+
+Check that `get_local_id()` return type is `id<Dimensions>` and return value is equal to `nd_item::get_global_id()`.
+
+==== get_group_range
+
+Check that `get_group_range()` return type is `range<Dimensions>` and return value is equal to `1`.
+
+==== get_local_range
+
+Check that `get_local_range()` return type is `range<Dimensions>` and return value is equal to `nd_item::get_global_range()`.
+
+==== get_max_local_range
+
+Check that `get_max_local_range()` return type is `range<Dimensions>` and return value is equal to `get_local_range()`.
+
+==== get_group_linear_id
+
+Check that `get_group_linear_id()` return type is `size_t` and return value equals 0.
+
+==== get_local_linear_id
+
+Check that `get_local_linear_id()` return type is `size_t` and the return value is equal to `nd_item::get_global_linear_id()`.
+
+==== get_group_linear_range
+
+Check that `get_group_linear_range()` return type is `size_t` and return value is equal to `get_group_range.size()`.
+
+==== get_local_linear_range
+
+Check that `get_local_linear_range()` return type is `size_t` and return value is equal to `get_local_range.size()`.
+
+==== leader
+
+Check that `leader()` return type is `bool` and return value is equal to `get_local_id() == 0`.
+
+=== get_child_group
+
+* Get object `g` via `get_child_group(root)`
+* Check that `g` is `group<Dimensions>`
+* Check that `g` equals `nd_item::get_group()`
+
+* Get object `sb` via `get_child_group(g)`
+* Check that `g` is `sub_group`
+* Check that `g` equals `nd_item::get_sub_group()`
+
+=== group_barrier for root_group
+
+For folowing as `fence_scope` parameter:
+
+* `sycl::memory_scope::device`
+* `sycl::memory_scope::system`
+* no argument, expecting to use default `root_group::fence_scope` = `sycl::memory_scope::device`
+
+if `fence_scope` is supported by the hardware (from query of `info::device::atomic_fence_scope_capabilities`)
+check that invocation of `group_barrier(root, fence_scope)` behaves as expected:
+when each of workitems writes 1 into zero-initialized global memory array
+after barrier all array values read by workitems in reverse order are equal to 1.

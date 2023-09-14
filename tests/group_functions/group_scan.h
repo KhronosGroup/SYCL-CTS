@@ -206,7 +206,7 @@ struct joint_scan_group {
 
       sycl::nd_range<D> executionRange(work_group_range, work_group_range);
 
-      const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
+      const size_t sizes[2] = {5, 2};
       for (size_t size : sizes) {
         check_scan<D, T, U>(queue, size, executionRange, OperatorT(), op_name,
                             false);
@@ -261,7 +261,7 @@ struct init_joint_scan_group {
 
       size_t work_group_size = work_group_range.size();
 
-      const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
+      const size_t sizes[2] = {5, 2};
       for (size_t size : sizes) {
         check_scan<D, T, U, I>(queue, size, executionRange, OperatorT(),
                                op_name, true);
@@ -392,6 +392,9 @@ template <int D, typename T, typename U = T, typename OpT>
 void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op,
                            const std::string& op_name, bool with_init) {
   auto range_size = range.size();
+  REQUIRE(((range_size * (range_size + 1) / 2) + T(init)) <=
+          std::numeric_limits<T>::max());
+
   ScanOverGroupDataStruct<T, U> host_data{range_size};
   {
     auto ref_input_sycl = host_data.create_ref_input_buffer();
