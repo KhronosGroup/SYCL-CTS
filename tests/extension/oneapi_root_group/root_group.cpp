@@ -235,8 +235,8 @@ TEST_CASE(
   SKIP("SYCL_EXT_ONEAPI_ROOT_GROUP is not defined");
 #else
   check_root_group_api<struct RootGroup1D, 4>();
-  check_root_group_api<struct RootGroup2D, 4, 4>();
-  check_root_group_api<struct RootGroup3D, 4, 4, 4>();
+  check_root_group_api<struct RootGroup2D, 6, 4>();
+  check_root_group_api<struct RootGroup3D, 8, 6, 4>();
 #endif
 }
 
@@ -248,8 +248,8 @@ TEST_CASE(
   SKIP("SYCL_EXT_ONEAPI_ROOT_GROUP is not defined");
 #else
   check_root_group_barrier<struct RootGroupBarrier1D, 4>();
-  check_root_group_barrier<struct RootGroupBarrier2D, 4, 4>();
-  check_root_group_barrier<struct RootGroupBarrier3D, 4, 4, 4>();
+  check_root_group_barrier<struct RootGroupBarrier2D, 6, 4>();
+  check_root_group_barrier<struct RootGroupBarrier3D, 8, 6, 4>();
 #endif
 }
 
