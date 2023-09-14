@@ -203,6 +203,10 @@ TEST_CASE("Test kernel info", "[kernel]") {
                               "device_specific::max_sub_group_size>(dev)");
   {
     auto sub_group_sizes = dev.get_info<sycl::info::device::sub_group_sizes>();
+    {
+      INFO("The device must report at least one sub-group size");
+      REQUIRE(!sub_group_sizes.empty());
+    }
     uint32_t max =
         *std::max_element(sub_group_sizes.begin(), sub_group_sizes.end());
     INFO(
