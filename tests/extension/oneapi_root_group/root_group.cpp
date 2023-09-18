@@ -67,7 +67,7 @@ static void check_root_group_api() {
   q.submit([&](sycl::handler& cgh) {
     sycl::accessor acc{results_buffer, cgh, sycl::write_only};
     cgh.parallel_for<KernelName>(nd_range, props, [=](auto it) {
-      auto results = acc[it.get_global_id()];
+      auto &results = acc[it.get_global_id()];
 
       auto root = it.ext_oneapi_get_root_group();
       results[checks::get_group_id] =
