@@ -24,7 +24,7 @@ namespace root_group::tests {
 
 #ifdef SYCL_EXT_ONEAPI_ROOT_GROUP
 
-template <typename KernelName, size_t... Dims>
+template <typename KernelName, bool UseRootSync, size_t... Dims>
 static void check_root_group_api() {
   constexpr int Dimensions = sizeof...(Dims);
   auto q = sycl_cts::util::get_cts_object::queue();
@@ -66,8 +66,8 @@ static void check_root_group_api() {
 
   q.submit([&](sycl::handler& cgh) {
     sycl::accessor acc{results_buffer, cgh, sycl::write_only};
-    cgh.parallel_for<KernelName>(nd_range, props, [=](auto it) {
-      auto &results = acc[it.get_global_id()];
+    const auto kernel = [=](auto it) -> void {
+      auto& results = acc[it.get_global_id()];
 
       auto root = it.ext_oneapi_get_root_group();
       results[checks::get_group_id] =
@@ -92,7 +92,12 @@ static void check_root_group_api() {
       auto sg = sycl::ext::oneapi::experimental::get_child_group(g);
       results[checks::get_child_group___root_group] = g == it.get_group();
       results[checks::get_child_group___group] = sg == it.get_sub_group();
-    });
+    };
+    if constexpr (UseRootSync) {
+      cgh.parallel_for<KernelName>(nd_range, props, kernel);
+    } else {
+      cgh.parallel_for<KernelName>(nd_range, kernel);
+    }
   });
   q.wait();
 
@@ -234,9 +239,12 @@ TEST_CASE(
 #ifndef SYCL_EXT_ONEAPI_ROOT_GROUP
   SKIP("SYCL_EXT_ONEAPI_ROOT_GROUP is not defined");
 #else
-  check_root_group_api<struct RootGroup1D, 4>();
-  check_root_group_api<struct RootGroup2D, 6, 4>();
-  check_root_group_api<struct RootGroup3D, 8, 6, 4>();
+  check_root_group_api<struct RootGroupNoSyncProp1D, false, 4>();
+  check_root_group_api<struct RootGroupNoSyncProp2D, false, 6, 4>();
+  check_root_group_api<struct RootGroupNoSyncProp3D, false, 8, 6, 4>();
+  check_root_group_api<struct RootGroupSyncProp1D, true, 4>();
+  check_root_group_api<struct RootGroupSyncProp2D, true, 6, 4>();
+  check_root_group_api<struct RootGroupSyncProp3D, true, 8, 6, 4>();
 #endif
 }
 
