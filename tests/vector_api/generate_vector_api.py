@@ -48,8 +48,11 @@ vector_api_template = Template("""
         if (!check_vector_values<${type}, ${size}>(swizzledVec, reversed_vals)) {
           resAcc[0] = false;
         }
-        if (std::alignment_of<sycl::vec<${type}, ${size}>>::value !=
-            sizeof(${type}) * (${size} == 3 ? 4 : ${size})) {
+        auto expectedAlignment = sizeof(${type}) * (${size} == 3 ? 4 : ${size});
+        auto actualAlignment =
+            std::alignment_of<sycl::vec<${type}, ${size}>>::value;
+        // Maximum alignment is limited to 64 by SYCL2020
+        if (actualAlignment != expectedAlignment && expectedAlignment <= 64) {
           resAcc[0] = false;
         }
         if (!check_convert_as_all_types<${type}, ${size}>(inputVec)) {
