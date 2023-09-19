@@ -211,7 +211,7 @@ void handleFPToUnsignedConv(sycl::vec<vecType, N>& inputVec) {
   }
 }
 
-#define DO_OPERATION_ON_SWIZZLE(inputVec, ResVariable, Op)                    \
+#define DO_OPERATION_ON_SWIZZLE(N, inputVec, ResVariable, Op)                 \
   if constexpr (N == 1) {                                                     \
     ResVariable = inputVec.template swizzle<sycl::elem::s0>().Op;             \
   } else if constexpr (N == 2) {                                              \
@@ -286,7 +286,7 @@ bool check_vector_convert_result(sycl::vec<vecType, N> inputVec) {
       inputVec, convertedVec);
 
   sycl::vec<convertType, N> convertedSwizzle;
-  DO_OPERATION_ON_SWIZZLE(inputVec, convertedSwizzle,
+  DO_OPERATION_ON_SWIZZLE(N, inputVec, convertedSwizzle,
                           template convert<convertType COMMA mode>())
   result &= check_vector_convert_result_impl<vecType, N, convertType, mode>(
       inputVec, convertedSwizzle);
@@ -327,7 +327,7 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   if (count != N || !noexcept(inputVec.size())) {
     return false;
   }
-  DO_OPERATION_ON_SWIZZLE(inputVec, count, size())
+  DO_OPERATION_ON_SWIZZLE(N, inputVec, count, size())
 
   if (count != N) {
     return false;
@@ -339,7 +339,7 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   if (count_depr != N) {
     return false;
   }
-  DO_OPERATION_ON_SWIZZLE(inputVec, count_depr, get_count())
+  DO_OPERATION_ON_SWIZZLE(N, inputVec, count_depr, get_count())
   if (count_depr != N) {
     return false;
   }
@@ -350,7 +350,7 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   if (size != sizeof(vecType) * M || !noexcept(inputVec.byte_size())) {
     return false;
   }
-  DO_OPERATION_ON_SWIZZLE(inputVec, size, byte_size())
+  DO_OPERATION_ON_SWIZZLE(N, inputVec, size, byte_size())
   if (size != sizeof(vecType) * M) {
     return false;
   }
@@ -361,7 +361,7 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   if (size_depr != sizeof(vecType) * M) {
     return false;
   }
-  DO_OPERATION_ON_SWIZZLE(inputVec, size_depr, get_size())
+  DO_OPERATION_ON_SWIZZLE(N, inputVec, size_depr, get_size())
   if (size_depr != sizeof(vecType) * M) {
     return false;
   }
@@ -407,7 +407,7 @@ bool check_vector_as(sycl::vec<vecType, N> inputVec) {
   using asVecType = sycl::vec<asType, asN>;
   asVecType asVec = inputVec.template as<asVecType>();
   asVecType asVecSwizzle;
-  DO_OPERATION_ON_SWIZZLE(inputVec, asVecSwizzle, template as<asVecType>())
+  DO_OPERATION_ON_SWIZZLE(N, inputVec, asVecSwizzle, template as<asVecType>())
 
   return check_as_result(inputVec, asVec) &&
          check_as_result(inputVec, asVecSwizzle);
