@@ -50,7 +50,7 @@ vector_api_template = Template("""
         }
         auto expectedAlignment = sizeof(${type}) * (${size} == 3 ? 4 : ${size});
         auto actualAlignment =
-            std::alignment_of<sycl::vec<${type}, ${size}>>::value;
+            std::alignment_of_v<sycl::vec<${type}, ${size}>>;
         // Maximum alignment is limited to 64 by SYCL2020
         if (actualAlignment != expectedAlignment && expectedAlignment <= 64) {
           resAcc[0] = false;
