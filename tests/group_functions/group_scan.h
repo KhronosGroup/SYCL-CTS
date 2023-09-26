@@ -415,29 +415,33 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op,
                 sycl::group<D> group = item.get_group();
                 sycl::sub_group sub_group = item.get_sub_group();
 
-                auto index = item.get_global_linear_id();
-                local_id_acc[index] = group.get_local_linear_id();
-                local_id_acc[range_size + index] =
-                    sub_group.get_local_linear_id();
+                auto g_index =
+                    group.get_group_linear_id() + group.get_local_linear_id();
+                local_id_acc[g_index] = group.get_local_linear_id();
 
                 auto res_g_e = exclusive_scan_over_group_helper<T>(
-                    group, ref_input_acc[index], op, with_init);
-                res_acc[index] = res_g_e;
+                    group, ref_input_acc[g_index], op, with_init);
+                res_acc[g_index] = res_g_e;
                 ret_type_acc[0] = std::is_same_v<T, decltype(res_g_e)>;
 
                 auto res_g_i = inclusive_scan_over_group_helper<T>(
-                    group, ref_input_acc[index], op, with_init);
-                res_acc[range_size + index] = res_g_i;
+                    group, ref_input_acc[g_index], op, with_init);
+                res_acc[range_size + g_index] = res_g_i;
                 ret_type_acc[1] = std::is_same_v<T, decltype(res_g_i)>;
 
+                auto sg_index = sub_group.get_group_linear_id() +
+                                sub_group.get_local_linear_id();
+                local_id_acc[range_size + sg_index] =
+                    sub_group.get_local_linear_id();
+
                 auto res_sg_e = exclusive_scan_over_group_helper<T>(
-                    sub_group, ref_input_acc[index], op, with_init);
-                res_acc[range_size * 2 + index] = res_sg_e;
+                    sub_group, ref_input_acc[sg_index], op, with_init);
+                res_acc[range_size * 2 + sg_index] = res_sg_e;
                 ret_type_acc[2] = std::is_same_v<T, decltype(res_sg_e)>;
 
                 auto res_sg_i = inclusive_scan_over_group_helper<T>(
-                    sub_group, ref_input_acc[index], op, with_init);
-                res_acc[range_size * 3 + index] = res_sg_i;
+                    sub_group, ref_input_acc[sg_index], op, with_init);
+                res_acc[range_size * 3 + sg_index] = res_sg_i;
                 ret_type_acc[3] = std::is_same_v<T, decltype(res_sg_i)>;
               });
         })
