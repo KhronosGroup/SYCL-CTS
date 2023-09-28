@@ -30,7 +30,7 @@ Contact telephone:
 
 # Version of the SYCL specification being tested.
 #
-# Specification version of SYCL being tested, can be either 1.2.1 or SYCL.
+# Specification version of SYCL being tested, can be either 1.2.1 or 2020.
 #
 SYCL Version:
 
@@ -57,10 +57,10 @@ Target SYCL device:
 # operating systems and toolchains, and all supported SYCL backend, platform
 # and device combinations.
 #
-SYCL implementation version(s)
+SYCL implementation version(s):
 Host architecture(s):
-Host pperating system(s) and version(s):
-Host Toolchains(s) and version(s):
+Host operating system(s) and version(s):
+Host toolchains(s) and version(s):
 SYCL backend/platform/device combinations(s):
 
 # Environment requirements.
@@ -84,14 +84,15 @@ Optional features:
 
 # Tests version.
 #
-# Commit SHA (7-digit) of the commit which was used to run the tests.
+# Commit SHA (full hash) of the commit which was used to run the tests.
 #
 Test version commit SHA:
 
 # Patches applied.
 #
-# Commit SHA(s) (7-digit) of any cherry-picked patches subsequent to the tests
-# version. Any patches must apply without conflicts with the tests version.
+# Commit SHA(s) (full hash) of any cherry-picked patches subsequent to the
+# tests version. Any patches must apply without conflicts with the tests
+# version.
 #
 Patch commit SHA(s):
 
