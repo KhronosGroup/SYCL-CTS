@@ -21,6 +21,7 @@
 #ifndef SYCL_CTS_GENERIC_ACCESSOR_API_COMMON_H
 #define SYCL_CTS_GENERIC_ACCESSOR_API_COMMON_H
 #include "accessor_common.h"
+#include <cmath>
 
 namespace generic_accessor_api_common {
 using namespace sycl_cts;

@@ -20,6 +20,7 @@
 
 #include "../common/common.h"
 #include "kernel_attributes.h"
+#include <cmath>
 
 using namespace kernel_attributes;
 

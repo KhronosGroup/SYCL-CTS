@@ -121,16 +121,14 @@ class test_exception_for_local_acc {
         auto range = util::get_cts_object::range<Dimension>::get(
             range_size, range_size, range_size);
         // Use a variable to avoid device code optimisation.
-        auto is_empty =
-            usm_helper::allocate_usm_memory<sycl::usm::alloc::shared, bool>(
-                queue);
+        sycl::buffer<bool, 1> dest{1};
         queue
             .submit([&](sycl::handler& cgh) {
-              auto is_empty_ptr = is_empty.get();
+              sycl::accessor dest_acc{dest, cgh, sycl::write_only};
               sycl::local_accessor<DataT, Dimension> local_acc(range, cgh);
               cgh.single_task<kname>([=](sycl::kernel_handler cgh) {
                 // Some interactions to avoid device code optimisation.
-                *is_empty_ptr = local_acc.empty();
+                dest_acc[0] = local_acc.empty();
               });
             })
             .wait_and_throw();
