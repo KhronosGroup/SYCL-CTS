@@ -22,6 +22,8 @@
 #ifndef __SYCLCTS_TESTS_COMMON_GET_GROUP_RANGE_H
 #define __SYCLCTS_TESTS_COMMON_GET_GROUP_RANGE_H
 
+#include <cmath>
+
 namespace sycl_cts {
 namespace util {
 /**
