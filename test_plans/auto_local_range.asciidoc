@@ -1,0 +1,37 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl_ext_oneapi_auto_local_range
+
+This is a test plan for the API described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/experimental/sycl_ext_oneapi_auto_local_range.asciidoc[sycl_ext_oneapi_auto_local_range].
+
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_AUTO_LOCAL_RANGE` so they can be skipped
+if feature is not supported.
+
+== Tests
+
+* All following tests run with `Dimensions` = 1, 2, 3
+
+=== auto_range function
+
+Check that `auto_range<Dimensions>()` return type is `range<Dimensions>`
+
+=== auto_range in parallel_for
+
+For following `parallel_for` functions:
+
+* `queue::parallel_for`
+* `handler::parallel_for`
+
+Check that `auto_range<Dimensions>()` as the local range parameter behaves as expected: when each work item writes 1 into zero-initialized global memory all array values read after the `parallel_for` invocation are equal to 1 and the number of array values is equal to the global range.
