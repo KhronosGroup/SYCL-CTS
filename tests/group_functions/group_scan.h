@@ -415,6 +415,8 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op,
                 sycl::group<D> group = item.get_group();
                 sycl::sub_group sub_group = item.get_sub_group();
 
+                // Use the local id of the item in the group to place results of
+                // the scan operation in the order of the items.
                 auto g_index =
                     group.get_group_linear_id() + group.get_local_linear_id();
                 local_id_acc[g_index] = group.get_local_linear_id();
@@ -429,6 +431,8 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op,
                 res_acc[range_size + g_index] = res_g_i;
                 ret_type_acc[1] = std::is_same_v<T, decltype(res_g_i)>;
 
+                // Use the local id of the item in the sub-group to place
+                // results of the scan operation in the order of the items.
                 auto sg_index = sub_group.get_group_linear_id() +
                                 sub_group.get_local_linear_id();
                 local_id_acc[range_size + sg_index] =
