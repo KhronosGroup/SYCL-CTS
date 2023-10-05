@@ -34,4 +34,4 @@ For following `parallel_for` functions:
 * `queue::parallel_for`
 * `handler::parallel_for`
 
-Check that `auto_range<Dimensions>()` as the local range parameter behaves as expected: when each work item writes 1 into zero-initialized global memory all array values read after the `parallel_for` invocation are equal to 1 and the number of array values is equal to the global range.
+Check that `auto_range<Dimensions>()` as the local range parameter behaves as expected: when each work item writes 1 into zero-initialized global memory all array values read after the `parallel_for` invocation are equal to 1.
