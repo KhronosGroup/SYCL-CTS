@@ -20,31 +20,32 @@
 
 #include "group_reduce.h"
 
+// clang-format off
+#cmakedefine CTS_TYPE @CTS_TYPE@
+#cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
+// clang-format on
 using ReduceTypes = Types;
 
-// 2-dim Cartesian product of type lists
-using prod2 = product<std::tuple, ReduceTypes, ReduceTypes>::type;
-
-TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions",
-                        "[group_func][type_list][dim]", ReduceTypes) {
+// hipSYCL has no implementation over sub-groups
+TEST_CASE(CTS_TYPE_NAME + " group and sub-group joint reduce functions",
+          "[group_func][type_list][dim]") {
   auto queue = once_per_unit::get_queue();
-  // Get binary operators from TestType
-  const auto Operators = get_op_types<TestType>();
-  const auto Type = unnamed_type_pack<TestType>();
-  for_all_combinations<invoke_reduce_over_group>(Dims, Type, Operators, queue);
+  const auto Operators = get_op_types<CTS_TYPE>();
+  const auto RetType = unnamed_type_pack<CTS_TYPE>();
+  for_all_combinations<invoke_joint_reduce_group>(Dims, RetType, Operators,
+                                                  queue);
 }
 
-TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
-                        "[group_func][type_list][dim]", prod2) {
+// hipSYCL has problems with 16-bit types for Ptr
+TEMPLATE_LIST_TEST_CASE(
+    CTS_TYPE_NAME + " group and sub-group joint reduce functions with init",
+    "[group_func][type_list][dim]", ReduceTypes) {
   auto queue = once_per_unit::get_queue();
-  using T = std::tuple_element_t<0, TestType>;
-  using U = std::tuple_element_t<1, TestType>;
 
-  // Get binary operators from T
-  const auto Operators = get_op_types<T>();
-  const auto RetType = unnamed_type_pack<T>();
-  const auto ReducedType = unnamed_type_pack<U>();
+  const auto Operators = get_op_types<CTS_TYPE>();
+  const auto RetType = unnamed_type_pack<CTS_TYPE>();
+  const auto ReducedType = unnamed_type_pack<TestType>();
   // check all work group dimensions
-  for_all_combinations<invoke_init_reduce_over_group>(
+  for_all_combinations<invoke_init_joint_reduce_group>(
       Dims, RetType, ReducedType, Operators, queue);
 }

@@ -182,6 +182,20 @@ class invoke_joint_reduce_group {
 
  public:
   void operator()(sycl::queue& queue, const std::string& op_name) {
+    if (!queue.get_device().has(sycl::aspect::fp16) &&
+        std::is_same_v<std::remove_cv_t<T>, sycl::half>) {
+      WARN(
+          "Device does not support half precision floating point "
+          "operations.");
+      return;
+    } else if (!queue.get_device().has(sycl::aspect::fp64) &&
+               std::is_same_v<std::remove_cv_t<T>, double>) {
+      WARN(
+          "Device does not support double precision floating point "
+          "operations.");
+      return;
+    }
+
     if constexpr (type_traits::group_algorithms::is_legal_operator_v<
                       T, OperatorT>) {
       joint_reduce_group<D, T, OperatorT>(queue, op_name);
@@ -292,6 +306,20 @@ class invoke_init_joint_reduce_group {
 
  public:
   void operator()(sycl::queue& queue, const std::string& op_name) {
+    if (!queue.get_device().has(sycl::aspect::fp16) &&
+        std::is_same_v<std::remove_cv_t<RetT>, sycl::half>) {
+      WARN(
+          "Device does not support half precision floating point "
+          "operations.");
+      return;
+    } else if (!queue.get_device().has(sycl::aspect::fp64) &&
+               std::is_same_v<std::remove_cv_t<RetT>, double>) {
+      WARN(
+          "Device does not support double precision floating point "
+          "operations.");
+      return;
+    }
+
     if constexpr (type_traits::group_algorithms::is_legal_operator_v<
                       RetT, OperatorT>) {
       init_joint_reduce_group<D, RetT, ReducedT, OperatorT>(queue, op_name);
@@ -408,6 +436,20 @@ class invoke_reduce_over_group {
 
  public:
   void operator()(sycl::queue& queue, const std::string& op_name) {
+    if (!queue.get_device().has(sycl::aspect::fp16) &&
+        std::is_same_v<std::remove_cv_t<T>, sycl::half>) {
+      WARN(
+          "Device does not support half precision floating point "
+          "operations.");
+      return;
+    } else if (!queue.get_device().has(sycl::aspect::fp64) &&
+               std::is_same_v<std::remove_cv_t<T>, double>) {
+      WARN(
+          "Device does not support double precision floating point "
+          "operations.");
+      return;
+    }
+
     if constexpr (type_traits::group_algorithms::is_legal_operator_v<
                       T, OperatorT>) {
       reduce_over_group<D, T, OperatorT>(queue, op_name);
@@ -529,6 +571,20 @@ class invoke_init_reduce_over_group {
 
  public:
   void operator()(sycl::queue& queue, const std::string& op_name) {
+    if (!queue.get_device().has(sycl::aspect::fp16) &&
+        std::is_same_v<std::remove_cv_t<RetT>, sycl::half>) {
+      WARN(
+          "Device does not support half precision floating point "
+          "operations.");
+      return;
+    } else if (!queue.get_device().has(sycl::aspect::fp64) &&
+               std::is_same_v<std::remove_cv_t<RetT>, double>) {
+      WARN(
+          "Device does not support double precision floating point "
+          "operations.");
+      return;
+    }
+
     if constexpr (type_traits::group_algorithms::is_legal_operator_v<
                       RetT, OperatorT>) {
       init_reduce_over_group<D, RetT, ReducedT, OperatorT>(queue, op_name);
