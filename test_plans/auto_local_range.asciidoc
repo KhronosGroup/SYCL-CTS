@@ -34,4 +34,12 @@ For following `parallel_for` functions:
 * `queue::parallel_for`
 * `handler::parallel_for`
 
-Check that `auto_range<Dimensions>()` as the local range parameter behaves as expected: when each work item writes 1 into zero-initialized global memory all array values read after the `parallel_for` invocation are equal to 1.
+Check that a kernel launched using `auto_range<Dimensions>()` as the local range behaves as expected and can use group APIs: Create a local accumulator in each work item to sum values from an input buffer. Get the total input sum using `sycl::reduce_over_group` to accumulate the partial sums from the work items within the group. Check that this total has the expected value. Example kernel:
+
+```
+int local_accumulator = 0;
+for (int i = g.get_local_id(); i < N; i += g.get_local_linear_range()) {
+  local_accumulator += input[i];
+}
+int total = sycl::reduce_over_group(g, local_accumulator, sycl::plus<>());
+```
