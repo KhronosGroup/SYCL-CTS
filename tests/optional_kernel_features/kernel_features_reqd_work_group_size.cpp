@@ -25,6 +25,7 @@
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_template_test_macros.hpp"
 #include "kernel_features_common.h"
+#include <cmath>
 
 namespace kernel_features_reqd_work_group_size {
 using namespace sycl_cts;

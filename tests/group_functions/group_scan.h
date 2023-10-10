@@ -197,7 +197,7 @@ struct joint_scan_group {
   void operator()(sycl::queue& queue, const std::string& op_name) {
     if constexpr (type_traits::group_algorithms::is_legal_operator_v<
                       U, OperatorT>) {
-      INFO(" with type " + type_name<T>());
+      INFO(" with types " + type_name<T>() + " and " + type_name<U>());
 
       sycl::range<D> work_group_range =
           sycl_cts::util::work_group_range<D>(queue, test_size);
@@ -253,7 +253,8 @@ struct init_joint_scan_group {
   void operator()(sycl::queue& queue, const std::string& op_name) {
     if constexpr (type_traits::group_algorithms::is_legal_operator_v<
                       I, OperatorT>) {
-      INFO(" with type " + type_name<T>());
+      INFO(" with types " + type_name<T>() + " and " + type_name<U>() +
+           ", init type " + type_name<I>());
 
       sycl::range<D> work_group_range =
           sycl_cts::util::work_group_range<D>(queue, test_size);
