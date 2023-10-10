@@ -829,4 +829,29 @@ inline size_t linearize(sycl::range<3> range, sycl::id<3> id) {
   return id[2] + id[1] * range[2] + id[0] * range[1] * range[2];
 }
 
+/**
+Computes a multi-dimensional index such that id = unlinearize(range,
+linearize(range, id)) if id is a valid index in range. */
+template <unsigned int dimension>
+sycl::id<dimension> unlinearize(sycl::range<dimension> range, size_t id);
+
+inline sycl::id<1> unlinearize(sycl::range<1> range, size_t id) {
+  static_cast<void>(range);
+  return {id};
+}
+
+inline sycl::id<2> unlinearize(sycl::range<2> range, size_t id) {
+  size_t id0 = id / range[1];
+  size_t id1 = id % range[1];
+  return {id0, id1};
+}
+
+inline sycl::id<3> unlinearize(sycl::range<3> range, int id) {
+  size_t id0 = id / (range[1] * range[2]);
+  size_t rem = id % (range[1] * range[2]);
+  size_t id1 = rem / range[2];
+  size_t id2 = rem % range[2];
+  return {id0, id1, id2};
+}
+
 #endif  // __SYCLCTS_TESTS_COMMON_COMMON_H
