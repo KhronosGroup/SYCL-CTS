@@ -434,9 +434,9 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op,
 
                 // Use the local id of the item in the sub-group to place
                 // results of the scan operation in the order of the items.
-                auto sg_index =
-                    sub_group.get_group_linear_id() * get_group_linear_range() +
-                    sub_group.get_local_linear_id();
+                auto sg_index = sub_group.get_group_linear_id() *
+                                    sub_group.get_group_linear_range() +
+                                sub_group.get_local_linear_id();
                 local_id_acc[range_size + sg_index] =
                     sub_group.get_local_linear_id();
 
