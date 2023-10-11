@@ -45,11 +45,7 @@ static void check_auto_range() {
 
   {
     auto input = input_buffer.get_host_access();
-    int i = 0;
-    for (auto& it : input) {
-      it = i + 1;
-      i++;
-    }
+    std::iota(input.begin(), input.end(), 1);
   }
 
   q.submit([&](sycl::handler& cgh) {
