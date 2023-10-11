@@ -41,7 +41,7 @@ function(get_std_type OUT_LIST)
       "unsigned long long"
     )
   endif()
-
+  half_double_filter(STD_TYPE_LIST)
   set(${OUT_LIST} ${${OUT_LIST}} ${STD_TYPE_LIST} PARENT_SCOPE)
 endfunction()
 
