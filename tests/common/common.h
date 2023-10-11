@@ -846,7 +846,7 @@ inline sycl::id<2> unlinearize(sycl::range<2> range, size_t id) {
   return {id0, id1};
 }
 
-inline sycl::id<3> unlinearize(sycl::range<3> range, int id) {
+inline sycl::id<3> unlinearize(sycl::range<3> range, size_t id) {
   size_t id0 = id / (range[1] * range[2]);
   size_t rem = id % (range[1] * range[2]);
   size_t id1 = rem / range[2];
