@@ -835,10 +835,7 @@ linearize(range, id)) if id is a valid index in range. */
 template <unsigned int dimension>
 sycl::id<dimension> unlinearize(sycl::range<dimension> range, size_t id);
 
-inline sycl::id<1> unlinearize(sycl::range<1> range, size_t id) {
-  static_cast<void>(range);
-  return {id};
-}
+inline sycl::id<1> unlinearize(sycl::range<1>, size_t id) { return {id}; }
 
 inline sycl::id<2> unlinearize(sycl::range<2> range, size_t id) {
   size_t id0 = id / range[1];

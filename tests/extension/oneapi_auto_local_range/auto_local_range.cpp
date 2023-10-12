@@ -56,7 +56,7 @@ static void check_auto_range() {
      cgh.parallel_for(sycl::nd_range<Dimensions>{N, auto_range}, [=](auto it) {
        sycl::group<Dimensions> g = it.get_group();
        int local_accumulator = 0;
-       for (int i = it.get_local_linear_id(); i < N.size();
+       for (size_t i = it.get_local_linear_id(); i < N.size();
             i += g.get_local_linear_range()) {
          int value = input[unlinearize(N, i)];
          local_accumulator += value;
