@@ -1,0 +1,106 @@
+##############################################################################
+#
+# SYCL Conformance Submission Details Template
+# Source: https://github.com/KhronosGroup/SYCL-CTS
+# Version: 1.0
+#
+##############################################################################
+#
+# This form should be filled in and included in the conformance submission
+# as the file submission_details.txt.
+#
+# Lines beginning with "#" are comments to assist in filling out the template.
+#
+##############################################################################
+
+##############################################################################
+#
+# Submission information that needs to be copied onto the web submission form.
+#
+##############################################################################
+
+# Contact details.
+#
+# Contact details for individual making the conformance submission.
+#
+Company: 
+Contact name:
+Contact email:
+Contact telephone:
+
+# Version of the SYCL specification being tested.
+#
+# Specification version of SYCL being tested, can be either 1.2.1 or 2020.
+#
+SYCL Version:
+
+# Conformance submission details.
+#
+# Details of the conformance submission, must specify a specific SYCL
+# implementation and the environment in which the tests were run, including the
+# host architecture, operating system and toolchain and the target SYCL
+# backend, platform and device.
+#
+SYCL implementation and version:
+Host architecture:
+Host operating system and version:
+Host toolchain and version:
+Target SYCL backend:
+Target SYCL platform:
+Target SYCL device:
+
+# Conformant products.
+#
+# Details of all conformant products which derive their conformance from the
+# conformance submission, including that of the conformance submission itself.
+# Must specify all supported SYCL implementation versions, host architectures,
+# operating systems and toolchains, and all supported SYCL backend, platform
+# and device combinations.
+#
+SYCL implementation version(s):
+Host architecture(s):
+Host operating system(s) and version(s):
+Host toolchains(s) and version(s):
+SYCL backend/platform/device combinations(s):
+
+# Environment requirements.
+#
+# Details of any environmental factors required for any of the listed
+# conformant products such as installed packages or environment variables.
+#
+Environment requirements:
+
+# Supported KHR extensions.
+#
+# List of KHR extension supported by the SYCL implementation.
+# KHR extensions:
+
+# Supported optional features.
+#
+# List of optional features supported by the SYCL implementation, and the
+# backend/platform/device combninations for which they are supported.
+#
+Optional features:
+
+# Tests version.
+#
+# Commit SHA (full hash) of the commit which was used to run the tests.
+#
+Test version commit SHA:
+
+# Patches applied.
+#
+# Commit SHA(s) (full hash) of any cherry-picked patches subsequent to the
+# tests version. Any patches must apply without conflicts with the tests
+# version.
+#
+Patch commit SHA(s):
+
+# Skipped tests.
+#
+# The conformance process document makes allowances for skipping specific tests
+# in certain situations. List of tests that were skipped along with the
+# justification for why they were skipped.
+#
+List of skipped tests and justification:
+
