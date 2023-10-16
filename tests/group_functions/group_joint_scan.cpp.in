@@ -19,18 +19,21 @@
 *******************************************************************************/
 
 #include "../common/disabled_for_test_case.h"
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
-#include "group_scan.h"
 
 // clang-format off
 #cmakedefine CTS_TYPE @CTS_TYPE@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
 // clang-format on
+
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#include "group_scan.h"
+
 using TestType = unnamed_type_pack<CTS_TYPE>;
 using ScanTypes = Types;
 
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+
 // FIXME: known_identity is not impemented yet for hipSYCL.
 DISABLED_FOR_TEST_CASE(hipSYCL)
 (CTS_TYPE_NAME + " group and sub-group joint scan functions",
