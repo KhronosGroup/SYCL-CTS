@@ -221,16 +221,14 @@ class invoke_joint_scan_group {
   void operator()(sycl::queue& queue) {
     if (!queue.get_device().has(sycl::aspect::fp16) &&
         std::is_same_v<std::remove_cv_t<T>, sycl::half>) {
-      WARN(
+      SKIP(
           "Device does not support half precision floating point "
           "operations.");
-      return;
     } else if (!queue.get_device().has(sycl::aspect::fp64) &&
                std::is_same_v<std::remove_cv_t<T>, double>) {
-      WARN(
+      SKIP(
           "Device does not support double precision floating point "
           "operations.");
-      return;
     }
 
     const auto operators = get_op_types<U>();
@@ -245,16 +243,14 @@ class invoke_joint_scan_group_same_type {
   void operator()(sycl::queue& queue) {
     if (!queue.get_device().has(sycl::aspect::fp16) &&
         std::is_same_v<std::remove_cv_t<T>, sycl::half>) {
-      WARN(
+      SKIP(
           "Device does not support half precision floating point "
           "operations.");
-      return;
     } else if (!queue.get_device().has(sycl::aspect::fp64) &&
                std::is_same_v<std::remove_cv_t<T>, double>) {
-      WARN(
+      SKIP(
           "Device does not support double precision floating point "
           "operations.");
-      return;
     }
 
     const auto operators = get_op_types<T>();
@@ -305,16 +301,14 @@ class invoke_init_joint_scan_group {
   void operator()(sycl::queue& queue) {
     if (!queue.get_device().has(sycl::aspect::fp16) &&
         std::is_same_v<std::remove_cv_t<T>, sycl::half>) {
-      WARN(
+      SKIP(
           "Device does not support half precision floating point "
           "operations.");
-      return;
     } else if (!queue.get_device().has(sycl::aspect::fp64) &&
                std::is_same_v<std::remove_cv_t<T>, double>) {
-      WARN(
+      SKIP(
           "Device does not support double precision floating point "
           "operations.");
-      return;
     }
 
     const auto operators = get_op_types<I>();
@@ -330,16 +324,14 @@ class invoke_init_joint_scan_group_same_type {
   void operator()(sycl::queue& queue) {
     if (!queue.get_device().has(sycl::aspect::fp16) &&
         std::is_same_v<std::remove_cv_t<T>, sycl::half>) {
-      WARN(
+      SKIP(
           "Device does not support half precision floating point "
           "operations.");
-      return;
     } else if (!queue.get_device().has(sycl::aspect::fp64) &&
                std::is_same_v<std::remove_cv_t<T>, double>) {
-      WARN(
+      SKIP(
           "Device does not support double precision floating point "
           "operations.");
-      return;
     }
 
     const auto operators = get_op_types<T>();
@@ -535,16 +527,14 @@ class invoke_scan_over_group {
   void operator()(sycl::queue& queue) {
     if (!queue.get_device().has(sycl::aspect::fp16) &&
         std::is_same_v<std::remove_cv_t<T>, sycl::half>) {
-      WARN(
+      SKIP(
           "Device does not support half precision floating point "
           "operations.");
-      return;
     } else if (!queue.get_device().has(sycl::aspect::fp64) &&
                std::is_same_v<std::remove_cv_t<T>, double>) {
-      WARN(
+      SKIP(
           "Device does not support double precision floating point "
           "operations.");
-      return;
     }
 
     const auto operators = get_op_types<T>();
@@ -588,16 +578,14 @@ class invoke_init_scan_over_group {
   void operator()(sycl::queue& queue) {
     if (!queue.get_device().has(sycl::aspect::fp16) &&
         std::is_same_v<std::remove_cv_t<T>, sycl::half>) {
-      WARN(
+      SKIP(
           "Device does not support half precision floating point "
           "operations.");
-      return;
     } else if (!queue.get_device().has(sycl::aspect::fp64) &&
                std::is_same_v<std::remove_cv_t<T>, double>) {
-      WARN(
+      SKIP(
           "Device does not support double precision floating point "
           "operations.");
-      return;
     }
 
     const auto operators = get_op_types<T>();
