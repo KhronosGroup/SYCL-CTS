@@ -412,7 +412,6 @@ bool check_vector_as(sycl::vec<vecType, N> inputVec) {
   return check_as_result(inputVec, asVec) &&
          check_as_result(inputVec, asVecSwizzle);
 }
-#undef DO_OPERATION_ON_SWIZZLE
 
 /**
  * @brief Helper function to test as() function of a vec for asType
@@ -508,9 +507,9 @@ bool check_convert_as_all_types(sycl::vec<vecType, N> inputVec) {
  * odd()
  * even()
  */
-template <typename vecType>
-bool check_lo_hi_odd_even(sycl::vec<vecType, 2> inputVec, vecType* vals) {
-  constexpr size_t mid = 1;
+template <typename vecType, int N>
+bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
+  constexpr size_t mid = (N != 3) ? N / 2 : 2;
   // lo()
   {
     sycl::vec<vecType, mid> loVec{inputVec.lo()};
@@ -523,9 +522,8 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, 2> inputVec, vecType* vals) {
     }
   }
   {
-    sycl::vec<vecType, mid> loVec{
-        inputVec.template swizzle<sycl::elem::s0, sycl::elem::s1>()
-            .lo()};
+    sycl::vec<vecType, mid> loVec;
+    DO_OPERATION_ON_SWIZZLE(N, inputVec, loVec, lo());
     vecType loVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
       loVals[i] = vals[i];
@@ -536,54 +534,56 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, 2> inputVec, vecType* vals) {
   }
   // As the second element from hi() on 3 element vectors is undefined, don't
   // test it
-  {
-    // hi()
-    sycl::vec<vecType, mid> hiVec{inputVec.hi()};
-    vecType hiVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      hiVals[i] = vals[i + mid];
+  if constexpr (N != 3) {
+    {
+      // hi()
+      sycl::vec<vecType, mid> hiVec{inputVec.hi()};
+      vecType hiVals[mid] = {0};
+      for (size_t i = 0; i < mid; i++) {
+        hiVals[i] = vals[i + mid];
+      }
+      if (!check_vector_values<vecType, mid>(hiVec, hiVals)) {
+        return false;
+      }
     }
-    if (!check_vector_values<vecType, mid>(hiVec, hiVals)) {
-      return false;
-    }
-  }
-  {
-    // hi()
-    sycl::vec<vecType, mid> hiVec{
-        inputVec.template swizzle<sycl::elem::s0, sycl::elem::s1>()
-            .hi()};
-    vecType hiVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      hiVals[i] = vals[i + mid];
-    }
-    if (!check_vector_values<vecType, mid>(hiVec, hiVals)) {
-      return false;
+    {
+      // hi()
+      sycl::vec<vecType, mid> hiVec;
+      DO_OPERATION_ON_SWIZZLE(N, inputVec, hiVec, hi());
+      vecType hiVals[mid] = {0};
+      for (size_t i = 0; i < mid; i++) {
+        hiVals[i] = vals[i + mid];
+      }
+      if (!check_vector_values<vecType, mid>(hiVec, hiVals)) {
+        return false;
+      }
     }
   }
   // As the second element from odd() on 3 element vectors is undefined, don't
   // test it
-  {
-    // odd()
-    sycl::vec<vecType, mid> oddVec{inputVec.odd()};
-    vecType oddVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      oddVals[i] = vals[i * 2 + 1];
+  if constexpr (N != 3) {
+    {
+      // odd()
+      sycl::vec<vecType, mid> oddVec{inputVec.odd()};
+      vecType oddVals[mid] = {0};
+      for (size_t i = 0; i < mid; ++i) {
+        oddVals[i] = vals[i * 2 + 1];
+      }
+      if (!check_vector_values<vecType, mid>(oddVec, oddVals)) {
+        return false;
+      }
     }
-    if (!check_vector_values<vecType, mid>(oddVec, oddVals)) {
-      return false;
-    }
-  }
-  {
-    // odd()
-    sycl::vec<vecType, mid> oddVec{
-        inputVec.template swizzle<sycl::elem::s0, sycl::elem::s1>()
-            .odd()};
-    vecType oddVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      oddVals[i] = vals[i * 2 + 1];
-    }
-    if (!check_vector_values<vecType, mid>(oddVec, oddVals)) {
-      return false;
+    {
+      // odd()
+      sycl::vec<vecType, mid> oddVec;
+      DO_OPERATION_ON_SWIZZLE(N, inputVec, oddVec, odd());
+      vecType oddVals[mid] = {0};
+      for (size_t i = 0; i < mid; ++i) {
+        oddVals[i] = vals[i * 2 + 1];
+      }
+      if (!check_vector_values<vecType, mid>(oddVec, oddVals)) {
+        return false;
+      }
     }
   }
   // even()
@@ -598,9 +598,8 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, 2> inputVec, vecType* vals) {
     }
   }
   {
-    sycl::vec<vecType, mid> evenVec{
-        inputVec.template swizzle<sycl::elem::s0, sycl::elem::s1>()
-            .even()};
+    sycl::vec<vecType, mid> evenVec;
+    DO_OPERATION_ON_SWIZZLE(N, inputVec, evenVec, even());
     vecType evenVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
       evenVals[i] = vals[i * 2];
@@ -613,463 +612,8 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, 2> inputVec, vecType* vals) {
   return true;
 }
 
-/**
- * @brief Helper function to test the following functions of a vec
- * lo()
- * hi()
- * odd()
- * even()
- */
-template <typename vecType>
-bool check_lo_hi_odd_even(sycl::vec<vecType, 3> inputVec, vecType* vals) {
-  constexpr size_t mid = 2;
-  // lo()
-  {
-    sycl::vec<vecType, mid> loVec{inputVec.lo()};
-    vecType loVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      loVals[i] = vals[i];
-    }
-    if (!check_vector_values<vecType, mid>(loVec, loVals)) {
-      return false;
-    }
-  }
-  {
-    sycl::vec<vecType, mid> loVec{
-        inputVec
-            .template swizzle<sycl::elem::s0, sycl::elem::s1,
-                              sycl::elem::s2>()
-            .lo()};
-    vecType loVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      loVals[i] = vals[i];
-    }
-    if (!check_vector_values<vecType, mid>(loVec, loVals)) {
-      return false;
-    }
-  }
-  // As the second element from hi() on 3 element vectors is undefined, don't
-  // test it
-  // As the second element from odd() on 3 element vectors is undefined, don't
-  // test it
-  // even()
-  {
-    sycl::vec<vecType, mid> evenVec{inputVec.even()};
-    vecType evenVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      evenVals[i] = vals[i * 2];
-    }
-    if (!check_vector_values<vecType, mid>(evenVec, evenVals)) {
-      return false;
-    }
-  }
-  {
-    sycl::vec<vecType, mid> evenVec{
-        inputVec
-            .template swizzle<sycl::elem::s0, sycl::elem::s1,
-                              sycl::elem::s2>()
-            .even()};
-    vecType evenVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      evenVals[i] = vals[i * 2];
-    }
-    if (!check_vector_values<vecType, mid>(evenVec, evenVals)) {
-      return false;
-    }
-  }
+}  // namespace
 
-  return true;
-}
-
-/**
- * @brief Helper function to test the following functions of a vec
- * lo()
- * hi()
- * odd()
- * even()
- */
-template <typename vecType>
-bool check_lo_hi_odd_even(sycl::vec<vecType, 4> inputVec, vecType* vals) {
-  constexpr size_t mid = 2;
-  // lo()
-  {
-    sycl::vec<vecType, mid> loVec{inputVec.lo()};
-    vecType loVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      loVals[i] = vals[i];
-    }
-    if (!check_vector_values<vecType, mid>(loVec, loVals)) {
-      return false;
-    }
-  }
-  {
-    sycl::vec<vecType, mid> loVec{
-        inputVec
-            .template swizzle<sycl::elem::s0, sycl::elem::s1,
-                              sycl::elem::s2, sycl::elem::s3>()
-            .lo()};
-    vecType loVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      loVals[i] = vals[i];
-    }
-    if (!check_vector_values<vecType, mid>(loVec, loVals)) {
-      return false;
-    }
-  }
-  // As the second element from hi() on 3 element vectors is undefined, don't
-  // test it
-  {
-    // hi()
-    sycl::vec<vecType, mid> hiVec{inputVec.hi()};
-    vecType hiVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      hiVals[i] = vals[i + mid];
-    }
-    if (!check_vector_values<vecType, mid>(hiVec, hiVals)) {
-      return false;
-    }
-  }
-  {
-    // hi()
-    sycl::vec<vecType, mid> hiVec{
-        inputVec
-            .template swizzle<sycl::elem::s0, sycl::elem::s1,
-                              sycl::elem::s2, sycl::elem::s3>()
-            .hi()};
-    vecType hiVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      hiVals[i] = vals[i + mid];
-    }
-    if (!check_vector_values<vecType, mid>(hiVec, hiVals)) {
-      return false;
-    }
-  }
-  // As the second element from odd() on 3 element vectors is undefined, don't
-  // test it
-  {
-    // odd()
-    sycl::vec<vecType, mid> oddVec{inputVec.odd()};
-    vecType oddVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      oddVals[i] = vals[i * 2 + 1];
-    }
-    if (!check_vector_values<vecType, mid>(oddVec, oddVals)) {
-      return false;
-    }
-  }
-  {
-    // odd()
-    sycl::vec<vecType, mid> oddVec{
-        inputVec
-            .template swizzle<sycl::elem::s0, sycl::elem::s1,
-                              sycl::elem::s2, sycl::elem::s3>()
-            .odd()};
-    vecType oddVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      oddVals[i] = vals[i * 2 + 1];
-    }
-    if (!check_vector_values<vecType, mid>(oddVec, oddVals)) {
-      return false;
-    }
-  }
-  // even()
-  {
-    sycl::vec<vecType, mid> evenVec{inputVec.even()};
-    vecType evenVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      evenVals[i] = vals[i * 2];
-    }
-    if (!check_vector_values<vecType, mid>(evenVec, evenVals)) {
-      return false;
-    }
-  }
-  {
-    sycl::vec<vecType, mid> evenVec{
-        inputVec
-            .template swizzle<sycl::elem::s0, sycl::elem::s1,
-                              sycl::elem::s2, sycl::elem::s3>()
-            .even()};
-    vecType evenVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      evenVals[i] = vals[i * 2];
-    }
-    if (!check_vector_values<vecType, mid>(evenVec, evenVals)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/**
- * @brief Helper function to test the following functions of a vec
- * lo()
- * hi()
- * odd()
- * even()
- */
-template <typename vecType>
-bool check_lo_hi_odd_even(sycl::vec<vecType, 8> inputVec, vecType* vals) {
-  constexpr size_t mid = 4;
-  // lo()
-  {
-    sycl::vec<vecType, mid> loVec{inputVec.lo()};
-    vecType loVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      loVals[i] = vals[i];
-    }
-    if (!check_vector_values<vecType, mid>(loVec, loVals)) {
-      return false;
-    }
-  }
-  {
-    sycl::vec<vecType, mid> loVec{
-        inputVec
-            .template swizzle<sycl::elem::s0, sycl::elem::s1,
-                              sycl::elem::s2, sycl::elem::s3,
-                              sycl::elem::s4, sycl::elem::s5,
-                              sycl::elem::s6, sycl::elem::s7>()
-            .lo()};
-    vecType loVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      loVals[i] = vals[i];
-    }
-    if (!check_vector_values<vecType, mid>(loVec, loVals)) {
-      return false;
-    }
-  }
-  // As the second element from hi() on 3 element vectors is undefined, don't
-  // test it
-  {
-    // hi()
-    sycl::vec<vecType, mid> hiVec{inputVec.hi()};
-    vecType hiVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      hiVals[i] = vals[i + mid];
-    }
-    if (!check_vector_values<vecType, mid>(hiVec, hiVals)) {
-      return false;
-    }
-  }
-  {
-    // hi()
-    sycl::vec<vecType, mid> hiVec{
-        inputVec
-            .template swizzle<sycl::elem::s0, sycl::elem::s1,
-                              sycl::elem::s2, sycl::elem::s3,
-                              sycl::elem::s4, sycl::elem::s5,
-                              sycl::elem::s6, sycl::elem::s7>()
-            .hi()};
-    vecType hiVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      hiVals[i] = vals[i + mid];
-    }
-    if (!check_vector_values<vecType, mid>(hiVec, hiVals)) {
-      return false;
-    }
-  }
-  // As the second element from odd() on 3 element vectors is undefined, don't
-  // test it
-  {
-    // odd()
-    sycl::vec<vecType, mid> oddVec{inputVec.odd()};
-    vecType oddVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      oddVals[i] = vals[i * 2 + 1];
-    }
-    if (!check_vector_values<vecType, mid>(oddVec, oddVals)) {
-      return false;
-    }
-  }
-  {
-    // odd()
-    sycl::vec<vecType, mid> oddVec{
-        inputVec
-            .template swizzle<sycl::elem::s0, sycl::elem::s1,
-                              sycl::elem::s2, sycl::elem::s3,
-                              sycl::elem::s4, sycl::elem::s5,
-                              sycl::elem::s6, sycl::elem::s7>()
-            .odd()};
-    vecType oddVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      oddVals[i] = vals[i * 2 + 1];
-    }
-    if (!check_vector_values<vecType, mid>(oddVec, oddVals)) {
-      return false;
-    }
-  }
-  // even()
-  {
-    sycl::vec<vecType, mid> evenVec{inputVec.even()};
-    vecType evenVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      evenVals[i] = vals[i * 2];
-    }
-    if (!check_vector_values<vecType, mid>(evenVec, evenVals)) {
-      return false;
-    }
-  }
-  {
-    sycl::vec<vecType, mid> evenVec{
-        inputVec
-            .template swizzle<sycl::elem::s0, sycl::elem::s1,
-                              sycl::elem::s2, sycl::elem::s3,
-                              sycl::elem::s4, sycl::elem::s5,
-                              sycl::elem::s6, sycl::elem::s7>()
-            .even()};
-    vecType evenVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      evenVals[i] = vals[i * 2];
-    }
-    if (!check_vector_values<vecType, mid>(evenVec, evenVals)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/**
- * @brief Helper function to test the following functions of a vec
- * lo()
- * hi()
- * odd()
- * even()
- */
-template <typename vecType>
-bool check_lo_hi_odd_even(sycl::vec<vecType, 16> inputVec, vecType* vals) {
-  constexpr size_t mid = 8;
-  // lo()
-  {
-    sycl::vec<vecType, mid> loVec{inputVec
-
-                                          .lo()};
-    vecType loVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      loVals[i] = vals[i];
-    }
-    if (!check_vector_values<vecType, mid>(loVec, loVals)) {
-      return false;
-    }
-  }
-  {
-    sycl::vec<vecType, mid> loVec{
-        inputVec
-            .template swizzle<
-                sycl::elem::s0, sycl::elem::s1, sycl::elem::s2,
-                sycl::elem::s3, sycl::elem::s4, sycl::elem::s5,
-                sycl::elem::s6, sycl::elem::s7, sycl::elem::s8,
-                sycl::elem::s9, sycl::elem::sA, sycl::elem::sB,
-                sycl::elem::sC, sycl::elem::sD, sycl::elem::sE,
-                sycl::elem::sF>()
-            .lo()};
-    vecType loVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      loVals[i] = vals[i];
-    }
-    if (!check_vector_values<vecType, mid>(loVec, loVals)) {
-      return false;
-    }
-  }
-  // As the second element from hi() on 3 element vectors is undefined, don't
-  // test it
-  {
-    // hi()
-    sycl::vec<vecType, mid> hiVec{inputVec.hi()};
-    vecType hiVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      hiVals[i] = vals[i + mid];
-    }
-    if (!check_vector_values<vecType, mid>(hiVec, hiVals)) {
-      return false;
-    }
-  }
-  {
-    // hi()
-    sycl::vec<vecType, mid> hiVec{
-        inputVec
-            .template swizzle<
-                sycl::elem::s0, sycl::elem::s1, sycl::elem::s2,
-                sycl::elem::s3, sycl::elem::s4, sycl::elem::s5,
-                sycl::elem::s6, sycl::elem::s7, sycl::elem::s8,
-                sycl::elem::s9, sycl::elem::sA, sycl::elem::sB,
-                sycl::elem::sC, sycl::elem::sD, sycl::elem::sE,
-                sycl::elem::sF>()
-            .hi()};
-    vecType hiVals[mid] = {0};
-    for (size_t i = 0; i < mid; i++) {
-      hiVals[i] = vals[i + mid];
-    }
-    if (!check_vector_values<vecType, mid>(hiVec, hiVals)) {
-      return false;
-    }
-  }
-  // As the second element from odd() on 3 element vectors is undefined, don't
-  // test it
-  {
-    // odd()
-    sycl::vec<vecType, mid> oddVec{inputVec.odd()};
-    vecType oddVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      oddVals[i] = vals[i * 2 + 1];
-    }
-    if (!check_vector_values<vecType, mid>(oddVec, oddVals)) {
-      return false;
-    }
-  }
-  {
-    // odd()
-    sycl::vec<vecType, mid> oddVec{
-        inputVec
-            .template swizzle<
-                sycl::elem::s0, sycl::elem::s1, sycl::elem::s2,
-                sycl::elem::s3, sycl::elem::s4, sycl::elem::s5,
-                sycl::elem::s6, sycl::elem::s7, sycl::elem::s8,
-                sycl::elem::s9, sycl::elem::sA, sycl::elem::sB,
-                sycl::elem::sC, sycl::elem::sD, sycl::elem::sE,
-                sycl::elem::sF>()
-            .odd()};
-    vecType oddVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      oddVals[i] = vals[i * 2 + 1];
-    }
-    if (!check_vector_values<vecType, mid>(oddVec, oddVals)) {
-      return false;
-    }
-  }
-  // even()
-  {
-    sycl::vec<vecType, mid> evenVec{inputVec.even()};
-    vecType evenVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      evenVals[i] = vals[i * 2];
-    }
-    if (!check_vector_values<vecType, mid>(evenVec, evenVals)) {
-      return false;
-    }
-  }
-  {
-    sycl::vec<vecType, mid> evenVec{
-        inputVec
-            .template swizzle<
-                sycl::elem::s0, sycl::elem::s1, sycl::elem::s2,
-                sycl::elem::s3, sycl::elem::s4, sycl::elem::s5,
-                sycl::elem::s6, sycl::elem::s7, sycl::elem::s8,
-                sycl::elem::s9, sycl::elem::sA, sycl::elem::sB,
-                sycl::elem::sC, sycl::elem::sD, sycl::elem::sE,
-                sycl::elem::sF>()
-            .even()};
-    vecType evenVals[mid] = {0};
-    for (size_t i = 0; i < mid; ++i) {
-      evenVals[i] = vals[i * 2];
-    }
-    if (!check_vector_values<vecType, mid>(evenVec, evenVals)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-}
+#undef DO_OPERATION_ON_SWIZZLE
 
 #endif  // __SYCLCTS_TESTS_COMMON_COMMON_VEC_H
