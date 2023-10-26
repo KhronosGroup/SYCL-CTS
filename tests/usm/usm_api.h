@@ -470,19 +470,18 @@ struct gen_buf_size_selector<0> {
 template <typename T, size_t buf_size>
 class event_generator {
   sycl::range<1> rng{buf_size};
-  std::array<T, buf_size> arr_src;
-  std::array<T, buf_size> arr_dst;
+  std::vector<T> arr_src;
+  std::vector<T> arr_dst;
   sycl::buffer<T, 1> buf_src;
   sycl::buffer<T, 1> buf_dst;
 
  public:
   event_generator()
       : rng{buf_size},
+        arr_src(buf_size, T{0}),
+        arr_dst(buf_size, T{0}),
         buf_src{arr_src.data(), rng},
-        buf_dst{arr_dst.data(), rng} {
-    arr_src.fill(T{0});
-    arr_dst.fill(T{0});
-  }
+        buf_dst{arr_dst.data(), rng} {}
 
   /** @brief Initialize arr_src with init_value and return sycl::event of
    *         queue::submit()
