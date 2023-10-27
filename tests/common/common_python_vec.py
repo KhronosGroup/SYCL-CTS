@@ -180,6 +180,42 @@ kernel_template = Template("""  bool resArray[1] = {true};
   CHECK(resArray[0]);
 """)
 
+# Unlike in the template above, some of the checks which are done by tests for
+# swizzles are outlined to host code.
+# This is done to reduce kernel size and have more information about a problem
+# in case of a test failure.
+swizzle_kernel_template = Template("""
+  {
+    auto vecBuffer = sycl::buffer<sycl::vec<${type}, ${size}>, 1>(
+        sycl::range<1>(total_per_element_swizzle_test_cases));
+    bool resArray[1] = {true};
+    {
+      sycl::buffer<bool, 1> boolBuffer(resArray, sycl::range<1>(1));
+      testQueue.submit([&](sycl::handler &cgh) {
+        sycl::accessor resAcc(boolBuffer, cgh, sycl::write_only);
+        sycl::accessor vecAcc(vecBuffer, cgh, sycl::write_only);
+
+        cgh.single_task<class ${kernelName}>([=]() {
+          ${test}
+        });
+      });
+    }
+    INFO("Checking ${testName}");
+    CHECK(resArray[0]);
+
+    ${type} in_order_vals[] = {${in_order_vals}};
+    ${type} reversed_vals[] = {${reversed_vals}};
+    ${type} in_order_reversed_pair_vals[] = {${in_order_pair_vals}};
+    ${type} reverse_order_reversed_pair_vals[] = {${reverse_order_pair_vals}};
+
+    auto vecAcc = vecBuffer.get_host_access();
+    CHECK(check_vector_values<${type}, ${size}>(vecAcc[in_order], in_order_vals));
+    CHECK(check_vector_values<${type}, ${size}>(vecAcc[reverse_order], reversed_vals));
+    CHECK(check_vector_values<${type}, ${size}>(vecAcc[in_order_reversed_pair], in_order_reversed_pair_vals));
+    CHECK(check_vector_values<${type}, ${size}>(vecAcc[reverse_order_reversed_pair], reverse_order_reversed_pair_vals));
+  }
+""")
+
 test_func_template = Template("""
 void ${func_name}(util::logger &log) {
 
@@ -223,6 +259,33 @@ def wrap_with_kernel(type_str, kernel_name, test_name, test_string):
                                       kernelName=remove_namespaces_whitespaces(kernel_name),
                                       testName=test_name,
                                       test=test_string))
+
+def wrap_with_swizzle_kernel(type_str, vec_size, in_order_vals, reversed_vals,
+        in_order_pair_vals, reverse_order_pair_vals, kernel_name, test_name,
+        test_string):
+    """
+    Wraps |test_string| inside a kernel with |kernel_name|.
+
+    Wraps kernels with checks for fp16 and fp64 when appropriate.
+    The necessity for extension checks is determined based on |type_str|
+
+    Unlike |wrap_with_kernel| above, this function accepts several extra
+    arguments, because kernels for swizzle tests do some of the validation
+    checks on host to reduce kernel size and make error messages more detailed.
+    """
+
+    return wrap_with_extension_checks(type_str,
+                                      swizzle_kernel_template.substitute(
+                                      kernelName=remove_namespaces_whitespaces(kernel_name),
+                                      testName=test_name,
+                                      test=test_string,
+                                      type=type_str,
+                                      size=vec_size,
+                                      in_order_vals=in_order_vals,
+                                      reversed_vals=reversed_vals,
+                                      in_order_pair_vals=in_order_pair_vals,
+                                      reverse_order_pair_vals=reverse_order_pair_vals))
+
 
 
 def wrap_with_test_func(test_name, type_str, test, additional=''):
@@ -419,35 +482,21 @@ class SwizzleData:
     """)
 
     swizzle_elem_template = Template(
-        """        sycl::vec<${type}, ${size}> inOrderSwizzleFunctionVec {swizzledVec.template swizzle<${in_order_swiz_indexes}>()};
-            if (!check_vector_values<${type}, ${size}>(inOrderSwizzleFunctionVec, in_order_vals)) {
-                resAcc[0] = false;
-            }
-            sycl::vec<${type}, ${size}> reverseOrderSwizzleFunctionVec {swizzledVec.template swizzle<${reverse_order_swiz_indexes}>()};
-            if (!check_vector_values<${type}, ${size}>(reverseOrderSwizzleFunctionVec, reversed_vals)) {
-                resAcc[0] = false;
-            }
-            sycl::vec<${type}, ${size}> inOrderReversedPairSwizzleFunctionVec {swizzledVec.template swizzle<${in_order_reversed_pair_swiz_indexes}>()};
-            if (!check_vector_values<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
-                resAcc[0] = false;
-            }
-            sycl::vec<${type}, ${size}> reverseOrderReversedPairSwizzleFunctionVec {swizzledVec.template swizzle<${reverse_order_reversed_pair_swiz_indexes}>()};
-            if (!check_vector_values<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec, reverse_order_reversed_pair_vals)) {
-                resAcc[0] = false;
-            }
+        """
+            vecAcc[in_order] = swizzledVec.template swizzle<${in_order_swiz_indexes}>();
+            vecAcc[reverse_order] = swizzledVec.template swizzle<${reverse_order_swiz_indexes}>();
+            vecAcc[in_order_reversed_pair] = swizzledVec.template swizzle<${in_order_reversed_pair_swiz_indexes}>();
+            vecAcc[reverse_order_reversed_pair] = swizzledVec.template swizzle<${reverse_order_reversed_pair_swiz_indexes}>();
     """)
 
     swizzle_full_test_template = Template(
         """        sycl::vec<${type}, ${size}> ${name}DimTestVec = sycl::vec<${type}, ${size}>(${testVecValues});
-            ${type} in_order_vals[] = {${in_order_vals}};
             sycl::vec<${type}, ${size}> inOrderSwizzleFunctionVec {${name}DimTestVec.template swizzle<${in_order_swiz_indexes}>()};
+            vecAcc[in_order] = inOrderSwizzleFunctionVec;
             if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(inOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
             if (!check_vector_size<${type}, ${size}>(inOrderSwizzleFunctionVec)) {
-                resAcc[0] = false;
-            }
-            if (!check_vector_values<${type}, ${size}>(inOrderSwizzleFunctionVec, in_order_vals)) {
                 resAcc[0] = false;
             }
             if (!check_vector_size_byte_size<${type}, ${size}>(inOrderSwizzleFunctionVec)) {
@@ -459,15 +508,12 @@ class SwizzleData:
             }
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 
-            ${type} reversed_vals[] = {${reversed_vals}};
             sycl::vec<${type}, ${size}> reverseOrderSwizzleFunctionVec {${name}DimTestVec.template swizzle<${reverse_order_swiz_indexes}>()};
+            vecAcc[reverse_order] = reverseOrderSwizzleFunctionVec;
             if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(reverseOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
             if (!check_vector_size<${type}, ${size}>(reverseOrderSwizzleFunctionVec)) {
-                resAcc[0] = false;
-            }
-            if (!check_vector_values<${type}, ${size}>(reverseOrderSwizzleFunctionVec, reversed_vals)) {
                 resAcc[0] = false;
             }
             if (!check_vector_size_byte_size<${type}, ${size}>(reverseOrderSwizzleFunctionVec)) {
@@ -479,15 +525,12 @@ class SwizzleData:
             }
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 
-            ${type} in_order_reversed_pair_vals[] = {${in_order_pair_vals}};
             sycl::vec<${type}, ${size}> inOrderReversedPairSwizzleFunctionVec {${name}DimTestVec.template swizzle<${in_order_reversed_pair_swiz_indexes}>()};
+            vecAcc[in_order_reversed_pair] = inOrderReversedPairSwizzleFunctionVec;
             if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(inOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
             if (!check_vector_size<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec)) {
-                resAcc[0] = false;
-            }
-            if (!check_vector_values<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
                 resAcc[0] = false;
             }
             if (!check_vector_size_byte_size<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec)) {
@@ -499,15 +542,12 @@ class SwizzleData:
             }
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 
-            ${type} reverse_order_reversed_pair_vals[] = {${reverse_order_pair_vals}};
             sycl::vec<${type}, ${size}> reverseOrderReversedPairSwizzleFunctionVec {${name}DimTestVec.template swizzle<${reverse_order_reversed_pair_swiz_indexes}>()};
+            vecAcc[reverse_order_reversed_pair] = reverseOrderReversedPairSwizzleFunctionVec;
             if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(reverseOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
             if (!check_vector_size<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec)) {
-                resAcc[0] = false;
-            }
-            if (!check_vector_values<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec, reverse_order_reversed_pair_vals)) {
                 resAcc[0] = false;
             }
             if (!check_vector_size_byte_size<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec)) {
@@ -559,8 +599,9 @@ def substitute_swizzles_templates(type_str, size, index_subset, value_subset, co
             swap_pairs(Data.swizzle_elem_list_dict[size])),
         reverse_order_reversed_pair_swiz_indexes=', '.join(
             swap_pairs(Data.swizzle_elem_list_dict[size][::-1])))
-    string += wrap_with_kernel(
-        type_str,
+    string += wrap_with_swizzle_kernel(
+            type_str, str(size), ', '.join(val_list), ', '.join(val_list[::-1]),
+            ', '.join(swap_pairs(val_list)), ', '.join(swap_pairs(val_list[::-1])),
         'KERNEL_' + type_str + str(size) +
             index_string,
         'vec<' + type_str + ', ' + str(size) + '>.' + index_string,
@@ -590,8 +631,12 @@ def gen_swizzle_test(type_str, convert_type_str, as_type_str, size):
                 swap_pairs(Data.vals_list_dict[size])),
             reverse_order_pair_vals=', '.join(
                 swap_pairs(Data.vals_list_dict[size][::-1])))
-        string += wrap_with_kernel(
-            type_str, 'ELEM_KERNEL_' + type_str + str(size) +
+        string += wrap_with_swizzle_kernel(
+                type_str, str(size), ', '.join(Data.vals_list_dict[size]),
+                ', '.join(Data.vals_list_dict[size][::-1]),
+                ', '.join(swap_pairs(Data.vals_list_dict[size])),
+                ', '.join(swap_pairs(Data.vals_list_dict[size][::-1])),
+            'ELEM_KERNEL_' + type_str + str(size) +
             ''.join(Data.swizzle_elem_list_dict[size][:size]).replace(
                 'sycl::elem::', ''),
             'vec<' + type_str + ', ' + str(size) + '> .swizzle<' +
