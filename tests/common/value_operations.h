@@ -26,7 +26,6 @@
 #define __SYCLCTS_TESTS_COMMON_VALUE_OPERATIONS_H
 #include "../../util/type_traits.h"
 
-#include <cassert>
 #include <tuple>
 #include <utility>
 #include <variant>
@@ -174,7 +173,6 @@ inline typename std::enable_if_t<
     detail::is_non_array_with_subscript_and_size_v<LeftArrT> &&
     detail::is_non_array_with_subscript_and_size_v<RightArrT>>
 assign(LeftArrT& left, const RightArrT& right) {
-  assert((left.size() == right.size()) && "Arrays have to be the same size");
   for (size_t i = 0; i < left.size(); ++i) {
     detail::assign_value_or_even(left[i], right[i]);
   }
@@ -251,7 +249,7 @@ inline typename std::enable_if_t<
         detail::is_non_array_with_subscript_and_size_v<RightArrT>,
     bool>
 are_equal(const LeftArrT& left, const RightArrT& right) {
-  assert((left.size() == right.size()) && "Arrays have to be the same size");
+  if (left.size() != right.size()) return false;
   for (size_t i = 0; i < left.size(); ++i) {
     if (!detail::are_equal_value_or_even(left[i], right[i])) return false;
   }
