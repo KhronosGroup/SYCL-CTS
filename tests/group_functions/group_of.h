@@ -310,12 +310,22 @@ void predicate_function_of_sub_group(sycl::queue& queue) {
         sycl::sub_group sub_group = item.get_sub_group();
         T size = sub_group.get_local_linear_range();
 
+        // Use the sub-group local ID (plus 1) as a variable against which to
+        // test our predicates. Note that this has a well-defined set of values
+        // [1,2,...,N] where N is the sub-group size. Note that the sub-group
+        // could also just be of size 1.
         T local_var(sub_group.get_local_linear_id() + 1);
 
         // predicates
+        // The variable is never 0 for any member of the sub-group
         auto none_true = [&](T i) { return i == 0; };
+        // Exactly one member of the sub-group has value 1 (the first)
         auto one_true = [&](T i) { return i == 1; };
+        // Some (or all, for sub-groups of size 1) members of the sub-group have
+        // this value
         auto some_true = [&](T i) { return i > size / 2; };
+        // The variable is less than or equal to the sub-group size for all
+        // members of the sub-group.
         auto all_true = [&](T i) { return i <= size; };
 
         {
@@ -501,12 +511,22 @@ void bool_function_of_sub_group(sycl::queue& queue) {
         sycl::sub_group sub_group = item.get_sub_group();
         T size = sub_group.get_local_linear_range();
 
+        // Use the sub-group local ID (plus 1) as a variable against which to
+        // test our predicates. Note that this has a well-defined set of values
+        // [1,2,...,N] where N is the sub-group size. Note that the sub-group
+        // could also just be of size 1.
         T local_var(sub_group.get_local_linear_id() + 1);
 
         // predicates
+        // The variable is never 0 for any member of the sub-group
         auto none_true = [&](T i) { return i == 0; };
+        // Exactly one member of the sub-group has value 1 (the first)
         auto one_true = [&](T i) { return i == 1; };
+        // Some (or all, for sub-groups of size 1) members of the sub-group have
+        // this value
         auto some_true = [&](T i) { return i > size / 2; };
+        // The variable is less than or equal to the sub-group size for all
+        // members of the sub-group.
         auto all_true = [&](T i) { return i <= size; };
 
         {
