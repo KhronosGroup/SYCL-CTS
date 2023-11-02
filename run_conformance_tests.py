@@ -117,7 +117,8 @@ def split_additional_args(additional_args):
 
 def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
                         test_deprecated_features, exclude_categories,
-                        additional_cmake_args, device, full_feature_set):
+                        implementation_name, additional_cmake_args, device,
+                        full_feature_set):
     """
     Generates a CMake call based on the input in a form accepted by
     subprocess.call().
@@ -128,6 +129,7 @@ def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
         '-G' + build_system_name,
         '-DSYCL_CTS_ENABLE_FULL_CONFORMANCE=' + full_conformance,
         '-DSYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS=' + test_deprecated_features,
+        '-DSYCL_IMPLEMENTATION=' + implementation_name,
         '-DSYCL_CTS_CTEST_DEVICE=' + device,
         '-DSYCL_CTS_ENABLE_FEATURE_SET_FULL=' + full_feature_set,
         ]
@@ -279,8 +281,9 @@ def main(argv=sys.argv[1:]):
     # Generate a cmake call in a form accepted by subprocess.call()
     cmake_call = generate_cmake_call(cmake_exe, build_system_name,
                                      full_conformance, test_deprecated_features,
-                                     exclude_categories, additional_cmake_args,
-                                     device, full_feature_set)
+                                     exclude_categories, implementation_name,
+                                     additional_cmake_args, device,
+                                     full_feature_set)
 
     # Generate a CTest call in a form accepted by subprocess.call()
     ctest_call = generate_ctest_call(additional_ctest_args)
