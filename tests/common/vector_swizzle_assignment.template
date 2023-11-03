@@ -20,6 +20,9 @@
 //
 **************************************************************************/
 
+// Note: this is essentially a copy of vector.template, but it has extra
+// #define SYCL_SIMPLE_SWIZZLES which is required for the swizzles test.
+
 $IFDEF
 #define SYCL_SIMPLE_SWIZZLES
 
