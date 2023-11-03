@@ -575,6 +575,75 @@ class event_generator {
   }
 };
 
+// Since the std::vector<bool> type does not have a data() member function,
+// std::array is used instead.
+template <size_t buf_size>
+class event_generator<bool, buf_size> {
+  sycl::range<1> rng{buf_size};
+  std::array<bool, buf_size> arr_src;
+  std::array<bool, buf_size> arr_dst;
+  sycl::buffer<bool, 1> buf_src;
+  sycl::buffer<bool, 1> buf_dst;
+
+ public:
+  event_generator()
+      : rng{buf_size},
+        buf_src{arr_src.data(), rng},
+        buf_dst{arr_dst.data(), rng} {
+    arr_src.fill(bool{0});
+    arr_dst.fill(bool{0});
+  }
+
+  /** @brief Initialize arr_src with init_value and return sycl::event of
+   *         queue::submit()
+   *  @param value Some non-zero (non-default) value of type bool
+   */
+  sycl::event init(sycl::queue& queue, bool value) {
+    return queue.submit([&](sycl::handler& cgh) {
+      auto acc_src = buf_src.template get_access<sycl::access_mode::write>(cgh);
+      // single_task is used to make process long enough for testing purpose
+      // The function being tested must wait for this task to complete.
+      cgh.single_task<init_kernel_name<bool, buf_size>>([=] {
+        for (size_t i = 0; i < buf_size; ++i) {
+          acc_src[i] = value;
+        }
+      });
+    });
+  }
+
+  /** @brief Copy data from arr_src to arr_dst for future check
+   */
+  void copy_arrays(sycl::queue& queue) {
+    queue.submit([&](sycl::handler& cgh) {
+      using kernel_name = copy_arrays_kernel_name<bool, buf_size>;
+      auto acc_src = buf_src.template get_access<sycl::access_mode::read>(cgh);
+      auto acc_dst = buf_dst.template get_access<sycl::access_mode::write>(cgh);
+      // Copy should be much faster then algorithm in 'init()' member function
+      // to detect situation when tested function doesn't wait for events
+      // provided as arguments
+      cgh.parallel_for<kernel_name>(rng, [=](sycl::id<1> idx) {
+        const size_t i = idx[0];
+        acc_dst[i] = acc_src[i];
+      });
+    });
+  }
+
+  /** @brief Check that elements of arrays are equal to each other and to
+   *         value
+   *  @param value The same value as value passed to init() member function
+   */
+  bool check(bool value) {
+    bool result = true;
+    auto acc_src = buf_src.template get_access<sycl::access_mode::read>(rng);
+    auto acc_dst = buf_dst.template get_access<sycl::access_mode::read>(rng);
+    for (size_t i = buf_size - 1; i + 1 > 0; --i) {
+      result = result && (acc_src[i] == acc_dst[i]);
+      result = result && (acc_dst[i] == value);
+    }
+    return result;
+  }
+};
+
 /** @brief Provides the root test logic for every member function, caller,
  *         number of events and allocation type
  *  @tparam count Size of the allocation, in number of items
