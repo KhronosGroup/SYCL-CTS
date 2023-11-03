@@ -579,7 +579,9 @@ sycl::vec<T, N> cross_t(sycl::vec<T, N> a, sycl::vec<T, N> b) {
   temp_res[1] = av[2] * bv[0] - av[0] * bv[2];
   temp_res[2] = av[0] * bv[1] - av[1] * bv[0];
   temp_res[3] = 0.0;
-  for (int i = 0; i < N; i++) setElement<T, N>(res, i, temp_res[i]);
+  for (int i = 0; i < N; i++) res[i] = temp_res[i];
+
+
   return res;
 }
 

@@ -27,7 +27,6 @@
 
 #include "../../util/accuracy.h"
 #include "../../util/math_reference.h"
-#include "../../util/math_vector.h"
 #include "../../util/proxy.h"
 #include "../../util/test_base.h"
 #include "../../util/type_traits.h"
@@ -61,7 +60,7 @@ template <typename vecType, int numOfElems>
 bool check_vector_values(sycl::vec<vecType, numOfElems> vector,
                          vecType* vals) {
   for (int i = 0; i < numOfElems; i++) {
-    if ((vals[i] != getElement(vector, i))) {
+    if ((vals[i] != vector[i])) {
       return false;
     }
   }
@@ -77,7 +76,7 @@ typename std::enable_if<is_sycl_floating_point<vecType>::value, bool>::type
 check_vector_values_div(sycl::vec<vecType, numOfElems> vector,
                         vecType *vals) {
   for (int i = 0; i < numOfElems; i++) {
-    vecType vectorValue = getElement(vector, i);
+    vecType vectorValue = vector[i];
     if (vals[i] == vectorValue)
       continue;
     const vecType ulpsExpected = 2.5; // Min Accuracy for x / y
@@ -115,7 +114,7 @@ bool check_single_vector_op(vectorType vector1, lambdaFunc lambda) {
     return false;
   }
   for (int i = 0; i < vecSize; i++) {
-    if (getElement(vector1, i) != getElement(vector2, i)) {
+    if (vector1[i] != vector2[i]) {
       return false;
     }
   }
@@ -130,8 +129,7 @@ template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> convert_vec(sycl::vec<vecType, N> inputVec) {
   sycl::vec<convertType, N> resVec;
   for (size_t i = 0; i < N; ++i) {
-    vecType elem = getElement(inputVec, i);
-    setElement<convertType, N>(resVec, i, convertType(elem));
+    resVec[i] = convertType(inputVec[i]);
   }
   return resVec;
 }
@@ -143,8 +141,7 @@ sycl::vec<convertType, N> rte(sycl::vec<vecType, N> inputVec) {
     sycl::vec<vecType, N> roundedVec = reference::rint(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(roundedVec, i);
-      setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
+      resVec[i] = static_cast<convertType>(roundedVec[i]);
     }
     return resVec;
   }
@@ -158,8 +155,7 @@ sycl::vec<convertType, N> rtz(sycl::vec<vecType, N> inputVec) {
     sycl::vec<vecType, N> roundedVec = reference::trunc(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(roundedVec, i);
-      setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
+      resVec[i] = static_cast<convertType>(roundedVec[i]);
     }
     return resVec;
   }
@@ -173,8 +169,7 @@ sycl::vec<convertType, N> rtp(sycl::vec<vecType, N> inputVec) {
     sycl::vec<vecType, N> roundedVec = reference::ceil(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(roundedVec, i);
-      setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
+      resVec[i] = static_cast<convertType>(roundedVec[i]);
     }
     return resVec;
   }
@@ -188,8 +183,7 @@ sycl::vec<convertType, N> rtn(sycl::vec<vecType, N> inputVec) {
     sycl::vec<vecType, N> roundedVec = reference::floor(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(roundedVec, i);
-      setElement<convertType, N>(resVec, i, static_cast<convertType>(elem));
+      resVec[i] = static_cast<convertType>(roundedVec[i]);
     }
     return resVec;
   }
@@ -205,8 +199,8 @@ void handleFPToUnsignedConv(sycl::vec<vecType, N>& inputVec) {
   if constexpr (is_sycl_floating_point<vecType>::value &&
                 std::is_unsigned_v<convertType>) {
     for (size_t i = 0; i < N; ++i) {
-      vecType elem = getElement(inputVec, i);
-      if (elem < 0) setElement<vecType, N>(inputVec, i, -elem);
+      vecType elem = inputVec[i];
+      if (elem < 0) inputVec[i] = -elem;
     }
   }
 }
@@ -383,15 +377,15 @@ bool check_as_result(sycl::vec<vecType, N> inputVec,
                      sycl::vec<asType, asN> asVec) {
   vecType tmp_ptr[N];
   for (size_t i = 0; i < N; ++i) {
-    tmp_ptr[i] = getElement(inputVec, i);
+    tmp_ptr[i] = inputVec[i];
   }
   asType exp_ptr[asN];
   for (size_t i = 0; i < asN; ++i) {
-    exp_ptr[i] = getElement(asVec, i);
+    exp_ptr[i] = asVec[i];
   }
   std::memcpy(exp_ptr, tmp_ptr, std::min(sizeof(exp_ptr), sizeof(tmp_ptr)));
   for (size_t i = 0; i < asN; ++i) {
-    if (exp_ptr[i] != getElement(asVec, i)) {
+    if (exp_ptr[i] != asVec[i]) {
       return false;
     }
   }

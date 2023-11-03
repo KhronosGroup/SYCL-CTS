@@ -208,7 +208,7 @@ bool any(T x) {
 template <typename T, int N>
 int any(sycl::vec<T, N> a) {
   for (int i = 0; i < N; i++) {
-    if (any(getElement(a, i)) == 1) return true;
+    if (any(a[i]) == 1) return true;
   }
   return false;
 }
@@ -230,7 +230,7 @@ bool all(T x) {
 template <typename T, int N>
 int all(sycl::vec<T, N> a) {
   for (int i = 0; i < N; i++) {
-    if (all(getElement(a, i)) == 0) return false;
+    if (all(a[i]) == 0) return false;
   }
   return true;
 }
@@ -263,10 +263,10 @@ sycl::vec<T, N> select(sycl::vec<T, N> a, sycl::vec<T, N> b,
                        sycl::vec<K, N> c) {
   sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
-    if (any(getElement<K, N>(c, i)) == 1)
-      setElement<T, N>(res, i, getElement(b, i));
+    if (any(c[i]) == 1)
+      res[i] = b[i];
     else
-      setElement<T, N>(res, i, getElement(a, i));
+      res[i] = a[i];
   }
   return res;
 }
@@ -365,9 +365,9 @@ sycl_cts::resultRef<sycl::vec<T, N>> clamp(sycl::vec<T, N> a, T b, T c) {
   sycl::vec<T, N> res;
   std::map<int, bool> undefined;
   for (int i = 0; i < N; i++) {
-    sycl_cts::resultRef<T> element = clamp(getElement(a, i), b, c);
+    sycl_cts::resultRef<T> element = clamp(a[i], b, c);
     if (element.undefined.empty())
-      setElement<T, N>(res, i, element.res);
+      res[i] = element.res;
     else
       undefined[i] = true;
   }
@@ -715,9 +715,9 @@ sycl_cts::resultRef<sycl::vec<T, N>> mix(sycl::vec<T, N> a, sycl::vec<T, N> b,
   sycl::vec<T, N> res;
   std::map<int, bool> undefined;
   for (int i = 0; i < N; i++) {
-    sycl_cts::resultRef<T> element = mix(getElement(a, i), getElement(b, i), c);
+    sycl_cts::resultRef<T> element = mix(a[i], b[i], c);
     if (element.undefined.empty())
-      setElement<T, N>(res, i, element.res);
+      res[i] = element.res;
     else
       undefined[i] = true;
   }
@@ -764,7 +764,7 @@ template <typename T, int N>
 sycl::vec<T, N> step(T a, sycl::vec<T, N> b) {
   sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
-    setElement<T, N>(res, i, step(a, getElement(b, i)));
+    res[i] = step(a, b[i]);
   }
   return res;
 }
@@ -798,9 +798,9 @@ sycl_cts::resultRef<sycl::vec<T, N>> smoothstep(T a, T b, sycl::vec<T, N> c) {
   sycl::vec<T, N> res;
   std::map<int, bool> undefined;
   for (int i = 0; i < N; i++) {
-    sycl_cts::resultRef<T> element = smoothstep(a, b, getElement(c, i));
+    sycl_cts::resultRef<T> element = smoothstep(a, b, c[i]);
     if (element.undefined.empty())
-      setElement<T, N>(res, i, element.res);
+      res[i] = element.res;
     else
       undefined[i] = true;
   }
@@ -1032,8 +1032,8 @@ sycl::vec<T, N> fract(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
   sycl::vec<T, N> resPtr;
   for (int i = 0; i < N; i++) {
     T value;
-    setElement<T, N>(res, i, fract(getElement(a, i), &value));
-    setElement<T, N>(resPtr, i, value);
+    res[i] = fract(a[i], &value);
+    resPtr[i] = value;
   }
   *b = resPtr;
   return res;
@@ -1061,8 +1061,8 @@ sycl::vec<T, N> frexp(sycl::vec<T, N> a, sycl::vec<int, N> *b) {
   sycl::vec<int, N> resPtr;
   for (int i = 0; i < N; i++) {
     int value;
-    setElement<T, N>(res, i, frexp(getElement(a, i), &value));
-    setElement<int, N>(resPtr, i, value);
+    res[i] = frexp(a[i], &value);
+    resPtr[i] = value;
   }
   *b = resPtr;
   return res;
@@ -1095,7 +1095,7 @@ template <typename T, int N>
 sycl::vec<int, N> ilogb(sycl::vec<T, N> a) {
   sycl::vec<int, N> res;
   for (int i = 0; i < N; i++) {
-    setElement<int, N>(res, i, ilogb(getElement<T, N>(a, i)));
+    res[i] = ilogb(a[i]);
   }
   return res;
 }
@@ -1116,8 +1116,7 @@ template <typename T, int N>
 sycl::vec<T, N> ldexp(sycl::vec<T, N> a, sycl::vec<int, N> b) {
   sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
-    setElement<T, N>(res, i,
-                     ldexp(getElement<T, N>(a, i), getElement<int, N>(b, i)));
+    res[i] = ldexp(a[i], b[i]);
   }
   return res;
 }
@@ -1136,7 +1135,7 @@ template <typename T, int N>
 sycl::vec<T, N> ldexp(sycl::vec<T, N> a, int b) {
   sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
-    setElement<T, N>(res, i, ldexp(getElement<T, N>(a, i), b));
+    res[i] = ldexp(a[i], b);
   }
   return res;
 }
@@ -1166,8 +1165,8 @@ sycl::vec<T, N> lgamma_r(sycl::vec<T, N> a, sycl::vec<int, N> *b) {
   sycl::vec<int, N> resPtr;
   for (int i = 0; i < N; i++) {
     int value;
-    setElement<T, N>(res, i, lgamma_r(getElement(a, i), &value));
-    setElement<int, N>(resPtr, i, value);
+    res[i] = lgamma_r(a[i], &value);
+    resPtr[i] = value;
   }
   *b = resPtr;
   return res;
@@ -1249,8 +1248,8 @@ sycl::vec<T, N> modf(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
   sycl::vec<T, N> resPtr;
   for (int i = 0; i < N; i++) {
     T value;
-    setElement<T, N>(res, i, modf(getElement(a, i), &value));
-    setElement<T, N>(resPtr, i, value);
+    res[i] = modf(a[i], &value);
+    resPtr[i] = value;
   }
   *b = resPtr;
   return res;
@@ -1324,8 +1323,7 @@ template <typename T, int N>
 sycl::vec<T, N> pown(sycl::vec<T, N> a, sycl::vec<int, N> b) {
   sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
-    setElement<T, N>(res, i,
-                     pown(getElement<T, N>(a, i), getElement<int, N>(b, i)));
+    res[i] = pown(a[i], b[i]);
   }
   return res;
 }
@@ -1378,9 +1376,8 @@ sycl::vec<T, N> remquo(sycl::vec<T, N> a, sycl::vec<T, N> b,
   sycl::vec<int, N> resPtr;
   for (int i = 0; i < N; i++) {
     int value;
-    setElement<T, N>(res, i,
-                     remquo(getElement(a, i), getElement(b, i), &value));
-    setElement<int, N>(resPtr, i, value);
+    res[i] = remquo(a[i], b[i], &value);
+    resPtr[i] = value;
   }
   *c = resPtr;
   return res;
@@ -1414,8 +1411,7 @@ template <typename T, int N>
 sycl::vec<T, N> rootn(sycl::vec<T, N> a, sycl::vec<int, N> b) {
   sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
-    setElement<T, N>(res, i,
-                     rootn(getElement<T, N>(a, i), getElement<int, N>(b, i)));
+    res[i] = rootn(a[i], b[i]);
   }
   return res;
 }
@@ -1451,8 +1447,8 @@ sycl::vec<T, N> sincos(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
   sycl::vec<T, N> resPtr;
   for (int i = 0; i < N; i++) {
     T value;
-    setElement<T, N>(res, i, sincos(getElement(a, i), &value));
-    setElement<T, N>(resPtr, i, value);
+    res[i] = sincos(a[i], &value);
+    resPtr[i] = value;
   }
   *b = resPtr;
   return res;
@@ -1557,7 +1553,7 @@ template <typename T, int N>
 T dot(sycl::vec<T, N> a, sycl::vec<T, N> b) {
   T res = 0;
   for (int i = 0; i < N; i++)
-    res += getElement<T, N>(a, i) * getElement<T, N>(b, i);
+    res += a[i] * b[i];
   return res;
 }
 // FIXME: hipSYCL does not support marray
@@ -1591,7 +1587,7 @@ sycl::vec<T, N> normalize(sycl::vec<T, N> a) {
   T len_a = reference::length(a);
   if (len_a == 0) return sycl::vec<T, N>(0);
   for (int i = 0; i < N; i++)
-    setElement<T, N>(res, i, getElement<T, N>(a, i) / len_a);
+    res[i] = a[i] / len_a;
   return res;
 }
 // FIXME: hipSYCL does not support marray

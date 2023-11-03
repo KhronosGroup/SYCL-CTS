@@ -29,7 +29,6 @@
 
 #include "../util/stl.h"
 #include "./../oclmath/mt19937.h"
-#include "./math_vector.h"
 
 namespace sycl_cts {
 /** math utility functions
@@ -92,7 +91,7 @@ T getElement(const T &f, int) {
  * extract an individual element. */
 template <typename T, int dim>
 T getElement(sycl::vec<T, dim> &f, int ix) {
-  return getComponent<T, dim>()(f, ix);
+  return f[ix];
 }
 
 // FIXME: hipSYCL does not support marray
@@ -107,7 +106,7 @@ T getElement(sycl::marray<T, dim> &f, size_t ix) {
 
 template <typename T, int dim>
 void setElement(sycl::vec<T, dim> &f, int ix, T value) {
-  setComponent<T, dim>()(f, ix, value);
+  f[ix] = value;
 }
 
 template <typename R, typename T, int N, typename funT, typename... Args>
