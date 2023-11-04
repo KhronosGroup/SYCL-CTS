@@ -37,7 +37,7 @@ void copy_ulong_long2marray(sycl::marray<T, dim>& marray,
       elem_size * dim > sizeof(value) ? sizeof(value) : elem_size * dim;
   size_t shift = 0;
   size_t i = 0;
-  char* valuePtr = reinterpret_cast<char*>(&value);
+  auto valuePtr = reinterpret_cast<char*>(&value);
   while (shift + elem_size <= num_bytes && i < dim) {
     memcpy(&(marray[i]), valuePtr + shift, elem_size);
     ++i;
@@ -53,7 +53,7 @@ void copy_marray2ulong_long(unsigned long long& value,
       elem_size * dim > sizeof(value) ? sizeof(value) : elem_size * dim;
   size_t shift = 0;
   size_t i = 0;
-  char* valuePtr = reinterpret_cast<char*>(&value);
+  auto valuePtr = reinterpret_cast<char*>(&value);
   while (shift + elem_size <= num_bytes && i < dim) {
     memcpy(valuePtr + shift, &(marray[i]), elem_size);
     ++i;
