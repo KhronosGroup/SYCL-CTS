@@ -17,7 +17,7 @@ foreach(TY IN LISTS TYPE_LIST)
   generate_cts_test(TESTS TEST_CASES_LIST
     GENERATOR "generate_vector_swizzle_assignment.py"
     OUTPUT ${OUT_FILE}
-    INPUT "../common/vector.template"
+    INPUT "../common/vector_swizzle_assignment.template"
     EXTRA_ARGS -type "${TY}")
 endforeach()
 
