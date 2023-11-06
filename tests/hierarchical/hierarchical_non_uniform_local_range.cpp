@@ -44,8 +44,7 @@ void check_expected(const std::vector<sycl::int3> &data, unsigned local_id,
     std::string errorMessage =
         std::string("Value for global id ") + std::to_string(idx) +
         std::string(" for dim = ") + std::to_string(dim) +
-        std::string(" was not correct (") +
-        std::to_string(data[idx][dim - 1]) +
+        std::string(" was not correct (") + std::to_string(data[idx][dim - 1]) +
         std::string(" instead of ") + std::to_string(expected) + ")";
     FAIL(log, errorMessage);
   }

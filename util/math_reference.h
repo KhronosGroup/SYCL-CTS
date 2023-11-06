@@ -1552,8 +1552,7 @@ T dot(T p0, T p1) {
 template <typename T, int N>
 T dot(sycl::vec<T, N> a, sycl::vec<T, N> b) {
   T res = 0;
-  for (int i = 0; i < N; i++)
-    res += a[i] * b[i];
+  for (int i = 0; i < N; i++) res += a[i] * b[i];
   return res;
 }
 // FIXME: hipSYCL does not support marray
@@ -1586,8 +1585,7 @@ sycl::vec<T, N> normalize(sycl::vec<T, N> a) {
   sycl::vec<T, N> res;
   T len_a = reference::length(a);
   if (len_a == 0) return sycl::vec<T, N>(0);
-  for (int i = 0; i < N; i++)
-    res[i] = a[i] / len_a;
+  for (int i = 0; i < N; i++) res[i] = a[i] / len_a;
   return res;
 }
 // FIXME: hipSYCL does not support marray
