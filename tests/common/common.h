@@ -27,7 +27,6 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "../../util/conversion.h"
-#include "../../util/math_vector.h"
 #include "../../util/proxy.h"
 #include "../../util/sycl_enums.h"
 #include "../../util/test_base.h"
