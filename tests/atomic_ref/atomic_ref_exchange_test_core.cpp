@@ -35,7 +35,7 @@ namespace atomic_ref::tests::api::core {
 // sycl::info::device::atomic_memory_scope_capabilities are implemented in
 // hipsycl
 DISABLED_FOR_TEST_CASE(hipSYCL)
-("sycl::atomic_rer::exchange() test. core types", "[atomic_ref]")({
+("sycl::atomic_ref::exchange() test. core types", "[atomic_ref]")({
   const auto type_pack = atomic_ref::tests::common::get_conformance_type_pack();
   for_all_types<atomic_ref::tests::api::run_exchange_test>(type_pack);
 });

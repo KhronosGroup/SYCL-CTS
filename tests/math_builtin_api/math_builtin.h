@@ -139,7 +139,7 @@ bool verify(sycl_cts::util::logger& log, sycl::vec<T, N> a,
   sycl::vec<T, N> b = r.res;
   for (int i = 0; i < sycl_cts::math::numElements(a); i++)
     if (r.undefined.find(i) == r.undefined.end() &&
-        !verify(log, getElement(a, i), getElement(b, i), accuracy, comment))
+        !verify(log, a[i], b[i], accuracy, comment))
       return false;
   return true;
 }

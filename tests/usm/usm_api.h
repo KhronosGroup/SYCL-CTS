@@ -251,6 +251,13 @@ class copy : public copyGeneric<T, count, sourceAllocation> {
    */
   static constexpr bool has_non_usm_support() { return true; }
 
+  /** @brief This test only works on devices with `sourceAllocation` support
+   */
+  static bool supports_device(sycl_cts::util::logger& log,
+                              const sycl::queue& queue) {
+    return check_device_support<sourceAllocation>(log, queue);
+  }
+
   template <allocation alloc>
   static std::string description() {
     return "copy from " + get_allocation_decription<sourceAllocation>() +
@@ -275,6 +282,13 @@ class memcpy : public copyGeneric<T, count, sourceAllocation> {
   /** @brief The memcpy() member function supports non-USM pointers
    */
   static constexpr bool has_non_usm_support() { return true; }
+
+  /** @brief This test only works on devices with `sourceAllocation` support
+   */
+  static bool supports_device(sycl_cts::util::logger& log,
+                              const sycl::queue& queue) {
+    return check_device_support<sourceAllocation>(log, queue);
+  }
 
   template <allocation alloc>
   static std::string description() {
@@ -322,6 +336,13 @@ class fill {
    */
   static constexpr bool has_non_usm_support() { return false; }
 
+  /** @brief This test doesn't have any device requirements
+   */
+  static bool supports_device(sycl_cts::util::logger& log,
+                              const sycl::queue& queue) {
+    return true;
+  }
+
   template <allocation alloc>
   static std::string description() {
     return "fill using " + get_allocation_decription<alloc>();
@@ -355,6 +376,13 @@ class memset {
    */
   static constexpr bool has_non_usm_support() { return false; }
 
+  /** @brief This test doesn't have any device requirements
+   */
+  static bool supports_device(sycl_cts::util::logger& log,
+                              const sycl::queue& queue) {
+    return true;
+  }
+
   template <allocation alloc>
   static std::string description() {
     return "memset using " + get_allocation_decription<alloc>();
@@ -386,6 +414,13 @@ class prefetch {
    */
   static constexpr bool has_non_usm_support() { return false; }
 
+  /** @brief This test doesn't have any device requirements
+   */
+  static bool supports_device(sycl_cts::util::logger& log,
+                              const sycl::queue& queue) {
+    return true;
+  }
+
   template <allocation alloc>
   static std::string description() {
     return "prefetch using " + get_allocation_decription<alloc>();
@@ -413,6 +448,13 @@ class mem_advise {
   /** @brief The mem_advise() member function doesn't support non-USM pointers
    */
   static constexpr bool has_non_usm_support() { return false; }
+
+  /** @brief This test doesn't have any device requirements
+   */
+  static bool supports_device(sycl_cts::util::logger& log,
+                              const sycl::queue& queue) {
+    return true;
+  }
 
   template <allocation alloc>
   static std::string description() {
@@ -470,19 +512,18 @@ struct gen_buf_size_selector<0> {
 template <typename T, size_t buf_size>
 class event_generator {
   sycl::range<1> rng{buf_size};
-  std::array<T, buf_size> arr_src;
-  std::array<T, buf_size> arr_dst;
+  std::vector<T> arr_src;
+  std::vector<T> arr_dst;
   sycl::buffer<T, 1> buf_src;
   sycl::buffer<T, 1> buf_dst;
 
  public:
   event_generator()
       : rng{buf_size},
+        arr_src(buf_size, T{0}),
+        arr_dst(buf_size, T{0}),
         buf_src{arr_src.data(), rng},
-        buf_dst{arr_dst.data(), rng} {
-    arr_src.fill(T{0});
-    arr_dst.fill(T{0});
-  }
+        buf_dst{arr_dst.data(), rng} {}
 
   /** @brief Initialize arr_src with init_value and return sycl::event of
    *         queue::submit()
@@ -565,6 +606,7 @@ struct test {
     try {
       auto queue = sycl_cts::util::get_cts_object::queue();
 
+      if (!verifier_t::supports_device(log, queue)) return;
       if (!check_device_support<alloc>(log, queue)) return;
 
       log.debug("... allocate USM memory storage");

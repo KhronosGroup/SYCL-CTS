@@ -20,6 +20,8 @@
 
 #include "../../common/common.h"
 
+#include <cmath>
+
 using bfloat16 = sycl::ext::oneapi::bfloat16;
 
 TEST_CASE("Common interface members", "[bfloat16]") {

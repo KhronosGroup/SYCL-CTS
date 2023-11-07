@@ -677,7 +677,7 @@ template <typename T1, int N>
 bool check_elems_equal(const sycl::vec<T1, N>& actual,
                        const sycl::vec<T1, N>& expected) {
   for (int i = 0; i < N; i++) {
-    if (!check_elems_equal(getElement(actual, i), getElement(expected, i))) {
+    if (!check_elems_equal(actual[i], expected[i])) {
       return false;
     }
   }
@@ -691,7 +691,7 @@ bool check_elems_equal(const sycl::vec<T1, N>& actual,
 template <typename T1, int N>
 bool check_elems_equal(const sycl::vec<T1, N>& actual, const T1& expected) {
   for (int i = 0; i < N; i++) {
-    if (!check_elems_equal(getElement(actual, i), expected)) {
+    if (!check_elems_equal(actual[i], expected)) {
       return false;
     }
   }
