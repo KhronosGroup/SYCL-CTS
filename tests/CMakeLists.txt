@@ -141,6 +141,11 @@ endfunction()
 # create a target to group all tests together into one test executable
 add_executable(test_all)
 
+# create a target to encapsulate all test categories, excluding test_all. This
+# is intended for conformance testing to avoid redundant testing and excessive
+# resource use from building and running test_all.
+add_custom_target(test_conformance)
+
 # create test executable targets for each test project using the build_sycl function
 function(add_cts_test_helper)
   get_filename_component(test_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
@@ -184,6 +189,8 @@ function(add_cts_test_helper)
                PROPERTY FOLDER "Tests/${test_exe_name}")
 
   target_sources(test_all PRIVATE $<TARGET_OBJECTS:${test_exe_name}_objects>)
+
+  add_dependencies(test_conformance ${test_exe_name})
 endfunction()
 
 # Create one *.exe-file from all of the provided *.cpp-files
