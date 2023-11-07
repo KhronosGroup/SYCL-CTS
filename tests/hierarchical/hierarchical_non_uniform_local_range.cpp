@@ -28,7 +28,6 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../../util/math_vector.h"
 
 #define TEST_NAME hierarchical_non_uniform_local_range
 
@@ -41,12 +40,11 @@ using namespace sycl_cts;
 void check_expected(const std::vector<sycl::int3> &data, unsigned local_id,
                     unsigned idx, int dim, bool set, util::logger &log) {
   int expected = set ? local_id : -1;
-  if (getElement(data[idx], dim - 1) != expected) {
+  if (data[idx][dim - 1] != expected) {
     std::string errorMessage =
         std::string("Value for global id ") + std::to_string(idx) +
         std::string(" for dim = ") + std::to_string(dim) +
-        std::string(" was not correct (") +
-        std::to_string(getElement(data[idx], dim - 1)) +
+        std::string(" was not correct (") + std::to_string(data[idx][dim - 1]) +
         std::string(" instead of ") + std::to_string(expected) + ")";
     FAIL(log, errorMessage);
   }
