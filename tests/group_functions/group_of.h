@@ -518,7 +518,7 @@ void bool_function_of_sub_group(sycl::queue& queue) {
         T local_var(sub_group.get_local_linear_id() + 1);
 
         // predicates
-        // The variable is never 0 for any member of the sub-group
+        // The variable is never 1 for any member of the sub-group
         auto none_true = [&](T i) { return i == 0; };
         // Exactly one member of the sub-group has value 1 (the first)
         auto one_true = [&](T i) { return i == 1; };
