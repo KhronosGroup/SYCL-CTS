@@ -513,8 +513,8 @@ template <typename T, size_t buf_size>
 class event_generator {
   // Change vector<bool> to vector <unsigned char>, since vector<bool> is
   // stored bit-wise, and does not have data() member function.
-  using ContainType = typename std::conditional<std::is_same_v<bool, T>,
-                                                unsigned char, T>::type;
+  using ContainType = typename std::conditional_t<std::is_same_v<bool, T>,
+                                                  unsigned char, T>;
   sycl::range<1> rng{buf_size};
   std::vector<ContainType> arr_src;
   std::vector<ContainType> arr_dst;
