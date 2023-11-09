@@ -448,6 +448,17 @@ def get_types():
             types.append(Data.fixed_width_type_dict[(sign, base_type)])
     return types
 
+# FIXME: We shouldn't accumulate results of *all* checks into a single boolean,
+# because it makes debugging failures really hard as there is no indication
+# about what exactly went wrong.
+# FIXME: vector swizzles should be tested not only on device, but also on host.
+# Therefore, the test should ideally perform the same calculations on both host
+# and device and then compare to ensure that results are equivalend and match
+# reference.
+# FIXME: consider reducing amount of calls to 'check_convert_as_all_types'
+# swizzle_template invokes 'check_convert_as_all_types' and this template
+# is "instantiated" for every simple swizzle there is (such as xyzz, zyxw, etc.)
+# which seems overly exessive.
 class SwizzleData:
     swizzle_template = Template(
         """        sycl::vec<${type}, ${size}> ${name}DimTestVec = sycl::vec<${type}, ${size}>(${testVecValues});
@@ -709,6 +720,10 @@ def get_reverse_type(type_str):
         reverse_type_str = type_str
     return reverse_type_str
 
+# FIXME: Move this and other functions to generate_vector_swizzles.py
+# Reason for the TODO above is that this function and several more it calls are
+# not really common and only used to generate vector_swizzles test.
+# FIXME: The test (main template and others) should be updated to use Catch2
 def make_swizzles_tests(type_str, input_file, output_file):
     if type_str == 'bool':
         Data.vals_list_dict = cast_to_bool(Data.vals_list_dict)
