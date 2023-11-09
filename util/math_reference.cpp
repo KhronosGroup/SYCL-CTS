@@ -203,7 +203,7 @@ T mad_sat_signed_long(T x, T y, T z) {
   if ((x > 0 && y > 0) || (x < 0 && y < 0))
     if (mul > 0 && std::abs(mul) > std::abs(x) && std::abs(mul) > std::abs(y))
       return add_sat(mul, z);
-    else if (z < 0 && mul - std::numeric_limits<T>::min() < abs(z))
+    else if (z < 0 && mul - std::numeric_limits<T>::min() < std::abs(z))
       return std::numeric_limits<T>::max() + z;
     else
       return std::numeric_limits<T>::max();
