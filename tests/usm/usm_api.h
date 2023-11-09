@@ -217,11 +217,35 @@ void check_values(const T *begin, const ReferenceIt &reference) {
   }
 }
 
+/** @brief Trait for tests that have no additional device requirements
+ *
+ * Tests implementing this trait do not require any device support beyond
+ * the destination memory location.
+ */
+struct noAdditionalDeviceRequirements {
+  static bool supports_device(sycl_cts::util::logger& log,
+                              const sycl::queue& queue) {
+    return true;
+  }
+};
+/** @brief Trait for tests that require support for a given USM alloc type
+ *
+ * Tests implementing this trait require device support for a specific
+ * type of allocation (e.g. as a source memory location).
+ */
+template <allocation allocationType>
+struct requiresUsmAllocationSupport {
+  static bool supports_device(sycl_cts::util::logger& log,
+                              const sycl::queue& queue) {
+    return check_device_support<allocationType>(log, queue);
+  }
+};
+
 /** @brief Provides generic copy test logic for memcpy() and copy() tests
  *  @tparam sourceAllocation Allocation type to use for data source
  */
 template <typename T, size_t count, allocation sourceAllocation>
-class copyGeneric {
+class copyGeneric : public requiresUsmAllocationSupport<sourceAllocation> {
  protected:
   using storage_t = storage<T, count, sourceAllocation>;
   const typename storage_t::type source;
@@ -251,13 +275,6 @@ class copy : public copyGeneric<T, count, sourceAllocation> {
    */
   static constexpr bool has_non_usm_support() { return true; }
 
-  /** @brief This test only works on devices with `sourceAllocation` support
-   */
-  static bool supports_device(sycl_cts::util::logger& log,
-                              const sycl::queue& queue) {
-    return check_device_support<sourceAllocation>(log, queue);
-  }
-
   template <allocation alloc>
   static std::string description() {
     return "copy from " + get_allocation_decription<sourceAllocation>() +
@@ -282,13 +299,6 @@ class memcpy : public copyGeneric<T, count, sourceAllocation> {
   /** @brief The memcpy() member function supports non-USM pointers
    */
   static constexpr bool has_non_usm_support() { return true; }
-
-  /** @brief This test only works on devices with `sourceAllocation` support
-   */
-  static bool supports_device(sycl_cts::util::logger& log,
-                              const sycl::queue& queue) {
-    return check_device_support<sourceAllocation>(log, queue);
-  }
 
   template <allocation alloc>
   static std::string description() {
@@ -326,7 +336,7 @@ using memcpy_from_shared = detail::memcpy<T, count, allocation::shared>;
 /** @brief Provides test logic for the fill() member function tests
  */
 template <typename T, size_t count>
-class fill {
+class fill : public detail::noAdditionalDeviceRequirements {
   const T value;
 
  public:
@@ -335,13 +345,6 @@ class fill {
   /** @brief The fill() member function doesn't support non-USM pointers
    */
   static constexpr bool has_non_usm_support() { return false; }
-
-  /** @brief This test doesn't have any device requirements
-   */
-  static bool supports_device(sycl_cts::util::logger& log,
-                              const sycl::queue& queue) {
-    return true;
-  }
 
   template <allocation alloc>
   static std::string description() {
@@ -364,7 +367,7 @@ class fill {
 /** @brief Provides test logic for the memset() member function tests
  */
 template <typename T, size_t count>
-class memset {
+class memset : public detail::noAdditionalDeviceRequirements {
   const int value;
 
  public:
@@ -375,13 +378,6 @@ class memset {
   /** @brief The memset() member function doesn't support non-USM pointers
    */
   static constexpr bool has_non_usm_support() { return false; }
-
-  /** @brief This test doesn't have any device requirements
-   */
-  static bool supports_device(sycl_cts::util::logger& log,
-                              const sycl::queue& queue) {
-    return true;
-  }
 
   template <allocation alloc>
   static std::string description() {
@@ -404,7 +400,7 @@ class memset {
 /** @brief Provides test logic for the prefetch() member function tests
  */
 template <typename T, size_t count>
-class prefetch {
+class prefetch : public detail::noAdditionalDeviceRequirements {
  public:
   static constexpr size_t size = count * sizeof(T);
 
@@ -413,13 +409,6 @@ class prefetch {
   /** @brief The prefetch() member function doesn't support non-USM pointers
    */
   static constexpr bool has_non_usm_support() { return false; }
-
-  /** @brief This test doesn't have any device requirements
-   */
-  static bool supports_device(sycl_cts::util::logger& log,
-                              const sycl::queue& queue) {
-    return true;
-  }
 
   template <allocation alloc>
   static std::string description() {
@@ -439,7 +428,7 @@ class prefetch {
 /** @brief Provides test logic for the mem_advise() member function tests
  */
 template <typename T, size_t count>
-class mem_advise {
+class mem_advise : public detail::noAdditionalDeviceRequirements {
  public:
   static constexpr size_t size = count * sizeof(T);
 
@@ -448,13 +437,6 @@ class mem_advise {
   /** @brief The mem_advise() member function doesn't support non-USM pointers
    */
   static constexpr bool has_non_usm_support() { return false; }
-
-  /** @brief This test doesn't have any device requirements
-   */
-  static bool supports_device(sycl_cts::util::logger& log,
-                              const sycl::queue& queue) {
-    return true;
-  }
 
   template <allocation alloc>
   static std::string description() {
