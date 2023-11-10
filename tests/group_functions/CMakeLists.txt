@@ -1,4 +1,4 @@
-function(configure_test_case)    
+function(configure_test_case)
   cmake_parse_arguments(CTS
     "" "TYPE;IN_FILENAME;OUT_FILENAME;TEST_LIST" "" ${ARGN})
   set(CTS_TYPE_NAME ${CTS_TYPE})
@@ -7,8 +7,8 @@ function(configure_test_case)
   set(${CTS_TEST_LIST} ${${CTS_TEST_LIST}} PARENT_SCOPE)
 endfunction()
 
-list(APPEND TEMPLATE_LIST 
-  "group_joint_scan" 
+list(APPEND TEMPLATE_LIST
+  "group_joint_scan"
   "group_scan_over_group"
   "group_joint_reduce"
   "group_reduce_over_group"
