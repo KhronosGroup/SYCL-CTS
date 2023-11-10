@@ -511,30 +511,34 @@ struct gen_buf_size_selector<0> {
  */
 template <typename T, size_t buf_size>
 class event_generator {
+  // Change vector<bool> to vector <unsigned char>, since vector<bool> is
+  // stored bit-wise, and does not have data() member function.
+  using ContainType =
+      typename std::conditional_t<std::is_same_v<bool, T>, unsigned char, T>;
   sycl::range<1> rng{buf_size};
-  std::vector<T> arr_src;
-  std::vector<T> arr_dst;
-  sycl::buffer<T, 1> buf_src;
-  sycl::buffer<T, 1> buf_dst;
+  std::vector<ContainType> arr_src;
+  std::vector<ContainType> arr_dst;
+  sycl::buffer<ContainType, 1> buf_src;
+  sycl::buffer<ContainType, 1> buf_dst;
 
  public:
   event_generator()
       : rng{buf_size},
-        arr_src(buf_size, T{0}),
-        arr_dst(buf_size, T{0}),
+        arr_src(buf_size, ContainType{0}),
+        arr_dst(buf_size, ContainType{0}),
         buf_src{arr_src.data(), rng},
         buf_dst{arr_dst.data(), rng} {}
 
   /** @brief Initialize arr_src with init_value and return sycl::event of
    *         queue::submit()
-   *  @param value Some non-zero (non-default) value of type T
+   *  @param value Some non-zero (non-default) value of type ContainType
    */
-  sycl::event init(sycl::queue &queue, T value) {
+  sycl::event init(sycl::queue& queue, ContainType value) {
     return queue.submit([&](sycl::handler &cgh) {
       auto acc_src = buf_src.template get_access<sycl::access_mode::write>(cgh);
       // single_task is used to make process long enough for testing purpose
       // The function being tested must wait for this task to complete.
-      cgh.single_task<init_kernel_name<T, buf_size>>([=] {
+      cgh.single_task<init_kernel_name<ContainType, buf_size>>([=] {
         for (size_t i = 0; i < buf_size; ++i) {
           acc_src[i] = value;
         }
@@ -545,8 +549,8 @@ class event_generator {
   /** @brief Copy data from arr_src to arr_dst for future check
    */
   void copy_arrays(sycl::queue &queue) {
-    queue.submit([&](sycl::handler &cgh) {
-      using kernel_name = copy_arrays_kernel_name<T, buf_size>;
+    queue.submit([&](sycl::handler& cgh) {
+      using kernel_name = copy_arrays_kernel_name<ContainType, buf_size>;
       auto acc_src = buf_src.template get_access<sycl::access_mode::read>(cgh);
       auto acc_dst = buf_dst.template get_access<sycl::access_mode::write>(cgh);
       // Copy should be much faster then algorithm in 'init()' member function
@@ -563,7 +567,7 @@ class event_generator {
    *         value
    *  @param value The same value as value passed to init() member function
    */
-  bool check(T value) {
+  bool check(ContainType value) {
     bool result = true;
     auto acc_src = buf_src.template get_access<sycl::access_mode::read>(rng);
     auto acc_dst = buf_dst.template get_access<sycl::access_mode::read>(rng);

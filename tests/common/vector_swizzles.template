@@ -34,6 +34,14 @@ using namespace sycl_cts;
  *  and used like a normal vector
  */
 class TEST_NAME : public util::test_base {
+  enum per_element_swizzle_test_case : int {
+    in_order = 0,
+    reverse_order,
+    in_order_reversed_pair,
+    reverse_order_reversed_pair,
+    total_per_element_swizzle_test_cases
+  };
+
  public:
   /** return information about this test
    */
