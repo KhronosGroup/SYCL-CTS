@@ -223,8 +223,7 @@ void check_values(const T *begin, const ReferenceIt &reference) {
  * the destination memory location.
  */
 struct noAdditionalDeviceRequirements {
-  static bool supports_device(sycl_cts::util::logger&,
-                              const sycl::queue&) {
+  static bool supports_device(sycl_cts::util::logger&, const sycl::queue&) {
     return true;
   }
 };
