@@ -15,6 +15,7 @@ list(APPEND TEMPLATE_LIST
 )
 set(TYPE_LIST "")
 get_std_type(TYPE_LIST)
+half_double_filter(TYPE_LIST)
 
 file(GLOB test_cases_list *.cpp)
 
