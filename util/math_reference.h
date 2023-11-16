@@ -305,23 +305,21 @@ sycl_cts::resultRef<sycl::marray<T, N>> abs(sycl::marray<T, N> a) {
 
 /* absolute difference */
 template <typename T>
-auto abs_diff(T a, T b) {
-  using R = typename std::make_unsigned<T>::type;
-  R h = (a > b) ? a : b;
-  R l = (a <= b) ? a : b;
+T abs_diff(T a, T b) {
+  T h = (a > b) ? a : b;
+  T l = (a <= b) ? a : b;
   return h - l;
 }
-template <typename T, int N, typename R = typename std::make_unsigned<T>::type>
-sycl::vec<R, N> abs_diff(sycl::vec<T, N> a, sycl::vec<T, N> b) {
-  return sycl_cts::math::run_func_on_vector<R, T, N>(
+template <typename T, int N>
+sycl::vec<T, N> abs_diff(sycl::vec<T, N> a, sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
       [](T x, T y) { return abs_diff(x, y); }, a, b);
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, size_t N,
-          typename R = typename std::make_unsigned<T>::type>
-sycl::marray<R, N> abs_diff(sycl::marray<T, N> a, sycl::marray<T, N> b) {
-  return sycl_cts::math::run_func_on_marray<R, T, N>(
+template <typename T, size_t N>
+sycl::marray<T, N> abs_diff(sycl::marray<T, N> a, sycl::marray<T, N> b) {
+  return sycl_cts::math::run_func_on_marray<T, T, N>(
       [](T x, T y) { return abs_diff(x, y); }, a, b);
 }
 #endif
