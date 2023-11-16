@@ -30,7 +30,7 @@ foreach(TEMP IN LISTS TEMPLATE_LIST)
       TYPE "${TY}"
       IN_FILENAME "${TEMP}.cpp.in"
       OUT_FILENAME ${OUT_FILE}
-      EST_LIST test_cases_list)
+      TEST_LIST test_cases_list)
   endforeach()
 endforeach()
 
