@@ -285,10 +285,23 @@ sycl::marray<T, N> select(sycl::marray<T, N> a, sycl::marray<T, N> b,
 
 /* absolute value */
 template <typename T>
-T abs(T x) {
-  return x < 0 ? -x : x;
+sycl_cts::resultRef<T> abs(T x) {
+  using U = std::make_unsigned_t<T>;
+  T result = x < 0 ? T(-U(x)) : x;
+  return result < 0 ? sycl_cts::resultRef<T>(0, true) : result;
 }
-MAKE_VEC_AND_MARRAY_VERSIONS(abs)
+template <typename T, int N>
+sycl_cts::resultRef<sycl::vec<T, N>> abs(sycl::vec<T, N> a) {
+  return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
+      [](T x) { return abs(x); }, a);
+}
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+template <typename T, size_t N>
+sycl_cts::resultRef<sycl::marray<T, N>> abs(sycl::marray<T, N> a) {
+  return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
+      [](T x) { return abs(x); }, a);
+}
+#endif
 
 /* absolute difference */
 template <typename T>
