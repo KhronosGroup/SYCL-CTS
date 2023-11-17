@@ -49,6 +49,18 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #endif
 
   auto queue = once_per_unit::get_queue();
+  if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
+    if (!queue.get_device().has(sycl::aspect::fp16))
+      SKIP(
+          "Device does not support half precision floating point "
+          "operations.");
+  } else if (std::is_same_v<std::remove_cv_t<CTS_TYPE>, double>) {
+    if (!queue.get_device().has(sycl::aspect::fp64))
+      SKIP(
+          "Device does not support double precision floating point "
+          "operations.");
+  }
+
   // FIXME: hipSYCL cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   for_all_combinations<invoke_joint_scan_group_same_type>(Dims, TestType{},
@@ -74,6 +86,18 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #endif
 
   auto queue = once_per_unit::get_queue();
+  if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
+    if (!queue.get_device().has(sycl::aspect::fp16))
+      SKIP(
+          "Device does not support half precision floating point "
+          "operations.");
+  } else if (std::is_same_v<std::remove_cv_t<CTS_TYPE>, double>) {
+    if (!queue.get_device().has(sycl::aspect::fp64))
+      SKIP(
+          "Device does not support double precision floating point "
+          "operations.");
+  }
+
   // FIXME: hipSYCL cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   for_all_combinations<invoke_init_joint_scan_group_same_type>(Dims, TestType{},
