@@ -23,12 +23,12 @@
 #include "marray_common.h"
 #include "marray_operators.h"
 
-namespace marray_operators_fp64 {
+namespace marray_operators_arithmetic_binary_fp64 {
 
 using namespace sycl_cts;
 using namespace marray_operators;
 
-TEST_CASE("operators fp64", "[marray]") {
+TEST_CASE("arithmetic binary operators fp64", "[marray]") {
   auto queue = util::get_cts_object::queue();
   using availability =
       util::extensions::availability<util::extensions::tag::fp64>;
@@ -39,7 +39,7 @@ TEST_CASE("operators fp64", "[marray]") {
     return;
   }
 
-  check_marray_operators_for_type<double>{}("double");
+  check_marray_arithmetic_binary_operators_for_type<double>{}("double");
 }
 
-}  // namespace marray_operators_fp64
+}  // namespace marray_operators_arithmetic_binary_fp64

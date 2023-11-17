@@ -31,52 +31,32 @@ template <typename DataT, typename NumElementsT>
 class run_marray_constructor_test {
   static constexpr std::size_t NumElements = NumElementsT::value;
 
+  static constexpr size_t num_test_cases = 7;
+
+  static constexpr const char* check_names[num_test_cases] = {
+      "default constructor",
+      "scalar constructor",
+      "variadic constructor (NumElements DataT instances)",
+      "variadic constructor (one DataT instance, one marray instance)",
+      "variadic constructor (one marray instance, one DataT instance)",
+      "copy constructor",
+      "copy constructor rval reference"};
+
   using marray_t = sycl::marray<DataT, NumElements>;
 
- private:
-  template <size_t num_elements = NumElements,
-            std::enable_if_t<num_elements == 1, bool> = true>
-  void check_constexpr_single_element() {}
-
-  template <size_t num_elements = NumElements,
-            std::enable_if_t<num_elements != 1, bool> = true>
-  void check_constexpr_single_element() {
-    //  one DataT instance, one marray instance
-    {
-      constexpr sycl::marray<DataT, num_elements - 1> ma_const =
-          marray_common::iota_marray<DataT, num_elements - 1, 2>();
-      constexpr marray_t ma{1, ma_const};
-      marray_t ma_inc;
-      std::iota(ma_inc.begin(), ma_inc.end(), 1);
-      CHECK(value_operations::are_equal(ma_inc, ma));
-    }
-
-    // one marray instance, one DataT instance
-    {
-      constexpr sycl::marray<DataT, num_elements - 1> ma_const =
-          marray_common::iota_marray<DataT, num_elements - 1, 1>();
-      constexpr marray_t ma{ma_const, DataT(num_elements)};
-      marray_t ma_inc;
-      std::iota(ma_inc.begin(), ma_inc.end(), 1);
-      CHECK(value_operations::are_equal(ma_inc, ma));
-    }
-  }
-
- public:
-  void operator()(const std::string&) {
-    INFO("for number of elements \"" << NumElements << "\": ");
-
+  template <typename IteratorT>
+  static void run_checks(IteratorT results) {
     // default constructor
     {
       marray_t ma;
-      CHECK(value_operations::are_equal(ma, DataT{}));
+      *(results++) = value_operations::are_equal(ma, DataT{});
     }
 
     // scalar constructor
     {
       constexpr DataT value{1};
       constexpr marray_t ma{value};
-      CHECK(value_operations::are_equal(ma, value));
+      *(results++) = value_operations::are_equal(ma, value);
     }
 
     // variadic constructor
@@ -84,11 +64,35 @@ class run_marray_constructor_test {
       // NumElements DataT instances
       constexpr auto a = marray_common::iota_marray<DataT, NumElements, 1>();
       marray_t ma_inc;
-      std::iota(ma_inc.begin(), ma_inc.end(), 1);
-      CHECK(value_operations::are_equal(ma_inc, a));
+      marray_common::iota(ma_inc.begin(), ma_inc.end(), 1);
+      *(results++) = value_operations::are_equal(ma_inc, a);
 
       // only compiled when NumElements != 1
-      check_constexpr_single_element();
+      if constexpr (NumElements != 1) {
+        //  one DataT instance, one marray instance
+        {
+          constexpr sycl::marray<DataT, NumElements - 1> ma_const =
+              marray_common::iota_marray<DataT, NumElements - 1, 2>();
+          constexpr marray_t ma{1, ma_const};
+          marray_t ma_inc;
+          marray_common::iota(ma_inc.begin(), ma_inc.end(), 1);
+          *(results++) = value_operations::are_equal(ma_inc, ma);
+        }
+
+        // one marray instance, one DataT instance
+        {
+          constexpr sycl::marray<DataT, NumElements - 1> ma_const =
+              marray_common::iota_marray<DataT, NumElements - 1, 1>();
+          constexpr marray_t ma{ma_const, DataT(NumElements)};
+          marray_t ma_inc;
+          marray_common::iota(ma_inc.begin(), ma_inc.end(), 1);
+          *(results++) = value_operations::are_equal(ma_inc, ma);
+        }
+      } else {
+        // Two checks were skipped.
+        *(results++) = true;
+        *(results++) = true;
+      }
     }
 
     // copy constructor
@@ -96,7 +100,7 @@ class run_marray_constructor_test {
       constexpr DataT value{1};
       constexpr marray_t rhs{value};
       constexpr marray_t ma{rhs};
-      CHECK(value_operations::are_equal(ma, value));
+      *(results++) = value_operations::are_equal(ma, value);
     }
 
     // copy constructor rval reference
@@ -104,8 +108,48 @@ class run_marray_constructor_test {
       constexpr marray_t ma{
           marray_common::iota_marray<DataT, NumElements, 1>()};
       marray_t ma_inc;
-      std::iota(ma_inc.begin(), ma_inc.end(), 1);
-      CHECK(value_operations::are_equal(ma_inc, ma));
+      marray_common::iota(ma_inc.begin(), ma_inc.end(), 1);
+      *(results++) = value_operations::are_equal(ma_inc, ma);
+    }
+  }
+
+ public:
+  void operator()(const std::string&) {
+    INFO("for number of elements \"" << NumElements << "\": ");
+
+    {
+      INFO("validation on host");
+
+      bool check_results[num_test_cases] = {false};
+      run_checks(check_results);
+      for (size_t i = 0; i < num_test_cases; ++i) {
+        INFO(check_names[i]);
+        CHECK(check_results[i]);
+      }
+    }
+
+    {
+      INFO("validation on device");
+
+      auto queue = sycl_cts::util::get_cts_object::queue();
+      bool check_results[num_test_cases] = {false};
+      {
+        sycl::buffer<bool, 1> check_results_buff{
+            check_results, sycl::range<1>{num_test_cases}};
+
+        queue
+            .submit([&](sycl::handler& cgh) {
+              sycl::accessor check_results_acc{check_results_buff, cgh,
+                                               sycl::read_write};
+              cgh.single_task([=]() { run_checks(check_results_acc.begin()); });
+            })
+            .wait_and_throw();
+      }
+      run_checks(check_results);
+      for (size_t i = 0; i < num_test_cases; ++i) {
+        INFO(check_names[i]);
+        CHECK(check_results[i]);
+      }
     }
   }
 };

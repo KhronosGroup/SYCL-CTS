@@ -22,13 +22,13 @@
 #include "marray_common.h"
 #include "marray_operators.h"
 
-namespace marray_operators_core {
+namespace marray_operators_post_unary_core {
 
 using namespace marray_operators;
 
-TEST_CASE("operators core", "[marray]") {
+TEST_CASE("suffix unary operators core", "[marray]") {
   const auto types = marray_common::get_types();
-  for_all_types<check_marray_operators_for_type>(types);
+  for_all_types<check_marray_post_unary_operators_for_type>(types);
 }
 
-}  // namespace marray_operators_core
+}  // namespace marray_operators_post_unary_core
