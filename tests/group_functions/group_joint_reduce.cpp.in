@@ -26,7 +26,6 @@
 // clang-format on
 using ReduceTypes = Types;
 
-// hipSYCL has no implementation over sub-groups
 TEST_CASE(CTS_TYPE_NAME + " group and sub-group joint reduce functions",
           "[group_func][type_list][dim]") {
   auto queue = once_per_unit::get_queue();
@@ -49,7 +48,6 @@ TEST_CASE(CTS_TYPE_NAME + " group and sub-group joint reduce functions",
                                                   queue);
 }
 
-// hipSYCL has problems with 16-bit types for Ptr
 TEMPLATE_LIST_TEST_CASE(
     CTS_TYPE_NAME + " group and sub-group joint reduce functions with init",
     "[group_func][type_list][dim]", ReduceTypes) {
