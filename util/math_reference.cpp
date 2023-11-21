@@ -522,6 +522,7 @@ double fract(double a, double *b) {
 float nan(unsigned int a) { return std::nanf(std::to_string(a).c_str()); }
 double nan(unsigned long a) { return std::nan(std::to_string(a).c_str()); }
 double nan(unsigned long long a) { return std::nan(std::to_string(a).c_str()); }
+sycl::half nan(unsigned short a) { return nan(unsigned(a)); }
 
 sycl::half modf(sycl::half a, sycl::half *b) {
   float resPtr;

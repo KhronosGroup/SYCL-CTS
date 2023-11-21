@@ -1471,10 +1471,28 @@ def create_types():
     type_dic["sgentype"] = t_sgen_type
 
 
+    t_vgenfloatf_type = argtype("vgenfloatf", "NULL", "NULL", 0, ["sycl::vec<float, 2>","sycl::vec<float, 3>","sycl::vec<float, 4>","sycl::vec<float, 8>","sycl::vec<float, 16>"])
+    type_dic["vgenfloatf"] = t_vgenfloatf_type
+
+    t_vgenfloatd_type = argtype("vgenfloatd", "NULL", "NULL", 0, ["sycl::vec<double, 2>","sycl::vec<double, 3>","sycl::vec<double, 4>","sycl::vec<double, 8>","sycl::vec<double, 16>"])
+    type_dic["vgenfloatd"] = t_vgenfloatd_type
+
+    t_vgenfloath_type = argtype("vgenfloath", "NULL", "NULL", 0, ["sycl::vec<sycl::half, 2>","sycl::vec<sycl::half, 3>","sycl::vec<sycl::half, 4>","sycl::vec<sycl::half, 8>","sycl::vec<sycl::half, 16>"])
+    type_dic["vgenfloath"] = t_vgenfloath_type
+
     t_vgenfloat_type = argtype("vgenfloat", "NULL", "NULL", 0, ["sycl::vec<float, 2>","sycl::vec<float, 3>","sycl::vec<float, 4>","sycl::vec<float, 8>","sycl::vec<float, 16>",
                                                                 "sycl::vec<double, 2>","sycl::vec<double, 3>","sycl::vec<double, 4>","sycl::vec<double, 8>","sycl::vec<double, 16>",
                                                                 "sycl::vec<sycl::half, 2>","sycl::vec<sycl::half, 3>","sycl::vec<sycl::half, 4>","sycl::vec<sycl::half, 8>","sycl::vec<sycl::half, 16>"])
     type_dic["vgenfloat"] = t_vgenfloat_type
+
+    t_mgenfloatf_type = argtype("mgenfloatf", "NULL", "NULL", 0, ["sycl::marray<float, 2>","sycl::marray<float, 3>","sycl::marray<float, 4>","sycl::marray<float, 5>","sycl::marray<float, 17>"])
+    type_dic["mgenfloatf"] = t_mgenfloatf_type
+
+    t_mgenfloatd_type = argtype("mgenfloatd", "NULL", "NULL", 0, ["sycl::marray<double, 2>","sycl::marray<double, 3>","sycl::marray<double, 4>","sycl::marray<double, 5>","sycl::marray<double, 17>",])
+    type_dic["mgenfloatd"] = t_mgenfloatd_type
+
+    t_mgenfloath_type = argtype("mgenfloath", "NULL", "NULL", 0, ["sycl::marray<sycl::half, 2>","sycl::marray<sycl::half, 3>","sycl::marray<sycl::half, 4>","sycl::marray<sycl::half, 5>","sycl::marray<sycl::half, 17>"])
+    type_dic["mgenfloath"] = t_mgenfloath_type
 
     t_mgenfloat_type = argtype("mgenfloat", "NULL", "NULL", 0, ["sycl::marray<float, 2>","sycl::marray<float, 3>","sycl::marray<float, 4>","sycl::marray<float, 5>","sycl::marray<float, 17>",
                                                                 "sycl::marray<double, 2>","sycl::marray<double, 3>","sycl::marray<double, 4>","sycl::marray<double, 5>","sycl::marray<double, 17>",

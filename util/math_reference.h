@@ -1270,9 +1270,15 @@ sycl::marray<T, N> modf(sycl::marray<T, N> a, sycl::marray<T, N> *b) {
 }
 #endif
 
+sycl::half nan(unsigned short a);
 float nan(unsigned int a);
 double nan(unsigned long a);
 double nan(unsigned long long a);
+template <int N>
+sycl::vec<sycl::half, N> nan(sycl::vec<unsigned short, N> a) {
+  return sycl_cts::math::run_func_on_vector<sycl::half, unsigned short, N>(
+      [](unsigned short x) { return nan(x); }, a);
+}
 template <int N>
 sycl::vec<float, N> nan(sycl::vec<unsigned int, N> a) {
   return sycl_cts::math::run_func_on_vector<float, unsigned int, N>(
@@ -1288,6 +1294,11 @@ nan(sycl::vec<T, N> a) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+template <size_t N>
+sycl::marray<sycl::half, N> nan(sycl::marray<unsigned short, N> a) {
+  return sycl_cts::math::run_func_on_marray<sycl::half, unsigned short, N>(
+      [](unsigned short x) { return nan(x); }, a);
+}
 template <size_t N>
 sycl::marray<float, N> nan(sycl::marray<unsigned int, N> a) {
   return sycl_cts::math::run_func_on_marray<float, unsigned int, N>(
