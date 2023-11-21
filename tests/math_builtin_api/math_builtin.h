@@ -374,4 +374,10 @@ void test_function_multi_ptr_local(funT fun, argT arg) {
   delete[] kernelResult;
 }
 
+template <typename T> struct ImplicitlyConvertibleType {
+  operator T() const {
+    return {}; 
+  }
+};
+
 #endif  // CL_SYCL_CTS_MATH_BUILTIN_API_MATH_BUILTIN_H

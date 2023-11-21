@@ -161,10 +161,71 @@ def generate_arguments(sig, memory, decorated):
         arg_index += 1
     return (arg_names, arg_src)
 
+template_args_template = Template("""
+        static_assert(std::is_same_v<decltype(${namespace}::${func_name}<${template_arg_types}>(${arg_names})), decltype(${namespace}::${func_name}(${arg_names}))>,
+            "Error: ${namespace}::${func_name}(${arg_types}) definition does not use the required template arguments.");
+""")
+implicit_convertible_args_template = Template("""
+        static_assert(std::is_same_v<decltype(${namespace}::${func_name}(${convertible_args})), decltype(${namespace}::${func_name}(${arg_names}))>,
+            "Error: ${namespace}::${func_name}(${arg_types}) cannot properly convert arguments.");
+""")
+def generate_additional_static_checks(sig, arg_names):
+    asc = ""
+    arg_types = [a.name for a in sig.arg_types]
+    if len(sig.template_arg_map) > 0:
+        # Check template arguments on functions with it.
+        template_arg_types = ["decltype(" + arg_names[i] + ")" for i in sig.template_arg_map]
+        asc += template_args_template.substitute(
+            namespace=sig.namespace,
+            func_name=sig.name,
+            arg_names=", ".join(arg_names),
+            ret_type=sig.ret_type.name,
+            template_arg_types=", ".join(template_arg_types),
+            arg_types=", ".join(arg_types))
+    else:
+        # Otherwise check for implcitly convertible arguments.
+        convertible_args = ["std::declval<ImplicitlyConvertibleType<" + a + ">>()" for a in arg_types]
+        asc += implicit_convertible_args_template.substitute(
+            namespace=sig.namespace,
+            func_name=sig.name,
+            arg_names=", ".join(arg_names),
+            ret_type=sig.ret_type.name,
+            convertible_args=", ".join(convertible_args),
+            arg_types=", ".join(arg_types))
+
+    # Detect all vec arguments.
+    vec_args = [re.search("^sycl::vec<.+,\s*(\d+)>$", at) for at in arg_types]
+    # Except the ones that are pointers.
+    for i in sig.pntr_indx:
+        if i > 0:
+            vec_args[i-1] = None
+
+    # If there are any vector arguments in the builtin we check that they also
+    # accept swizzles.
+    if not all(va is None for va in vec_args):
+        convertible_args = []
+        for (vec_arg, arg_name) in zip(vec_args, arg_names):
+            if vec_arg:
+                (num_elems,) = vec_arg.groups()
+                indices = [str(i) for i in range(int(num_elems))]
+                convertible_args.append(arg_name + ".swizzle<" + (",".join(indices)) + ">()")
+            else:
+                convertible_args.append(arg_name)
+        asc += implicit_convertible_args_template.substitute(
+            namespace=sig.namespace,
+            func_name=sig.name,
+            arg_names=", ".join(arg_names),
+            ret_type=sig.ret_type.name,
+            convertible_args=", ".join(convertible_args),
+            arg_types=", ".join(arg_types))
+    return asc
+
+
 function_call_template = Template("""
         ${arg_src}
         static_assert(std::is_same_v<decltype(${namespace}::${func_name}(${arg_names})), ${ret_type}>,
             "Error: Wrong return type of ${namespace}::${func_name}(${arg_types}), not ${ret_type}");
+        ${additional_static_checks}
         return ${namespace}::${func_name}(${arg_names});
 """)
 def generate_function_call(sig, arg_names, arg_src):
@@ -174,7 +235,8 @@ def generate_function_call(sig, arg_names, arg_src):
         func_name=sig.name,
         arg_names=", ".join(arg_names),
         ret_type=sig.ret_type.name,
-        arg_types=", ".join([a.name for a in sig.arg_types]))
+        arg_types=", ".join([a.name for a in sig.arg_types]),
+        additional_static_checks=generate_additional_static_checks(sig, arg_names))
     return fc
 
 function_private_call_template = Template("""
@@ -389,7 +451,8 @@ def expand_signature(types, signature):
         new_sig = sycl_functions.funsig(signature.namespace, matched_typelists[signature.ret_type][i], 
                                         signature.name, [matched_typelists[signature.arg_types[j]][i] 
                                                          for j in range(len(signature.arg_types))],
-                                        signature.accuracy, signature.comment, signature.pntr_indx[:])
+                                        signature.accuracy, signature.comment, signature.pntr_indx[:],
+                                        signature.mutations[:], signature.template_arg_map[:])
         exp_sig.append(new_sig)
 
     return exp_sig
