@@ -61,7 +61,6 @@ template <typename T, typename U, typename I, typename OpT>
 struct JointScanDataStruct {
   JointScanDataStruct(size_t range_size, OpT op, bool with_init)
       : ref_input(range_size), res(range_size * 4, U(-1)) {
-
     std::iota(ref_input.begin(), ref_input.end(), T(1));
     if constexpr (std::is_same_v<OpT, sycl::multiplies<I>> ||
                   std::is_same_v<OpT, sycl::plus<I>>) {
