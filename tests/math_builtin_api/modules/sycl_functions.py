@@ -39,7 +39,7 @@ def create_integer_signatures():
     f_abs = funsig("sycl", "geninteger", "abs", ["geninteger"])
     sig_list.append(f_abs)
 
-    f_abs_diff = funsig("sycl", "ugeninteger", "abs_diff", ["geninteger", "geninteger"], "0", "", [], [["geninteger", "ugeninteger", "base_type_but_same_sizeof"]])
+    f_abs_diff = funsig("sycl", "geninteger", "abs_diff", ["geninteger", "geninteger"], "0")
     sig_list.append(f_abs_diff)
 
     f_add_sat = funsig("sycl", "geninteger", "add_sat", ["geninteger", "geninteger"])
