@@ -458,7 +458,7 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op,
           sycl::accessor<T, 1> res_acc(res_sycl, cgh);
           sycl::accessor<bool, 1> ret_type_acc(ret_type_sycl, cgh);
           sycl::accessor<size_t, 1> local_id_acc(local_id_sycl, cgh);
-          sycl::accessor<size_t, 1> sub_group_id_acc(sub_group_id_acc, cgh);
+          sycl::accessor<size_t, 1> sub_group_id_acc(sub_group_id_sycl, cgh);
 
           cgh.parallel_for<scan_over_group_kernel<D, T, U, OpT>>(
               sycl::nd_range<D>(range, range), [=](sycl::nd_item<D> item) {
