@@ -339,16 +339,14 @@ struct ScanOverGroupDataStruct {
     // res consists of 4 series of results: two pairs of exclusive and inclusive
     // scan results made over 'group' and 'sub_group' accordingly.
     {
-      std::string group_name = "group";
       std::vector<T> reference(range_size, T(-1));
       // There is only one work-group so we can scan over all the input data.
       std::exclusive_scan(ref_input.begin(), ref_input.end(), reference.begin(),
                           init_value, op);
       for (int i = 0; i < range_size; i++) {
         int res_i = i;
-        INFO("Check exclusive_scan_over_group on " + group_name +
-             " for element " + std::to_string(i) + " (Operator: " + op_name +
-             ")");
+        INFO("Check exclusive_scan_over_group on group for element " +
+             std::to_string(i) + " (Operator: " + op_name + ")");
         INFO("Result: " + std::to_string(res[res_i]));
         INFO("Expected: " + std::to_string(reference[i]));
         CHECK(res[res_i] == reference[i]);
@@ -357,16 +355,14 @@ struct ScanOverGroupDataStruct {
                           op, init_value);
       for (int i = 0; i < range_size; i++) {
         int res_i = range_size + i;
-        INFO("Check inclusive_scan_over_group on " + group_name +
-             " for element " + std::to_string(i) + " (Operator: " + op_name +
-             ")");
+        INFO("Check inclusive_scan_over_group on group for element " +
+             std::to_string(i) + " (Operator: " + op_name + ")");
         INFO("Result: " + std::to_string(res[res_i]));
         INFO("Expected: " + std::to_string(reference[i]));
         CHECK(res[res_i] == reference[i]);
       }
     }
     {
-      std::string group_name = "sub_group";
       // Mapping from "sub-group id" to "vector of input data (ordered by item
       // linear id within the sub-group)"
       std::unordered_map<size_t, std::vector<T>> ref_input_per_sub_group;
@@ -391,9 +387,8 @@ struct ScanOverGroupDataStruct {
                             reference.begin(), init_value, op);
         {
           int res_i = range_size * 2 + i;
-          INFO("Check exclusive_scan_over_group on " + group_name +
-               " for element " + std::to_string(i) + " (Operator: " + op_name +
-               ")");
+          INFO("Check exclusive_scan_over_group on sub_group for element " +
+               std::to_string(i) + " (Operator: " + op_name + ")");
           INFO("Result: " + std::to_string(res[res_i]));
           INFO("Expected: " + std::to_string(reference[lid]));
           CHECK(res[res_i] == reference[lid]);
@@ -402,9 +397,8 @@ struct ScanOverGroupDataStruct {
                             reference.begin(), op, init_value);
         {
           int res_i = range_size * 3 + i;
-          INFO("Check inclusive_scan_over_group on " + group_name +
-               " for element " + std::to_string(i) + " (Operator: " + op_name +
-               ")");
+          INFO("Check inclusive_scan_over_group on sub_group for element " +
+               std::to_string(i) + " (Operator: " + op_name + ")");
           INFO("Result: " + std::to_string(res[res_i]));
           INFO("Expected: " + std::to_string(reference[lid]));
           CHECK(res[res_i] == reference[lid]);
