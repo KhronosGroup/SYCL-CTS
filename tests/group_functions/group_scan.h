@@ -65,7 +65,7 @@ struct JointScanDataStruct {
     if constexpr (std::is_same_v<OpT, sycl::multiplies<I>> ||
                   std::is_same_v<OpT, sycl::plus<I>>) {
       auto identity = sycl::known_identity_v<OpT, I>;
-      auto acc = with_init ? I(init) : identity;
+      auto acc = with_init ? I{init} : identity;
       for (size_t i = 0; i < range_size; ++i) {
         I tmp = op(I(acc), I(ref_input[i]));
         if (tmp > std::numeric_limits<U>::max()) {
