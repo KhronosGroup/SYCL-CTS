@@ -305,21 +305,45 @@ sycl_cts::resultRef<sycl::marray<T, N>> abs(sycl::marray<T, N> a) {
 
 /* absolute difference */
 template <typename T>
-T abs_diff(T a, T b) {
-  T h = (a > b) ? a : b;
-  T l = (a <= b) ? a : b;
-  return h - l;
+sycl_cts::resultRef<T> abs_diff(T a, T b) {
+  if constexpr (std::is_unsigned_v<T>) {
+    T h = (a > b) ? a : b;
+    T l = (a <= b) ? a : b;
+    return h - l;
+  } else {
+    using U = std::make_unsigned_t<T>;
+    constexpr T TMax = std::numeric_limits<T>::max();
+    // For unsigned integers, negative values might not be representable by
+    // an absolute value, so we compute the overflow separately.
+    T ao = a < -TMax ? a + TMax : 0;
+    T bo = b < -TMax ? b + TMax : 0;
+    // Then find the absolute values (without the overflow) and compute the
+    // unsigned difference.
+    U au = static_cast<U>(std::abs(a - ao));
+    U bu = static_cast<U>(std::abs(b - bo));
+    U h = (au > bu) ? au : bu;
+    U l = (au <= bu) ? au : bu;
+    U result = (a < 0) == (b < 0) ? h - l : h + l;
+    // Now re-add the absolute distance in overflow. Both ao and bo will be
+    // <= 0.
+    result += (ao <= bo ? U(bo - ao) : U(ao - bo));
+    // If the unsigned difference is larger than the signed maximum value, we
+    // have UB. Otherwise we have our valid result.
+    return result > U(TMax) ? sycl_cts::resultRef<T>(0, true) : T(result);
+  }
 }
 template <typename T, int N>
-sycl::vec<T, N> abs_diff(sycl::vec<T, N> a, sycl::vec<T, N> b) {
-  return sycl_cts::math::run_func_on_vector<T, T, N>(
+sycl_cts::resultRef<sycl::vec<T, N>> abs_diff(sycl::vec<T, N> a,
+                                              sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
       [](T x, T y) { return abs_diff(x, y); }, a, b);
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 template <typename T, size_t N>
-sycl::marray<T, N> abs_diff(sycl::marray<T, N> a, sycl::marray<T, N> b) {
-  return sycl_cts::math::run_func_on_marray<T, T, N>(
+sycl_cts::resultRef<sycl::marray<T, N>> abs_diff(sycl::marray<T, N> a,
+                                                 sycl::marray<T, N> b) {
+  return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
       [](T x, T y) { return abs_diff(x, y); }, a, b);
 }
 #endif
