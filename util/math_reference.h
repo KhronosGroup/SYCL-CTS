@@ -309,10 +309,11 @@ sycl_cts::resultRef<T> abs_diff(T a, T b) {
   using U = std::make_unsigned_t<T>;
   T h = (a > b) ? a : b;
   T l = (a <= b) ? a : b;
-  // Use knowledge of 2-complement encoding while we know the difference is
-  // positive, so no overflow/underflow.
+  // Using two's-complement and that unsigned integer underflow is defined as
+  // modulo 2^n we get the result by computing the distance based on signed
+  // comparison.
   U result = static_cast<U>(h) - static_cast<U>(l);
-  return result > static_cast<U>(std::numeric_limits<T>::max())
+  return result > std::numeric_limits<T>::max()
              ? sycl_cts::resultRef<T>(0, true)
              : T(result);
 }
