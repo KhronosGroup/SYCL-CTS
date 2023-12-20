@@ -305,21 +305,30 @@ sycl_cts::resultRef<sycl::marray<T, N>> abs(sycl::marray<T, N> a) {
 
 /* absolute difference */
 template <typename T>
-T abs_diff(T a, T b) {
+sycl_cts::resultRef<T> abs_diff(T a, T b) {
+  using U = std::make_unsigned_t<T>;
   T h = (a > b) ? a : b;
   T l = (a <= b) ? a : b;
-  return h - l;
+  // Using two's-complement and that unsigned integer underflow is defined as
+  // modulo 2^n we get the result by computing the distance based on signed
+  // comparison.
+  U result = static_cast<U>(h) - static_cast<U>(l);
+  return result > std::numeric_limits<T>::max()
+             ? sycl_cts::resultRef<T>(0, true)
+             : T(result);
 }
 template <typename T, int N>
-sycl::vec<T, N> abs_diff(sycl::vec<T, N> a, sycl::vec<T, N> b) {
-  return sycl_cts::math::run_func_on_vector<T, T, N>(
+sycl_cts::resultRef<sycl::vec<T, N>> abs_diff(sycl::vec<T, N> a,
+                                              sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
       [](T x, T y) { return abs_diff(x, y); }, a, b);
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 template <typename T, size_t N>
-sycl::marray<T, N> abs_diff(sycl::marray<T, N> a, sycl::marray<T, N> b) {
-  return sycl_cts::math::run_func_on_marray<T, T, N>(
+sycl_cts::resultRef<sycl::marray<T, N>> abs_diff(sycl::marray<T, N> a,
+                                                 sycl::marray<T, N> b) {
+  return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
       [](T x, T y) { return abs_diff(x, y); }, a, b);
 }
 #endif
