@@ -35,8 +35,7 @@ namespace atomic_ref::tests::api::core {
 // sycl::info::device::atomic_memory_scope_capabilities are implemented in
 // hipsycl
 DISABLED_FOR_TEST_CASE(hipSYCL)
-("sycl::atomic_ref fetch_add()/fetch_sub() test. double *",
- "[atomic_ref]")({
+("sycl::atomic_ref fetch_add()/fetch_sub() test. double *", "[atomic_ref]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     SKIP(
@@ -45,7 +44,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   }
   const auto type_pack =
       atomic_ref::tests::common::get_fp64_pointers_type_pack();
-  if (is_64_bits_pointer<void *>() && device_has_not_aspect_atomic64()) {
+  if (is_64_bits_pointer<void*>() && device_has_not_aspect_atomic64()) {
     SKIP(
         "Device does not support atomic64 operations. "
         "Skipping the test case.");

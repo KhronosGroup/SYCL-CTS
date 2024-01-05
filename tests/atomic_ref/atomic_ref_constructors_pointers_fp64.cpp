@@ -42,9 +42,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
         "Device does not support double precision floating point "
         "operations.");
   }
-  const auto types =
-      atomic_ref::tests::common::get_fp64_pointers_type_pack();
-  if (is_64_bits_pointer<void *>() && device_has_not_aspect_atomic64()) {
+  const auto types = atomic_ref::tests::common::get_fp64_pointers_type_pack();
+  if (is_64_bits_pointer<void*>() && device_has_not_aspect_atomic64()) {
     SKIP(
         "Device does not support atomic64 operations. "
         "Skipping the test case.");
