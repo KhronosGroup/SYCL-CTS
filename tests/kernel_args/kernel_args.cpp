@@ -128,7 +128,7 @@ class TEST_NAME : public util::test_base {
               FAIL(log, "outer_struct capture error");
             }
           }
-        } catch (const sycl::exception &e) {
+        } catch (const sycl::exception& e) {
           if (!my_queue.get_device()
                    .get_info<sycl::info::device::image_support>()) {
             SKIP("device does not support images");
