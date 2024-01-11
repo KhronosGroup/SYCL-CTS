@@ -258,11 +258,11 @@ void test_unified_shared_memory(sycl::queue q, unsigned int element_count) {
     T* ptr = sycl::malloc_device<T>(element_count, q);
     constexpr int advice = 0;
     sycl::event advise_no_events =
-        q.mem_advise(ptr, element_count * sizeof(int), advice);
+        q.mem_advise(ptr, element_count * sizeof(T), advice);
     sycl::event advise_single_event = q.mem_advise(
-        ptr, element_count * sizeof(int), advice, advise_no_events);
+        ptr, element_count * sizeof(T), advice, advise_no_events);
     sycl::event advise_multiple_events =
-        q.mem_advise(ptr, element_count * sizeof(int), advice,
+        q.mem_advise(ptr, element_count * sizeof(T), advice,
                      {advise_no_events, advise_single_event});
     advise_multiple_events.wait();
     advise_no_events.wait();
