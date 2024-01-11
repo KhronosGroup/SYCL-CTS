@@ -259,8 +259,8 @@ void test_unified_shared_memory(sycl::queue q, unsigned int element_count) {
     constexpr int advice = 0;
     sycl::event advise_no_events =
         q.mem_advise(ptr, element_count * sizeof(T), advice);
-    sycl::event advise_single_event = q.mem_advise(
-        ptr, element_count * sizeof(T), advice, advise_no_events);
+    sycl::event advise_single_event =
+        q.mem_advise(ptr, element_count * sizeof(T), advice, advise_no_events);
     sycl::event advise_multiple_events =
         q.mem_advise(ptr, element_count * sizeof(T), advice,
                      {advise_no_events, advise_single_event});
