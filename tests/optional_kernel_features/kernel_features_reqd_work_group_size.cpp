@@ -104,9 +104,19 @@ void test_size() {
         is_exception_expected, expected_errc, queue);
   }
   {
-    RUN_SUBMISSION_CALL_ND_RANGE(
-        N, Dimensions, is_exception_expected, expected_errc, queue,
-        [[sycl::reqd_work_group_size(N)]], kname, NO_KERNEL_BODY);
+    if constexpr (Dimensions == 1) {
+      RUN_SUBMISSION_CALL_ND_RANGE(
+          N, Dimensions, is_exception_expected, expected_errc, queue,
+          [[sycl::reqd_work_group_size(N)]], kname, NO_KERNEL_BODY);
+    } else if constexpr (Dimensions == 2) {
+      RUN_SUBMISSION_CALL_ND_RANGE(
+          N, Dimensions, is_exception_expected, expected_errc, queue,
+          [[sycl::reqd_work_group_size(N, N)]], kname, NO_KERNEL_BODY);
+    } else {
+      RUN_SUBMISSION_CALL_ND_RANGE(
+          N, Dimensions, is_exception_expected, expected_errc, queue,
+          [[sycl::reqd_work_group_size(N, N, N)]], kname, NO_KERNEL_BODY);
+    }
   }
 }
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
