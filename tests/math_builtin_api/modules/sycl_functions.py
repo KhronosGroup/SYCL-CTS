@@ -950,31 +950,31 @@ def create_float_signatures():
     sig_list.append(f_modf_3)
 
 
-    f_nan_1 = funsig("sycl", "float", "nan", ["unsigned"])
+    f_nan_1 = funsig("sycl", "float", "nan", ["uint32_t"])
     sig_list.append(f_nan_1)
 
     f_nan_2 = funsig("sycl", "vgenfloatf", "nan", ["ugenint"], "0", "", [], [["vgenfloatf", "ugenint", "base_type"]], template_arg_map=[0])
     sig_list.append(f_nan_2)
 
-    f_nan_3 = funsig("sycl", "mgenfloatf", "nan", ["ugenint"], "0", "", [], [["mgenfloatf", "ugenint", "base_type"]], template_arg_map=[0])
+    f_nan_3 = funsig("sycl", "mgenfloatf", "nan", ["muint32n"], "0", "", [], [["mgenfloatf", "muint32n", "base_type"]], template_arg_map=[0])
     sig_list.append(f_nan_3)
 
-    f_nan_4 = funsig("sycl", "double", "nan", ["unsigned long"], "0")
+    f_nan_4 = funsig("sycl", "double", "nan", ["uint64_t"], "0")
     sig_list.append(f_nan_4)
 
     f_nan_5 = funsig("sycl", "vgenfloatd", "nan", ["ugenlonginteger"], "0", "", [], [["vgenfloatd", "ugenlonginteger", "base_type"]], template_arg_map=[0])
     sig_list.append(f_nan_5)
 
-    f_nan_6 = funsig("sycl", "mgenfloatd", "nan", ["ugenlonginteger"], "0", "", [], [["mgenfloatd", "ugenlonginteger", "base_type"]], template_arg_map=[0])
+    f_nan_6 = funsig("sycl", "mgenfloatd", "nan", ["muint64n"], "0", "", [], [["mgenfloatd", "muint64n", "base_type"]], template_arg_map=[0])
     sig_list.append(f_nan_6)
 
-    f_nan_7 = funsig("sycl", "sycl::half", "nan", ["unsigned short"], "0")
+    f_nan_7 = funsig("sycl", "sycl::half", "nan", ["uint16_t"], "0")
     sig_list.append(f_nan_7)
 
     f_nan_8 = funsig("sycl", "vgenfloath", "nan", ["ugenshort"], "0", "", [], [["vgenfloath", "ugenshort", "base_type"]], template_arg_map=[0])
     sig_list.append(f_nan_8)
 
-    f_nan_9 = funsig("sycl", "mgenfloath", "nan", ["ugenshort"], "0", "", [], [["mgenfloath", "ugenshort", "base_type"]], template_arg_map=[0])
+    f_nan_9 = funsig("sycl", "mgenfloath", "nan", ["muint16n"], "0", "", [], [["mgenfloath", "muint16n", "base_type"]], template_arg_map=[0])
     sig_list.append(f_nan_9)
 
 

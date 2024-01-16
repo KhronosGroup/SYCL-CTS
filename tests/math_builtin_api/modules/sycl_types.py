@@ -1250,6 +1250,9 @@ def create_types():
     t_mushort_n = argtype("mushortn", "NULL", "NULL", 0, ["sycl::marray<unsigned short, 2>","sycl::marray<unsigned short, 3>","sycl::marray<unsigned short, 4>","sycl::marray<unsigned short, 5>","sycl::marray<unsigned short, 17>"])
     type_dic["mushortn"] = t_mushort_n
 
+    t_muint16_n = argtype("muint16n", "NULL", "NULL", 0, ["sycl::marray<uint16_t, 2>","sycl::marray<uint16_t, 3>","sycl::marray<uint16_t, 4>","sycl::marray<uint16_t, 5>","sycl::marray<uint16_t, 17>"])
+    type_dic["muint16n"] = t_muint16_n
+
     t_ushort_n = argtype("ushortn", "NULL", "NULL", 0, ["vuint16n","mushortn"])
     type_dic["ushortn"] = t_ushort_n
 
@@ -1278,6 +1281,9 @@ def create_types():
     t_muint_n = argtype("muintn", "NULL", "NULL", 0, ["sycl::marray<unsigned, 2>","sycl::marray<unsigned, 3>","sycl::marray<unsigned, 4>","sycl::marray<unsigned, 5>","sycl::marray<unsigned, 17>"])
     type_dic["muintn"] = t_muint_n
 
+    t_muint32_n = argtype("muint32n", "NULL", "NULL", 0, ["sycl::marray<uint32_t, 2>","sycl::marray<uint32_t, 3>","sycl::marray<uint32_t, 4>","sycl::marray<uint32_t, 5>","sycl::marray<uint32_t, 17>"])
+    type_dic["muint32n"] = t_muint32_n
+
     t_uint_n = argtype("uintn", "NULL", "NULL", 0, ["vuint32n","muintn"])
     type_dic["uintn"] = t_uint_n
 
@@ -1305,6 +1311,9 @@ def create_types():
 
     t_mulong_n = argtype("mulongn", "NULL", "NULL", 0, ["sycl::marray<unsigned long, 2>","sycl::marray<unsigned long, 3>","sycl::marray<unsigned long, 4>","sycl::marray<unsigned long, 5>","sycl::marray<unsigned long, 17>"])
     type_dic["mulongn"] = t_mulong_n
+
+    t_muint64_n = argtype("muint64n", "NULL", "NULL", 0, ["sycl::marray<uint64_t, 2>","sycl::marray<uint64_t, 3>","sycl::marray<uint64_t, 4>","sycl::marray<uint64_t, 5>","sycl::marray<uint64_t, 17>"])
+    type_dic["muint64n"] = t_muint64_n
 
     t_ulong_n = argtype("ulongn", "NULL", "NULL", 0, ["vuint64n","mulongn"])
     type_dic["ulongn"] = t_ulong_n
