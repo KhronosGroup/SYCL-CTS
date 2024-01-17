@@ -22,14 +22,14 @@ inline constexpr int val_A = 5;
 
 template <typename T, int case_num>
 constexpr sycl::specialization_id<T> sc_multiple(
-    user_def_types::get_init_value_helper<T>(case_num));
+    user_def_types::init_value_helper<T>::get(case_num));
 
 template <typename T, int case_num>
 class kernel;
 
 template <typename T, int case_num>
 bool check_kernel_handler_by_reference(sycl::kernel_handler &h) {
-  T ref{user_def_types::get_init_value_helper<T>(0)};
+  T ref{user_def_types::init_value_helper<T>::get(0)};
   fill_init_values(ref, val_A);
   return check_equal_values(
       ref, h.get_specialization_constant<spec_const<T, case_num>>());
@@ -37,7 +37,7 @@ bool check_kernel_handler_by_reference(sycl::kernel_handler &h) {
 
 template <typename T, int case_num>
 bool check_kernel_handler_by_value(sycl::kernel_handler h) {
-  T ref{user_def_types::get_init_value_helper<T>(0)};
+  T ref{user_def_types::init_value_helper<T>::get(0)};
   fill_init_values(ref, val_A);
   return check_equal_values(
       ref, h.get_specialization_constant<spec_const<T, case_num>>());
@@ -49,9 +49,9 @@ class check_spec_constant_with_handler_for_type {
   void operator()(util::logger &log, const std::string &type_name) {
     auto queue = util::get_cts_object::queue();
     sycl::range<1> range(1);
-    T result{user_def_types::get_init_value_helper<T>(0)};
-    T ref{user_def_types::get_init_value_helper<T>(0)};
-    T ref_other{user_def_types::get_init_value_helper<T>(0)};
+    T result{user_def_types::init_value_helper<T>::get(0)};
+    T ref{user_def_types::init_value_helper<T>::get(0)};
+    T ref_other{user_def_types::init_value_helper<T>::get(0)};
     int val_B = 10;
     fill_init_values(ref, val_A);
     fill_init_values(ref_other, val_B);
@@ -59,7 +59,7 @@ class check_spec_constant_with_handler_for_type {
     {
       const int case_num = 1;
       {
-        result = user_def_types::get_init_value_helper<T>(0);
+        result = user_def_types::init_value_helper<T>::get(0);
         queue.submit([&](sycl::handler &cgh) {
           cgh.set_specialization_constant<spec_const<T, case_num>>(ref);
           result = cgh.get_specialization_constant<spec_const<T, case_num>>();
@@ -74,7 +74,7 @@ class check_spec_constant_with_handler_for_type {
     {
       const int case_num = 2;
       {
-        result = user_def_types::get_init_value_helper<T>(0);
+        result = user_def_types::init_value_helper<T>::get(0);
         queue.submit([&](sycl::handler &cgh) {
           cgh.set_specialization_constant<spec_const<T, case_num>>(ref);
           cgh.set_specialization_constant<spec_const<T, case_num>>(ref_other);
@@ -91,7 +91,7 @@ class check_spec_constant_with_handler_for_type {
     {
       const int case_num = 3;
       {
-        result = user_def_types::get_init_value_helper<T>(0);
+        result = user_def_types::init_value_helper<T>::get(0);
         sycl::buffer<T, 1> result_buffer(&result, range);
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
@@ -113,7 +113,7 @@ class check_spec_constant_with_handler_for_type {
     {
       const int case_num = 4;
       {
-        result = user_def_types::get_init_value_helper<T>(0);
+        result = user_def_types::init_value_helper<T>::get(0);
         sycl::buffer<T, 1> result_buffer(&result, range);
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
@@ -164,13 +164,14 @@ class check_spec_constant_with_handler_for_type {
     {
       const int case_num = 6;
       {
-        result = user_def_types::get_init_value_helper<T>(0);
+        result = user_def_types::init_value_helper<T>::get(0);
         queue.submit([&](sycl::handler &cgh) {
           result = cgh.get_specialization_constant<spec_const<T, case_num>>();
         });
       }
       if (!check_equal_values(
-              T(user_def_types::get_init_value_helper<T>(default_val)), result))
+              T(user_def_types::init_value_helper<T>::get(default_val)),
+              result))
         FAIL(log, "case " + std::to_string(case_num) + " for " +
                       type_name_string<T>::get(type_name));
     }
@@ -180,7 +181,7 @@ class check_spec_constant_with_handler_for_type {
     {
       const int case_num = 7;
       {
-        result = user_def_types::get_init_value_helper<T>(0);
+        result = user_def_types::init_value_helper<T>::get(0);
         sycl::buffer<T, 1> result_buffer(&result, range);
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
@@ -192,7 +193,8 @@ class check_spec_constant_with_handler_for_type {
         });
       }
       if (!check_equal_values(
-              T(user_def_types::get_init_value_helper<T>(default_val)), result))
+              T(user_def_types::init_value_helper<T>::get(default_val)),
+              result))
         FAIL(log, "case " + std::to_string(case_num) + " for " +
                       type_name_string<T>::get(type_name));
     }

@@ -56,21 +56,21 @@ static std::string get_hint(int test_id) {
 // Specialization constant defined in global namespace
 template <typename T>
 constexpr sycl::specialization_id<T> sc_same_name(
-    user_def_types::get_init_value_helper<T>(
+    user_def_types::init_value_helper<T>::get(
         to_integral(spec_const_help::sc_st_id::glob)));
 
 namespace g_outer {
 // Specialization constant defined in outer namespace
 template <typename T>
 constexpr sycl::specialization_id<T> sc_same_name(
-    user_def_types::get_init_value_helper<T>(
+    user_def_types::init_value_helper<T>::get(
         to_integral(spec_const_help::sc_st_id::outer)));
 
 namespace g_inner {
 // Specialization constant defined in outer::inner namespace
 template <typename T>
 constexpr sycl::specialization_id<T> sc_same_name(
-    user_def_types::get_init_value_helper<T>(
+    user_def_types::init_value_helper<T>::get(
         to_integral(spec_const_help::sc_st_id::outer_inner)));
 }  // namespace g_inner
 
@@ -78,7 +78,7 @@ namespace {
 // Specialization constant defined in outer::unnamed namespace
 template <typename T>
 constexpr sycl::specialization_id<T> sc_same_name(
-    user_def_types::get_init_value_helper<T>(
+    user_def_types::init_value_helper<T>::get(
         to_integral(spec_const_help::sc_st_id::outer_unnamed)));
 
 template <typename T>
@@ -88,7 +88,7 @@ namespace g_u_inner {
 // Specialization constant defined in outer::unnamed::inner namespace
 template <typename T>
 constexpr sycl::specialization_id<T> sc_same_name(
-    user_def_types::get_init_value_helper<T>(
+    user_def_types::init_value_helper<T>::get(
         to_integral(spec_const_help::sc_st_id::outer_unnamed_inner)));
 
 template <typename T>
@@ -99,7 +99,7 @@ namespace {
 // namespace
 template <typename T>
 constexpr sycl::specialization_id<T> sc_same_name(
-    user_def_types::get_init_value_helper<T>(
+    user_def_types::init_value_helper<T>::get(
         to_integral(spec_const_help::sc_st_id::outer_unnamed_inner_unnamed)));
 
 template <typename T>
@@ -113,7 +113,7 @@ namespace {
 // Specialization constant defined in unnamed namespace
 template <typename T>
 constexpr sycl::specialization_id<T> sc_same_name(
-    user_def_types::get_init_value_helper<T>(
+    user_def_types::init_value_helper<T>::get(
         to_integral(spec_const_help::sc_st_id::unnamed)));
 
 template <typename T>
@@ -123,7 +123,7 @@ namespace u_outer {
 // Specialization constant defined in unnamed::outer namespace
 template <typename T>
 constexpr sycl::specialization_id<T> sc_same_name(
-    user_def_types::get_init_value_helper<T>(
+    user_def_types::init_value_helper<T>::get(
         to_integral(spec_const_help::sc_st_id::unnamed_outer)));
 
 template <typename T>
@@ -133,7 +133,7 @@ namespace {
 // Specialization constant defined in unnamed::outer::unnamed namespace
 template <typename T>
 constexpr sycl::specialization_id<T> sc_same_name(
-    user_def_types::get_init_value_helper<T>(
+    user_def_types::init_value_helper<T>::get(
         to_integral(spec_const_help::sc_st_id::unnamed_outer_unnamed)));
 
 template <typename T>
@@ -144,7 +144,7 @@ namespace u_inner {
 // namespace
 template <typename T>
 constexpr sycl::specialization_id<T> sc_same_name(
-    user_def_types::get_init_value_helper<T>(
+    user_def_types::init_value_helper<T>::get(
         to_integral(spec_const_help::sc_st_id::unnamed_outer_unnamed_inner)));
 
 template <typename T>

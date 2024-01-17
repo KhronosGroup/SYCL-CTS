@@ -164,31 +164,55 @@ struct arrow_operator_overloaded {
 
 // Returns instance of type T
 template <typename T>
-inline constexpr auto get_init_value_helper(int x) {
-  return x;
-}
+struct init_value_helper {
+  static constexpr auto get(int x) {
+    return static_cast<T>(x);
+  }
+};
+
+// Returns instance of type T
+template <typename T, int N>
+struct init_value_helper<sycl::vec<T, N>> {
+  static constexpr auto get(int x) {
+    return sycl::vec<T, N>{static_cast<T>(x)};
+  }
+};
+
+// Returns instance of type T
+template <typename T, int N>
+struct init_value_helper<sycl::marray<T, N>> {
+  static constexpr auto get(int x) {
+    return sycl::marray<T, N>{static_cast<T>(x)};
+  }
+};
 
 // Returns instance of type bool
 template <>
-inline constexpr auto get_init_value_helper<bool>(int x) {
-  return (x % 2 != 0);
-}
+struct init_value_helper<bool> {
+  static constexpr bool get(int x) {
+    return x % 2 != 0;
+  }
+};
 
 // Returns instance of user defined struct with no constructor
 template <>
-inline constexpr auto get_init_value_helper<no_cnstr>(int x) {
-  no_cnstr instance{};
-  instance = x;
-  return instance;
-}
+struct init_value_helper<no_cnstr> {
+  static constexpr auto get(int x) {
+    no_cnstr instance{};
+    instance = x;
+    return instance;
+  }
+};
 
 // Returns instance of user defined struct default constructor
 template <>
-inline constexpr auto get_init_value_helper<def_cnstr>(int x) {
-  def_cnstr instance;
-  instance = x;
-  return instance;
-}
+struct init_value_helper<def_cnstr> {
+  static constexpr auto get(int x) {
+    def_cnstr instance;
+    instance = x;
+    return instance;
+  }
+};
 
 }  // namespace user_def_types
 
