@@ -165,9 +165,7 @@ struct arrow_operator_overloaded {
 // Returns instance of type T
 template <typename T>
 struct init_value_helper {
-  static constexpr auto get(int x) {
-    return static_cast<T>(x);
-  }
+  static constexpr auto get(int x) { return static_cast<T>(x); }
 };
 
 // Returns instance of type T
@@ -189,9 +187,7 @@ struct init_value_helper<sycl::marray<T, N>> {
 // Returns instance of type bool
 template <>
 struct init_value_helper<bool> {
-  static constexpr bool get(int x) {
-    return x % 2 != 0;
-  }
+  static constexpr bool get(int x) { return x % 2 != 0; }
 };
 
 // Returns instance of user defined struct with no constructor
