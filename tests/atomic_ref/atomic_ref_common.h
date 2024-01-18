@@ -166,11 +166,10 @@ inline auto get_conformance_type_pack() {
 inline auto get_full_conformance_pointers_type_pack() {
   static const auto types =
       named_type_pack<int*, unsigned int*, long int*, unsigned long int*,
-                      long long*, unsigned long long*, float*,
-                      double*>::generate("int *", "unsigned int *",
-                                         "long int *", "unsigned long int *",
-                                         "long long *", "unsigned long long *",
-                                         "float *", "double *");
+                      long long*, unsigned long long*,
+                      float*>::generate("int *", "unsigned int *", "long int *",
+                                        "unsigned long int *", "long long *",
+                                        "unsigned long long *", "float *");
   return types;
 }
 
@@ -180,6 +179,14 @@ inline auto get_full_conformance_pointers_type_pack() {
 inline auto get_lightweight_pointers_type_pack() {
   static const auto types =
       named_type_pack<int*, float*>::generate("int *", "float *");
+  return types;
+}
+
+/**
+ * @brief Factory function for getting type_pack with generic pointers types
+ */
+inline auto get_fp64_pointers_type_pack() {
+  static const auto types = named_type_pack<double*>::generate("double *");
   return types;
 }
 
