@@ -59,7 +59,7 @@ class run_convert_assignment_operators_tests {
                   const std::string &src_is_decorated_name,
                   const std::string &dst_is_decorated_name) {
     auto queue = once_per_unit::get_queue();
-    T value = user_def_types::get_init_value_helper<T>(expected_val);
+    T value = user_def_types::get_init_value<T>(expected_val);
     auto r = sycl::range(1);
     SECTION(
         sycl_cts::section_name(
@@ -113,7 +113,7 @@ class run_convert_assignment_operators_tests {
                     res_acc[0] = *(mptr_out.get_raw()) == ref;
                   } else {
                     T private_val =
-                        user_def_types::get_init_value_helper<T>(expected_val);
+                        user_def_types::get_init_value<T>(expected_val);
 
                     const src_multi_ptr_t mptr_in(
                         sycl::address_space_cast<
@@ -184,7 +184,7 @@ class run_convert_assignment_operators_tests {
                     res_acc[0] = *(mptr_out.get_raw()) == ref;
                   } else {
                     T private_val =
-                        user_def_types::get_init_value_helper<T>(expected_val);
+                        user_def_types::get_init_value<T>(expected_val);
 
                     const src_multi_ptr_t mptr_in(
                         sycl::address_space_cast<

@@ -162,29 +162,50 @@ struct arrow_operator_overloaded {
   }
 };
 
+// Helper structure to extract element type of vec/marray
+// Fallback for scalars, which returns unmodified T
+template <typename T>
+struct vec_marray_element_type {
+  using type = T;
+};
+
+// vec and marray specializations
+template <typename T, int N>
+struct vec_marray_element_type<sycl::vec<T, N>> {
+  using type = T;
+};
+
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+template <typename T, int N>
+struct vec_marray_element_type<sycl::marray<T, N>> {
+  using type = T;
+};
+#endif
+
 // Returns instance of type T
 template <typename T>
-inline constexpr auto get_init_value_helper(int x) {
-  return x;
+inline constexpr auto get_init_value(int x) {
+  // Explicit cast is required to silence a warning about narrowing conversion
+  // in case when T is smaller than int.
+  return T{static_cast<typename vec_marray_element_type<T>::type>(x)};
 }
 
-// Returns instance of type bool
+// Special case for bool
 template <>
-inline constexpr auto get_init_value_helper<bool>(int x) {
-  return (x % 2 != 0);
+inline constexpr auto get_init_value<bool>(int x) {
+  return x % 2 != 0;
 }
 
-// Returns instance of user defined struct with no constructor
+// Specializations for user-defined types
 template <>
-inline constexpr auto get_init_value_helper<no_cnstr>(int x) {
+inline constexpr auto get_init_value<no_cnstr>(int x) {
   no_cnstr instance{};
   instance = x;
   return instance;
 }
 
-// Returns instance of user defined struct default constructor
 template <>
-inline constexpr auto get_init_value_helper<def_cnstr>(int x) {
+inline constexpr auto get_init_value<def_cnstr>(int x) {
   def_cnstr instance;
   instance = x;
   return instance;

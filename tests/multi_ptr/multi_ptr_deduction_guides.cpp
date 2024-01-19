@@ -70,7 +70,7 @@ class check_multi_ptr_deduction {
                                      accessor<T, dims, Mode, target::device>,
                                      local_accessor<T, dims>>;
     bool res = false;
-    T data{user_def_types::get_init_value_helper<T>(0)};
+    T data{user_def_types::get_init_value<T>(0)};
     auto r = sycl_cts::util::get_cts_object::range<dims>::get(1, 1, 1);
     {
       sycl::buffer<bool, 1> buf_res(&res, {1});

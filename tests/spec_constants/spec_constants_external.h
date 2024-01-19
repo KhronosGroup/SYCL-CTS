@@ -17,7 +17,7 @@ using namespace get_spec_const;
 
 template <typename T, int case_num>
 inline constexpr sycl::specialization_id<T> spec_const_external(
-    user_def_types::get_init_value_helper<T>(default_val));
+    user_def_types::get_init_value<T>(default_val));
 
 #define FUNC_DECLARE(TYPE)                                               \
   SYCL_EXTERNAL bool check_kernel_handler_by_reference_external_handler( \
@@ -74,7 +74,7 @@ class check_specialization_constants_external {
     // handler
     bool passed = false;
     {
-      T ref { user_def_types::get_init_value_helper<T>(5) };
+      T ref{user_def_types::get_init_value<T>(5)};
       const int case_num =
           static_cast<int>(test_cases_external::by_reference_via_handler);
       sycl::buffer<bool, 1> result_buffer(&passed, range);
@@ -99,7 +99,7 @@ class check_specialization_constants_external {
     // handler
     passed = false;
     {
-      T ref { user_def_types::get_init_value_helper<T>(10) };
+      T ref{user_def_types::get_init_value<T>(10)};
       const int case_num =
           static_cast<int>(test_cases_external::by_value_via_handler);
       sycl::buffer<bool, 1> result_buffer(&passed, range);
@@ -128,7 +128,7 @@ class check_specialization_constants_external {
       // via kernel_bundle
       passed = false;
       {
-        T ref { user_def_types::get_init_value_helper<T>(15) };
+        T ref{user_def_types::get_init_value<T>(15)};
         const int case_num =
             static_cast<int>(test_cases_external::by_reference_via_bundle);
         sycl::buffer<bool, 1> result_buffer(&passed, range);
@@ -170,7 +170,7 @@ class check_specialization_constants_external {
       // kernel_bundle
       passed = false;
       {
-        T ref { user_def_types::get_init_value_helper<T>(20) };
+        T ref{user_def_types::get_init_value<T>(20)};
         const int case_num =
             static_cast<int>(test_cases_external::by_value_via_bundle);
         sycl::buffer<bool, 1> result_buffer(&passed, range);
