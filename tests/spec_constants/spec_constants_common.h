@@ -48,11 +48,11 @@ constexpr int default_val = 20;
 
 template <typename T, int case_num>
 constexpr sycl::specialization_id<T> spec_const(
-    user_def_types::init_value_helper<T>::get(default_val));
+    user_def_types::get_init_value<T>(default_val));
 
 template <typename T>
 void fill_init_values(T &result, int val) {
-  result = user_def_types::init_value_helper<T>::get(val);
+  result = user_def_types::get_init_value<T>(val);
 }
 
 template <typename T, int numElements>

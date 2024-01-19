@@ -16,7 +16,7 @@
 
 template <typename T, int def_val>
 constexpr sycl::specialization_id<T> sc_multiple(
-    user_def_types::init_value_helper<T>::get(def_val));
+    user_def_types::get_init_value<T>(def_val));
 
 namespace specialization_constants_multiple {
 using namespace sycl_cts;
@@ -57,9 +57,9 @@ class check_specialization_constants_multiple_for_type {
     int val_A = 5;
     int val_B = 10;
     int val_C = 30;
-    T ref1{user_def_types::init_value_helper<T>::get(0)};
-    T ref2{user_def_types::init_value_helper<T>::get(0)};
-    T ref3{user_def_types::init_value_helper<T>::get(0)};
+    T ref1{user_def_types::get_init_value<T>(0)};
+    T ref2{user_def_types::get_init_value<T>(0)};
+    T ref3{user_def_types::get_init_value<T>(0)};
     fill_init_values(ref1, val_A);
     fill_init_values(ref2, val_B);
     fill_init_values(ref3, val_C);
@@ -115,13 +115,13 @@ class check_specialization_constants_multiple_for_type {
         !check_equal_values(ref2, result_vec[1].value) ||
         !check_equal_values(ref3, result_vec[2].value) ||
         !check_equal_values(
-            T(user_def_types::init_value_helper<T>::get(def_values[3])),
+            T(user_def_types::get_init_value<T>(def_values[3])),
             result_vec[3].value) ||
         !check_equal_values(
-            T(user_def_types::init_value_helper<T>::get(def_values[4])),
+            T(user_def_types::get_init_value<T>(def_values[4])),
             result_vec[4].value) ||
         !check_equal_values(
-            T(user_def_types::init_value_helper<T>::get(def_values[5])),
+            T(user_def_types::get_init_value<T>(def_values[5])),
             result_vec[5].value))
       FAIL(log,
            "multiple spec const for " + type_name_string<T>::get(type_name));

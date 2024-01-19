@@ -63,8 +63,7 @@ void run_tests(sycl_cts::util::logger& log, const std::string& type_name) {
   bool same_value = false;
 
   // default value
-  T init_value =
-      user_def_types::get_init_value_helper<std::remove_const_t<T>>(10);
+  T init_value = user_def_types::get_init_value<std::remove_const_t<T>>(10);
 
   auto queue = once_per_unit::get_queue();
 

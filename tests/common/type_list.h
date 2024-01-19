@@ -162,53 +162,52 @@ struct arrow_operator_overloaded {
   }
 };
 
+// Helper structure to extract element type of vec/marray
+// Fallback for scalars, which returns unmodified T
+template <typename T>
+struct vec_marray_element_type {
+  using type = T;
+};
+
+// vec and marray specializations
+template <typename T, int N>
+struct vec_marray_element_type<sycl::vec<T, N>> {
+  using type = T;
+};
+
+template <typename T, int N>
+struct vec_marray_element_type<sycl::marray<T, N>> {
+  using type = T;
+};
+
 // Returns instance of type T
 template <typename T>
-struct init_value_helper {
-  static constexpr auto get(int x) { return static_cast<T>(x); }
-};
+inline constexpr auto get_init_value(int x) {
+  // Explicit cast is required to silence a warning about narrowing conversion
+  // in case when T is smaller than int.
+  return T{static_cast<typename vec_marray_element_type<T>::type>(x)};
+}
 
-// Returns instance of type T
-template <typename T, int N>
-struct init_value_helper<sycl::vec<T, N>> {
-  static constexpr auto get(int x) {
-    return sycl::vec<T, N>{static_cast<T>(x)};
-  }
-};
-
-// Returns instance of type T
-template <typename T, int N>
-struct init_value_helper<sycl::marray<T, N>> {
-  static constexpr auto get(int x) {
-    return sycl::marray<T, N>{static_cast<T>(x)};
-  }
-};
-
-// Returns instance of type bool
+// Special case for bool
 template <>
-struct init_value_helper<bool> {
-  static constexpr bool get(int x) { return x % 2 != 0; }
-};
+inline constexpr auto get_init_value<bool>(int x) {
+  return x % 2 != 0;
+}
 
-// Returns instance of user defined struct with no constructor
+// Specializations for user-defined types
 template <>
-struct init_value_helper<no_cnstr> {
-  static constexpr auto get(int x) {
-    no_cnstr instance{};
-    instance = x;
-    return instance;
-  }
-};
+inline constexpr auto get_init_value<no_cnstr>(int x) {
+  no_cnstr instance{};
+  instance = x;
+  return instance;
+}
 
-// Returns instance of user defined struct default constructor
 template <>
-struct init_value_helper<def_cnstr> {
-  static constexpr auto get(int x) {
-    def_cnstr instance;
-    instance = x;
-    return instance;
-  }
-};
+inline constexpr auto get_init_value<def_cnstr>(int x) {
+  def_cnstr instance;
+  instance = x;
+  return instance;
+}
 
 }  // namespace user_def_types
 

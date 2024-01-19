@@ -66,7 +66,7 @@ class run_explicit_convert_tests {
   template <typename T1>
   void run_test(sycl::queue &queue, sycl::range<1> &r) {
     bool res = false;
-    T value = user_def_types::get_init_value_helper<T>(expected_val);
+    T value = user_def_types::get_init_value<T>(expected_val);
     {
       sycl::buffer<bool> res_buf(&res, sycl::range<1>(1));
       sycl::buffer<T> val_buffer(&value, sycl::range<1>(1));
@@ -103,7 +103,7 @@ class run_explicit_convert_tests {
                   res_acc[0] = (*(mptr_out.get()) == ref);
                 } else {
                   T private_val =
-                      user_def_types::get_init_value_helper<T>(expected_val);
+                      user_def_types::get_init_value<T>(expected_val);
 
                   input_multi_ptr_t<T> mptr_in = sycl::address_space_cast<
                       sycl::access::address_space::generic_space, decorated, T>(

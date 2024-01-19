@@ -76,7 +76,7 @@ class run_implicit_convert_tests {
   template <typename src_multi_ptr_t, typename dest_multi_ptr_t>
   void preform_implicit_conversion_test() {
     auto queue = once_per_unit::get_queue();
-    T value = user_def_types::get_init_value_helper<T>(expected_val);
+    T value = user_def_types::get_init_value<T>(expected_val);
     bool res = false;
 
     constexpr sycl::access::decorated src_multi_ptr_decorated =
@@ -128,7 +128,7 @@ class run_implicit_convert_tests {
           const T value_dest = *(reinterpret_cast<const T *>(mptr_dest.get()));
 
           res_acc[0] = (value_dest ==
-                        user_def_types::get_init_value_helper<T>(expected_val));
+                        user_def_types::get_init_value<T>(expected_val));
         };
 
         using kname =
