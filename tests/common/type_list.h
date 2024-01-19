@@ -175,10 +175,12 @@ struct vec_marray_element_type<sycl::vec<T, N>> {
   using type = T;
 };
 
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 template <typename T, int N>
 struct vec_marray_element_type<sycl::marray<T, N>> {
   using type = T;
 };
+#endif
 
 // Returns instance of type T
 template <typename T>
