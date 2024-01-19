@@ -169,9 +169,8 @@ class check_spec_constant_with_handler_for_type {
           result = cgh.get_specialization_constant<spec_const<T, case_num>>();
         });
       }
-      if (!check_equal_values(
-              T(user_def_types::get_init_value<T>(default_val)),
-              result))
+      if (!check_equal_values(user_def_types::get_init_value<T>(default_val),
+                              result))
         FAIL(log, "case " + std::to_string(case_num) + " for " +
                       type_name_string<T>::get(type_name));
     }
@@ -192,9 +191,8 @@ class check_spec_constant_with_handler_for_type {
           });
         });
       }
-      if (!check_equal_values(
-              T(user_def_types::get_init_value<T>(default_val)),
-              result))
+      if (!check_equal_values(user_def_types::get_init_value<T>(default_val),
+                              result))
         FAIL(log, "case " + std::to_string(case_num) + " for " +
                       type_name_string<T>::get(type_name));
     }

@@ -114,15 +114,12 @@ class check_specialization_constants_multiple_for_type {
     if (!check_equal_values(ref1, result_vec[0].value) ||
         !check_equal_values(ref2, result_vec[1].value) ||
         !check_equal_values(ref3, result_vec[2].value) ||
-        !check_equal_values(
-            T(user_def_types::get_init_value<T>(def_values[3])),
-            result_vec[3].value) ||
-        !check_equal_values(
-            T(user_def_types::get_init_value<T>(def_values[4])),
-            result_vec[4].value) ||
-        !check_equal_values(
-            T(user_def_types::get_init_value<T>(def_values[5])),
-            result_vec[5].value))
+        !check_equal_values(user_def_types::get_init_value<T>(def_values[3]),
+                            result_vec[3].value) ||
+        !check_equal_values(user_def_types::get_init_value<T>(def_values[4]),
+                            result_vec[4].value) ||
+        !check_equal_values(user_def_types::get_init_value<T>(def_values[5]),
+                            result_vec[5].value))
       FAIL(log,
            "multiple spec const for " + type_name_string<T>::get(type_name));
   }

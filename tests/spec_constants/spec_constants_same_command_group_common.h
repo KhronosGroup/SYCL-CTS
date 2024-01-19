@@ -90,9 +90,8 @@ class check_specialization_constants_same_command_group {
       }
       if (!check_equal_values(ref_A, result1))
         FAIL(log, "case 2 failed for value A for " + type_name);
-      if (!check_equal_values(
-              T(user_def_types::get_init_value<T>(default_val)),
-              result2))
+      if (!check_equal_values(user_def_types::get_init_value<T>(default_val),
+                              result2))
         FAIL(log, "case 2 failed for default value for " + type_name);
     }
   }
