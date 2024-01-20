@@ -51,14 +51,10 @@ struct test_result {
   int value_to_init = 49;
   // Variables that will be used to check that access members returns correct
   // value
-  T dereference_ret_value =
-      user_def_types::get_init_value_helper<T>(value_to_init);
-  T dereference_op_ret_value =
-      user_def_types::get_init_value_helper<T>(value_to_init);
-  T get_member_ret_value =
-      user_def_types::get_init_value_helper<T>(value_to_init);
-  T get_raw_member_ret_value =
-      user_def_types::get_init_value_helper<T>(value_to_init);
+  T dereference_ret_value = user_def_types::get_init_value<T>(value_to_init);
+  T dereference_op_ret_value = user_def_types::get_init_value<T>(value_to_init);
+  T get_member_ret_value = user_def_types::get_init_value<T>(value_to_init);
+  T get_raw_member_ret_value = user_def_types::get_init_value<T>(value_to_init);
 };
 
 }  // namespace detail
@@ -92,7 +88,7 @@ class run_access_members_tests {
                   const std::string &is_decorated_name) {
     auto queue = once_per_unit::get_queue();
     constexpr int val_to_init = 42;
-    T value = user_def_types::get_init_value_helper<T>(val_to_init);
+    T value = user_def_types::get_init_value<T>(val_to_init);
 
     // Variable that contains all variables that will be used to verify test
     // result
@@ -170,7 +166,7 @@ class run_access_members_tests {
         }
       });
     }
-    T expected_value = user_def_types::get_init_value_helper<T>(val_to_init);
+    T expected_value = user_def_types::get_init_value<T>(val_to_init);
     // Dereference and multi_ptr::operator->() available only when:
     // !std::is_void<sycl::multi_ptr::value_type>::value
     if constexpr (!std::is_void_v<typename multi_ptr_t::value_type>) {

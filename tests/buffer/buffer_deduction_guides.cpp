@@ -41,9 +41,9 @@ class check_buffer_deduction {
   void operator()(const std::string& type) {
     // create container
     // using this API because of no_cnstr and no_def_cnstr types
-    std::array<T, size> arr = {user_def_types::get_init_value_helper<T>(0),
-                               user_def_types::get_init_value_helper<T>(0),
-                               user_def_types::get_init_value_helper<T>(0)};
+    std::array<T, size> arr = {user_def_types::get_init_value<T>(0),
+                               user_def_types::get_init_value<T>(0),
+                               user_def_types::get_init_value<T>(0)};
     type_name = type;
 
     test_inputiterator(arr);
@@ -123,9 +123,9 @@ class check_buffer_deduction {
     const int arr_size = r.size();
 
     std::unique_ptr<T[]> data(
-        new T[size]{user_def_types::get_init_value_helper<T>(0),
-                    user_def_types::get_init_value_helper<T>(0),
-                    user_def_types::get_init_value_helper<T>(0)});
+        new T[size]{user_def_types::get_init_value<T>(0),
+                    user_def_types::get_init_value<T>(0),
+                    user_def_types::get_init_value<T>(0)});
 
     INFO("buffer_ctors_deduction::test_type() " + type_name);
     // buffer with no alloccator and no property list

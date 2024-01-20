@@ -60,7 +60,7 @@ class run_prefetch_test {
                   "Data type shouldn't be is same to void type");
 
     auto queue = once_per_unit::get_queue();
-    T value = user_def_types::get_init_value_helper<T>(expected_val);
+    T value = user_def_types::get_init_value<T>(expected_val);
     SECTION(sycl_cts::section_name("Check multi_ptr::prefetch()")
                 .with("T", type_name)
                 .with("address_space", "access::address_space::global_space")

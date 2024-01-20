@@ -79,7 +79,7 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
   // Arrays for result values
   bool same_type[types_size]{};
   bool same_value[values_size]{};
-  T ref_value{user_def_types::get_init_value_helper<T>(0)};
+  T ref_value{user_def_types::get_init_value<T>(0)};
   auto queue = once_per_unit::get_queue();
 
   using GlobalAccType = sycl::accessor<T, 1, sycl::access_mode::read_write>;

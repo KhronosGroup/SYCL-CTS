@@ -48,10 +48,10 @@ class check_specialization_constants_same_name_inter_link_for_type {
         }
       }
       sycl::range<1> range(1);
-      T def_value{user_def_types::get_init_value_helper<T>(0)};
-      T ref_def_value{user_def_types::get_init_value_helper<T>(0)};
-      T result{user_def_types::get_init_value_helper<T>(0)};
-      T ref{user_def_types::get_init_value_helper<T>(0)};
+      T def_value{user_def_types::get_init_value<T>(0)};
+      T ref_def_value{user_def_types::get_init_value<T>(0)};
+      T result{user_def_types::get_init_value<T>(0)};
+      T ref{user_def_types::get_init_value<T>(0)};
       {
         // Setting ref values according to TU number
         fill_init_values(ref_def_value, TestConfig::tu);

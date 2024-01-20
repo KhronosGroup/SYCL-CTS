@@ -142,8 +142,8 @@ class run_multi_ptr_comparison_op_test {
 
   using multi_ptr_t = sycl::multi_ptr<T, space, decorated>;
 
-  const T m_small_value = user_def_types::get_init_value_helper<T>(1);
-  const T m_great_value = user_def_types::get_init_value_helper<T>(2);
+  const T m_small_value = user_def_types::get_init_value<T>(1);
+  const T m_great_value = user_def_types::get_init_value<T>(2);
   // Use an array to be sure that we have two elements that has consecutive
   // memory addresses
   const T m_values_arr[2] = {m_small_value, m_great_value};
