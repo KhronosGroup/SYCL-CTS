@@ -29,8 +29,6 @@
 
 #define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE 1
 #define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY 0
-#define SYCL_CTS_SUPPORT_HAS_ERRC_FOR 0
-#define SYCL_CTS_SUPPORT_HAS_ERROR_CATEGORY_FOR 0
 #define SYCL_CTS_SUPPORT_HAS_MAKE_ERROR_CODE 0
 
 #elif SYCL_CTS_COMPILING_WITH_DPCPP
@@ -38,16 +36,12 @@
 
 #define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE 1
 #define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY 1
-#define SYCL_CTS_SUPPORT_HAS_ERRC_FOR 1
-#define SYCL_CTS_SUPPORT_HAS_ERROR_CATEGORY_FOR 0
 #define SYCL_CTS_SUPPORT_HAS_MAKE_ERROR_CODE 0
 
 #else
 
 #define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE 1
 #define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY 1
-#define SYCL_CTS_SUPPORT_HAS_ERRC_FOR 1
-#define SYCL_CTS_SUPPORT_HAS_ERROR_CATEGORY_FOR 1
 #define SYCL_CTS_SUPPORT_HAS_MAKE_ERROR_CODE 1
 
 #endif
@@ -131,49 +125,6 @@ struct matcher_equals_exception
 };
 #endif //  SYCL_CTS_SUPPORT_HAS_ERRC_ENUM
 
-/**
- *  Matcher for backend-specific category and error codes
- */
-template <sycl::backend Backend, typename CodeT>
-class matcher_equals_exception_for
-    : public Catch::Matchers::MatcherGenericBase {
- public:
-  matcher_equals_exception_for(const CodeT& code_value)
-      : m_code_value(code_value) {}
-
-  bool match(const sycl::exception& other) const {
-
-#if (SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE == 0) || \
-    (SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY == 0) || \
-    (SYCL_CTS_SUPPORT_HAS_ERROR_CATEGORY_FOR == 0)
-    // There should be no compilation failures, but every CHECK_THROWS_MATCHES
-    // should fail with this matcher
-    return false;
-#else
-    // Error code is validated by value, with no semantic match
-    const auto& expected_category = sycl::error_category_for<Backend>();
-    return (other.category() == expected_category) &&
-           (other.code().value() == m_code_value);
-#endif
-  }
-
-  std::string describe() const override {
-    std::ostringstream result;
-    result << "has code value " << to_integral(m_code_value);
-
-#if (SYCL_CTS_SUPPORT_HAS_ERROR_CATEGORY_FOR == 0)
-    result << " for backend-specific category (not supported)";
-#else
-    const auto& expected_category = sycl::error_category_for<Backend>();
-    result << " for backend-specific category '" << expected_category().name();
-    result << "'";
-#endif
-    return result.str();
-  }
-
- private:
-  const CodeT& m_code_value;
-};
 }  // namespace detail
 
 /**
@@ -201,22 +152,6 @@ inline auto equals_exception(const sycl::errc& code) {
   return detail::matcher_equals_exception(code);
 }
 #endif //  SYCL_CTS_SUPPORT_HAS_ERRC_ENUM == 1
-
-/**
- *  Provides matcher for backend-specific category and error codes
- *
- *  Usage example:
- *    CHECK_THROWS_MATCHES(action(), sycl::exception,
- *        equals_exception_for<sycl::backend::opencl>(CL_INVALID_PROGRAM));
- */
-template <sycl::backend Backend, typename CodeT>
-inline auto equals_exception_for(const CodeT& code) {
-#if SYCL_CTS_SUPPORT_HAS_ERRC_FOR == 1
-  static_assert(std::is_same_v<CodeT, sycl::errc_for<Backend>> ||
-                std::is_same_v<CodeT, int>);
-#endif
-  return detail::matcher_equals_exception_for<Backend, CodeT>(code);
-}
 
 }  //  namespace sycl_cts::util
 
