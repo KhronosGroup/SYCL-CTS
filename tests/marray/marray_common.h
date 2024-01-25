@@ -77,6 +77,11 @@ constexpr sycl::marray<DataT, NumElements> iota_marray() {
       std::make_index_sequence<NumElements>());
 }
 
+template <class ForwardIt, class T>
+void iota(ForwardIt first, ForwardIt last, T value) {
+  for (; first != last; ++first) *first = value++;
+}
+
 }  // namespace marray_common
 
 #endif  // SYCL_CTS_TEST_MARRAY_MARRAY_COMMON_H

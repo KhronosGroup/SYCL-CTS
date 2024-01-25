@@ -49,6 +49,31 @@ struct operators_helper {
   }
 };
 
+// Division operations on floating points make no precision guarantees, so
+// similar to native::divide we can skip checking them.
+template <typename OpT, typename ElemT>
+struct skip_result_check
+    : std::bool_constant<
+          (std::is_same_v<OpT, op_div> || std::is_same_v<OpT, op_assign_div>)&&(
+              std::is_same_v<ElemT, float> || std::is_same_v<ElemT, double> ||
+              std::is_same_v<ElemT, sycl::half>)> {};
+
+template <typename OpT, typename ElemT>
+constexpr bool skip_result_check_v = skip_result_check<OpT, ElemT>::value;
+
+template <typename OpT, typename ElemT, typename T1, typename T2>
+bool are_equal_ignore_division(const T1& lhs, const T1& rhs) {
+  // Division operations on floating points make no precision guarantees, so
+  // similar to native::divide we can skip checking them here.
+  constexpr bool is_div =
+      std::is_same_v<OpT, op_div> || std::is_same_v<OpT, op_assign_div>;
+  constexpr bool is_sycl_floating_point = std::is_same_v<ElemT, float> ||
+                                          std::is_same_v<ElemT, double> ||
+                                          std::is_same_v<ElemT, sycl::half>;
+  if constexpr (is_div && is_sycl_floating_point) return true;
+  return value_operations::are_equal(lhs, rhs);
+}
+
 /**
  * @brief Define several sequences to initialize array instances. */
 
@@ -116,6 +141,47 @@ template <typename DataT, typename NumElementsT, typename OpT,
 class run_unary_sequence {
   using helper = operators_helper<DataT, NumElementsT>;
 
+  template <typename ResT>
+  static void run_on_host(const ResT& res_expected) {
+    INFO("validation on host");
+
+    OpT op;
+
+    typename helper::marray_t val_actual;
+    helper::template init<SequenceT>(val_actual);
+    auto res_actual = op(val_actual);
+
+    CHECK(value_operations::are_equal(res_expected, res_actual));
+  }
+
+  template <typename ResT>
+  static void run_on_device(const std::valarray<ResT>& res_expected) {
+    INFO("validation on device");
+
+    auto queue = sycl_cts::util::get_cts_object::queue();
+
+    sycl::marray<ResT, helper::NumElements> res_actual;
+    {
+      sycl::buffer<decltype(res_actual), 1> res_actual_buff{&res_actual,
+                                                            sycl::range<1>{1}};
+
+      queue
+          .submit([&](sycl::handler& cgh) {
+            sycl::accessor res_actual_acc{res_actual_buff, cgh,
+                                          sycl::write_only};
+            cgh.single_task([=]() {
+              OpT op;
+              typename helper::marray_t val_actual;
+              helper::template init<SequenceT>(val_actual);
+              res_actual_acc[0] = op(val_actual);
+            });
+          })
+          .wait_and_throw();
+    }
+
+    CHECK(value_operations::are_equal(res_expected, res_actual));
+  }
+
  public:
   void operator()(const std::string& function_name) {
     INFO("for input (sequence) \"" << function_name << "\": ");
@@ -126,11 +192,9 @@ class run_unary_sequence {
     helper::template init<SequenceT>(val_expected);
     auto res_expected = op(val_expected);
 
-    typename helper::marray_t val_actual;
-    helper::template init<SequenceT>(val_actual);
-    auto res_actual = op(val_actual);
+    run_on_host(res_expected);
 
-    CHECK(value_operations::are_equal(res_expected, res_actual));
+    run_on_device(res_expected);
   }
 };
 
@@ -161,6 +225,59 @@ template <typename DataT, typename NumElementsT, typename OpT,
 class run_unary_post_sequence {
   using helper = operators_helper<DataT, NumElementsT>;
 
+  template <typename ResT>
+  static void run_on_host(const typename helper::varray_t& val_expected,
+                          const ResT& res_expected) {
+    INFO("validation on host");
+
+    OpT op;
+
+    typename helper::marray_t val_actual;
+    helper::template init<SequenceT>(val_actual);
+    auto res_actual = op(val_actual);
+
+    // check the returned output
+    CHECK(value_operations::are_equal(res_expected, res_actual));
+    // check the modified input
+    CHECK(value_operations::are_equal(val_expected, val_actual));
+  }
+
+  template <typename ResT>
+  static void run_on_device(const typename helper::varray_t& val_expected,
+                            const std::valarray<ResT>& res_expected) {
+    INFO("validation on device");
+
+    auto queue = sycl_cts::util::get_cts_object::queue();
+
+    typename helper::marray_t val_actual;
+    sycl::marray<ResT, helper::NumElements> res_actual;
+    {
+      sycl::buffer<decltype(val_actual), 1> val_actual_buff{&val_actual,
+                                                            sycl::range<1>{1}};
+      sycl::buffer<decltype(res_actual), 1> res_actual_buff{&res_actual,
+                                                            sycl::range<1>{1}};
+
+      queue
+          .submit([&](sycl::handler& cgh) {
+            sycl::accessor val_actual_acc{val_actual_buff, cgh,
+                                          sycl::read_write};
+            sycl::accessor res_actual_acc{res_actual_buff, cgh,
+                                          sycl::write_only};
+            cgh.single_task([=]() {
+              OpT op;
+              helper::template init<SequenceT>(val_actual_acc[0]);
+              res_actual_acc[0] = op(val_actual_acc[0]);
+            });
+          })
+          .wait_and_throw();
+    }
+
+    // check the returned output
+    CHECK(value_operations::are_equal(res_expected, res_actual));
+    // check the modified input
+    CHECK(value_operations::are_equal(val_expected, val_actual));
+  }
+
  public:
   void operator()(const std::string& function_name) {
     INFO("for input (sequence) \"" << function_name << "\": ");
@@ -171,14 +288,9 @@ class run_unary_post_sequence {
     helper::template init<SequenceT>(val_expected);
     auto res_expected = op(val_expected);
 
-    typename helper::marray_t val_actual;
-    helper::template init<SequenceT>(val_actual);
-    auto res_actual = op(val_actual);
+    run_on_host(val_expected, res_expected);
 
-    // check the returned output
-    CHECK(value_operations::are_equal(res_expected, res_actual));
-    // check the modified input
-    CHECK(value_operations::are_equal(val_expected, val_actual));
+    run_on_device(val_expected, res_expected);
   }
 };
 
@@ -199,6 +311,52 @@ template <typename DataT, typename NumElementsT, typename OpT,
 class run_binary_sequence_scalar {
   using helper = operators_helper<DataT, NumElementsT>;
 
+  template <typename ResT>
+  static void run_on_host(const ResT& res_expected) {
+    INFO("validation on host");
+
+    OpT op;
+
+    typename helper::marray_t lhs_actual;
+    helper::template init<SequenceT>(lhs_actual);
+    DataT rhs_actual;
+    helper::template init<ScalarT>(rhs_actual);
+    auto res_actual = op(lhs_actual, rhs_actual);
+
+    CHECK(value_operations::are_equal(res_expected, res_actual));
+  }
+
+  template <typename ResT>
+  static void run_on_device(const std::valarray<ResT>& res_expected) {
+    INFO("validation on device");
+
+    auto queue = sycl_cts::util::get_cts_object::queue();
+
+    sycl::marray<ResT, helper::NumElements> res_actual;
+    {
+      sycl::buffer<decltype(res_actual), 1> res_actual_buff{&res_actual,
+                                                            sycl::range<1>{1}};
+
+      queue
+          .submit([&](sycl::handler& cgh) {
+            sycl::accessor res_actual_acc{res_actual_buff, cgh,
+                                          sycl::write_only};
+            cgh.single_task([=]() {
+              OpT op;
+              typename helper::marray_t lhs_actual;
+              helper::template init<SequenceT>(lhs_actual);
+              DataT rhs_actual;
+              helper::template init<ScalarT>(rhs_actual);
+              res_actual_acc[0] = op(lhs_actual, rhs_actual);
+            });
+          })
+          .wait_and_throw();
+    }
+
+    if constexpr (!skip_result_check_v<OpT, ResT>)
+      CHECK(value_operations::are_equal(res_expected, res_actual));
+  }
+
  public:
   void operator()(const std::string& function_name,
                   const std::string& constant_name) {
@@ -213,13 +371,9 @@ class run_binary_sequence_scalar {
     helper::template init<ScalarT>(rhs_expected);
     auto res_expected = op(lhs_expected, rhs_expected);
 
-    typename helper::marray_t lhs_actual;
-    helper::template init<SequenceT>(lhs_actual);
-    DataT rhs_actual;
-    helper::template init<ScalarT>(rhs_actual);
-    auto res_actual = op(lhs_actual, rhs_actual);
+    run_on_host(res_expected);
 
-    CHECK(value_operations::are_equal(res_expected, res_actual));
+    run_on_device(res_expected);
   }
 };
 
@@ -274,6 +428,52 @@ template <typename DataT, typename NumElementsT, typename OpT, typename ScalarT,
 class run_binary_scalar_sequence {
   using helper = operators_helper<DataT, NumElementsT>;
 
+  template <typename ResT>
+  static void run_on_host(const ResT& res_expected) {
+    INFO("validation on host");
+
+    OpT op;
+
+    DataT lhs_actual;
+    helper::template init<ScalarT>(lhs_actual);
+    typename helper::marray_t rhs_actual;
+    helper::template init<SequenceT>(rhs_actual);
+    auto res_actual = op(lhs_actual, rhs_actual);
+
+    CHECK(value_operations::are_equal(res_expected, res_actual));
+  }
+
+  template <typename ResT>
+  static void run_on_device(const std::valarray<ResT>& res_expected) {
+    INFO("validation on device");
+
+    auto queue = sycl_cts::util::get_cts_object::queue();
+
+    sycl::marray<ResT, helper::NumElements> res_actual;
+    {
+      sycl::buffer<decltype(res_actual), 1> res_actual_buff{&res_actual,
+                                                            sycl::range<1>{1}};
+
+      queue
+          .submit([&](sycl::handler& cgh) {
+            sycl::accessor res_actual_acc{res_actual_buff, cgh,
+                                          sycl::write_only};
+            cgh.single_task([=]() {
+              OpT op;
+              DataT lhs_actual;
+              helper::template init<ScalarT>(lhs_actual);
+              typename helper::marray_t rhs_actual;
+              helper::template init<SequenceT>(rhs_actual);
+              res_actual_acc[0] = op(lhs_actual, rhs_actual);
+            });
+          })
+          .wait_and_throw();
+    }
+
+    if constexpr (!skip_result_check_v<OpT, ResT>)
+      CHECK(value_operations::are_equal(res_expected, res_actual));
+  }
+
  public:
   void operator()(const std::string& constant_name,
                   const std::string& function_name) {
@@ -294,13 +494,9 @@ class run_binary_scalar_sequence {
     helper::template init<SequenceT>(rhs_expected);
     auto res_expected = op(lhs_expected, rhs_expected);
 
-    DataT lhs_actual;
-    helper::template init<ScalarT>(lhs_actual);
-    typename helper::marray_t rhs_actual;
-    helper::template init<SequenceT>(rhs_actual);
-    auto res_actual = op(lhs_actual, rhs_actual);
+    run_on_host(res_expected);
 
-    CHECK(value_operations::are_equal(res_expected, res_actual));
+    run_on_device(res_expected);
   }
 };
 
@@ -308,6 +504,52 @@ template <typename DataT, typename NumElementsT, typename OpT,
           typename SequenceT1, typename SequenceT2>
 class run_binary_sequence_sequence {
   using helper = operators_helper<DataT, NumElementsT>;
+
+  template <typename ResT>
+  static void run_on_host(const ResT& res_expected) {
+    INFO("validation on host");
+
+    OpT op;
+
+    typename helper::marray_t lhs_actual;
+    helper::template init<SequenceT1>(lhs_actual);
+    typename helper::marray_t rhs_actual;
+    helper::template init<SequenceT2>(rhs_actual);
+    auto res_actual = op(lhs_actual, rhs_actual);
+
+    CHECK(value_operations::are_equal(res_expected, res_actual));
+  }
+
+  template <typename ResT>
+  static void run_on_device(const std::valarray<ResT>& res_expected) {
+    INFO("validation on device");
+
+    auto queue = sycl_cts::util::get_cts_object::queue();
+
+    sycl::marray<ResT, helper::NumElements> res_actual;
+    {
+      sycl::buffer<decltype(res_actual), 1> res_actual_buff{&res_actual,
+                                                            sycl::range<1>{1}};
+
+      queue
+          .submit([&](sycl::handler& cgh) {
+            sycl::accessor res_actual_acc{res_actual_buff, cgh,
+                                          sycl::write_only};
+            cgh.single_task([=]() {
+              OpT op;
+              typename helper::marray_t lhs_actual;
+              helper::template init<SequenceT1>(lhs_actual);
+              typename helper::marray_t rhs_actual;
+              helper::template init<SequenceT2>(rhs_actual);
+              res_actual_acc[0] = op(lhs_actual, rhs_actual);
+            });
+          })
+          .wait_and_throw();
+    }
+
+    if constexpr (!skip_result_check_v<OpT, ResT>)
+      CHECK(value_operations::are_equal(res_expected, res_actual));
+  }
 
  public:
   void operator()(const std::string& function_name_1,
@@ -329,13 +571,9 @@ class run_binary_sequence_sequence {
     helper::template init<SequenceT2>(rhs_expected);
     auto res_expected = op(lhs_expected, rhs_expected);
 
-    typename helper::marray_t lhs_actual;
-    helper::template init<SequenceT1>(lhs_actual);
-    typename helper::marray_t rhs_actual;
-    helper::template init<SequenceT2>(rhs_actual);
-    auto res_actual = op(lhs_actual, rhs_actual);
+    run_on_host(res_expected);
 
-    CHECK(value_operations::are_equal(res_expected, res_actual));
+    run_on_device(res_expected);
   }
 };
 
@@ -375,6 +613,66 @@ template <typename DataT, typename NumElementsT, typename OpT,
 class run_binary_assignment_sequence_scalar {
   using helper = operators_helper<DataT, NumElementsT>;
 
+  template <typename ResT>
+  static void run_on_host(const typename helper::varray_t& lhs_expected,
+                          const ResT& res_expected) {
+    INFO("validation on host");
+
+    OpT op;
+
+    typename helper::marray_t lhs_actual;
+    helper::template init<SequenceT>(lhs_actual);
+    DataT rhs_actual;
+    helper::template init<ScalarT>(rhs_actual);
+    auto res_actual = op(lhs_actual, rhs_actual);
+
+    // check the returned output
+    CHECK(value_operations::are_equal(res_expected, res_actual));
+    // check the modified input
+    CHECK(value_operations::are_equal(lhs_expected, lhs_actual));
+  }
+
+  template <typename ResT>
+  static void run_on_device(const typename helper::varray_t& lhs_expected,
+                            const std::valarray<ResT>& res_expected) {
+    INFO("validation on device");
+
+    auto queue = sycl_cts::util::get_cts_object::queue();
+
+    typename helper::marray_t lhs_actual;
+    sycl::marray<ResT, helper::NumElements> res_actual;
+    {
+      sycl::buffer<decltype(lhs_actual), 1> lhs_actual_buff{&lhs_actual,
+                                                            sycl::range<1>{1}};
+      sycl::buffer<decltype(res_actual), 1> res_actual_buff{&res_actual,
+                                                            sycl::range<1>{1}};
+
+      queue
+          .submit([&](sycl::handler& cgh) {
+            sycl::accessor lhs_actual_acc{lhs_actual_buff, cgh,
+                                          sycl::read_write};
+            sycl::accessor res_actual_acc{res_actual_buff, cgh,
+                                          sycl::write_only};
+            cgh.single_task([=]() {
+              OpT op;
+              typename helper::marray_t lhs_actual;
+              helper::template init<SequenceT>(lhs_actual_acc[0]);
+              DataT rhs_actual;
+              helper::template init<ScalarT>(rhs_actual);
+              res_actual_acc[0] = op(lhs_actual_acc[0], rhs_actual);
+            });
+          })
+          .wait_and_throw();
+    }
+
+    if constexpr (!skip_result_check_v<OpT, ResT>) {
+      // check the returned output
+      CHECK(value_operations::are_equal(res_expected, res_actual));
+      // check the modified input
+      CHECK(value_operations::are_equal(lhs_expected, lhs_actual));
+    }
+  }
+
  public:
   void operator()(const std::string& function_name,
                   const std::string& constant_name) {
@@ -389,16 +687,9 @@ class run_binary_assignment_sequence_scalar {
     helper::template init<ScalarT>(rhs_expected);
     auto res_expected = op(lhs_expected, rhs_expected);
 
-    typename helper::marray_t lhs_actual;
-    helper::template init<SequenceT>(lhs_actual);
-    DataT rhs_actual;
-    helper::template init<ScalarT>(rhs_actual);
-    auto res_actual = op(lhs_actual, rhs_actual);
+    run_on_host(lhs_expected, res_expected);
 
-    // check the returned output
-    CHECK(value_operations::are_equal(res_expected, res_actual));
-    // check the modified input
-    CHECK(value_operations::are_equal(lhs_expected, lhs_actual));
+    run_on_device(lhs_expected, res_expected);
   }
 };
 
@@ -406,6 +697,66 @@ template <typename DataT, typename NumElementsT, typename OpT,
           typename SequenceT1, typename SequenceT2>
 class run_binary_assignment_sequence_sequence {
   using helper = operators_helper<DataT, NumElementsT>;
+
+  template <typename ResT>
+  static void run_on_host(const typename helper::varray_t& lhs_expected,
+                          const ResT& res_expected) {
+    INFO("validation on host");
+
+    OpT op;
+
+    typename helper::marray_t lhs_actual;
+    helper::template init<SequenceT1>(lhs_actual);
+    typename helper::marray_t rhs_actual;
+    helper::template init<SequenceT2>(rhs_actual);
+    auto res_actual = op(lhs_actual, rhs_actual);
+
+    // check the returned output
+    CHECK(value_operations::are_equal(res_expected, res_actual));
+    // check the modified input
+    CHECK(value_operations::are_equal(lhs_expected, lhs_actual));
+  }
+
+  template <typename ResT>
+  static void run_on_device(const typename helper::varray_t& lhs_expected,
+                            const std::valarray<ResT>& res_expected) {
+    INFO("validation on device");
+
+    auto queue = sycl_cts::util::get_cts_object::queue();
+
+    typename helper::marray_t lhs_actual;
+    sycl::marray<ResT, helper::NumElements> res_actual;
+    {
+      sycl::buffer<decltype(lhs_actual), 1> lhs_actual_buff{&lhs_actual,
+                                                            sycl::range<1>{1}};
+      sycl::buffer<decltype(res_actual), 1> res_actual_buff{&res_actual,
+                                                            sycl::range<1>{1}};
+
+      queue
+          .submit([&](sycl::handler& cgh) {
+            sycl::accessor lhs_actual_acc{lhs_actual_buff, cgh,
+                                          sycl::read_write};
+            sycl::accessor res_actual_acc{res_actual_buff, cgh,
+                                          sycl::write_only};
+            cgh.single_task([=]() {
+              OpT op;
+              typename helper::marray_t lhs_actual;
+              helper::template init<SequenceT1>(lhs_actual_acc[0]);
+              typename helper::marray_t rhs_actual;
+              helper::template init<SequenceT2>(rhs_actual);
+              res_actual_acc[0] = op(lhs_actual_acc[0], rhs_actual);
+            });
+          })
+          .wait_and_throw();
+    }
+
+    if constexpr (!skip_result_check_v<OpT, ResT>) {
+      // check the returned output
+      CHECK(value_operations::are_equal(res_expected, res_actual));
+      // check the modified input
+      CHECK(value_operations::are_equal(lhs_expected, lhs_actual));
+    }
+  }
 
  public:
   void operator()(const std::string& function_name_1,
@@ -427,16 +778,9 @@ class run_binary_assignment_sequence_sequence {
     helper::template init<SequenceT2>(rhs_expected);
     auto res_expected = op(lhs_expected, rhs_expected);
 
-    typename helper::marray_t lhs_actual;
-    helper::template init<SequenceT1>(lhs_actual);
-    typename helper::marray_t rhs_actual;
-    helper::template init<SequenceT2>(rhs_actual);
-    auto res_actual = op(lhs_actual, rhs_actual);
+    run_on_host(lhs_expected, res_expected);
 
-    // check the returned output
-    CHECK(value_operations::are_equal(res_expected, res_actual));
-    // check the modified input
-    CHECK(value_operations::are_equal(lhs_expected, lhs_actual));
+    run_on_device(lhs_expected, res_expected);
   }
 };
 
@@ -472,10 +816,10 @@ class run_binary_assignment<
 };
 
 template <typename DataT>
-class check_marray_operators_for_type {
+class check_marray_pre_unary_operators_for_type {
  public:
   void operator()(const std::string& type_name) {
-    INFO("for type \"" << type_name << "\": ");
+    INFO("prefix unary operators for type \"" << type_name << "\": ");
 
     const auto num_elements = marray_common::get_num_elements();
 
@@ -484,28 +828,106 @@ class check_marray_operators_for_type {
                         op_bnot>::generate("unary +", "unary -", "pre ++",
                                            "pre --", "!", "~");
     for_all_combinations<run_unary, DataT>(num_elements, unary_operators);
+  }
+};
+
+template <typename DataT>
+class check_marray_post_unary_operators_for_type {
+ public:
+  void operator()(const std::string& type_name) {
+    INFO("suffix unary operators for type \"" << type_name << "\": ");
+
+    const auto num_elements = marray_common::get_num_elements();
 
     static const auto unary_post_operators =
         named_type_pack<op_post_inc, op_post_dec>::generate("post ++",
                                                             "post --");
     for_all_combinations<run_unary_post, DataT>(num_elements,
                                                 unary_post_operators);
+  }
+};
+
+template <typename DataT>
+class check_marray_arithmetic_binary_operators_for_type {
+ public:
+  void operator()(const std::string& type_name) {
+    INFO("arithmetic binary operators for type \"" << type_name << "\": ");
+
+    const auto num_elements = marray_common::get_num_elements();
+
     static const auto binary_operators =
-        named_type_pack<op_add, op_sub, op_mul, op_div, op_mod, op_bor, op_band,
-                        op_bxor, op_sl, op_sr, op_eq, op_not_eq, op_less,
-                        op_grater, op_less_eq, op_grater_eq, op_land,
-                        op_lor>::generate("+", "-", "*", "/", "%", "|", "&",
-                                          "^", "<<", ">>", "==", "!=", "<", ">",
-                                          "<=", ">=", "&&", "||");
+        named_type_pack<op_add, op_sub, op_mul, op_div, op_mod>::generate(
+            "+", "-", "*", "/", "%");
 
     for_all_combinations<run_binary, DataT>(num_elements, binary_operators);
+  }
+};
+
+template <typename DataT>
+class check_marray_bitwise_binary_operators_for_type {
+ public:
+  void operator()(const std::string& type_name) {
+    INFO("bitwise binary operators for type \"" << type_name << "\": ");
+
+    const auto num_elements = marray_common::get_num_elements();
+
+    static const auto binary_operators =
+        named_type_pack<op_bor, op_band, op_bxor, op_sl, op_sr>::generate(
+            "|", "&", "^", "<<", ">>");
+
+    for_all_combinations<run_binary, DataT>(num_elements, binary_operators);
+  }
+};
+
+template <typename DataT>
+class check_marray_relational_binary_operators_for_type {
+ public:
+  void operator()(const std::string& type_name) {
+    INFO("relational binary operators for type \"" << type_name << "\": ");
+
+    const auto num_elements = marray_common::get_num_elements();
+
+    static const auto binary_operators =
+        named_type_pack<op_eq, op_not_eq, op_less, op_grater, op_less_eq,
+                        op_grater_eq, op_land, op_lor>::generate("==", "!=",
+                                                                 "<", ">", "<=",
+                                                                 ">=", "&&",
+                                                                 "||");
+
+    for_all_combinations<run_binary, DataT>(num_elements, binary_operators);
+  }
+};
+
+template <typename DataT>
+class check_marray_arithmetic_assignment_operators_for_type {
+ public:
+  void operator()(const std::string& type_name) {
+    INFO("arithmetic assignment for type \"" << type_name << "\": ");
+
+    const auto num_elements = marray_common::get_num_elements();
 
     static const auto binary_assignment_operators =
         named_type_pack<op_assign_add, op_assign_sub, op_assign_mul,
-                        op_assign_div, op_assign_mod, op_assign_bor,
-                        op_assign_band, op_assign_bxor, op_assign_sl,
-                        op_assign_sr>::generate("+=", "-=", "*=", "/=", "%=",
-                                                "|=", "&=", "^=", "<<=", ">>=");
+                        op_assign_div, op_assign_mod>::generate("+=", "-=",
+                                                                "*=", "/=",
+                                                                "%=");
+    for_all_combinations<run_binary_assignment, DataT>(
+        num_elements, binary_assignment_operators);
+  }
+};
+
+template <typename DataT>
+class check_marray_bitwise_assignment_operators_for_type {
+ public:
+  void operator()(const std::string& type_name) {
+    INFO("bitwise assignment for type \"" << type_name << "\": ");
+
+    const auto num_elements = marray_common::get_num_elements();
+
+    static const auto binary_assignment_operators =
+        named_type_pack<op_assign_bor, op_assign_band, op_assign_bxor,
+                        op_assign_sl, op_assign_sr>::generate("|=", "&=", "^=",
+                                                              "<<=", ">>=");
     for_all_combinations<run_binary_assignment, DataT>(
         num_elements, binary_assignment_operators);
   }
