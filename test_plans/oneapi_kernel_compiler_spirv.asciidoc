@@ -6,7 +6,6 @@
 This is a test plan for the API described in
 https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/experimental/sycl_ext_oneapi_kernel_compiler_spirv.asciidoc[sycl_ext_oneapi_kernel_compiler_spirv].
 
-
 == Testing scope
 
 === Device coverage
@@ -16,8 +15,8 @@ is selected on the CTS command line.
 
 === Feature test macro
 
-All of the tests should use `#ifdef SYCL_EXT_ONEAPI_KERNEL_COMPILER_SPIRV` so they can be skipped
-if feature is not supported.
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_KERNEL_COMPILER_SPIRV` so
+they can be skipped if feature is not supported.
 
 == Tests
 
@@ -25,25 +24,53 @@ All of the following tests run SPIR-V kernels loaded in binary form.
 
 === SPIR-V Source Language Test
 
-Load a simple SPIR-V kernel and run it to ensure it has the expected behavior. This kernel should take two parameters: an input pointer and an output pointer. Each of these pointers should have type *OpTypePointer*, with *CrossWorkgroup* storage class pointing to  *OpTypeInt* with width 32. For each work item, the kernel computes the following expression: `out[id] = (a * in[id]) + b`, where `a` and `b` are integer constants. The host code will create this kernel, pass it USM pointer arguments, run it, and assert that the output has the expected values. This test ensures that `create_kernel_bundle_from_source` can be used with `source_language::spirv` to obtain a kernel, set its parameters, and run it.
+Load a simple SPIR-V kernel and run it to ensure it has the expected behavior.
+This kernel should take two parameters: an input pointer and an output pointer.
+Each of these pointers should have type *OpTypePointer*, with *CrossWorkgroup*
+storage class pointing to  *OpTypeInt* with width 32. For each work item, the
+kernel computes the following expression: `out[id] = (a * in[id]) + b`, where
+`a` and `b` are integer constants. The host code will create this kernel, pass
+it USM pointer arguments, run it, and assert that the output has the expected
+values. This test ensures that `create_kernel_bundle_from_source` can be used
+with `source_language::spirv` to obtain a kernel, set its parameters, and run
+it.
 
 === Kernel API Test
 
-This test checks that `ext_oneapi_has_kernel` and `ext_oneapi_get_kernel` have the expected behavior. Assert that `ext_oneapi_has_kernel` returns true and `ext_oneapi_get_kernel` returns a kernel when the name parameter matches a SPIR-V entrypoint. Also, assert `ext_oneapi_has_kernel` returns false and `ext_oneapi_get_kernel` throws an exception with `errc::invalid` if the name is not valid.
+This test checks that `ext_oneapi_has_kernel` and `ext_oneapi_get_kernel` have
+the expected behavior. Assert that `ext_oneapi_has_kernel` returns true and
+`ext_oneapi_get_kernel` returns a kernel when the name parameter matches a
+SPIR-V entrypoint. Also, assert `ext_oneapi_has_kernel` returns false and
+`ext_oneapi_get_kernel` throws an exception with `errc::invalid` if the name is
+not valid.
 
 === Parameter Tests
 
-This test checks that kernels can accept parameters for all of the SPIR-V types required by the extension. The required types are the following:
+This test checks that kernels can accept parameters for all of the SPIR-V types
+required by the extension. The required types are the following:
 
 - *OpTypeInt*, width 8, 16, 32, and 64.
 - *OpTypeFloat*, width 16, 32 and 64.
 
-For each type `T`, define a kernel with parameters `T`, *OpTypePointer* with *Workgroup* storage class pointing to `T`, and *OpTypePointer* with *CrossWorkgroup* storage class pointing to `T`. This kernel should compute an expression using all three parameters and store the result. The host code can then check this result to ensure that the parameter types are working.
+For each type `T`, define a kernel with parameters `T`, *OpTypePointer* with
+*Workgroup* storage class pointing to `T`, and *OpTypePointer* with
+*CrossWorkgroup* storage class pointing to `T`. This kernel should compute an
+expression using all three parameters and store the result. The host code can
+then check this result to ensure that the parameter types are working.
 
-For the *OpTypeFloat* parameters with width 16 or 64, the host code should use `sycl::aspect::fp16` and `sycl::aspect::fp64` to determine if the test kernels can be built and run, or if they should be skipped.
+For the *OpTypeFloat* parameters with width 16 or 64, the host code should use
+`sycl::aspect::fp16` and `sycl::aspect::fp64` to determine if the test kernels
+can be built and run, or if they should be skipped.
 
 === Struct Parameter Tests
 
-This test checks that kernels can accept *OpTypeStruct* parameters that match the constraints specified by the extension. Define a kernel that accepts an input *OpTypeStruct* and an output *OpTypePointer* with *CrossWorkgroup* storage class pointing to the same *OpTypeStruct*. The struct should contain *OpTypeInt*, *OpTypeFloat*, and inner *OpTypeStruct* members. The kernel computes an expression using each member from the input and stores the result in the corresponding member in the output. The host code then checks the output struct to ensure the members have the expected values.
+This test checks that kernels can accept *OpTypeStruct* parameters that match
+the constraints specified by the extension. Define a kernel that accepts an
+input *OpTypeStruct* and an output *OpTypePointer* with *CrossWorkgroup* storage
+class pointing to the same *OpTypeStruct*. The struct should contain
+*OpTypeInt*, *OpTypeFloat*, and inner *OpTypeStruct* members. The kernel
+computes an expression using each member from the input and stores the result in
+the corresponding member in the output. The host code then checks the output
+struct to ensure the members have the expected values.
 
 === 
