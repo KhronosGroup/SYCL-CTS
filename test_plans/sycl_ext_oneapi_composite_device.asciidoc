@@ -1,0 +1,128 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl_ext_oneapi_composite_device
+
+THis is a test plan for the API described in the 
+https://github.com/intel/llvm/blob/e94b24718e60a7fa03ca1abbde4f7e37bbd0557d/sycl/doc/extensions/proposed/sycl_ext_oneapi_composite_device.asciidoc[`sycl_ext_oneapi_composite_device`]
+extension specification.
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_COMPOSITE_DEVICE` so they
+can be skipped if the extension is not supported.
+
+== Tests
+
+Note that some of the sections below closely follow the extension specification
+document and describe tests with narrower scope, which are aimed to check
+specific functionality. There are sections below which describe bigger test
+cases which are intended to check how different elements of the extension work
+together.
+
+=== Enumerating composite devices
+
+==== Through the new `get_composite_devices()` API
+
+This test should check that freestanding function `get_composite_devices()`:
+- has the correct signature
+- does not throw an exception
+- returns the same result on subsequent calls
+
+==== Through the new `platform::ext_oneapi_get_composite_devices()` API
+
+This test should take a platform the selected device belongs to and check that
+`platform::ext_oneapi_get_composite_devices()` method:
+- has the correct signature
+- does not throw an exception
+- returns the same result on subsequent calls
+
+==== Composite devices are not considered as root devices
+
+The test should ensure that no composite devices are returned through the
+`platform::get_device()` method for a platform the selected device belongs to.
+
+=== New device information descriptors
+
+==== `info::device::component_devices`
+
+The test should check that a query for the information descriptor has correct
+return type.
+
+The test should also check the value returned for the descriptor:
+- if the selected device is a component device, an empty vector is expected
+- otherwise, returned vector is expected to be non-empty and each its element
+  should be additionally checked:
+  - each component device should have the `ext_oneapi_is_component` aspect
+  - each component device should return the selected device through
+    `info::device::composite_device` query
+
+==== `info::device::composite_device`
+
+The test should check that a query for the information descriptor has correct
+return type.
+
+The test should also check the value returned for the descriptor:
+- if the selected device is a component device, then a synchronous `exception`
+  with `errc::invalid` error code is expected
+- otherwise, returned device should have the `ext_oneapi_is_composite` aspect
+
+=== New device aspects
+
+==== `ext_oneapi_is_composite`
+
+The test should check that if the selected device has the aspect, then the
+device should be present in a list returned by both `get_composite_devices()`
+and `platform::ext_oneapi_get_composite_devices()`.
+
+==== `ext_oneapi_is_component`
+
+The test should check that if the selected device has the aspect, then the
+device should *not* be present in a list returned by either
+`get_composite_devices()` or `platform::ext_oneapi_get_composite_devices()`.
+
+The test should then attempt to partition a component device using one of
+partition methods it supports and check that none of sub-devices have the
+`ext_oneapi_is_component` aspect.
+
+=== Impact on "descendent device"
+
+The test should first obtain both a component and a composite device and it is
+skipped if that is not possible using the selected device.
+
+Having those two, the test should create a `context` using the _composite_
+device and then attempt to create a `queue` by passing the created context in
+there *and* the _component_ device. The test checks that `queue` was created
+successfully, i.e. no exceptions were thrown.
+
+=== More complex test cases
+
+Tests in this category are intended to represent miniature versions of potential
+real-world applications to check how the extension works with other core SYCL
+features.
+
+==== Basic tests for the composite device
+
+The test obtains a composite device using the selected device and it is skipped
+if unable to do so.
+
+The composite device is then used to submit a series of kernels that perform
+some computations and memory operations using a `queue` object associated with
+that device.
+
+==== "Interoperability" between composite and component devices
+
+The test should first obtain both a component and a composite device and it is
+skipped if that is not possible using the selected device.
+
+The test than creates a shared context for both devices, allocates a shared
+memory and creates separate command queues for each device. Test performs some
+computations and memory operations on that shared data using both devices.
+
