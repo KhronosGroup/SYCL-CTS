@@ -4,7 +4,7 @@
 = Test plan for sycl_ext_oneapi_non_uniform_groups
 
 This is a test plan for the APIs described in
-https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/proposed/sycl_ext_oneapi_non_uniform_groups.asciidoc[sycl_ext_oneapi_non_uniform_groups].
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/experimental/sycl_ext_oneapi_non_uniform_groups.asciidoc[sycl_ext_oneapi_non_uniform_groups].
 
 
 == Testing scope
