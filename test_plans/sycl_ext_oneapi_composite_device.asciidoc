@@ -3,7 +3,7 @@
 
 = Test plan for sycl_ext_oneapi_composite_device
 
-THis is a test plan for the API described in the 
+This is a test plan for the API described in the
 https://github.com/intel/llvm/blob/e94b24718e60a7fa03ca1abbde4f7e37bbd0557d/sycl/doc/extensions/proposed/sycl_ext_oneapi_composite_device.asciidoc[`sycl_ext_oneapi_composite_device`]
 extension specification.
 
@@ -40,6 +40,7 @@ This test should check that freestanding function `get_composite_devices()`:
 
 This test should take a platform the selected device belongs to and check that
 `platform::ext_oneapi_get_composite_devices()` method:
+
 - has the correct signature
 - does not throw an exception
 - returns the same result on subsequent calls
@@ -57,6 +58,7 @@ The test should check that a query for the information descriptor has correct
 return type.
 
 The test should also check the value returned for the descriptor:
+
 - if the selected device is a component device, an empty vector is expected
 - otherwise, returned vector is expected to be non-empty and each its element
   should be additionally checked:
@@ -70,6 +72,7 @@ The test should check that a query for the information descriptor has correct
 return type.
 
 The test should also check the value returned for the descriptor:
+
 - if the selected device is a component device, then a synchronous `exception`
   with `errc::invalid` error code is expected
 - otherwise, returned device should have the `ext_oneapi_is_composite` aspect
