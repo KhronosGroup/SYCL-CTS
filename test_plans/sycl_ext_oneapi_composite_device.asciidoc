@@ -32,6 +32,7 @@ together.
 ==== Through the new `get_composite_devices()` API
 
 This test should check that freestanding function `get_composite_devices()`:
+
 - has the correct signature
 - does not throw an exception
 - returns the same result on subsequent calls
