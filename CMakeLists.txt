@@ -83,6 +83,10 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_AUTO_LOCAL_RANGE_TESTS
     "Enable extension oneAPI auto_local_range tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_COMPOSITE_DEVICE_TESTS
+    "Enable extension oneAPI composite_device tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
+
 # TODO: Deprecated - remove
 add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG
     "Enable debug-level logs (deprecated)" OFF)
