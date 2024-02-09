@@ -164,13 +164,12 @@ void broadcast_sub_group(sycl::queue& queue) {
 
         // To simplify the test, we are only checking the first sub-group
         if (sub_group.get_group_id()[0] == 0) {
-          // Find local id of first, last and some third sub-group item in
-          // between. Will be used to check different combinations of
+          // Find local id of a leader, last and some other work-item in the
+          // sub-group. They will be used to check different combinations of
           // broadcasting and receiving work-items
           sycl::id<1> first_id = 0;
           sycl::id<1> mid_id = sub_group.get_local_range() / 2;
-          sycl::id<1> last_id = sub_group.get_local_range();
-          --last_id[0];
+          sycl::id<1> last_id = sub_group.get_local_range() - 1;
 
           // Broadcast from the first work-item
           ASSERT_RETURN_TYPE(
@@ -188,9 +187,13 @@ void broadcast_sub_group(sycl::queue& queue) {
           if (sub_group.get_local_id() == last_id)
             broadcasted_values_acc[0] = broadcasted_value;
 
-          // Broadcast from the last work-item
+          // Broadcast from the last work-item, we specifically don't use
+          // sycl::id as the third argument to check overload with
+          // sub_group::linear_id_type as the third argument
           ASSERT_RETURN_TYPE(
-              T, sycl::group_broadcast(sub_group, value_to_broadcast, last_id),
+              T,
+              sycl::group_broadcast(sub_group, value_to_broadcast,
+                                    sub_group.get_local_linear_range() - 1),
               "Return type of group_broadcast(sub_group g, T x, "
               "sub_group::linear_id_type local_linear_id) is wrong\n");
 
@@ -207,7 +210,9 @@ void broadcast_sub_group(sycl::queue& queue) {
           if (sub_group.get_local_id() == mid_id)
             broadcasted_values_acc[1] = broadcasted_value;
 
-          // Broadcast from a mid work-item
+          // Broadcast from a mid work-item. This is similar to the test case
+          // above, but it checks overload which accepts sub_group::id_type as
+          // the last argument
           ASSERT_RETURN_TYPE(
               T, sycl::group_broadcast(sub_group, value_to_broadcast, mid_id),
               "Return type of group_broadcast(sub_group g, T x, "
