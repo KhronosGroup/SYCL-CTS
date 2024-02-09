@@ -164,7 +164,7 @@ void broadcast_sub_group(sycl::queue& queue) {
 
         // To simplify the test, we are only checking the first sub-group
         if (sub_group.get_group_id()[0] == 0) {
-          // Find local id of a leader, last and some other work-item in the
+          // Find local id of the leader, last and some other work-item in the
           // sub-group. They will be used to check different combinations of
           // broadcasting and receiving work-items
           sycl::id<1> first_id = 0;
