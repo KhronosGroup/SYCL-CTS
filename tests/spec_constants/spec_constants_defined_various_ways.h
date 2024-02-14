@@ -27,6 +27,7 @@ void perform_test(util::logger &log, const std::string &type_name,
   auto queue = util::get_cts_object::queue();
   const sycl::context ctx = queue.get_context();
   const sycl::device dev = queue.get_device();
+  bool no_target_kernel = false;
 
   if constexpr (via_kb::value) {
     if (!dev.has(sycl::aspect::online_compiler)) {
@@ -50,6 +51,7 @@ void perform_test(util::logger &log, const std::string &type_name,
             sycl::get_kernel_bundle<sycl::bundle_state::input>(ctx, {dev},
                                                                {kernelId});
         if (!k_bundle.has_kernel(kernelId)) {
+          no_target_kernel = true;
           log.note("kernel_bundle doesn't contain target kernel in case (" +
                    case_hint + ") for " + type_name_string<T>::get(type_name) +
                    " (skipped)");
@@ -72,9 +74,12 @@ void perform_test(util::logger &log, const std::string &type_name,
       }
     });
   }
-  if (!check_equal_values(ref, result))
-    FAIL(log,
-         "case (" + case_hint + ") for " + type_name_string<T>::get(type_name));
+  if (!no_target_kernel) {
+    // Check results only if taget kernel is available
+    if (!check_equal_values(ref, result))
+      FAIL(log, "case (" + case_hint + ") for " +
+                    type_name_string<T>::get(type_name));
+  }
 }
 
 template <typename T, typename via_kb>
