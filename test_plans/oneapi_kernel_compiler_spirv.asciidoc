@@ -66,7 +66,8 @@ can be built and run, or if they should be skipped.
 
 This test checks that kernels can accept *OpTypeStruct* parameters that match
 the constraints specified by the extension. Define a kernel that accepts an
-input *OpTypeStruct* and an output *OpTypePointer* with *CrossWorkgroup* storage
+input *OpTypePointer* with *Function* storage class pointing to an
+*OpTypeStruct*, and an output *OpTypePointer* with *CrossWorkgroup* storage
 class pointing to the same *OpTypeStruct*. The struct should contain
 *OpTypeInt*, *OpTypeFloat*, and inner *OpTypeStruct* members. The kernel
 computes an expression using each member from the input and stores the result in
