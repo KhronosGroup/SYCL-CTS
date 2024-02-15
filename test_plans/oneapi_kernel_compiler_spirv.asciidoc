@@ -72,5 +72,3 @@ class pointing to the same *OpTypeStruct*. The struct should contain
 computes an expression using each member from the input and stores the result in
 the corresponding member in the output. The host code then checks the output
 struct to ensure the members have the expected values.
-
-=== 
