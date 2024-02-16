@@ -190,7 +190,8 @@ void testKernelsFromSpvFile(std::string kernels_file,
     CHECK_NOTHROW(bundle.ext_oneapi_get_kernel("OpTypeInt16"));
     CHECK_NOTHROW(bundle.ext_oneapi_get_kernel("OpTypeInt32"));
     CHECK_NOTHROW(bundle.ext_oneapi_get_kernel("OpTypeInt64"));
-    CHECK_THROWS_AS(bundle.ext_oneapi_get_kernel("OpTypeInt9"), sycl::exception);
+    CHECK_THROWS_AS(bundle.ext_oneapi_get_kernel("OpTypeInt9"),
+                    sycl::exception);
     CHECK_THROWS_AS(bundle.ext_oneapi_get_kernel(""), sycl::exception);
   }
 
