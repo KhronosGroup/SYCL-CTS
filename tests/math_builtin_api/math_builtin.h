@@ -191,7 +191,9 @@ void check_function(sycl_cts::util::logger& log, funT fun,
   auto hostRes = fun();
   INFO("tests case: " + std::to_string(N) +
        ". Correctness check failed on host.");
-  CHECK(verify(log, hostRes, ref, accuracy, comment));
+  // SYCL 2020 specification sets no requirements for math built-ins accuracy
+  // on host, hence passing negative value to 'verify' helper to indicate that.
+  CHECK(verify(log, hostRes, ref, -1, comment));
 }
 
 template <int N, typename returnT, typename funT, typename argT>
