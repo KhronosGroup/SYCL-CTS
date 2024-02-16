@@ -30,7 +30,7 @@ Each of these pointers should have type *OpTypePointer*, with *CrossWorkgroup*
 storage class pointing to  *OpTypeInt* with width 32. For each work item, the
 kernel computes the following expression: `out[id] = (a * in[id]) + b`, where
 `a` and `b` are integer constants. The host code will create this kernel, pass
-it USM pointer arguments, run it, and assert that the output has the expected
+its USM pointer arguments, run it, and assert that the output has the expected
 values. This test ensures that `create_kernel_bundle_from_source` can be used
 with `source_language::spirv` to obtain a kernel, set its parameters, and run
 it.
