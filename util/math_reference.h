@@ -249,7 +249,9 @@ template <typename T>
 T bitselect(T a, T b, T c) {
   return (c & b) | (~c & a);
 }
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half bitselect(sycl::half a, sycl::half b, sycl::half c);
+#endif
 float bitselect(float a, float b, float c);
 double bitselect(double a, double b, double c);
 MAKE_VEC_AND_MARRAY_VERSIONS_3ARGS(bitselect)
@@ -710,7 +712,9 @@ sycl_cts::resultRef<sycl::marray<T, N>> mul24(sycl::marray<T, N> a,
 // clamp is in Integer functions
 
 /* degrees */
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half degrees(sycl::half);
+#endif
 float degrees(float a);
 double degrees(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(degrees)
@@ -718,8 +722,10 @@ MAKE_VEC_AND_MARRAY_VERSIONS(degrees)
 // max and min are in Integer functions
 
 /* mix */
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl_cts::resultRef<sycl::half> mix(const sycl::half a, const sycl::half b,
                                     const sycl::half c);
+#endif
 sycl_cts::resultRef<float> mix(const float a, const float b, const float c);
 sycl_cts::resultRef<double> mix(const double a, const double b, const double c);
 
@@ -769,13 +775,17 @@ sycl_cts::resultRef<sycl::marray<T, N>> mix(sycl::marray<T, N> a,
 #endif
 
 /* radians */
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half radians(sycl::half);
+#endif
 float radians(float a);
 double radians(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(radians)
 
 /* step */
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half step(sycl::half a, sycl::half b);
+#endif
 float step(float a, float b);
 double step(double a, double b);
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(step)
@@ -801,8 +811,10 @@ sycl::marray<T, N> step(T a, sycl::marray<T, N> b) {
 #endif
 
 /* smoothstep */
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl_cts::resultRef<sycl::half> smoothstep(sycl::half a, sycl::half b,
                                            sycl::half c);
+#endif
 sycl_cts::resultRef<float> smoothstep(float a, float b, float c);
 sycl_cts::resultRef<double> smoothstep(double a, double b, double c);
 
@@ -852,7 +864,9 @@ sycl_cts::resultRef<sycl::marray<T, N>> smoothstep(T a, T b,
 #endif
 
 /* sign */
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half sign(sycl::half a);
+#endif
 float sign(float a);
 double sign(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(sign)
@@ -862,10 +876,12 @@ MAKE_VEC_AND_MARRAY_VERSIONS(sign)
 template <typename T>
 struct higher_accuracy;
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 template <>
 struct higher_accuracy<sycl::half> {
   using type = float;
 };
+#endif
 template <>
 struct higher_accuracy<float> {
   using type = double;
@@ -899,7 +915,9 @@ T acosh(T a) {
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(acosh)
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half acospi(sycl::half a);
+#endif
 float acospi(float a);
 double acospi(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(acospi)
@@ -916,7 +934,9 @@ T asinh(T a) {
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(asinh)
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half asinpi(sycl::half a);
+#endif
 float asinpi(float a);
 double asinpi(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(asinpi)
@@ -939,12 +959,16 @@ T atanh(T a) {
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(atanh)
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half atanpi(sycl::half a);
+#endif
 float atanpi(float a);
 double atanpi(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(atanpi)
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half atan2pi(sycl::half a, sycl::half b);
+#endif
 float atan2pi(float a, float b);
 double atan2pi(double a, double b);
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(atan2pi)
@@ -973,7 +997,9 @@ T cosh(T a) {
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(cosh)
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half cospi(sycl::half a);
+#endif
 float cospi(float a);
 double cospi(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(cospi)
@@ -1019,13 +1045,17 @@ using std::fabs;
 MAKE_VEC_AND_MARRAY_VERSIONS(fabs)
 
 using std::fdim;
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half fdim(sycl::half a, sycl::half b);
+#endif
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(fdim)
 
 using std::floor;
 MAKE_VEC_AND_MARRAY_VERSIONS(floor)
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half fma(sycl::half a, sycl::half b, sycl::half c);
+#endif
 float fma(float a, float b, float c);
 double fma(double a, double b, double c);
 
@@ -1042,7 +1072,9 @@ MAKE_VEC_AND_MARRAY_VERSIONS_WITH_SCALAR(fmin)
 using std::fmod;
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(fmod)
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half fract(sycl::half a, sycl::half *b);
+#endif
 float fract(float a, float *b);
 double fract(double a, double *b);
 
@@ -1261,7 +1293,9 @@ T minmag(T a, T b) {
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(minmag)
 
 using std::modf;
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half modf(sycl::half a, sycl::half *b);
+#endif
 template <typename T, int N>
 sycl::vec<T, N> modf(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
   sycl::vec<T, N> res;
@@ -1290,15 +1324,19 @@ sycl::marray<T, N> modf(sycl::marray<T, N> a, sycl::marray<T, N> *b) {
 }
 #endif
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half nan(unsigned short a);
+#endif
 float nan(unsigned int a);
 double nan(unsigned long a);
 double nan(unsigned long long a);
+#if SYCL_CTS_ENABLE_HALF_TESTS
 template <int N>
 sycl::vec<sycl::half, N> nan(sycl::vec<unsigned short, N> a) {
   return sycl_cts::math::run_func_on_vector<sycl::half, unsigned short, N>(
       [](unsigned short x) { return nan(x); }, a);
 }
+#endif
 template <int N>
 sycl::vec<float, N> nan(sycl::vec<unsigned int, N> a) {
   return sycl_cts::math::run_func_on_vector<float, unsigned int, N>(
@@ -1314,11 +1352,13 @@ nan(sycl::vec<T, N> a) {
 }
 // FIXME: AdaptiveCpp does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+#if SYCL_CTS_ENABLE_HALF_TESTS
 template <size_t N>
 sycl::marray<sycl::half, N> nan(sycl::marray<unsigned short, N> a) {
   return sycl_cts::math::run_func_on_marray<sycl::half, unsigned short, N>(
       [](unsigned short x) { return nan(x); }, a);
 }
+#endif
 template <size_t N>
 sycl::marray<float, N> nan(sycl::marray<unsigned int, N> a) {
   return sycl_cts::math::run_func_on_marray<float, unsigned int, N>(
@@ -1335,7 +1375,9 @@ nan(sycl::marray<T, N> a) {
 #endif
 
 using std::nextafter;
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half nextafter(sycl::half a, sycl::half b);
+#endif
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(nextafter)
 
 template <typename T>
@@ -1512,7 +1554,9 @@ T sinh(T a) {
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(sinh)
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half sinpi(sycl::half a);
+#endif
 float sinpi(float a);
 double sinpi(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(sinpi)
@@ -1535,7 +1579,9 @@ T tanh(T a) {
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(tanh)
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half tanpi(sycl::half a);
+#endif
 float tanpi(float a);
 double tanpi(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(tanpi)
@@ -1631,6 +1677,7 @@ sycl::marray<T, N> normalize(sycl::marray<T, N> a) {
 }
 #endif
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half fast_dot(float p0);
 sycl::half fast_dot(sycl::float2 p0);
 sycl::half fast_dot(sycl::float3 p0);
@@ -1640,6 +1687,7 @@ sycl::half fast_dot(sycl::float4 p0);
 sycl::half fast_dot(sycl::mfloat2 p0);
 sycl::half fast_dot(sycl::mfloat3 p0);
 sycl::half fast_dot(sycl::mfloat4 p0);
+#endif
 #endif
 
 template <typename T>
