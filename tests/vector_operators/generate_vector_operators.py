@@ -207,92 +207,93 @@ all_type_test_template = Template("""
   }
 
   // Post and pre increment and decrement
-  // C++17 does not allow ++ or -- (either prefix or postfix) for the bool type
-  // So skip tests for these operators if DataT is bool
-  if constexpr (!std::is_same_v<${type}, bool>) {
-    for (int i = 0; i < ${size}; ++i) {
-      resArr[i] = static_cast<${type}>(${test_value_1});
-    }
-    for (int i = 0; i < ${size}; ++i) {
-      resArr2[i] = static_cast<${type}>(${test_value_1}) + static_cast<${type}>(1);
-    }
-    testVec1Copy = testVec1;
-    resVec = testVec1Copy++;
-    if (!check_vector_values(resVec, resArr)) {
-      resAcc[0] = false;
-    }
-    if (!check_vector_values(testVec1Copy, resArr2)) {
-      resAcc[0] = false;
-    }
-    testVec1Copy = testVec1;
-    resVec = testVec1Copy.${swizzle}++;
-    if (!check_vector_values(resVec, resArr)) {
-      resAcc[0] = false;
-    }
-    if (!check_vector_values(testVec1Copy, resArr2)) {
-      resAcc[0] = false;
-    }
-    for (int i = 0; i < ${size}; ++i) {
-      resArr[i] = static_cast<${type}>(${test_value_1}) + static_cast<${type}>(1);
-    }
-    testVec1Copy = testVec1;
-    resVec = ++testVec1Copy;
-    if (!check_vector_values(resVec, resArr)) {
-      resAcc[0] = false;
-    }
-    if (!check_vector_values(testVec1Copy, resArr)) {
-      resAcc[0] = false;
-    }
-    testVec1Copy = testVec1;
-    resVec = ++testVec1Copy.${swizzle};
-    if (!check_vector_values(resVec, resArr)) {
-      resAcc[0] = false;
-    }
-    if (!check_vector_values(testVec1Copy, resArr)) {
-      resAcc[0] = false;
-    }
-    for (int i = 0; i < ${size}; ++i) {
-      resArr[i] = static_cast<${type}>(${test_value_1});
-    }
-    for (int i = 0; i < ${size}; ++i) {
-      resArr2[i] = static_cast<${type}>(${test_value_1}) - static_cast<${type}>(1);
-    }
-    testVec1Copy = testVec1;
-    resVec = testVec1Copy--;
-    if (!check_vector_values(resVec, resArr)) {
-      resAcc[0] = false;
-    }
-    if (!check_vector_values(testVec1Copy, resArr2)) {
-      resAcc[0] = false;
-    }
-    testVec1Copy = testVec1;
-    resVec = testVec1Copy.${swizzle}--;
-    if (!check_vector_values(resVec, resArr)) {
-      resAcc[0] = false;
-    }
-    if (!check_vector_values(testVec1Copy, resArr2)) {
-      resAcc[0] = false;
-    }
-    for (int i = 0; i < ${size}; ++i) {
-      resArr[i] = static_cast<${type}>(${test_value_1}) - static_cast<${type}>(1);
-    }
-    testVec1Copy = testVec1;
-    resVec = --testVec1Copy;
-    if (!check_vector_values(resVec, resArr)) {
-      resAcc[0] = false;
-    }
-    if (!check_vector_values(testVec1Copy, resArr)) {
-      resAcc[0] = false;
-    }
-    testVec1Copy = testVec1;
-    resVec = --testVec1Copy.${swizzle};
-    if (!check_vector_values(resVec, resArr)) {
-      resAcc[0] = false;
-    }
-    if (!check_vector_values(testVec1Copy, resArr)) {
-      resAcc[0] = false;
-    }
+  // The standard does not require ++ and -- (either prefix or postfix) for the
+  // bool type, so we skip tests for these operators if DataT is bool. This cannot
+  // be done via `if constexpr` because the type is not a dependent type.
+#if !${type_is_bool}
+  for (int i = 0; i < ${size}; ++i) {
+    resArr[i] = static_cast<${type}>(${test_value_1});
   }
+  for (int i = 0; i < ${size}; ++i) {
+    resArr2[i] = static_cast<${type}>(${test_value_1}) + static_cast<${type}>(1);
+  }
+  testVec1Copy = testVec1;
+  resVec = testVec1Copy++;
+  if (!check_vector_values(resVec, resArr)) {
+    resAcc[0] = false;
+  }
+  if (!check_vector_values(testVec1Copy, resArr2)) {
+    resAcc[0] = false;
+  }
+  testVec1Copy = testVec1;
+  resVec = testVec1Copy.${swizzle}++;
+  if (!check_vector_values(resVec, resArr)) {
+    resAcc[0] = false;
+  }
+  if (!check_vector_values(testVec1Copy, resArr2)) {
+    resAcc[0] = false;
+  }
+  for (int i = 0; i < ${size}; ++i) {
+    resArr[i] = static_cast<${type}>(${test_value_1}) + static_cast<${type}>(1);
+  }
+  testVec1Copy = testVec1;
+  resVec = ++testVec1Copy;
+  if (!check_vector_values(resVec, resArr)) {
+    resAcc[0] = false;
+  }
+  if (!check_vector_values(testVec1Copy, resArr)) {
+    resAcc[0] = false;
+  }
+  testVec1Copy = testVec1;
+  resVec = ++testVec1Copy.${swizzle};
+  if (!check_vector_values(resVec, resArr)) {
+    resAcc[0] = false;
+  }
+  if (!check_vector_values(testVec1Copy, resArr)) {
+    resAcc[0] = false;
+  }
+  for (int i = 0; i < ${size}; ++i) {
+    resArr[i] = static_cast<${type}>(${test_value_1});
+  }
+  for (int i = 0; i < ${size}; ++i) {
+    resArr2[i] = static_cast<${type}>(${test_value_1}) - static_cast<${type}>(1);
+  }
+  testVec1Copy = testVec1;
+  resVec = testVec1Copy--;
+  if (!check_vector_values(resVec, resArr)) {
+    resAcc[0] = false;
+  }
+  if (!check_vector_values(testVec1Copy, resArr2)) {
+    resAcc[0] = false;
+  }
+  testVec1Copy = testVec1;
+  resVec = testVec1Copy.${swizzle}--;
+  if (!check_vector_values(resVec, resArr)) {
+    resAcc[0] = false;
+  }
+  if (!check_vector_values(testVec1Copy, resArr2)) {
+    resAcc[0] = false;
+  }
+  for (int i = 0; i < ${size}; ++i) {
+    resArr[i] = static_cast<${type}>(${test_value_1}) - static_cast<${type}>(1);
+  }
+  testVec1Copy = testVec1;
+  resVec = --testVec1Copy;
+  if (!check_vector_values(resVec, resArr)) {
+    resAcc[0] = false;
+  }
+  if (!check_vector_values(testVec1Copy, resArr)) {
+    resAcc[0] = false;
+  }
+  testVec1Copy = testVec1;
+  resVec = --testVec1Copy.${swizzle};
+  if (!check_vector_values(resVec, resArr)) {
+    resAcc[0] = false;
+  }
+  if (!check_vector_values(testVec1Copy, resArr)) {
+    resAcc[0] = false;
+  }
+#endif
 
   // Assignment operators
   for (int i = 0; i < ${size}; ++i) {
@@ -1338,6 +1339,7 @@ def generate_all_type_test(type_str, size):
         val=Data.value_default_dict[type_str])
     test_string += all_type_test_template.substitute(
         type=type_str,
+        type_is_bool=int(type_str == 'bool'),
         size=str(size),
         swizzle=get_swizzle(size),
         test_value_1=1,
