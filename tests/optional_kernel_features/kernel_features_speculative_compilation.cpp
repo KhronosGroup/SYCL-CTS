@@ -72,6 +72,7 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
     }
   }
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
   if (queue.get_device().has(sycl::aspect::fp16)) {
     {
       const auto separate_lambda_no_arg = []() {
@@ -100,6 +101,7 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
                           use_feature_function_non_decorated<sycl::half>());
     }
   }
+#endif
 
   if (queue.get_device().has(sycl::aspect::fp64)) {
     {

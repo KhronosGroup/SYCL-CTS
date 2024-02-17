@@ -48,7 +48,9 @@ std::string type_name() {
   /* float types */
   MAKENAME(float);
   MAKENAME(double);
+#if SYCL_CTS_ENABLE_HALF_TESTS
   MAKESYCLNAME(half);
+#endif
 
   /* scalar types */
   MAKESTDNAME(int8_t);

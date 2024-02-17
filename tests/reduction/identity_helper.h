@@ -21,6 +21,8 @@
 #ifndef __SYCL_CTS_TEST_IDENTITY_HELPER_H
 #define __SYCL_CTS_TEST_IDENTITY_HELPER_H
 
+#include "../../util/type_traits.h"
+
 #include <limits>
 #include <type_traits>
 
@@ -108,8 +110,7 @@ AccumulatorT get_identity() {
 template <typename AccumulatorT, typename OperatorT,
           std::enable_if_t<
               std::is_same_v<OperatorT, sycl::minimum<AccumulatorT>> &&
-                  (std::is_floating_point_v<AccumulatorT> ||
-                   std::is_same_v<std::remove_cv_t<AccumulatorT>, sycl::half>),
+                  is_sycl_floating_point_v<AccumulatorT>,
               bool> = true>
 AccumulatorT get_identity() {
   return std::numeric_limits<AccumulatorT>::infinity();

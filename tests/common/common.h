@@ -237,6 +237,7 @@ bool check_type_sign(bool expected_sign) {
   return (std::is_signed<T>::value == expected_sign);
 }
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 /**
  * @brief Helper function to see if sycl::half is of the wrong sign
  */
@@ -245,6 +246,7 @@ inline bool check_type_sign<sycl::half>(bool expected_sign) {
   bool is_signed = sycl::half(1) > sycl::half(-1);
   return is_signed == expected_sign;
 }
+#endif
 
 /**
  * @brief Helper function to log a failure if a type is of the wrong size or

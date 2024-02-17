@@ -21,6 +21,7 @@
 #ifndef SYCLCTS_TESTS_MARRAY_MARRAY_OPERATOR_H
 #define SYCLCTS_TESTS_MARRAY_MARRAY_OPERATOR_H
 
+#include "../../util/type_traits.h"
 #include "../common/common.h"
 #include "../common/section_name_builder.h"
 #include "marray_common.h"
@@ -54,9 +55,8 @@ struct operators_helper {
 template <typename OpT, typename ElemT>
 struct skip_result_check
     : std::bool_constant<
-          (std::is_same_v<OpT, op_div> || std::is_same_v<OpT, op_assign_div>)&&(
-              std::is_same_v<ElemT, float> || std::is_same_v<ElemT, double> ||
-              std::is_same_v<ElemT, sycl::half>)> {};
+          (std::is_same_v<OpT, op_div> || std::is_same_v<OpT, op_assign_div>) &&
+              is_sycl_floating_point_v<ElemT>> {};
 
 template <typename OpT, typename ElemT>
 constexpr bool skip_result_check_v = skip_result_check<OpT, ElemT>::value;

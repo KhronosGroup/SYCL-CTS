@@ -221,6 +221,8 @@ struct kernel_atomic64_descriptor {
 // fp16, fp64, atomic64 kernels without sycl::requires attribute but with
 // explicit operations
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
+
 struct kernel_fp16_no_attr : kernel_base {
   void operator()(sycl::item<1> id) const {
     if (id.get_linear_id() == 0) {
@@ -238,6 +240,8 @@ struct kernel_fp16_no_attr_descriptor {
     return restrictions;
   }
 };
+
+#endif  // SYCL_CTS_ENABLE_HALF_TESTS
 
 struct kernel_fp64_no_attr : kernel_base {
   void operator()(sycl::item<1> id) const {

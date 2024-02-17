@@ -42,8 +42,10 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
- (AtomicRefT, sycl::aspect::atomic64))({
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64), (AtomicRefT, sycl::aspect::atomic64))({
   using kname = kernel_use_feature<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
 
@@ -84,8 +86,10 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
- (AtomicRefT, sycl::aspect::atomic64))({
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64), (AtomicRefT, sycl::aspect::atomic64))({
   using kname =
       kernel_use_feature_function_non_decorated<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
@@ -134,8 +138,10 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
- (AtomicRefT, sycl::aspect::atomic64))({
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64), (AtomicRefT, sycl::aspect::atomic64))({
   using kname = kernel_use_feature_function_external_decorated<FeatureTypeT,
                                                                FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
@@ -182,8 +188,10 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
- (AtomicRefT, sycl::aspect::atomic64))({
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64), (AtomicRefT, sycl::aspect::atomic64))({
   using kname =
       kernel_dummy_function_non_decorated<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
@@ -227,8 +235,10 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
- (AtomicRefT, sycl::aspect::atomic64))({
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64), (AtomicRefT, sycl::aspect::atomic64))({
   using kname = kernel_dummy_function_decorated<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
 
@@ -271,8 +281,10 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
- (AtomicRefT, sycl::aspect::atomic64))({
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64), (AtomicRefT, sycl::aspect::atomic64))({
   using kname =
       kernel_use_feature_function_decorated<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
@@ -316,8 +328,10 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
- (AtomicRefT, sycl::aspect::atomic64))({
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64), (AtomicRefT, sycl::aspect::atomic64))({
   using kname = kernel_use_another_feature<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
 
@@ -351,7 +365,6 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
                         [[sycl::device_has(AnotherFeatureAspect)]], kname,
                         USE_FEATURE(FeatureTypeT));
   }
-
 });
 
 #ifdef SYCL_EXTERNAL
@@ -367,8 +380,10 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
- (AtomicRefT, sycl::aspect::atomic64))({
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64), (AtomicRefT, sycl::aspect::atomic64))({
   using kname =
       kernel_use_feature_function_external_decorated_with_attr<FeatureTypeT,
                                                                FeatureAspectT>;

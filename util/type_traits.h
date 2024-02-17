@@ -51,8 +51,12 @@ using has_atomic_support = contains<T, int, unsigned int, long, unsigned long,
  */
 template <typename T>
 using is_sycl_floating_point =
+#if SYCL_CTS_ENABLE_HALF_TESTS
     std::bool_constant<std::is_floating_point_v<T> ||
-                       std::is_same_v<T, sycl::half>>;
+                       std::is_same_v<std::remove_cv_t<T>, sycl::half>>;
+#else
+    std::is_floating_point<T>;
+#endif
 
 template <typename T>
 inline constexpr bool is_sycl_floating_point_v{
@@ -406,12 +410,10 @@ using is_legal_operator = std::bool_constant<
      std::is_same_v<std::remove_cv_t<T>, bool>) ||
     (std::is_same_v<OperatorT, sycl::minimum<T>> && std::is_integral_v<T>) ||
     (std::is_same_v<OperatorT, sycl::minimum<T>> &&
-     (std::is_floating_point_v<T> ||
-      std::is_same_v<std::remove_cv_t<T>, sycl::half>)) ||
+     is_sycl_floating_point_v<T>) ||
     (std::is_same_v<OperatorT, sycl::maximum<T>> && std::is_integral_v<T>) ||
     (std::is_same_v<OperatorT, sycl::maximum<T>> &&
-     (std::is_floating_point_v<T> ||
-      std::is_same_v<std::remove_cv_t<T>, sycl::half>))>;
+     is_sycl_floating_point_v<T>)>;
 
 /**
  Checks whether \p T and \p OperatorT form a valid SYCL operator. */

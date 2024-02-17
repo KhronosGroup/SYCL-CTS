@@ -25,6 +25,7 @@
 #include "../../util/accuracy.h"
 #include "../../util/math_reference.h"
 #include "../../util/sycl_exceptions.h"
+#include "../../util/type_traits.h"
 #include "../common/once_per_unit.h"
 #include <cfloat>
 #include <limits>
@@ -55,10 +56,12 @@ template <>
 struct base<double> {
   using type = std::uint64_t;
 };
+#if SYCL_CTS_ENABLE_HALF_TESTS
 template <>
 struct base<sycl::half> {
   using type = std::uint16_t;
 };
+#endif
 
 template <typename T>
 std::string printable(T value) {
@@ -74,10 +77,12 @@ T min_t() {
   return std::numeric_limits<T>::min();
 }
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 template <>
 inline sycl::half min_t<sycl::half>() {
   return static_cast<sycl::half>(powf(2.0f, -14.0f));
 }
+#endif
 
 enum class AccuracyMode { ULP, AbsoluteTolerance };
 
@@ -95,9 +100,7 @@ bool verify(sycl_cts::util::logger& log, T a, T b, float accuracy,
             AccuracyMode accuracy_mode, const std::string& comment);
 
 template <typename T>
-typename std::enable_if<std::is_floating_point<T>::value ||
-                            std::is_same<sycl::half, T>::value,
-                        bool>::type
+std::enable_if_t<is_sycl_floating_point_v<T>, bool>
 verify(sycl_cts::util::logger& log, T value, sycl_cts::resultRef<T> r,
        float accuracy, AccuracyMode accuracy_mode, const std::string& comment) {
   const T reference = r.res;

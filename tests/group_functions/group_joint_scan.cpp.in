@@ -49,12 +49,15 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 #endif
 
   auto queue = once_per_unit::get_queue();
+#if SYCL_CTS_ENABLE_HALF_TESTS
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
       SKIP(
           "Device does not support half precision floating point "
           "operations.");
-  } else if (std::is_same_v<std::remove_cv_t<CTS_TYPE>, double>) {
+  }
+#endif
+  if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, double>) {
     if (!queue.get_device().has(sycl::aspect::fp64))
       SKIP(
           "Device does not support double precision floating point "
@@ -86,12 +89,15 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 #endif
 
   auto queue = once_per_unit::get_queue();
+#if SYCL_CTS_ENABLE_HALF_TESTS
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
       SKIP(
           "Device does not support half precision floating point "
           "operations.");
-  } else if (std::is_same_v<std::remove_cv_t<CTS_TYPE>, double>) {
+  }
+#endif
+  if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, double>) {
     if (!queue.get_device().has(sycl::aspect::fp64))
       SKIP(
           "Device does not support double precision floating point "
