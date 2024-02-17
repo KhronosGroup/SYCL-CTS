@@ -150,7 +150,8 @@ TEST_CASE(
   }
 }
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
+// Disabled: SimSYCL does not implement sub-buffers yet
+DISABLED_FOR_TEST_CASE(AdaptiveCpp, SimSYCL)
 ("Requirements on overlapping sub-buffers", "[invoke]")({
   auto device = sycl_cts::util::get_cts_object::device();
   auto queue = sycl_cts::util::get_cts_object::queue();
