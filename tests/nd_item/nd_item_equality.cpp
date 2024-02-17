@@ -29,9 +29,6 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 template <int numDims>
-struct nd_item_setup_kernel;
-
-template <int numDims>
 struct nd_item_equality_kernel;
 
 /** test sycl::device initialization
@@ -46,23 +43,41 @@ class TEST_NAME : public util::test_base {
 
   template <int numDims>
   void test_equality(util::logger& log) {
+    using item_t = sycl::nd_item<numDims>;
+    using kernel_t = nd_item_equality_kernel<numDims>;
+
+    // Store comparison results from kernel into a success array
+    std::array<bool,
+               to_integral(common_by_value_semantics::current_check::size)>
+        success;
+    std::fill(std::begin(success), std::end(success), true);
+
     {
-      using item_t = sycl::nd_item<numDims>;
+      sycl::buffer<bool> successBuf(success.data(),
+                                    sycl::range<1>(success.size()));
 
-      // nd_item is not default constructible, store two objects into the array
-      static constexpr size_t numItems = 2;
-      using setup_kernel_t = nd_item_setup_kernel<numDims>;
-      auto items =
-          store_instances<numItems, invoke_nd_item<numDims, setup_kernel_t>>();
+      const auto oneElemRange =
+          util::get_cts_object::range<numDims>::get(1, 1, 1);
 
-      // Check nd_item equality operator on the device side
-      common_by_value_semantics::on_device_checker<item_t>::template run<
-          nd_item_equality_kernel<numDims>>(
-          log, items, "nd_item " + std::to_string(numDims) + " (device)");
+      auto queue = util::get_cts_object::queue();
+      queue
+          .submit([&](sycl::handler& cgh) {
+            auto successAcc =
+                successBuf.get_access<sycl::access_mode::write>(cgh);
 
-      // Check nd_item equality operator on the host side
-      common_by_value_semantics::check_on_host(
-          log, items[0], "nd_item " + std::to_string(numDims) + " (host)");
+            cgh.parallel_for<kernel_t>(
+                sycl::nd_range<numDims>(oneElemRange, oneElemRange),
+                [=](item_t item) {
+                  common_by_value_semantics::check_equality(item, successAcc);
+                });
+          })
+          .wait_and_throw();
+    }
+
+    for (int i = 0; i < success.size(); ++i) {
+      INFO(std::string(TOSTRING(TEST_NAME)) + " is " +
+           common_by_value_semantics::get_error_string(i));
+      CHECK(success[i]);
     }
   }
 
