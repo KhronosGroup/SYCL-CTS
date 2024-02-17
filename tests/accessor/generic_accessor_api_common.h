@@ -58,8 +58,23 @@ void test_accessor_methods(const AccT &accessor,
 #endif
 }
 
+template<typename Accessor>
+extern const sycl::target accessor_target_v;
+
+template<typename T, int Dims, sycl::access_mode Mode, sycl::target Target, sycl::access::placeholder IsPlaceholder>
+inline constexpr sycl::target accessor_target_v<sycl::accessor<T, Dims, Mode, Target, IsPlaceholder>> = Target;
+
+template<typename T, int Dims>
+inline constexpr sycl::target accessor_target_v<sycl::local_accessor<T, Dims>> = sycl::target::device;
+
+template<typename T, int Dims, sycl::access_mode Mode>
+inline constexpr sycl::target accessor_target_v<sycl::host_accessor<T, Dims, Mode>> = sycl::target::host_buffer;
+
+
 template <typename T, typename AccT>
 void test_accessor_ptr_host(AccT &accessor, T expected_data) {
+  // get_multi_ptr is only defined for device accessors and local accessors
+  if constexpr (accessor_target_v<std::remove_cv_t<AccT>> == sycl::target::device)
   {
     INFO("check get_multi_ptr() method");
     auto acc_multi_ptr_no =
