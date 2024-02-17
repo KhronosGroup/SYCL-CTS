@@ -48,7 +48,9 @@ void device_set::intersect(const device_set& other) {
     const auto& device = *it;
     return other.m_devices.find(device) == other.m_devices.end();
   };
-  erase_if(m_devices, condition);
+  // must explicitly specify namespace `util` to avoid ambiguity with
+  // std::erase_if when compiling for C++20
+  util::erase_if(m_devices, condition);
 }
 
 void device_set::removeDevsWith(sycl::aspect aspect) {
@@ -56,7 +58,7 @@ void device_set::removeDevsWith(sycl::aspect aspect) {
     const auto& device = *it;
     return device.has(aspect);
   };
-  erase_if(m_devices, condition);
+  util::erase_if(m_devices, condition);
 }
 
 void device_set::removeDevsWith(std::initializer_list<sycl::aspect> aspects) {
@@ -70,7 +72,7 @@ void device_set::removeDevsWithout(sycl::aspect aspect) {
     const auto& device = *it;
     return !device.has(aspect);
   };
-  erase_if(m_devices, condition);
+  util::erase_if(m_devices, condition);
 }
 
 void device_set::removeDevsWithout(const kernel_restrictions& restriction) {
@@ -78,7 +80,7 @@ void device_set::removeDevsWithout(const kernel_restrictions& restriction) {
     const auto& device = *it;
     return !restriction.is_compatible(device);
   };
-  erase_if(m_devices, condition);
+  util::erase_if(m_devices, condition);
 }
 
 device_set device_set::filtered(const device_set& other, sycl::aspect aspect) {
