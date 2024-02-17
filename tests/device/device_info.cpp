@@ -222,8 +222,6 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::driver_version, std::string>(dev);
     check_get_info_param<sycl::info::device::profile, std::string>(dev);
     check_get_info_param<sycl::info::device::version, std::string>(dev);
-    check_get_info_param<sycl::info::device::opencl_c_version, std::string>(
-        dev);
     check_get_info_param<sycl::info::device::backend_version, std::string>(dev);
 
     check_get_info_param<sycl::info::device::aspects,
