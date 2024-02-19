@@ -11,8 +11,9 @@ extension specification.
 
 === Device coverage
 
-All of the tests described below are performed only on the default device that
-is selected on the CTS command line.
+All of the tests described below are performed on the default device that is
+selected on the CTS command line, but some of the test cases may query for
+additional devices from the same platform the default device belongs to.
 
 === Feature test macro
 
@@ -49,9 +50,17 @@ This test should take a platform the selected device belongs to and check that
 ==== Composite devices are not considered as root devices
 
 The test should ensure that no composite devices are returned through the
-`platform::get_device()` method for a platform the selected device belongs to.
+`platform::get_devices()` method for a platform the selected device belongs to.
 
 === New device information descriptors
+
+Composite devices are not considered as root devices and therefore they won't
+ever be selected by the CTS. To increase coverage, tests in this subcategory
+should be performed on a list of devices that consists of:
+
+- the default device that is selected on the CTS command line
+- devices returned by `platform::ext_oneapi_get_composite_devices()` for the
+  platform the default device belongs to
 
 ==== `info::device::component_devices`
 
@@ -60,12 +69,12 @@ return type.
 
 The test should also check the value returned for the descriptor:
 
-- if the selected device is a component device, an empty vector is expected
-- otherwise, returned vector is expected to be non-empty and each its element
-  should be additionally checked:
-  - each component device should have the `ext_oneapi_is_component` aspect
-  - each component device should return the selected device through
-    `info::device::composite_device` query
+- if a tested device is not a composite device, an empty vector is expected
+- otherwise, returned vector is expected to have at least two elements and those
+  elements should be additionally checked:
+-- each returned device should have the `ext_oneapi_is_component` aspect
+-- each returned device should return the tested device through
+   `info::device::composite_device` query
 
 ==== `info::device::composite_device`
 
@@ -74,21 +83,29 @@ return type.
 
 The test should also check the value returned for the descriptor:
 
-- if the selected device is a component device, then a synchronous `exception`
-  with `errc::invalid` error code is expected
+- if a tested device is not a component device, then a synchronous
+  `exception` with `errc::invalid` error code is expected
 - otherwise, returned device should have the `ext_oneapi_is_composite` aspect
 
 === New device aspects
 
+Composite devices are not considered as root devices and therefore they won't
+ever be selected by the CTS. To increase coverage, tests in this subcategory
+should be performed on a list of devices that consists of:
+
+- the default device that is selected on the CTS command line
+- devices returned by `platform::ext_oneapi_get_composite_devices()` for the
+  platform the default device belongs to
+
 ==== `ext_oneapi_is_composite`
 
-The test should check that if the selected device has the aspect, then the
+The test should check that if a tested device has the aspect, then the
 device should be present in a list returned by both `get_composite_devices()`
 and `platform::ext_oneapi_get_composite_devices()`.
 
 ==== `ext_oneapi_is_component`
 
-The test should check that if the selected device has the aspect, then the
+The test should check that if a tested device has the aspect, then the
 device should *not* be present in a list returned by either
 `get_composite_devices()` or `platform::ext_oneapi_get_composite_devices()`.
 
