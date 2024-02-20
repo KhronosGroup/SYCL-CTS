@@ -92,22 +92,22 @@ equal to `N1` if the predicate was `true` or equal to `N2` if the predicate was
 ==== get_group_linear_id
 
 Check that `get_group_linear_id()` return type is `linear_id_type` and return
-value is equal to `ballot.get_group_id()` converted to `linear_id_type`.
+value is equal to `get_group_id()` converted to `linear_id_type`.
 
 ==== get_local_linear_id
 
 Check that `get_local_linear_id()` return type is `linear_id_type` and the
-return value is equal to `ballot.get_local_id()` converted to `linear_id_type`.
+return value is equal to `get_local_id()` converted to `linear_id_type`.
 
 ==== get_group_linear_range
 
 Check that `get_group_linear_range()` return type is `linear_id_type` and return
-value is equal to `ballot.get_group_range()` converted to `linear_id_type`.
+value is equal to `get_group_range()` converted to `linear_id_type`.
 
 ==== get_local_linear_range
 
 Check that `get_local_linear_range()` return type is `linear_id_type` and return
-value is equal to `ballot.get_local_range()` converted to `linear_id_type`.
+value is equal to `get_local_range()` converted to `linear_id_type`.
 
 ==== leader
 
@@ -166,22 +166,23 @@ equal to `N`.
 ==== get_group_linear_id
 
 Check that `get_group_linear_id()` return type is `linear_id_type` and return
-value is equal to `ballot.get_group_id()` converted to `linear_id_type`.
+value is equal to `get_group_id()` converted to `linear_id_type`.
 
 ==== get_local_linear_id
 
 Check that `get_local_linear_id()` return type is `linear_id_type` and the
-return value is equal to `ballot.get_local_id()` converted to `linear_id_type`.
+return value is equal to `get_local_id()` converted to
+`linear_id_type`.
 
 ==== get_group_linear_range
 
 Check that `get_group_linear_range()` return type is `linear_id_type` and return
-value is equal to `ballot.get_group_range()` converted to `linear_id_type`.
+value is equal to `get_group_range()` converted to `linear_id_type`.
 
 ==== get_local_linear_range
 
 Check that `get_local_linear_range()` return type is `linear_id_type` and return
-value is equal to `ballot.get_local_range()` converted to `linear_id_type`.
+value is equal to `get_local_range()` converted to `linear_id_type`.
 
 ==== leader
 
@@ -238,22 +239,22 @@ equal to `N`.
 ==== get_group_linear_id
 
 Check that `get_group_linear_id()` return type is `linear_id_type` and return
-value is equal to `ballot.get_group_id()` converted to `linear_id_type`.
+value is equal to `get_group_id()` converted to `linear_id_type`.
 
 ==== get_local_linear_id
 
 Check that `get_local_linear_id()` return type is `linear_id_type` and the
-return value is equal to `ballot.get_local_id()` converted to `linear_id_type`.
+return value is equal to `get_local_id()` converted to `linear_id_type`.
 
 ==== get_group_linear_range
 
 Check that `get_group_linear_range()` return type is `linear_id_type` and return
-value is equal to `ballot.get_group_range()` converted to `linear_id_type`.
+value is equal to `get_group_range()` converted to `linear_id_type`.
 
 ==== get_local_linear_range
 
 Check that `get_local_linear_range()` return type is `linear_id_type` and return
-value is equal to `ballot.get_local_range()` converted to `linear_id_type`.
+value is equal to `get_local_range()` converted to `linear_id_type`.
 
 ==== leader
 
@@ -309,22 +310,22 @@ less than or equal to `M`.
 ==== get_group_linear_id
 
 Check that `get_group_linear_id()` return type is `linear_id_type` and return
-value is equal to `ballot.get_group_id()` converted to `linear_id_type`.
+value is equal to `get_group_id()` converted to `linear_id_type`.
 
 ==== get_local_linear_id
 
 Check that `get_local_linear_id()` return type is `linear_id_type` and the
-return value is equal to `ballot.get_local_id()` converted to `linear_id_type`.
+return value is equal to `get_local_id()` converted to `linear_id_type`.
 
 ==== get_group_linear_range
 
 Check that `get_group_linear_range()` return type is `linear_id_type` and return
-value is equal to `ballot.get_group_range()` converted to `linear_id_type`.
+value is equal to `get_group_range()` converted to `linear_id_type`.
 
 ==== get_local_linear_range
 
 Check that `get_local_linear_range()` return type is `linear_id_type` and return
-value is equal to `ballot.get_local_range()` converted to `linear_id_type`.
+value is equal to `get_local_range()` converted to `linear_id_type`.
 
 ==== leader
 
