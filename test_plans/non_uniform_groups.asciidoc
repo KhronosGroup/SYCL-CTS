@@ -119,8 +119,8 @@ Check that `leader()` return type is `bool` and return value is equal to
 Let `N` be some power-of-two value greater than 1 that is expected to be a
 divisor of the sub-group size of most devices. The `get_fixed_size_group` is
 called with the `sub_group` of the invocation and `N` as the partition size.
-Let `M` be the size of the sub-group the given `fixed_size_group` was created
-from.
+Let `M` be the result of `get_local_range()` on the sub-group the given
+`fixed_size_group` was created from.
 
 ==== Group traits
 
@@ -193,7 +193,7 @@ Check that `leader()` return type is `bool` and return value is equal to
 
 The `get_tangle_group` is called with the `sub_group` of the invocation. This
 will only be called by the first `N` items of the sub-group, where `N` is
-strictly less than the size of the sub-group.
+strictly less than the result of `get_local_range()` on the sub-group.
 
 ==== Group traits
 
@@ -264,7 +264,7 @@ Check that `leader()` return type is `bool` and return value is equal to
 === The `opportunistic_group` class API
 
 The `get_opportunistic_group` is called by all work items.
-Let `M` be the size of the sub-group of the invocation.
+Let `M` be the result of `get_local_range()` on the sub-group of the invocation.
 
 ==== Group traits
 
