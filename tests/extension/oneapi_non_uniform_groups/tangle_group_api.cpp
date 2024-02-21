@@ -66,17 +66,14 @@ TEST_CASE("Test for tangle_group apis.", "[oneapi_non_uniform_groups]") {
 
       sycl::sub_group sg = it.get_sub_group();
       size_t sub_group_size = sg.get_local_range().size();
-      size_t split = sub_group_size / 2;
+      size_t split = sub_group_size / 3;
 
-      if (sg.get_local_linear_id() < split) {
-        auto tangle = oneapi_ext::get_tangle_group(sg);
-        static_assert(std::is_same_v<decltype(tangle), tangle_group_t>);
-
+      auto run_checks = [&](tangle_group_t tangle, size_t expected_size) {
         results[checks::get_group_id] = tangle.get_group_id() == 0;
         results[checks::get_local_id] = tangle.get_local_id() < split;
         results[checks::get_group_range] = tangle.get_group_range().size() == 1;
         results[checks::get_local_range] =
-            tangle.get_local_range().size() == split;
+            tangle.get_local_range().size() == expected_size;
         results[checks::get_group_linear_id] =
             tangle.get_group_linear_id() == 0;
         results[checks::get_local_linear_id] =
@@ -87,17 +84,16 @@ TEST_CASE("Test for tangle_group apis.", "[oneapi_non_uniform_groups]") {
             tangle.get_local_linear_range() == tangle.get_local_range().size();
         results[checks::leader] =
             tangle.leader() == (tangle.get_local_id() == 0);
+      };
+
+      if (sg.get_local_linear_id() < split) {
+        auto tangle = oneapi_ext::get_tangle_group(sg);
+        static_assert(std::is_same_v<decltype(tangle), tangle_group_t>);
+        run_checks(tangle, split);
       } else {
-        // All excluded items simply fill with true.
-        results[checks::get_group_id] = true;
-        results[checks::get_local_id] = true;
-        results[checks::get_group_range] = true;
-        results[checks::get_local_range] = true;
-        results[checks::get_group_linear_id] = true;
-        results[checks::get_local_linear_id] = true;
-        results[checks::get_group_linear_range] = true;
-        results[checks::get_local_linear_range] = true;
-        results[checks::leader] = true;
+        auto tangle = oneapi_ext::get_tangle_group(sg);
+        static_assert(std::is_same_v<decltype(tangle), tangle_group_t>);
+        run_checks(tangle, sub_group_size - split);
       }
     });
   });
