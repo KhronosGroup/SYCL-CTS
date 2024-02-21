@@ -33,7 +33,10 @@ TEST_CASE(CTS_TYPE_NAME + " non-uniform group joint reduce functions",
   const auto RetType = unnamed_type_pack<CTS_TYPE>();
   const auto GroupTypes = unnamed_type_pack<
       oneapi_ext::ballot_group<sycl::sub_group>,
+      oneapi_ext::fixed_size_group<1, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
       oneapi_ext::fixed_size_group<4, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<8, sycl::sub_group>,
       oneapi_ext::tangle_group<sycl::sub_group>,
       oneapi_ext::opportunistic_group>();
 
@@ -63,7 +66,10 @@ TEMPLATE_LIST_TEST_CASE(
   const auto ReducedType = unnamed_type_pack<TestType>();
   const auto GroupTypes = unnamed_type_pack<
       oneapi_ext::ballot_group<sycl::sub_group>,
+      oneapi_ext::fixed_size_group<1, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
       oneapi_ext::fixed_size_group<4, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<8, sycl::sub_group>,
       oneapi_ext::tangle_group<sycl::sub_group>,
       oneapi_ext::opportunistic_group>();
 

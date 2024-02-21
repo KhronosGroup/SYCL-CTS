@@ -86,10 +86,18 @@ struct NonUniformGroupHelper<oneapi_ext::ballot_group<sycl::sub_group>> {
 template <size_t PartitionSize>
 struct NonUniformGroupHelper<
     oneapi_ext::fixed_size_group<PartitionSize, sycl::sub_group>> {
+  // Fixed-size group testing have one case per size we test, but since the size
+  // is part of the type it will have to be specified further out.
   static constexpr size_t num_test_cases = 1;
 
   static bool is_supported(const sycl::device& dev) {
-    return dev.has(sycl::aspect::ext_oneapi_fixed_size_group);
+    // For these tests we consider them unsupported if the smallest supported
+    // sub-group size is less than the partition size.
+    std::vector<size_t> sg_sizes =
+        dev.get_info<sycl::info::device::sub_group_sizes>();
+    size_t min_sg_size = *std::min_element(sg_sizes.cbegin(), sg_sizes.cend());
+    return min_sg_size >= PartitionSize &&
+           dev.has(sycl::aspect::ext_oneapi_fixed_size_group);
   }
 
   static bool should_participate(sycl::sub_group sg, int test_case) {

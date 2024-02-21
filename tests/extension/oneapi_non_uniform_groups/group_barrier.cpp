@@ -30,7 +30,13 @@ TEST_CASE("Non-uniform-group barriers",
   auto queue = once_per_unit::get_queue();
 
   non_uniform_group_barrier<oneapi_ext::ballot_group<sycl::sub_group>>(queue);
+  non_uniform_group_barrier<oneapi_ext::fixed_size_group<1, sycl::sub_group>>(
+      queue);
+  non_uniform_group_barrier<oneapi_ext::fixed_size_group<2, sycl::sub_group>>(
+      queue);
   non_uniform_group_barrier<oneapi_ext::fixed_size_group<4, sycl::sub_group>>(
+      queue);
+  non_uniform_group_barrier<oneapi_ext::fixed_size_group<8, sycl::sub_group>>(
       queue);
   non_uniform_group_barrier<oneapi_ext::tangle_group<sycl::sub_group>>(queue);
   non_uniform_group_barrier<oneapi_ext::opportunistic_group>(queue);

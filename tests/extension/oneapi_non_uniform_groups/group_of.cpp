@@ -30,7 +30,13 @@ TEMPLATE_LIST_TEST_CASE(
   predicate_function_of_non_uniform_group<
       oneapi_ext::ballot_group<sycl::sub_group>, TestType>(queue);
   predicate_function_of_non_uniform_group<
+      oneapi_ext::fixed_size_group<1, sycl::sub_group>, TestType>(queue);
+  predicate_function_of_non_uniform_group<
+      oneapi_ext::fixed_size_group<2, sycl::sub_group>, TestType>(queue);
+  predicate_function_of_non_uniform_group<
       oneapi_ext::fixed_size_group<4, sycl::sub_group>, TestType>(queue);
+  predicate_function_of_non_uniform_group<
+      oneapi_ext::fixed_size_group<8, sycl::sub_group>, TestType>(queue);
   predicate_function_of_non_uniform_group<
       oneapi_ext::tangle_group<sycl::sub_group>, TestType>(queue);
   predicate_function_of_non_uniform_group<oneapi_ext::opportunistic_group,
@@ -43,7 +49,13 @@ TEST_CASE("Non-uniform group of bool functions",
   bool_function_of_non_uniform_group<oneapi_ext::ballot_group<sycl::sub_group>>(
       queue);
   bool_function_of_non_uniform_group<
+      oneapi_ext::fixed_size_group<1, sycl::sub_group>>(queue);
+  bool_function_of_non_uniform_group<
+      oneapi_ext::fixed_size_group<2, sycl::sub_group>>(queue);
+  bool_function_of_non_uniform_group<
       oneapi_ext::fixed_size_group<4, sycl::sub_group>>(queue);
+  bool_function_of_non_uniform_group<
+      oneapi_ext::fixed_size_group<8, sycl::sub_group>>(queue);
   bool_function_of_non_uniform_group<oneapi_ext::tangle_group<sycl::sub_group>>(
       queue);
   bool_function_of_non_uniform_group<oneapi_ext::opportunistic_group>(queue);

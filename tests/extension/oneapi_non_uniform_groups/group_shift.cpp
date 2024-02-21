@@ -28,7 +28,13 @@ TEMPLATE_LIST_TEST_CASE("Non-uniform-group shift",
 
   shift_non_uniform_group<oneapi_ext::ballot_group<sycl::sub_group>, TestType>(
       queue);
+  shift_non_uniform_group<oneapi_ext::fixed_size_group<1, sycl::sub_group>,
+                          TestType>(queue);
+  shift_non_uniform_group<oneapi_ext::fixed_size_group<2, sycl::sub_group>,
+                          TestType>(queue);
   shift_non_uniform_group<oneapi_ext::fixed_size_group<4, sycl::sub_group>,
+                          TestType>(queue);
+  shift_non_uniform_group<oneapi_ext::fixed_size_group<8, sycl::sub_group>,
                           TestType>(queue);
   shift_non_uniform_group<oneapi_ext::tangle_group<sycl::sub_group>, TestType>(
       queue);

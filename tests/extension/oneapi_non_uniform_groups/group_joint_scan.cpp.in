@@ -35,7 +35,10 @@ TEST_CASE(CTS_TYPE_NAME + " non-uniform group joint scan functions",
   auto queue = once_per_unit::get_queue();
   const auto GroupTypes = unnamed_type_pack<
       oneapi_ext::ballot_group<sycl::sub_group>,
+      oneapi_ext::fixed_size_group<1, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
       oneapi_ext::fixed_size_group<4, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<8, sycl::sub_group>,
       oneapi_ext::tangle_group<sycl::sub_group>,
       oneapi_ext::opportunistic_group>();
 
@@ -60,7 +63,10 @@ TEST_CASE(CTS_TYPE_NAME + " non-uniform group joint scan functions with init",
   auto queue = once_per_unit::get_queue();
   const auto GroupTypes = unnamed_type_pack<
       oneapi_ext::ballot_group<sycl::sub_group>,
+      oneapi_ext::fixed_size_group<1, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
       oneapi_ext::fixed_size_group<4, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<8, sycl::sub_group>,
       oneapi_ext::tangle_group<sycl::sub_group>,
       oneapi_ext::opportunistic_group>();
 
