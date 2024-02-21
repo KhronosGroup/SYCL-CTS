@@ -101,9 +101,7 @@ struct NonUniformGroupHelper<
     return oneapi_ext::get_fixed_size_group<PartitionSize>(sg);
   }
 
-  static size_t preferred_single_worker_group_id(int) {
-    return 0;
-  }
+  static size_t preferred_single_worker_group_id(int) { return 0; }
 
   static std::string get_name() {
     return "fixed_size_group<" + std::to_string(PartitionSize) +
@@ -141,9 +139,7 @@ struct NonUniformGroupHelper<oneapi_ext::tangle_group<sycl::sub_group>> {
     return oneapi_ext::get_tangle_group(sg);
   }
 
-  static size_t preferred_single_worker_group_id(int) {
-    return 0;
-  }
+  static size_t preferred_single_worker_group_id(int) { return 0; }
 
   static std::string get_name() { return "tangle_group<sycl::sub_group>"; }
 
@@ -186,9 +182,7 @@ struct NonUniformGroupHelper<oneapi_ext::opportunistic_group> {
     return oneapi_ext::this_kernel::get_opportunistic_group();
   }
 
-  static size_t preferred_single_worker_group_id(int) {
-    return 0;
-  }
+  static size_t preferred_single_worker_group_id(int) { return 0; }
 
   static std::string get_name() { return "opportunistic_group"; }
 
