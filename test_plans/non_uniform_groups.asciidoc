@@ -367,5 +367,32 @@ The group algorithms
 
 for `ballot_group`, `fixed_size_group`, `tangle_group`
 and `opportunistic_group` are tested similar to how they are currently tested
-with `group` and `sub_group` in the core CTS. The groups are constructed in the
-same way as for the API testing described above.
+with `group` and `sub_group` in the core CTS.
+
+The groups are constructed as follows:
+
+* `get_ballot_group` is called with a predicate that is `true` for the first `N`
+  work-items in the sub-group.
+* `get_ballot_group` is called with a predicate that is `true` for work-items
+  with odd `sg.get_local_linear_id()` values, where `sg` is the sub-group.
+* `get_ballot_group` is called with a predicate that is `true` for all
+  work-items in the sub-group.
+* `get_ballot_group` is called with a predicate that is `false` for all
+  work-items in the sub-group.
+* `get_fixed_size_group` is called with a partition-size of 1.
+* `get_fixed_size_group` is called with a partition-size of 2, if 2 is greater
+  than or equal to the smallest supported sub-group size on the device.
+* `get_fixed_size_group` is called with a partition-size of 4, if 4 is greater
+  than or equal to the smallest supported sub-group size on the device.
+* `get_fixed_size_group` is called with a partition-size of 8, if 8 is greater
+  than or equal to the smallest supported sub-group size on the device.
+* `get_tangle_group` is called in a branched control-flow with the first `N`
+  work-items in the sub-group.
+* `get_tangle_group` is called in a branched control-flow with work-items with
+  odd `sg.get_local_linear_id()` values, where `sg` is the sub-group.
+* `get_tangle_group` is called by all items in the sub-group.
+* `get_opportunistic_group` is called in a branched control-flow with the first
+  `N` work-items in the sub-group.
+* `get_opportunistic_group` is called in a branched control-flow with work-items
+  with odd `sg.get_local_linear_id()` values, where `sg` is the sub-group.
+* `get_opportunistic_group` is called by all items in the sub-group.
