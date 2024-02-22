@@ -3,6 +3,7 @@ if(SYCL_CTS_ENABLE_EXT_ONEAPI_COMPOSITE_DEVICE_TESTS)
     enumerating_composite_devices.cpp
     device_info_descriptors.cpp
     aspects.cpp
+    descendent_device.cpp
   )
 
   add_cts_test(${test_cases_list})
