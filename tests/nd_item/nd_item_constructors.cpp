@@ -203,50 +203,6 @@ void test_constructors(util::logger& log) {
   CHECK(success_deprecated[to_integral(current_check::move_constructor)]);
   CHECK(success_deprecated[to_integral(current_check::move_assignment)]);
 #endif
-
-  // nd_item is not default constructible, store two objects into the array
-  static constexpr size_t numItems = 2;
-  using setup_kernel_t = nd_item_setup_kernel<numDims>;
-  auto items =
-      store_instances<numItems, invoke_nd_item<numDims, setup_kernel_t>>();
-  {
-    const auto& item = items[0];
-    const auto& itemReadOnly = item;
-    state_storage<numDims> expected(itemReadOnly);
-
-    {  // Check copy constructor
-      sycl::nd_item<numDims> copied(itemReadOnly);
-      CHECK(expected.check_equality(copied));
-#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-      CHECK(expected.check_equality_deprecated(copied));
-#endif
-    }
-    {  // Check copy assignment
-      auto copied = itemReadOnly;
-      CHECK(expected.check_equality(copied));
-#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-      CHECK(expected.check_equality_deprecated(copied));
-#endif
-    }
-    {  // Check move constructor; invalidates item
-      sycl::nd_item<numDims> moved(item);
-      CHECK(expected.check_equality(moved));
-#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-      CHECK(expected.check_equality_deprecated(moved));
-#endif
-    }
-  }
-  {
-    const auto& item = items[1];
-    state_storage<numDims> expected(item);
-
-    // Check move assignment; invalidates item
-    auto moved = std::move(item);
-    CHECK(expected.check_equality(moved));
-#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-    CHECK(expected.check_equality_deprecated(moved));
-#endif
-  }
 }
 
 class TEST_NAME : public util::test_base {
