@@ -193,7 +193,7 @@ Check that `leader()` return type is `bool` and return value is equal to
 
 The `get_tangle_group` is called with the `sub_group` of the invocation. 
 Let `M` be the result of `get_local_range()` on this `sub_group` and let `N` be
-some value strictly less than `M`. `get_tangle_group` is called it two split
+some value strictly less than `M`. `get_tangle_group` is called in two split
 control-flows in an if-else-statement, the if-branch with the first `N` items of
 the sub-group and the else branch with the rest.
 
