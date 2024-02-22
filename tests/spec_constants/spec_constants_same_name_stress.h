@@ -47,6 +47,7 @@ class check_specialization_constants_same_name_stress_for_type {
       auto queue = util::get_cts_object::queue();
       const sycl::context ctx = queue.get_context();
       const sycl::device dev = queue.get_device();
+      bool has_target_kernel = true;
 
       if constexpr (via_kb::value) {
         if (!dev.has(sycl::aspect::online_compiler)) {
@@ -149,6 +150,7 @@ class check_specialization_constants_same_name_stress_for_type {
             auto k_bundle = sycl::get_kernel_bundle<sycl::bundle_state::input>(
                 ctx, {dev}, {kernelId});
             if (!k_bundle.has_kernel(kernelId)) {
+              has_target_kernel = false;
               log.note("kernel_bundle doesn't contain target kernel for " +
                        type_name_string<T>::get(type_name) + " (skipped)");
               return;
@@ -160,14 +162,17 @@ class check_specialization_constants_same_name_stress_for_type {
           }
         });
       }
-      for (int i = 0; i < size; ++i) {
-        if (!check_equal_values(def_values_arr[i], ref_def_values_arr[i])) {
-          FAIL(log, "Wrong default value for spec const defined in " +
-                        get_hint(i) + " for type " + type_name);
-        }
-        if (!check_equal_values(result_arr[i], ref_arr[i])) {
-          FAIL(log, "Wrong result value for spec const defined in " +
-                        get_hint(i) + "for type " + type_name);
+      if (has_target_kernel) {
+        // Check results only if target kernel is available
+        for (int i = 0; i < size; ++i) {
+          if (!check_equal_values(def_values_arr[i], ref_def_values_arr[i])) {
+            FAIL(log, "Wrong default value for spec const defined in " +
+                          get_hint(i) + " for type " + type_name);
+          }
+          if (!check_equal_values(result_arr[i], ref_arr[i])) {
+            FAIL(log, "Wrong result value for spec const defined in " +
+                          get_hint(i) + "for type " + type_name);
+          }
         }
       }
     } catch (...) {
