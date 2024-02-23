@@ -29,8 +29,7 @@
 
 namespace composite_device::tests {
 
-TEST_CASE("Basic test for a composite device",
-          "[oneapi_composite_device]") {
+TEST_CASE("Basic test for a composite device", "[oneapi_composite_device]") {
 #ifndef SYCL_EXT_ONEAPI_COMPOSITE_DEVICE
   SKIP(
       "The sycl_ext_oneapi_composite device extension is not supported by an "
@@ -61,14 +60,13 @@ TEST_CASE("Basic test for a composite device",
   sycl::buffer bufB(b);
   sycl::buffer<int> bufC(sycl::range{100});
 
-  q.submit([&](sycl::handler &cgh) {
-      sycl::accessor accA(bufA, cgh, sycl::read_only);
-      sycl::accessor accB(bufB, cgh, sycl::read_only);
-      sycl::accessor accC(bufB, cgh, sycl::write_only);
+  q.submit([&](sycl::handler& cgh) {
+    sycl::accessor accA(bufA, cgh, sycl::read_only);
+    sycl::accessor accB(bufB, cgh, sycl::read_only);
+    sycl::accessor accC(bufB, cgh, sycl::write_only);
 
-      cgh.parallel_for(sycl::range{100}, [=](sycl::id<1> it) {
-        accC[it] = accA[it] + accB[it];
-      });
+    cgh.parallel_for(sycl::range{100},
+                     [=](sycl::id<1> it) { accC[it] = accA[it] + accB[it]; });
   });
 
   auto hostAcc = bufC.get_host_access();
@@ -127,22 +125,20 @@ TEST_CASE("Interoperability between composite and component devices",
 
   sycl::buffer<int> bufC(sycl::range{count});
 
-  composite_queue.submit([&](sycl::handler &cgh) {
+  composite_queue.submit([&](sycl::handler& cgh) {
     cgh.depends_on({eventA, eventB});
 
     sycl::accessor acc(bufC, cgh, sycl::write_only);
 
-    cgh.parallel_for(sycl::range{count}, [=](sycl::id<1> it) {
-      acc[it] = ptrA[it] + ptrB[it];
-    });
+    cgh.parallel_for(sycl::range{count},
+                     [=](sycl::id<1> it) { acc[it] = ptrA[it] + ptrB[it]; });
   });
 
-  component_queue.submit([&](sycl::handler &cgh) {
+  component_queue.submit([&](sycl::handler& cgh) {
     sycl::accessor acc(bufC, cgh, sycl::read_write);
 
-    cgh.parallel_for(sycl::range{count}, [=](sycl::id<1> it) {
-      acc[it] += ptrA[it] + ptrB[it];
-    });
+    cgh.parallel_for(sycl::range{count},
+                     [=](sycl::id<1> it) { acc[it] += ptrA[it] + ptrB[it]; });
   });
 
   auto hostAcc = bufC.get_host_access();
@@ -155,4 +151,3 @@ TEST_CASE("Interoperability between composite and component devices",
 }
 
 }  // namespace composite_device::tests
-

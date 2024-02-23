@@ -116,7 +116,7 @@ TEST_CASE("Test for info::device::composite_device descriptor",
       }
 
       REQUIRE(result.has(sycl::aspect::ext_oneapi_is_composite));
-    } catch (const sycl::exception &e) {
+    } catch (const sycl::exception& e) {
       if (!device.has(sycl::aspect::ext_oneapi_is_component)) {
         INFO(
             "Checking that a non-component device don't have a composite "

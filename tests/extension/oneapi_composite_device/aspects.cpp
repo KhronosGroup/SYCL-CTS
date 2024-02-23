@@ -131,17 +131,16 @@ TEST_CASE("Test for ext_oneapi_is_component aspect",
           auto sub_devices = device.create_sub_devices<
               sycl::info::partition_property::partition_by_affinity_domain>(
               domain);
-          REQUIRE(
-              std::none_of(sub_devices.begin(), sub_devices.end(),
-                           [&](sycl::device sub_device) {
-                             return sub_device.has(
-                                 sycl::aspect::ext_oneapi_is_component);
-                           }));
+          REQUIRE(std::none_of(sub_devices.begin(), sub_devices.end(),
+                               [&](sycl::device sub_device) {
+                                 return sub_device.has(
+                                     sycl::aspect::ext_oneapi_is_component);
+                               }));
         }
       } break;
       default:
-        // Unknown partition type, do nothing
-        ;
+          // Unknown partition type, do nothing
+          ;
     }
   }
 
@@ -149,4 +148,3 @@ TEST_CASE("Test for ext_oneapi_is_component aspect",
 }
 
 }  // namespace composite_device::tests
-
