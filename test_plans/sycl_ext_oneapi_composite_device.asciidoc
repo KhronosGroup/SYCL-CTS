@@ -34,18 +34,18 @@ together.
 
 This test should check that freestanding function `get_composite_devices()`:
 
-- has the correct signature
-- does not throw an exception
-- returns the same result on subsequent calls
+* has the correct signature
+* does not throw an exception
+* returns the same result on subsequent calls
 
 ==== Through the new `platform::ext_oneapi_get_composite_devices()` API
 
 This test should take a platform the selected device belongs to and check that
 `platform::ext_oneapi_get_composite_devices()` method:
 
-- has the correct signature
-- does not throw an exception
-- returns the same result on subsequent calls
+* has the correct signature
+* does not throw an exception
+* returns the same result on subsequent calls
 
 ==== Composite devices are not considered as root devices
 
@@ -66,11 +66,11 @@ return type.
 
 The test should also check the value returned for the descriptor:
 
-- if a tested device is not a composite device, an empty vector is expected
-- otherwise, returned vector is expected to have at least two elements and those
+* if a tested device is not a composite device, an empty vector is expected
+* otherwise, returned vector is expected to have at least two elements and those
   elements should be additionally checked:
--- each returned device should have the `ext_oneapi_is_component` aspect
--- each returned device should return the tested device through
+** each returned device should have the `ext_oneapi_is_component` aspect
+** each returned device should return the tested device through
    `info::device::composite_device` query
 
 ==== `info::device::composite_device`
@@ -80,9 +80,9 @@ return type.
 
 The test should also check the value returned for the descriptor:
 
-- if a tested device is not a component device, then a synchronous
+* if a tested device is not a component device, then a synchronous
   `exception` with `errc::invalid` error code is expected
-- otherwise, returned device should have the `ext_oneapi_is_composite` aspect
+* otherwise, returned device should have the `ext_oneapi_is_composite` aspect
 
 === New device aspects
 
