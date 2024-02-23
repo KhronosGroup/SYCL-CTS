@@ -137,7 +137,7 @@ that device.
 The test should first obtain both a component and a composite device and it is
 skipped if that is not possible using the selected device.
 
-The test than creates a shared context for both devices, allocates a shared
+The test then creates a shared context for both devices, allocates a shared
 memory and creates separate command queues for each device. Test performs some
 computations and memory operations on that shared data using both devices.
 
