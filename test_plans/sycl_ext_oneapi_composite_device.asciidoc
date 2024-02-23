@@ -56,11 +56,8 @@ The test should ensure that no composite devices are returned through the
 
 Composite devices are not considered as root devices and therefore they won't
 ever be selected by the CTS. To increase coverage, tests in this subcategory
-should be performed on a list of devices that consists of:
-
-- the default device that is selected on the CTS command line
-- devices returned by `platform::ext_oneapi_get_composite_devices()` for the
-  platform the default device belongs to
+should be additionally performed on a composite device the selected device
+belongs to (if the selected device is a component device).
 
 ==== `info::device::component_devices`
 
@@ -91,11 +88,8 @@ The test should also check the value returned for the descriptor:
 
 Composite devices are not considered as root devices and therefore they won't
 ever be selected by the CTS. To increase coverage, tests in this subcategory
-should be performed on a list of devices that consists of:
-
-- the default device that is selected on the CTS command line
-- devices returned by `platform::ext_oneapi_get_composite_devices()` for the
-  platform the default device belongs to
+should be additionally performed on a composite device the selected device
+belongs to (if the selected device is a component device).
 
 ==== `ext_oneapi_is_composite`
 
