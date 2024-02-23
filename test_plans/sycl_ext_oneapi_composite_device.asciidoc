@@ -86,26 +86,21 @@ The test should also check the value returned for the descriptor:
 
 === New device aspects
 
-Composite devices are not considered as root devices and therefore they won't
-ever be selected by the CTS. To increase coverage, tests in this subcategory
-should be additionally performed on a composite device the selected device
-belongs to (if the selected device is a component device).
-
 ==== `ext_oneapi_is_composite`
 
-The test should check that if a tested device has the aspect, then the
-device should be present in a list returned by both `get_composite_devices()`
-and `platform::ext_oneapi_get_composite_devices()`.
+The test should ensure that all of devices returned by
+`get_composite_devices()` and `platform::ext_oneapi_get_composite_devices()`
+have `ext_oneapi_is_composite` aspect.
 
 ==== `ext_oneapi_is_component`
 
-The test should check that if a tested device has the aspect, then the
-device should *not* be present in a list returned by either
-`get_composite_devices()` or `platform::ext_oneapi_get_composite_devices()`.
+The test should ensure that none of devices returned by
+`get_composite_devices()` and `platform::ext_oneapi_get_composite_devices()`
+have `ext_oneapi_is_component` aspect.
 
-The test should then attempt to partition a component device using one of
-partition methods it supports and check that none of sub-devices have the
-`ext_oneapi_is_component` aspect.
+If the CTS selected device is a component device, then test should then attempt
+to partition a component device using one of partition methods it supports and
+check that none of sub-devices have the `ext_oneapi_is_component` aspect.
 
 === Impact on "descendent device"
 
