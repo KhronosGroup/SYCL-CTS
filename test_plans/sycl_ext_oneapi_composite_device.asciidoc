@@ -136,3 +136,13 @@ The test then creates a shared context for both devices, allocates a shared
 memory and creates separate command queues for each device. Test performs some
 computations and memory operations on that shared data using both devices.
 
+==== Sharing memory to a descendent device
+
+The test should first obtain both a component and a composite device and it is
+skipped if that is not possible using the selected device.
+
+The test allocates a memory in a context a component device belongs to. It then
+create a queue for a composite device using _the same_ context and checks that
+memory allocated for a composite device is available to a descendent component
+device as well.
+
