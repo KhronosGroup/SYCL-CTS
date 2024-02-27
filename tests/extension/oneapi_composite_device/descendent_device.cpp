@@ -33,7 +33,7 @@ TEST_CASE("Test for impact on descendent device", "[oneapi_composite_device]") {
 #ifndef SYCL_EXT_ONEAPI_COMPOSITE_DEVICE
   SKIP(
       "The sycl_ext_oneapi_composite device extension is not supported by an "
-      "imlementation");
+      "implementation");
 #else
 
   auto component_device = sycl_cts::util::get_cts_object::device();

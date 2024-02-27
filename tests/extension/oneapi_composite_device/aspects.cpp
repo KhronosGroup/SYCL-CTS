@@ -35,7 +35,7 @@ TEST_CASE("Test for aspects of composite devices",
 #ifndef SYCL_EXT_ONEAPI_COMPOSITE_DEVICE
   SKIP(
       "The sycl_ext_oneapi_composite device extension is not supported by an "
-      "imlementation");
+      "implementation");
 #else
   auto platform = sycl_cts::util::get_cts_object::platform();
   auto platform_composite_devices = platform.ext_oneapi_get_composite_devices();
@@ -81,7 +81,7 @@ TEST_CASE("Test for ext_oneapi_is_component aspect",
 #ifndef SYCL_EXT_ONEAPI_COMPOSITE_DEVICE
   SKIP(
       "The sycl_ext_oneapi_composite device extension is not supported by an "
-      "imlementation");
+      "implementation");
 #else
 
   auto device = sycl_cts::util::get_cts_object::device();

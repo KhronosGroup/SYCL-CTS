@@ -35,7 +35,7 @@ TEST_CASE("Test for signatures of the new get_composite_device APIs",
 #ifndef SYCL_EXT_ONEAPI_COMPOSITE_DEVICE
   SKIP(
       "The sycl_ext_oneapi_composite device extension is not supported by an "
-      "imlementation");
+      "implementation");
 #else
 
   STATIC_REQUIRE(
@@ -57,12 +57,12 @@ TEST_CASE("Test for free function get_composite_device",
 #ifndef SYCL_EXT_ONEAPI_COMPOSITE_DEVICE
   SKIP(
       "The sycl_ext_oneapi_composite device extension is not supported by an "
-      "imlementation");
+      "implementation");
 #else
 
   std::vector<sycl::device> composite_devices;
 
-  // get_composite_device may not throw
+  // get_composite_devices may not throw
   try {
     composite_devices =
         sycl::ext::oneapi::experimental::get_composite_devices();
@@ -73,7 +73,7 @@ TEST_CASE("Test for free function get_composite_device",
   {
     INFO("Subsequent calls to get_composite_devices()");
     std::vector<sycl::device> composite_devices2;
-    // get_composite_device may not throw
+    // get_composite_devices may not throw
     try {
       composite_devices2 =
           sycl::ext::oneapi::experimental::get_composite_devices();
@@ -92,13 +92,13 @@ TEST_CASE("Test for platform::ext_oneapi_get_composite_devices",
 #ifndef SYCL_EXT_ONEAPI_COMPOSITE_DEVICE
   SKIP(
       "The sycl_ext_oneapi_composite device extension is not supported by an "
-      "imlementation");
+      "implementation");
 #else
 
   auto platform = sycl_cts::util::get_cts_object::platform();
   std::vector<sycl::device> composite_devices;
 
-  // get_composite_device may not throw
+  // ext_oneapi_get_composite_devices may not throw
   try {
     composite_devices = platform.ext_oneapi_get_composite_devices();
   } catch (sycl::exception& e) {
@@ -109,7 +109,7 @@ TEST_CASE("Test for platform::ext_oneapi_get_composite_devices",
   {
     INFO("Subsequent calls to platform::ext_oneapi_get_composite_devices()");
     std::vector<sycl::device> composite_devices2;
-    // get_composite_device may not throw
+    // ext_oneapi_get_composite_devices may not throw
     try {
       composite_devices2 = platform.ext_oneapi_get_composite_devices();
       INFO("Checking that subsequent call returns the same list of devices");
@@ -129,7 +129,7 @@ TEST_CASE(
 #ifndef SYCL_EXT_ONEAPI_COMPOSITE_DEVICE
   SKIP(
       "The sycl_ext_oneapi_composite device extension is not supported by an "
-      "imlementation");
+      "implementation");
 #else
 
   auto platform = sycl_cts::util::get_cts_object::platform();

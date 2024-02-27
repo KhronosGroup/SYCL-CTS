@@ -34,7 +34,7 @@ TEST_CASE("Test for info::device::component_devices descriptor",
 #ifndef SYCL_EXT_ONEAPI_COMPOSITE_DEVICE
   SKIP(
       "The sycl_ext_oneapi_composite device extension is not supported by an "
-      "imlementation");
+      "implementation");
 #else
 
   std::vector<sycl::device> devices_to_test;
@@ -87,7 +87,7 @@ TEST_CASE("Test for info::device::composite_device descriptor",
 #ifndef SYCL_EXT_ONEAPI_COMPOSITE_DEVICE
   SKIP(
       "The sycl_ext_oneapi_composite device extension is not supported by an "
-      "imlementation");
+      "implementation");
 #else
 
   std::vector<sycl::device> devices_to_test;
@@ -120,7 +120,7 @@ TEST_CASE("Test for info::device::composite_device descriptor",
       if (!device.has(sycl::aspect::ext_oneapi_is_component)) {
         INFO(
             "Checking that a non-component device don't have a composite "
-            "device associcated with it");
+            "device associated with it");
         REQUIRE(e.code() == sycl::errc::invalid);
       } else {
         FAIL(
