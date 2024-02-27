@@ -150,4 +150,76 @@ TEST_CASE("Interoperability between composite and component devices",
 #endif
 }
 
+TEST_CASE("Sharing memory to a descendent device",
+          "[oneapi_composite_device]") {
+#ifndef SYCL_EXT_ONEAPI_COMPOSITE_DEVICE
+  SKIP(
+      "The sycl_ext_oneapi_composite device extension is not supported by an "
+      "implementation");
+#else
+
+  auto component_device = sycl_cts::util::get_cts_object::device();
+  if (!component_device.has(sycl::aspect::ext_oneapi_is_component)) {
+    SKIP(
+        "Selected device is not a component device, this test has nothing to "
+        "do");
+  }
+
+  auto composite_device = component_device.get_info<
+      sycl::ext::oneapi::experimental::info::device::composite_device>();
+
+  if (!component_device.has(sycl::aspect::usm_device_allocations) ||
+      !composite_device.has(sycl::aspect::usm_device_allocations)) {
+    SKIP(
+        "Either composite or component device does not support USM device "
+        "allocations, this test has nothing to do");
+  }
+
+  // This test is similar to the one above, but it uses only a composite device
+  // for the context creation. It is expected that component device will be
+  // able to access memory and create queues using the same context.
+  sycl::context composite_context(composite_device);
+
+  sycl::queue composite_queue(composite_context, composite_device);
+  sycl::queue component_queue(composite_context, component_device);
+
+  constexpr size_t count = 100;
+  auto* ptrA =
+      sycl::malloc_device<int>(count, component_device, composite_context);
+  auto* ptrB =
+      sycl::malloc_device<int>(count, composite_device, composite_context);
+
+  auto eventA = component_queue.parallel_for(
+      sycl::range{count}, [=](sycl::id<1> it) { ptrA[it] = it; });
+
+  auto eventB = composite_queue.parallel_for(
+      sycl::range{count}, [=](sycl::id<1> it) { ptrB[it] = it; });
+
+  sycl::buffer<int> bufC(sycl::range{count});
+
+  composite_queue.submit([&](sycl::handler& cgh) {
+    cgh.depends_on({eventA, eventB});
+
+    sycl::accessor acc(bufC, cgh, sycl::write_only);
+
+    cgh.parallel_for(sycl::range{count},
+                     [=](sycl::id<1> it) { acc[it] = ptrA[it] + ptrB[it]; });
+  });
+
+  component_queue.submit([&](sycl::handler& cgh) {
+    sycl::accessor acc(bufC, cgh, sycl::read_write);
+
+    cgh.parallel_for(sycl::range{count},
+                     [=](sycl::id<1> it) { acc[it] += ptrA[it] + ptrB[it]; });
+  });
+
+  auto hostAcc = bufC.get_host_access();
+  INFO("Verifying kernel (2 x vector add) results");
+  for (size_t i = 0; i < count; ++i) {
+    REQUIRE(2 * (i + i) == hostAcc[i]);
+  }
+
+#endif
+}
+
 }  // namespace composite_device::tests
