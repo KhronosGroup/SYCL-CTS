@@ -84,7 +84,7 @@ For each type T, the matching SPIR-V kernel takes four parameters:
 
 The kernel computes the following expressions:
 
-  1. *tmp = (a * a); 
+  1. *tmp = (a * a);
   2. *c = (*tmp) + ((*b) * (*b));
 
 This test case sets the four parameters, runs the kernel, and asserts that
