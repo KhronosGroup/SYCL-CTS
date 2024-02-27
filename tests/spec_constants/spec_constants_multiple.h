@@ -47,6 +47,7 @@ class check_specialization_constants_multiple_for_type {
     auto queue = util::get_cts_object::queue();
     const sycl::context ctx = queue.get_context();
     const sycl::device dev = queue.get_device();
+    bool has_target_kernel = true;
 
     if constexpr (via_kb::value) {
       if (!dev.has(sycl::aspect::online_compiler)) {
@@ -77,6 +78,7 @@ class check_specialization_constants_multiple_for_type {
               sycl::get_kernel_bundle<sycl::bundle_state::input>(ctx, {dev},
                                                                  {kernelId});
           if (!k_bundle.has_kernel(kernelId)) {
+            has_target_kernel = false;
             log.note(
                 "kernel_bundle doesn't contain target kernel;"
                 "multiple spec const for " +
@@ -111,17 +113,20 @@ class check_specialization_constants_multiple_for_type {
         }
       });
     }
-    if (!check_equal_values(ref1, result_vec[0].value) ||
-        !check_equal_values(ref2, result_vec[1].value) ||
-        !check_equal_values(ref3, result_vec[2].value) ||
-        !check_equal_values(user_def_types::get_init_value<T>(def_values[3]),
-                            result_vec[3].value) ||
-        !check_equal_values(user_def_types::get_init_value<T>(def_values[4]),
-                            result_vec[4].value) ||
-        !check_equal_values(user_def_types::get_init_value<T>(def_values[5]),
-                            result_vec[5].value))
-      FAIL(log,
-           "multiple spec const for " + type_name_string<T>::get(type_name));
+    if (has_target_kernel) {
+      // Check results only if target kernel is available
+      if (!check_equal_values(ref1, result_vec[0].value) ||
+          !check_equal_values(ref2, result_vec[1].value) ||
+          !check_equal_values(ref3, result_vec[2].value) ||
+          !check_equal_values(user_def_types::get_init_value<T>(def_values[3]),
+                              result_vec[3].value) ||
+          !check_equal_values(user_def_types::get_init_value<T>(def_values[4]),
+                              result_vec[4].value) ||
+          !check_equal_values(user_def_types::get_init_value<T>(def_values[5]),
+                              result_vec[5].value))
+        FAIL(log,
+             "multiple spec const for " + type_name_string<T>::get(type_name));
+    }
   }
 };
 
