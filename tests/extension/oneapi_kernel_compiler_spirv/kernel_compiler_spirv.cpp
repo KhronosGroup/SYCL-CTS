@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2023 The Khronos Group Inc.
+//  Copyright (c) 2024 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -26,11 +26,14 @@ namespace kernel_compiler_spirv::tests {
 #ifdef SYCL_EXT_ONEAPI_AUTO_LOCAL_RANGE
 
 sycl::kernel_bundle<sycl::bundle_state::executable> loadKernelsFromFile(
-    sycl::queue& q, std::string file_name) {
+    sycl::queue& q, const std::string& file_name) {
   namespace syclex = sycl::ext::oneapi::experimental;
 
   // Read the SPIR-V module from disk.
   std::ifstream spv_stream(file_name, std::ios::binary);
+  if (!spv_stream.is_open()) {
+    throw std::runtime_error("Failed to open '" + file_name + "'");
+  }
   spv_stream.seekg(0, std::ios::end);
   size_t sz = spv_stream.tellg();
   spv_stream.seekg(0);
@@ -55,14 +58,13 @@ void testSimpleKernel(sycl::queue& q, const sycl::kernel& kernel,
 
   constexpr int N = 4;
   std::array<int, N> input_array{0, 1, 2, 3};
-  std::array<int, N> output_array{};
 
-  sycl::buffer input_buffer(input_array.data(), sycl::range<1>(N));
-  sycl::buffer output_buffer(output_array.data(), sycl::range<1>(N));
+  sycl::buffer<int> input_buffer{input_array.data(), sycl::range<1>(N)};
+  sycl::buffer<int> output_buffer{sycl::range<1>(N)};
 
   q.submit([&](sycl::handler& cgh) {
-    cgh.set_arg(0, input_buffer.get_access<sycl::access::mode::read>(cgh));
-    cgh.set_arg(1, output_buffer.get_access<sycl::access::mode::write>(cgh));
+    cgh.set_args(input_buffer.get_access<sycl::access::mode::read>(cgh),
+                 output_buffer.get_access<sycl::access::mode::write>(cgh));
     cgh.parallel_for(sycl::range<1>{N}, kernel);
   });
 
@@ -72,6 +74,22 @@ void testSimpleKernel(sycl::queue& q, const sycl::kernel& kernel,
   }
 }
 
+/*
+For each type T, the matching SPIR-V kernel takes four parameters:
+
+  1. [in]     a:   T
+  2. [in]     b:   OpTypePointer(CrossWorkgroup) to T
+  3. [in/out] tmp: OpTypePointer(Workgroup) to T
+  4. [out]    c:   OpTypePointer(CrossWorkgroup) to T
+
+The kernel computes the following expressions:
+
+  1. *tmp = (a * a); 
+  2. *c = (*tmp) + ((*b) * (*b));
+
+This test case sets the four parameters, runs the kernel, and asserts that
+output c has the expected value.
+*/
 template <typename T>
 void testParam(sycl::queue& q, const sycl::kernel& kernel) {
   const auto num_args = kernel.get_info<sycl::info::kernel::num_args>();
@@ -140,8 +158,7 @@ void testStruct(sycl::queue& q, const sycl::kernel& kernel) {
   *output = S{0, 0, out_p0, S::Inner{0, 0, out_p1}};
 
   q.submit([&](sycl::handler& cgh) {
-     cgh.set_arg(0, input);
-     cgh.set_arg(1, output);
+     cgh.set_args(input, output);
      cgh.parallel_for(sycl::range<1>{1}, kernel);
    }).wait();
 
@@ -170,9 +187,7 @@ void testKernelsFromSpvFile(std::string kernels_file,
         return bundle.ext_oneapi_get_kernel(name);
       };
 
-  sycl::device d;
-  sycl::context ctx{d};
-  sycl::queue q{ctx, d};
+  sycl::queue q;
   auto bundle = loadKernelsFromFile(q, kernels_file);
 
   // Test kernel retrieval functions.
