@@ -63,7 +63,7 @@ TEST_CASE("Basic test for a composite device", "[oneapi_composite_device]") {
   q.submit([&](sycl::handler& cgh) {
     sycl::accessor accA(bufA, cgh, sycl::read_only);
     sycl::accessor accB(bufB, cgh, sycl::read_only);
-    sycl::accessor accC(bufB, cgh, sycl::write_only);
+    sycl::accessor accC(bufC, cgh, sycl::write_only);
 
     cgh.parallel_for(sycl::range{100},
                      [=](sycl::id<1> it) { accC[it] = accA[it] + accB[it]; });
@@ -139,7 +139,7 @@ TEST_CASE("Interoperability between composite and component devices",
 
     cgh.parallel_for(sycl::range{count},
                      [=](sycl::id<1> it) { acc[it] += ptrA[it] + ptrB[it]; });
-  });
+  }).wait(); // why this wait is required?
 
   auto hostAcc = bufC.get_host_access();
   INFO("Verifying kernel (2 x vector add) results");
@@ -207,11 +207,12 @@ TEST_CASE("Sharing memory to a descendent device",
   });
 
   component_queue.submit([&](sycl::handler& cgh) {
+    cgh.depends_on({eventA, eventB});
     sycl::accessor acc(bufC, cgh, sycl::read_write);
 
     cgh.parallel_for(sycl::range{count},
                      [=](sycl::id<1> it) { acc[it] += ptrA[it] + ptrB[it]; });
-  });
+  }).wait(); // why is it required?
 
   auto hostAcc = bufC.get_host_access();
   INFO("Verifying kernel (2 x vector add) results");
