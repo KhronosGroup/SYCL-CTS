@@ -19,7 +19,6 @@
 *******************************************************************************/
 
 #include "../../common/common.h"
-#include <exception.hpp>
 
 namespace kernel_compiler_spirv::tests {
 
@@ -63,8 +62,9 @@ void testSimpleKernel(sycl::queue& q, const sycl::kernel& kernel,
   sycl::buffer<int> output_buffer{sycl::range<1>(N)};
 
   q.submit([&](sycl::handler& cgh) {
-    cgh.set_args(input_buffer.get_access<sycl::access::mode::read>(cgh),
-                 output_buffer.get_access<sycl::access::mode::write>(cgh));
+    cgh.set_args(
+        sycl::accessor<int, 1, sycl::access_mode::read>{input_buffer, cgh},
+        sycl::accessor<int, 1, sycl::access_mode::write>{output_buffer, cgh});
     cgh.parallel_for(sycl::range<1>{N}, kernel);
   });
 
@@ -116,7 +116,7 @@ void testParam(sycl::queue& q, const sycl::kernel& kernel) {
     cgh.set_arg(1, b_ptr);
     // Pass sycl::accessor for OpTypePointer(CrossWorkgroup) parameter.
     cgh.set_arg(
-        2, output_buffer.template get_access<sycl::access::mode::write>(cgh));
+        2, sycl::accessor<T, 1, sycl::access_mode::write>{output_buffer, cgh});
     // Pass sycl::local_accessor for OpTypePointer(Workgroup) parameter.
     cgh.set_arg(3, local);
     cgh.parallel_for(sycl::range<1>{1}, kernel);
