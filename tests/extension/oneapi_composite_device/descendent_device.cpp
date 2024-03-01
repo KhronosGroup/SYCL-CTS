@@ -70,7 +70,7 @@ TEST_CASE("Test for impact on descendent device", "[oneapi_composite_device]") {
   q.submit([&](sycl::handler& cgh) {
     sycl::accessor accA(bufA, cgh, sycl::read_only);
     sycl::accessor accB(bufB, cgh, sycl::read_only);
-    sycl::accessor accC(bufB, cgh, sycl::write_only);
+    sycl::accessor accC(bufC, cgh, sycl::write_only);
 
     cgh.parallel_for(sycl::range{count},
                      [=](sycl::id<1> it) { accC[it] = accA[it] + accB[it]; });
