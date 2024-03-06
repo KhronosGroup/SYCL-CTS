@@ -146,18 +146,14 @@ TEST_CASE(
       "implementation");
 #else
 
-  auto platform = sycl_cts::util::get_cts_object::platform();
-
-  std::vector<sycl::device> root_devices = platform.get_devices();
-  for (auto device : sycl::device::get_devices()) {
-    root_devices.push_back(device);
-  }
+  std::vector<sycl::device> root_devices = sycl::device::get_devices();
+  // We do not check platform::get_devices(), because it is expected to return
+  // a subset of device::get_devices()
 
   std::vector<sycl::device> composite_devices =
-      platform.ext_oneapi_get_composite_devices();
-  for (auto device : sycl::ext::oneapi::experimental::get_composite_devices()) {
-    composite_devices.push_back(device);
-  }
+      sycl::ext::oneapi::experimental::get_composite_devices();
+  // We do not check platform::ext_oneapi_get_composite_devices(), because it is
+  // expected to return a subset of get_composite_devices()
 
   for (auto composite_device : composite_devices) {
     REQUIRE(std::none_of(root_devices.begin(), root_devices.end(),
