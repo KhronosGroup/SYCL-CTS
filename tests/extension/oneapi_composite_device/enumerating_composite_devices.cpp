@@ -120,6 +120,20 @@ TEST_CASE("Test for platform::ext_oneapi_get_composite_devices",
     }
   }
 
+  INFO(
+      "Checking that devices returned by "
+      "platform::ext_oneapi_get_composite_devices are also returned by "
+      "get_composite_devices");
+  auto all_composite_devices =
+      sycl::ext::oneapi::experimental::get_composite_devices();
+  for (auto device_p : composite_devices) {
+    // device_p is a composite device returned by
+    // platform::ext_oneapi_get_composite_devices
+    REQUIRE(std::any_of(
+        all_composite_devices.begin(), all_composite_devices.end(),
+        [&](sycl::device device_d) { return device_d == device_p; }));
+  }
+
 #endif
 }
 
