@@ -62,7 +62,7 @@ TEST_CASE("Test for free function get_composite_device",
 
   std::vector<sycl::device> composite_devices;
 
-  // get_composite_devices may not throw
+  // get_composite_devices may not throw.
   try {
     composite_devices =
         sycl::ext::oneapi::experimental::get_composite_devices();
@@ -73,7 +73,7 @@ TEST_CASE("Test for free function get_composite_device",
   {
     INFO("Subsequent calls to get_composite_devices()");
     std::vector<sycl::device> composite_devices2;
-    // get_composite_devices may not throw
+    // get_composite_devices may not throw.
     try {
       composite_devices2 =
           sycl::ext::oneapi::experimental::get_composite_devices();
@@ -98,7 +98,7 @@ TEST_CASE("Test for platform::ext_oneapi_get_composite_devices",
   auto platform = sycl_cts::util::get_cts_object::platform();
   std::vector<sycl::device> composite_devices;
 
-  // ext_oneapi_get_composite_devices may not throw
+  // ext_oneapi_get_composite_devices may not throw.
   try {
     composite_devices = platform.ext_oneapi_get_composite_devices();
   } catch (sycl::exception& e) {
@@ -109,7 +109,7 @@ TEST_CASE("Test for platform::ext_oneapi_get_composite_devices",
   {
     INFO("Subsequent calls to platform::ext_oneapi_get_composite_devices()");
     std::vector<sycl::device> composite_devices2;
-    // ext_oneapi_get_composite_devices may not throw
+    // ext_oneapi_get_composite_devices may not throw.
     try {
       composite_devices2 = platform.ext_oneapi_get_composite_devices();
       INFO("Checking that subsequent call returns the same list of devices");
@@ -128,7 +128,7 @@ TEST_CASE("Test for platform::ext_oneapi_get_composite_devices",
       sycl::ext::oneapi::experimental::get_composite_devices();
   for (auto device_p : composite_devices) {
     // device_p is a composite device returned by
-    // platform::ext_oneapi_get_composite_devices
+    // platform::ext_oneapi_get_composite_devices.
     REQUIRE(std::any_of(
         all_composite_devices.begin(), all_composite_devices.end(),
         [&](sycl::device device_d) { return device_d == device_p; }));
@@ -148,12 +148,12 @@ TEST_CASE(
 
   std::vector<sycl::device> root_devices = sycl::device::get_devices();
   // We do not check platform::get_devices(), because it is expected to return
-  // a subset of device::get_devices()
+  // a subset of device::get_devices().
 
   std::vector<sycl::device> composite_devices =
       sycl::ext::oneapi::experimental::get_composite_devices();
   // We do not check platform::ext_oneapi_get_composite_devices(), because it is
-  // expected to return a subset of get_composite_devices()
+  // expected to return a subset of get_composite_devices().
 
   for (auto composite_device : composite_devices) {
     REQUIRE(std::none_of(root_devices.begin(), root_devices.end(),

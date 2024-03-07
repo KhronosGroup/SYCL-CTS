@@ -104,7 +104,7 @@ TEST_CASE("Test for ext_oneapi_is_component aspect",
   for (auto selected_partition : supported_partitions) {
     switch (selected_partition) {
       case sycl::info::partition_property::partition_equally: {
-        constexpr size_t count = 2;  // Guaranteed to work by SYCL 2020 spec
+        constexpr size_t count = 2;  // Guaranteed to work by SYCL 2020 spec.
         auto sub_devices = device.create_sub_devices<
             sycl::info::partition_property::partition_equally>(count);
         REQUIRE(std::none_of(sub_devices.begin(), sub_devices.end(),
