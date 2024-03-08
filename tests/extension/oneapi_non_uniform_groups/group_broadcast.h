@@ -95,19 +95,18 @@ void broadcast_non_uniform_group(sycl::queue& queue) {
                   static_cast<size_t>(item.get_global_linear_id() * 100 +
                                       non_uniform_group.get_local_id())));
 
-              T local_var(splat_init<T>(0));
-
               // To simplify the test, we are only checking the first group in
               // the first sub-group.
+              size_t preferred_group_id = NonUniformGroupHelper<
+                  GroupT>::preferred_single_worker_group_id(test_case);
               if (item.get_sub_group().get_group_id()[0] == 0 &&
-                  non_uniform_group.get_group_id()[0] == 0) {
+                  non_uniform_group.get_group_id()[0] == preferred_group_id) {
                 // Find local id of first, last and some third sub-group item in
                 // between. Will be used to check different combinations of
                 // broadcasting and receiving work-items
                 sycl::id<1> first_id = 0;
                 sycl::id<1> mid_id = non_uniform_group.get_local_range() / 2;
-                sycl::id<1> last_id = non_uniform_group.get_local_range();
-                --last_id[0];
+                sycl::id<1> last_id = non_uniform_group.get_local_range() - 1;
 
                 // Broadcast from the first work-item
                 ASSERT_RETURN_TYPE(

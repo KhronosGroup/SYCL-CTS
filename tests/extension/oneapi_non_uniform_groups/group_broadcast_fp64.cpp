@@ -20,7 +20,7 @@
 
 #include "group_broadcast.h"
 
-TEST_CASE("Non-uniform group broadcast and select", "[group_func][fp64][dim]") {
+TEST_CASE("Non-uniform group broadcast and select", "[group_func][fp64]") {
   auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp64)) {
     broadcast_non_uniform_group<oneapi_ext::ballot_group<sycl::sub_group>,

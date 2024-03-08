@@ -41,7 +41,6 @@ struct NonUniformGroupHelper<oneapi_ext::ballot_group<sycl::sub_group>> {
 
   static oneapi_ext::ballot_group<sycl::sub_group> create(sycl::sub_group sg,
                                                           int test_case) {
-    assert(test_case < num_test_cases);
     // Split it so that 1/3rd of the items are in the first "true" group and the
     // rest are in "false" group.
     switch (test_case) {
@@ -130,7 +129,6 @@ struct NonUniformGroupHelper<oneapi_ext::tangle_group<sycl::sub_group>> {
   }
 
   static bool should_participate(sycl::sub_group sg, int test_case) {
-    assert(test_case < num_test_cases);
     switch (test_case) {
       case 0:
         return sg.get_local_linear_id() < sg.get_local_range().size() / 3;
@@ -174,7 +172,6 @@ struct NonUniformGroupHelper<oneapi_ext::opportunistic_group> {
   }
 
   static bool should_participate(sycl::sub_group sg, int test_case) {
-    assert(test_case < num_test_cases);
     switch (test_case) {
       case 0:
         return sg.get_local_linear_id() < sg.get_local_range().size() / 3;
