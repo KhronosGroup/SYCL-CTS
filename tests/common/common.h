@@ -857,7 +857,7 @@ inline sycl::id<3> unlinearize(sycl::range<3> range, size_t id) {
  *  @param rhs std::vector with sycl::device
  */
 inline bool have_same_devices(std::vector<sycl::device> lhs,
-                       std::vector<sycl::device> rhs) {
+                              std::vector<sycl::device> rhs) {
   auto device_order_f = [](const sycl::device& d1,
                            const sycl::device& d2) -> bool {
     std::hash<sycl::device> h{};
