@@ -23,7 +23,7 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "accessor_common.h"
 #include "generic_accessor_def_constructor.h"
 
@@ -34,7 +34,7 @@ using namespace generic_accessor_def_constructor;
 
 namespace generic_accessor_def_constructor_core {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 ("Generic sycl::accessor def constructors. core types", "[accessor]",
  test_combinations)({
   common_run_tests<run_generic_def_constructor_test, TestType>();

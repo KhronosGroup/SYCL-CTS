@@ -20,7 +20,7 @@
 
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "../common/semantics_reference.h"
 #endif
 
@@ -56,7 +56,7 @@ struct storage {
   }
 };
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("host_accessor common reference semantics", "[host_accessor]")({
   sycl::buffer<int> buffer_0{sycl::range<1>{1}};
   sycl::host_accessor<int> host_accessor_0{buffer_0};
@@ -67,7 +67,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       host_accessor_0, host_accessor_1, "host_accessor");
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("host_accessor common reference semantics, mutation", "[host_accessor]")({
   constexpr int val = 1;
   constexpr int new_val = 2;

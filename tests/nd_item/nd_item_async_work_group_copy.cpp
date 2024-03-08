@@ -80,36 +80,28 @@ class TEST_NAME : public util::test_base {
 #endif
 
 #ifdef INT8_MAX
-    if (!std::is_same<sycl::cl_char, std::int8_t>::value)
-      for_type_and_vectors<check_type, std::int8_t>(log, "std::int8_t");
+    for_type_and_vectors<check_type, std::int8_t>(log, "std::int8_t");
 #endif
 #ifdef INT16_MAX
-    if (!std::is_same<sycl::cl_short, std::int16_t>::value)
-      for_type_and_vectors<check_type, std::int16_t>(log, "std::int16_t");
+    for_type_and_vectors<check_type, std::int16_t>(log, "std::int16_t");
 #endif
 #ifdef INT32_MAX
-    if (!std::is_same<sycl::cl_int, std::int32_t>::value)
-      for_type_and_vectors<check_type, std::int32_t>(log, "std::int32_t");
+    for_type_and_vectors<check_type, std::int32_t>(log, "std::int32_t");
 #endif
 #ifdef INT64_MAX
-    if (!std::is_same<sycl::cl_long, std::int64_t>::value)
-      for_type_and_vectors<check_type, std::int64_t>(log, "std::int64_t");
+    for_type_and_vectors<check_type, std::int64_t>(log, "std::int64_t");
 #endif
 #ifdef UINT8_MAX
-    if (!std::is_same<sycl::cl_uchar, std::uint8_t>::value)
-      for_type_and_vectors<check_type, std::uint8_t>(log, "std::uint8_t");
+    for_type_and_vectors<check_type, std::uint8_t>(log, "std::uint8_t");
 #endif
 #ifdef UINT16_MAX
-    if (!std::is_same<sycl::cl_ushort, std::uint16_t>::value)
-      for_type_and_vectors<check_type, std::uint16_t>(log, "std::uint16_t");
+    for_type_and_vectors<check_type, std::uint16_t>(log, "std::uint16_t");
 #endif
 #ifdef UINT32_MAX
-    if (!std::is_same<sycl::cl_uint, std::uint32_t>::value)
-      for_type_and_vectors<check_type, std::uint32_t>(log, "std::uint32_t");
+    for_type_and_vectors<check_type, std::uint32_t>(log, "std::uint32_t");
 #endif
 #ifdef UINT64_MAX
-    if (!std::is_same<sycl::cl_ulong, std::uint64_t>::value)
-      for_type_and_vectors<check_type, std::uint64_t>(log, "std::uint64_t");
+    for_type_and_vectors<check_type, std::uint64_t>(log, "std::uint64_t");
 #endif
   }
 };

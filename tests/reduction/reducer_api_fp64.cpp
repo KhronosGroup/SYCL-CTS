@@ -20,14 +20,14 @@
 #include "../../util/extensions.h"
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
-// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: re-enable when sycl::reduction is implemented in AdaptiveCpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "reducer_api.h"
 #endif
 
 #include <string>
-// FIXME: re-enable when reducer is fully implemented in hipSYCL
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// FIXME: re-enable when reducer is fully implemented in AdaptiveCpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("reducer api fp64", "[reducer][fp64]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   using avaliability = sycl_cts::util::extensions::availability<

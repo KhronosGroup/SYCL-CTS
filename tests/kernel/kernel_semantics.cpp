@@ -44,10 +44,10 @@ TEST_CASE("kernel common reference semantics", "[kernel]") {
 
   sycl::kernel kernel_0 =
       sycl::get_kernel_bundle<sycl::bundle_state::executable>(context_0)
-          .template get_kernel(sycl::get_kernel_id<k_name>());
+          .get_kernel(sycl::get_kernel_id<k_name>());
   sycl::kernel kernel_1 =
       sycl::get_kernel_bundle<sycl::bundle_state::executable>(context_1)
-          .template get_kernel(sycl::get_kernel_id<k_name_other>());
+          .get_kernel(sycl::get_kernel_id<k_name_other>());
   common_reference_semantics::check_host<storage>(kernel_0, kernel_1, "kernel");
   sycl_cts::tests::kernel_bundle::define_kernel<k_name>(queue_0);
   sycl_cts::tests::kernel_bundle::define_kernel<k_name_other>(queue_1);

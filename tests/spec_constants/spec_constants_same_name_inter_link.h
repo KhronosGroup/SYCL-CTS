@@ -136,6 +136,7 @@ static void sc_run_test_core(util::logger &log) {
   }
 }
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 // Test function for fp16 tests
 template <int tu_num, typename via_kb>
 static void sc_run_test_fp16(util::logger &log) {
@@ -160,6 +161,7 @@ static void sc_run_test_fp16(util::logger &log) {
 #endif
   }
 }
+#endif
 
 // Test function for fp64 tests
 template <int tu_num, typename via_kb>

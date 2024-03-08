@@ -236,6 +236,7 @@ bool check_type_sign(bool expected_sign) {
   return (std::is_signed<T>::value == expected_sign);
 }
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 /**
  * @brief Helper function to see if sycl::half is of the wrong sign
  */
@@ -244,6 +245,7 @@ inline bool check_type_sign<sycl::half>(bool expected_sign) {
   bool is_signed = sycl::half(1) > sycl::half(-1);
   return is_signed == expected_sign;
 }
+#endif
 
 /**
  * @brief Helper function to log a failure if a type is of the wrong size or
@@ -305,8 +307,8 @@ bool check_contains(const std::vector<T>& vec, const T& elem) {
   return std::find(vec.begin(), vec.end(), elem) != vec.end();
 }
 
-// hipSYCL does not yet support sycl::marray
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// AdaptiveCpp does not yet support sycl::marray
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Instantiation for marray with the same API as for scalar values
  * Deprecated. Use \c value_operations::are_equal instead
@@ -413,8 +415,8 @@ namespace pixel_tag {
   struct upper: generic {};
 };
 
-// hipSYCL does not yet support images
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// AdaptiveCpp and SimSYCL do not yet support images
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP && !SYCL_CTS_COMPILING_WITH_SIMSYCL
 
 /**
  * @brief Helps with retrieving the right access type for reading/writing
@@ -625,8 +627,8 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
     return false;
   }
 
-// hipSYCL does not yet support sycl::get_kernel_bundle
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// AdaptiveCpp does not yet support sycl::get_kernel_bundle
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
   auto kb =
       sycl::get_kernel_bundle<kernelT, sycl::bundle_state::executable>(context);
   auto kernel = kb.get_kernel(sycl::get_kernel_id<kernelT>());

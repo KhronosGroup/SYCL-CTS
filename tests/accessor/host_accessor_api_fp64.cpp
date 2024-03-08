@@ -9,7 +9,7 @@
 #include "catch2/catch_test_macros.hpp"
 
 // FIXME: re-enable when sycl::host_accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "accessor_common.h"
 #include "host_accessor_api_common.h"
 
@@ -18,7 +18,7 @@ using namespace host_accessor_api_common;
 
 namespace host_accessor_api_fp64 {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 ("sycl::host_accessor api. fp64 type", "[accessor]", test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {

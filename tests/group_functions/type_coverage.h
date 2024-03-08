@@ -8,7 +8,7 @@
 
 /**
  * FIXME: this is an extended (and also partial) copy of type_coverage.h
- * with marray parts removed for hipSYCL compilation
+ * with marray parts removed for AdaptiveCpp compilation
  * and with for_all_combinations_with/for_all_combinations_with_two added
  */
 

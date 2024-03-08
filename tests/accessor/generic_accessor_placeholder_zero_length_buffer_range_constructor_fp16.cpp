@@ -24,7 +24,7 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #include "accessor_common.h"
 #include "generic_accessor_placeholder_zero_length_buffer_range_constructor.h"
@@ -36,7 +36,7 @@ using namespace generic_accessor_placeholder_zero_length_buffer_range_constructo
 
 namespace generic_accessor_placeholder_zero_length_buffer_range_constructor_fp16 {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 ("Generic sycl::accessor placeholder zero-length buffer range constructor. "
  "fp16 type",
  "[accessor]", test_combinations)({

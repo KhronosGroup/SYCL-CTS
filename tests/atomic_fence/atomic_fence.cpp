@@ -29,8 +29,8 @@
 
 namespace atomic_fence_test {
 
-// FIXME: re-enable when support for atomic_fence is implemented in hipSYCL
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: re-enable when support for atomic_fence is implemented in AdaptiveCpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 constexpr int expected_val = 42;
 
@@ -321,10 +321,10 @@ class run_test {
         value_pack<test_type, test_type::between_groups>::generate_named());
   }
 };
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
-// FIXME: re-enable when support for atomic_fence is implemented in hipSYCL
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// FIXME: re-enable when support for atomic_fence is implemented in AdaptiveCpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_fence function",
  "[atomic_fence]")({ atomic_fence_test::run_test{}(); });
 

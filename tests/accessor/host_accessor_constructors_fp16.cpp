@@ -23,7 +23,7 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::host_accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "accessor_common.h"
 #include "host_accessor_constructors.h"
 
@@ -35,7 +35,7 @@ using namespace host_accessor_constructors;
 
 namespace host_accessor_constructors_fp16 {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 ("sycl::host_accessor constructors. fp16 type", "[accessor]",
  test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();

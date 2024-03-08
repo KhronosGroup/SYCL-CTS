@@ -42,7 +42,7 @@ using AtomicRefT =
 template <int Case>
 class kernel_speculative;
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("Speculative compilation with supported feature", "[kernel_features]")({
   auto queue = util::get_cts_object::queue();
   const sycl::errc errc_expected = sycl::errc::success;
@@ -72,6 +72,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
     }
   }
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
   if (queue.get_device().has(sycl::aspect::fp16)) {
     {
       const auto separate_lambda_no_arg = []() {
@@ -100,6 +101,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
                           use_feature_function_non_decorated<sycl::half>());
     }
   }
+#endif
 
   if (queue.get_device().has(sycl::aspect::fp64)) {
     {

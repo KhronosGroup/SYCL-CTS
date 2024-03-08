@@ -23,7 +23,7 @@
 #include "catch2/catch_test_macros.hpp"
 
 // FIXME: re-enable when sycl::local_accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #include "accessor_common.h"
 #include "local_accessor_linearization.h"
@@ -33,7 +33,7 @@ using namespace local_accessor_linearization;
 
 namespace local_accessor_liniarization_core {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 ("sycl::local_accessor linearization. core types", "[accessor]",
  test_combinations)({
   common_run_tests<run_local_linearization_for_type, TestType>();

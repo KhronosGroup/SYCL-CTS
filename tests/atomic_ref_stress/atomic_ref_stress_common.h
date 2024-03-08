@@ -172,7 +172,7 @@ class aquire_release {
           refA.store(0);
           refB.store(0);
           sycl::group_barrier(item.get_group());
-          if (item.get_local_id() == 0) {
+          if (item.get_local_id() == sycl::id(0)) {
             x = refA.load();
             refB.store(1);
           } else {
@@ -180,7 +180,7 @@ class aquire_release {
             refA.store(1);
           }
           sycl::group_barrier(item.get_group());
-          if (item.get_local_id() == 0)
+          if (item.get_local_id() == sycl::id(0))
             res_acc[item.get_group_linear_id()] = !(x == 1 && y == 1);
         });
       });
