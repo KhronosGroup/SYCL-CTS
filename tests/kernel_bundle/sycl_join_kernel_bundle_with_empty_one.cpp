@@ -30,13 +30,13 @@ template <sycl::bundle_state State>
 void run_verification(util::logger &log) {
   auto queue = util::get_cts_object::queue();
   const auto ctx = queue.get_context();
-  const auto dev = queue.get_device();
 
   auto kb = sycl::get_kernel_bundle<State>(ctx);
 
   // Selector that always returns false. Used to get empty kernel_bundle
   auto false_selector = [](const sycl::device_image<State> &) { return false; };
-  auto empty_kb = sycl::get_kernel_bundle<State>(ctx, {dev}, false_selector);
+  auto empty_kb =
+      sycl::get_kernel_bundle<State>(ctx, ctx.get_devices(), false_selector);
 
   // Check joined bundles in such order: (kernel_bundle, empty_kernel_bundle)
   {

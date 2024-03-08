@@ -38,6 +38,7 @@
 #include "string_makers.h"
 #include "value_operations.h"
 
+#include <algorithm>
 #include <cinttypes>
 #include <numeric>
 #include <sstream>
@@ -848,6 +849,26 @@ inline sycl::id<3> unlinearize(sycl::range<3> range, size_t id) {
   size_t id1 = rem / range[2];
   size_t id2 = rem % range[2];
   return {id0, id1, id2};
+}
+
+/** @brief Checks that two vectors of devices have the exact same devices,
+ *         ignoring order and repeated devices.
+ *  @param lhs std::vector with sycl::device
+ *  @param rhs std::vector with sycl::device
+ */
+inline bool have_same_devices(std::vector<sycl::device> lhs,
+                       std::vector<sycl::device> rhs) {
+  auto device_order_f = [](const sycl::device& d1,
+                           const sycl::device& d2) -> bool {
+    std::hash<sycl::device> h{};
+    return h(d1) < h(d2);
+  };
+  std::sort(lhs.begin(), lhs.end(), device_order_f);
+  std::sort(rhs.begin(), rhs.end(), device_order_f);
+  std::vector<sycl::device> difference{};
+  std::set_difference(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(),
+                      std::back_inserter(difference), device_order_f);
+  return difference.size() == 0;
 }
 
 #endif  // __SYCLCTS_TESTS_COMMON_COMMON_H
