@@ -37,8 +37,10 @@ class TEST_NAME : public util::test_base {
       // Test using queue constructed already
       for_type_and_vectors<check_type, sycl::half>(queue, log,
           "sycl::half");
+#if SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
       for_type_and_vectors<check_type, sycl::cl_half>(queue, log,
           "sycl::cl_half");
+#endif
     }
   }
 };
