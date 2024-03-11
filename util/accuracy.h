@@ -24,6 +24,7 @@ T get_ulp_std(T x) {
   const T positive = std::fabs(std::nextafter(x, inf) - x);
   return std::fmin(negative, positive);
 }
+#if SYCL_CTS_ENABLE_HALF_TESTS
 template <>
 inline sycl::half get_ulp_std<sycl::half>(sycl::half x) {
   const auto ulp = get_ulp_std<float>(x);
@@ -31,6 +32,7 @@ inline sycl::half get_ulp_std<sycl::half>(sycl::half x) {
   // Multiplier is set according to the difference in precision
   return static_cast<sycl::half>(ulp * multiplier);
 }
+#endif
 /**
  * @brief Provides ulp(x) by definition given in OpenCL 1.2 rev. 19, 7.4
  *        See Jean-Michel Muller "On the definition of ulp (x)", definition 7
@@ -43,6 +45,7 @@ T get_ulp_sycl(T x) {
   const T positive = sycl::fabs(sycl::nextafter(x, inf) - x);
   return sycl::fmin(negative, positive);
 }
+#if SYCL_CTS_ENABLE_HALF_TESTS
 template <>
 inline sycl::half get_ulp_sycl<sycl::half>(sycl::half x) {
   const auto ulp = get_ulp_sycl<float>(x);
@@ -50,5 +53,6 @@ inline sycl::half get_ulp_sycl<sycl::half>(sycl::half x) {
   // Multiplier is set according to the difference in precision
   return static_cast<sycl::half>(ulp * multiplier);
 }
+#endif
 
 #endif  // __SYCLCTS_UTIL_ACCURACY_H
