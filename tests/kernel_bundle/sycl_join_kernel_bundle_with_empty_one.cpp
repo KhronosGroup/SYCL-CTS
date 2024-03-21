@@ -35,8 +35,7 @@ void run_verification(util::logger &log) {
 
   // Selector that always returns false. Used to get empty kernel_bundle
   auto false_selector = [](const sycl::device_image<State> &) { return false; };
-  auto empty_kb =
-      sycl::get_kernel_bundle<State>(ctx, ctx.get_devices(), false_selector);
+  auto empty_kb = sycl::get_kernel_bundle<State>(ctx, false_selector);
 
   // Check joined bundles in such order: (kernel_bundle, empty_kernel_bundle)
   {
