@@ -858,17 +858,15 @@ inline sycl::id<3> unlinearize(sycl::range<3> range, size_t id) {
  */
 inline bool have_same_devices(std::vector<sycl::device> lhs,
                               std::vector<sycl::device> rhs) {
-  auto device_order_f = [](const sycl::device& d1,
-                           const sycl::device& d2) -> bool {
-    std::hash<sycl::device> h{};
-    return h(d1) < h(d2);
+  // TODO: If SYCL devices are given well-defined ordering, this can be
+  //       implemented using std::set_difference.
+  auto create_check_func = [](const std::vector<sycl::device>& devices) {
+    return [&devices](const sycl::device& dev) {
+      return std::find(devices.cbegin(), devices.cend(), dev) != devices.cend();
+    };
   };
-  std::sort(lhs.begin(), lhs.end(), device_order_f);
-  std::sort(rhs.begin(), rhs.end(), device_order_f);
-  std::vector<sycl::device> difference{};
-  std::set_difference(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(),
-                      std::back_inserter(difference), device_order_f);
-  return difference.size() == 0;
+  return std::all_of(lhs.cbegin(), lhs.cend(), create_check_func(rhs)) &&
+         std::all_of(rhs.cbegin(), rhs.cend(), create_check_func(lhs));
 }
 
 #endif  // __SYCLCTS_TESTS_COMMON_COMMON_H
