@@ -145,7 +145,6 @@ class run_marray_constructor_test {
             })
             .wait_and_throw();
       }
-      run_checks(check_results);
       for (size_t i = 0; i < num_test_cases; ++i) {
         INFO(check_names[i]);
         CHECK(check_results[i]);
