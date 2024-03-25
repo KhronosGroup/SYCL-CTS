@@ -71,7 +71,7 @@ void verify_results(
   if (kernel_bundle.get_context() != ctx) {
     FAIL(log, "Kernel bundle's context does not equal to provided context");
   }
-  if (kernel_bundle.get_devices() != dev_vector) {
+  if (!have_same_devices(kernel_bundle.get_devices(), dev_vector)) {
     FAIL(log, "Devices from kernel bundle not equal to provided devices");
   }
 }
@@ -117,7 +117,7 @@ void run_verification(util::logger &log, sycl::queue &queue) {
       kb_with_first_simple_kernel_from_input, kb_with_second_simple_kernel};
 
   std::vector<sycl::device> dev_vector{ctx.get_devices()};
-  std::vector<sycl::device> current_dev_vector{util::get_cts_object::device()};
+  std::vector<sycl::device> current_dev_vector{queue.get_device()};
 
   log.note("Verify link(vector<kernel_bundle<>>, vector<device>) overload");
   verify_results(log, current_dev_vector, ctx,

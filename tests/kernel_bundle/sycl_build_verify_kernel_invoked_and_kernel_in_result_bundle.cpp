@@ -59,7 +59,7 @@ void verify_results(
   if (kernel_bundle.get_context() != ctx) {
     FAIL(log, "Kernel bundle's context does not equal to provided context");
   }
-  if (kernel_bundle.get_devices() != dev_vector) {
+  if (!have_same_devices(kernel_bundle.get_devices(), dev_vector)) {
     FAIL(log, "Devices from kernel bundle not equal to provided devices");
   }
 }
@@ -118,7 +118,7 @@ struct verify_that_bundles_are_same {
  */
 void run_verification(util::logger &log, sycl::queue &q) {
   auto ctx = q.get_context();
-  std::vector<sycl::device> dev_vector{ctx.get_devices()[0]};
+  std::vector<sycl::device> dev_vector{ctx.get_devices()};
 
   const auto first_simple_kernel_id =
       sycl::get_kernel_id<first_simple_kernel>();
