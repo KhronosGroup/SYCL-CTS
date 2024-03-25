@@ -62,9 +62,8 @@ void testSimpleKernel(sycl::queue& q, const sycl::kernel& kernel,
   sycl::buffer<int> output_buffer{sycl::range<1>(N)};
 
   q.submit([&](sycl::handler& cgh) {
-    cgh.set_args(
-        sycl::accessor<int, 1, sycl::access_mode::read>{input_buffer, cgh},
-        sycl::accessor<int, 1, sycl::access_mode::write>{output_buffer, cgh});
+    cgh.set_args(sycl::accessor{input_buffer, cgh, sycl::read_only},
+                 sycl::accessor{output_buffer, cgh, sycl::write_only});
     cgh.parallel_for(sycl::range<1>{N}, kernel);
   });
 
@@ -115,8 +114,7 @@ void testParam(sycl::queue& q, const sycl::kernel& kernel) {
     // Pass USM pointer for OpTypePointer(CrossWorkgroup) parameter.
     cgh.set_arg(1, b_ptr);
     // Pass sycl::accessor for OpTypePointer(CrossWorkgroup) parameter.
-    cgh.set_arg(
-        2, sycl::accessor<T, 1, sycl::access_mode::write>{output_buffer, cgh});
+    cgh.set_arg(2, sycl::accessor{output_buffer, cgh, sycl::write_only});
     // Pass sycl::local_accessor for OpTypePointer(Workgroup) parameter.
     cgh.set_arg(3, local);
     cgh.parallel_for(sycl::range<1>{1}, kernel);
