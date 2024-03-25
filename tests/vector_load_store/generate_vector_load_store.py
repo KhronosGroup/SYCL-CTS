@@ -54,25 +54,19 @@ load_store_test_template = Template(
 
             cgh.single_task<class ${kernelName}>([=]() {
               auto testVec${type_as_str}${size} = sycl::vec<${type}, ${size}>(${val});
-              testVec${type_as_str}${size}.load(0, inPtr${type_as_str}${size});
-              testVec${type_as_str}${size}.store(0, outPtr${type_as_str}${size});
 
               auto multiPtrIn${type_as_str}${size} = inPtr${type_as_str}${size}.get_multi_ptr<${decorated}>();
               sycl::global_ptr<const ${type}> constMultiPtrIn${type_as_str}${size} = multiPtrIn${type_as_str}${size};
               auto multiPtrOut${type_as_str}${size} = outPtr${type_as_str}${size}.get_multi_ptr<${decorated}>();
-              testVec${type_as_str}${size}.load(0, multiPtrIn${type_as_str}${size});
               testVec${type_as_str}${size}.load(0, constMultiPtrIn${type_as_str}${size});
               testVec${type_as_str}${size}.store(0, multiPtrOut${type_as_str}${size});
 
               auto cleanVec${type_as_str}${size} = sycl::vec<${type}, ${size}>(${val});
               sycl::vec<${type}, ${size}> swizzledVec {cleanVec${type_as_str}${size}.template swizzle<${swizVals}>()};
-              swizzledVec.load(0, swizzleInPtr${type_as_str}${size});
-              swizzledVec.store(0, swizzleOutPtr${type_as_str}${size});
 
               auto multiPtrInSwizzle${type_as_str}${size} = swizzleInPtr${type_as_str}${size}.get_multi_ptr<${decorated}>();
               sycl::global_ptr<const ${type}> constMultiPtrInSwizzle${type_as_str}${size} = multiPtrInSwizzle${type_as_str}${size};
               auto multiPtrOutSwizzle${type_as_str}${size} = swizzleOutPtr${type_as_str}${size}.get_multi_ptr<${decorated}>();
-              swizzledVec.load(0, multiPtrInSwizzle${type_as_str}${size});
               swizzledVec.load(0, constMultiPtrInSwizzle${type_as_str}${size});
               swizzledVec.store(0, multiPtrOutSwizzle${type_as_str}${size});
             });

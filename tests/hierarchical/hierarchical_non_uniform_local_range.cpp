@@ -50,6 +50,17 @@ void check_expected(const std::vector<sycl::int3> &data, unsigned local_id,
   }
 }
 
+// there is no id -> range conversion in the spec
+static sycl::range<1> id_to_range(sycl::id<1> id) {
+  return sycl::range<1>(id[0]);
+}
+static sycl::range<2> id_to_range(sycl::id<2> id) {
+  return sycl::range<2>(id[0], id[1]);
+}
+static sycl::range<3> id_to_range(sycl::id<3> id) {
+  return sycl::range<3>(id[0], id[1], id[2]);
+}
+
 template <int dim> void check_dim(util::logger &log) {
   constexpr unsigned group_range = 4;
   constexpr unsigned local_range = 3;
@@ -93,7 +104,7 @@ template <int dim> void check_dim(util::logger &log) {
         cgh.parallel_for_work_group<kernel<dim>>(
             groupRange, localRange, [=](sycl::group<dim> group_pid) {
               group_pid.parallel_for_work_item(
-                  sycl::range<dim>(group_pid.get_id()),
+                  id_to_range(group_pid.get_id()),
                   [&](sycl::h_item<dim> item_id) {
                     unsigned physical_local_d1 =
                         item_id.get_physical_local()[0];

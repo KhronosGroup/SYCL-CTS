@@ -49,7 +49,8 @@ TEST_CASE("Fixed width types size equality", "[scalars]") {
     CHECK(results[i]);
   }
 
-  std::iota(results.begin(), results.end(), false);
+  std::fill(results.begin(), results.end(), false);
+
   {
     sycl::buffer<bool, 1> res_buf(results.data(), {types_count});
     queue.submit([&](sycl::handler& cgh) {

@@ -146,7 +146,6 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::image3d_max_depth, size_t>(dev);
     check_get_info_param<sycl::info::device::image_max_buffer_size, size_t>(
         dev);
-    check_get_info_param<sycl::info::device::image_max_array_size, size_t>(dev);
     check_get_info_param<sycl::info::device::max_samplers, uint32_t>(dev);
     check_get_info_param<sycl::info::device::max_parameter_size, size_t>(dev);
     check_get_info_param<sycl::info::device::mem_base_addr_align, uint32_t>(
@@ -223,8 +222,6 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::driver_version, std::string>(dev);
     check_get_info_param<sycl::info::device::profile, std::string>(dev);
     check_get_info_param<sycl::info::device::version, std::string>(dev);
-    check_get_info_param<sycl::info::device::opencl_c_version, std::string>(
-        dev);
     check_get_info_param<sycl::info::device::backend_version, std::string>(dev);
 
     check_get_info_param<sycl::info::device::aspects,
