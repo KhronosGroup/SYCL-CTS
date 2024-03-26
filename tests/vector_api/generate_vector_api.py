@@ -84,6 +84,7 @@ vector1_to_scalar_convert = """
     CHECK(scalar2 == sycl::vec<double, 1>(scalar2));
     CHECK(scalar3 == sycl::vec<sycl::half, 1>(scalar3));
     CHECK(scalar4 == sycl::vec<int, 1>(scalar4));
+    CHECK(sycl::vec<int, 1>().size() == 0);
 """
 
 def gen_checks(type_str, size):
