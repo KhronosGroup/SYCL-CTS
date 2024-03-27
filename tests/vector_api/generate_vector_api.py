@@ -109,7 +109,6 @@ def gen_checks(type_str, size):
         test_string += lo_hi_odd_even_template.substitute(
         type=type_str,
         vals=', '.join(vals_list))
-    test_string += vector1_to_scalar_convert
     string = wrap_with_kernel(
         type_str, kernel_name,
         'API test for sycl::vec<' + type_str + ', ' + str(size) + '>',
@@ -118,6 +117,7 @@ def gen_checks(type_str, size):
         type=type_str,
         size=size,
         swizIndexes=', '.join(Data.swizzle_elem_list_dict[size][::-1]))
+    string += vector1_to_scalar_convert
     return wrap_with_test_func(TEST_NAME, type_str, string, str(size))
 
 def gen_optional_checks(type_str, size, dest, dest_type, TEST_NAME_OP):
