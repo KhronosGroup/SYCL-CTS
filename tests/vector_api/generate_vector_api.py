@@ -109,7 +109,7 @@ def gen_checks(type_str, size):
         test_string += lo_hi_odd_even_template.substitute(
         type=type_str,
         vals=', '.join(vals_list))
-    test_tring += vector1_to_scalar_convert
+    test_string += vector1_to_scalar_convert
     string = wrap_with_kernel(
         type_str, kernel_name,
         'API test for sycl::vec<' + type_str + ', ' + str(size) + '>',
