@@ -75,17 +75,10 @@ as_convert_call_template = Template("""
         }
 """)
 
-vector1_to_scalar_convert = """
-    const float scalar1 = 3.14f;
-    const double scalar2 = 2.718;
-    const sycl::half scalar3 = -5.858f;    
-    const int scalar4 = 0;
-    CHECK(scalar1 == sycl::vec<float, 1>(scalar1));
-    CHECK(scalar2 == sycl::vec<double, 1>(scalar2));
-    CHECK(scalar3 == sycl::vec<sycl::half, 1>(scalar3));
-    CHECK(scalar4 == sycl::vec<int, 1>(scalar4));
-    CHECK(sycl::vec<int, 1>().size() == 1);
-"""
+vector1_to_scalar_convert = Template("""
+    CHECK(${type}{} == sycl::vec<${type}, 1>());
+    CHECK(sycl::vec<${type}, 1>().size() == 1);
+""")
 
 def gen_checks(type_str, size):
     vals_list = append_fp_postfix(type_str, Data.vals_list_dict[size])
@@ -117,7 +110,7 @@ def gen_checks(type_str, size):
         type=type_str,
         size=size,
         swizIndexes=', '.join(Data.swizzle_elem_list_dict[size][::-1]))
-    string += vector1_to_scalar_convert
+    string += vector1_to_scalar_convert.substitute(type = type_str)
     return wrap_with_test_func(TEST_NAME, type_str, string, str(size))
 
 def gen_optional_checks(type_str, size, dest, dest_type, TEST_NAME_OP):
