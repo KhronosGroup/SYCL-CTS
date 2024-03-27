@@ -76,7 +76,8 @@ as_convert_call_template = Template("""
 """)
 
 vector1_to_scalar_convert = Template("""
-    CHECK(${type}{} == sycl::vec<${type}, 1>());
+    ${type} scalar = sycl::vec<${type}, 1>();
+    CHECK(${type}{} == scalar);
     CHECK(sycl::vec<${type}, 1>().size() == 1);
 """)
 
