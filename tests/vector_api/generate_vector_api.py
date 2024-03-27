@@ -75,6 +75,11 @@ as_convert_call_template = Template("""
         }
 """)
 
+vector1_to_scalar_convert = Template("""
+    ${type} scalar = sycl::vec<${type}, 1>();
+    CHECK(${type}{} == scalar);
+    CHECK(sycl::vec<${type}, 1>().size() == 1);
+""")
 
 def gen_checks(type_str, size):
     vals_list = append_fp_postfix(type_str, Data.vals_list_dict[size])
@@ -106,6 +111,7 @@ def gen_checks(type_str, size):
         type=type_str,
         size=size,
         swizIndexes=', '.join(Data.swizzle_elem_list_dict[size][::-1]))
+    string += vector1_to_scalar_convert.substitute(type = type_str)
     return wrap_with_test_func(TEST_NAME, type_str, string, str(size))
 
 def gen_optional_checks(type_str, size, dest, dest_type, TEST_NAME_OP):
