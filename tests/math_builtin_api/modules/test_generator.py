@@ -140,7 +140,8 @@ def generate_multi_ptr(var_name, var_type, memory, decorated):
 
 def generate_variable(var_name, var_type, var_index):
     return var_type.name + " " + var_name + "(" + generate_value(var_type.base_type, var_type.dim) + ");\n"
-    
+
+# argument generator for clamp which makes sure that its third argument is at least equal to its second argument in every dimension.
 def generate_arguments_clamp(sig):
     arg_types = sig.arg_types
     arg_names = ["inputData_" + str(i) for i in range(3)]
@@ -306,6 +307,8 @@ def generate_reference_ptr(types, sig, arg_names, arg_src):
 def generate_test_case(test_id, types, sig, memory, check, decorated = ""):
     testCaseSource = test_case_templates_check[memory] if check else test_case_templates[memory]
     testCaseId = str(test_id)
+    # for the clamp function we use a separate argument generator to make sure that its preconditions are met, 
+    # otherwise argument generation for clamp would be completely random.
     (arg_names, arg_src) = generate_arguments(sig, memory, decorated) if sig.name != "clamp" else generate_arguments_clamp(sig) 
     testCaseSource = testCaseSource.replace("$REFERENCE", generate_reference(sig, arg_names, arg_src))
     testCaseSource = testCaseSource.replace("$PTR_REF", generate_reference_ptr(types, sig, arg_names, arg_src))
