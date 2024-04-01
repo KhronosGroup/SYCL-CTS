@@ -162,7 +162,6 @@ run_func_on_vector_result_ref(funT fun, Args... args) {
   sycl::vec<T, N> res;
   std::map<int, bool> undefined;
   for (int i = 0; i < N; i++) {
-    // bool does not have a default value so we initialize it ourselves to false
     undefined[i] = false;
     resultRef<T> element = fun(getElement(args, i)...);
     if (element.undefined.empty())
