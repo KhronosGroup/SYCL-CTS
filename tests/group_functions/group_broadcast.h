@@ -131,87 +131,132 @@ void broadcast_sub_group(sycl::queue& queue) {
   sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
 
   // array to return results
-  T res[test_matrix + 1] = {splat_init<T>(0)};
+  T origin_values[test_matrix] = {splat_init<T>(0)};
+  T broadcasted_values[test_matrix] = {splat_init<T>(0)};
   {
-    sycl::buffer<T, 1> res_sycl(res, sycl::range<1>(test_matrix + 1));
+    sycl::buffer<T, 1> origin_values_buf(origin_values,
+                                         sycl::range<1>(test_matrix));
+    sycl::buffer<T, 1> broadcasted_values_buf(broadcasted_values,
+                                              sycl::range<1>(test_matrix));
 
     queue.submit([&](sycl::handler& cgh) {
-      auto res_acc =
-          res_sycl.template get_access<sycl::access::mode::read_write>(cgh);
+      auto origin_values_acc =
+          origin_values_buf.template get_access<sycl::access::mode::read_write>(
+              cgh);
+      auto broadcasted_values_acc =
+          broadcasted_values_buf
+              .template get_access<sycl::access::mode::read_write>(cgh);
 
       sycl::nd_range<D> executionRange(work_group_range, work_group_range);
+      // Values computed in a kernel depend on global linear id. We need to make
+      // sure that there are no overflows
+      REQUIRE(executionRange.get_global_range().size() <
+              std::numeric_limits<size_t>::max() / 100);
 
       cgh.parallel_for<broadcast_sub_group_kernel<
           D, T>>(executionRange, [=](sycl::nd_item<D> item) {
         sycl::sub_group sub_group = item.get_sub_group();
 
+        // Each work-item computes a unique value
+        T value_to_broadcast(splat_init<T>(static_cast<size_t>(
+            item.get_global_linear_id() * 100 + sub_group.get_local_id())));
         T local_var(splat_init<T>(0));
 
+        // To simplify the test, we are only checking the first sub-group
         if (sub_group.get_group_id()[0] == 0) {
-          // find local id of last group item
-          sycl::id<1> last_item = sub_group.get_local_range();
-          --last_item[0];
+          // Find local id of the leader, last and some other work-item in the
+          // sub-group. They will be used to check different combinations of
+          // broadcasting and receiving work-items
+          sycl::id<1> first_id = 0;
+          sycl::id<1> mid_id = sub_group.get_local_range() / 2;
+          sycl::id<1> last_id = sub_group.get_local_range() - 1;
 
-          // broadcast from the first workitem
-          local_var = splat_init<T>(item.get_global_linear_id() + 1);
+          // Broadcast from the first work-item
           ASSERT_RETURN_TYPE(
-              T, sycl::group_broadcast(sub_group, local_var),
+              T, sycl::group_broadcast(sub_group, value_to_broadcast),
               "Return type of group_broadcast(sub_group g, T x) is wrong\n");
 
-          local_var = sycl::group_broadcast(sub_group, local_var);
-          if (sub_group.get_local_linear_id() ==
-              sub_group.get_local_linear_range() - 1)
-            res_acc[0] = local_var;
+          if (sub_group.leader()) {
+            // Work-item which does the broadcast stores value to broadcast to
+            // use it later as a reference
+            origin_values_acc[0] = value_to_broadcast;
+          }
+          auto broadcasted_value =
+              sycl::group_broadcast(sub_group, value_to_broadcast);
+          // We read broadcasted value in another work-item
+          if (sub_group.get_local_id() == last_id)
+            broadcasted_values_acc[0] = broadcasted_value;
 
-          // broadcast from the last workitem 1
-          local_var = splat_init<T>(item.get_global_linear_id() + 1);
+          // Broadcast from the last work-item, we specifically don't use
+          // sycl::id as the third argument to check overload with
+          // sub_group::linear_id_type as the third argument
           ASSERT_RETURN_TYPE(
-              T, sycl::group_broadcast(sub_group, local_var, last_item),
+              T,
+              sycl::group_broadcast(sub_group, value_to_broadcast,
+                                    sub_group.get_local_linear_range() - 1),
               "Return type of group_broadcast(sub_group g, T x, "
               "sub_group::linear_id_type local_linear_id) is wrong\n");
 
-          local_var = sycl::group_broadcast(
-              sub_group, local_var, sub_group.get_local_linear_range() - 1);
-          if (sub_group.get_local_linear_id() == 0) res_acc[1] = local_var;
+          if (sub_group.get_local_id() == last_id) {
+            // Work-item which does the broadcast stores value to broadcast to
+            // use it later as a reference
+            origin_values_acc[1] = value_to_broadcast;
+          }
 
-          // broadcast from the last workitem 2
-          local_var = splat_init<T>(item.get_global_linear_id() + 1);
+          broadcasted_value =
+              sycl::group_broadcast(sub_group, value_to_broadcast,
+                                    sub_group.get_local_linear_range() - 1);
+          // We read broadcasted value in another work-item
+          if (sub_group.get_local_id() == mid_id)
+            broadcasted_values_acc[1] = broadcasted_value;
+
+          // Broadcast from a mid work-item. This is similar to the test case
+          // above, but it checks overload which accepts sub_group::id_type as
+          // the last argument
           ASSERT_RETURN_TYPE(
-              T, sycl::group_broadcast(sub_group, local_var, last_item),
+              T, sycl::group_broadcast(sub_group, value_to_broadcast, mid_id),
               "Return type of group_broadcast(sub_group g, T x, "
               "sub_group::id_type local_id) is wrong\n");
 
-          local_var = sycl::group_broadcast(sub_group, local_var, last_item);
-          if (sub_group.get_local_linear_id() == 0) res_acc[2] = local_var;
+          if (sub_group.get_local_id() == mid_id) {
+            // Work-item which does the broadcast stores value to broadcast to
+            // use it later as a reference
+            origin_values_acc[2] = value_to_broadcast;
+          }
+          broadcasted_value =
+              sycl::group_broadcast(sub_group, value_to_broadcast, mid_id);
+          // We read broadcasted value in another work-item
+          if (sub_group.get_local_id() == first_id)
+            broadcasted_values_acc[2] = broadcasted_value;
 
-          // select from the last workitem
-          local_var = splat_init<T>(item.get_global_linear_id() + 1);
+          // Select from the first work-item
           ASSERT_RETURN_TYPE(
-              T, sycl::select_from_group(sub_group, local_var, last_item),
+              T,
+              sycl::select_from_group(sub_group, value_to_broadcast, first_id),
               "Return type of select_from_group(sub_group g, T x, "
               "sub_group::id_type local_id) is wrong\n");
 
-          local_var = sycl::select_from_group(sub_group, local_var, last_item);
-          if (sub_group.get_local_linear_id() == 0) res_acc[3] = local_var;
-
-          // Return the sub-group size when possible or just its parity
-          if (sub_group.get_local_linear_id() == 0) {
-            if constexpr (std::is_same_v<T, bool>)
-              res_acc[4] = sub_group.get_local_linear_range() % 2;
-            else
-              res_acc[4] = sub_group.get_local_linear_range();
+          if (sub_group.get_local_id() == first_id) {
+            // Work-item which does the broadcast stores value to broadcast to
+            // use it later as a reference
+            origin_values_acc[3] = value_to_broadcast;
           }
+          broadcasted_value =
+              sycl::select_from_group(sub_group, value_to_broadcast, first_id);
+          // We read broadcasted value in another work-item
+          if (sub_group.get_local_id() == mid_id)
+            broadcasted_values_acc[3] = broadcasted_value;
         }
       });
     });
   }
-  T expected[test_matrix] = {splat_init<T>(1), res[4], res[4], res[4]};
   for (int i = 0; i < test_matrix; ++i) {
     std::string work_group = sycl_cts::util::work_group_print(work_group_range);
     CAPTURE(D, work_group);
     INFO("Return value of "
          << test_names[i] << " with T = " << type_name<T>() << " is "
-         << (equal(res[i], expected[i]) ? "right" : "wrong"));
-    CHECK(equal(res[i], expected[i]));
+         << (equal(broadcasted_values[i], origin_values[i]) ? "right"
+                                                            : "wrong"));
+    CHECK(equal(broadcasted_values[i], origin_values[i]));
   }
 }

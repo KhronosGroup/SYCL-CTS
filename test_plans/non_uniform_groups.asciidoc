@@ -1,0 +1,400 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl_ext_oneapi_non_uniform_groups
+
+This is a test plan for the APIs described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/experimental/sycl_ext_oneapi_non_uniform_groups.asciidoc[sycl_ext_oneapi_non_uniform_groups].
+
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_NON_UNIFORM_GROUPS` so they
+can be skipped if feature is not supported.
+
+== Tests
+
+=== The `is_fixed_topology_group` trait for existing types
+
+Check the following:
+
+* `is_fixed_topology_group<group<1>>::value` is `true`.
+* `is_fixed_topology_group_v<group<1>>` is `true`.
+* `is_fixed_topology_group<group<2>>::value` is `true`.
+* `is_fixed_topology_group_v<group<2>>` is `true`.
+* `is_fixed_topology_group<group<3>>::value` is `true`.
+* `is_fixed_topology_group_v<group<3>>` is `true`.
+* `is_fixed_topology_group<sub_group>::value` is `true`.
+* `is_fixed_topology_group_v<sub_group>` is `true`.
+
+If `SYCL_EXT_ONEAPI_ROOT_GROUP` is defined, check the following:
+
+* `is_fixed_topology_group<root_group>::value` is `true`.
+* `is_fixed_topology_group_v<root_group>` is `true`.
+
+=== The `ballot_group` class API
+
+The `get_ballot_group` is called with the `sub_group` of the invocation and a
+predicate splitting the work-items of the sub-group into uneven groups. Let `N1`
+be the size of the group created with `true` predicate and let `N2` be the size
+of the group created with `false` predicate.
+
+==== Group traits
+
+Check the following:
+
+* `is_group<ballot_group<sub_group>>::value` is `true`.
+* `is_group_v<ballot_group<sub_group>>` is `true`.
+* `is_user_constructed_group<ballot_group<sub_group>>::value` is `true`.
+* `is_user_constructed_group_v<ballot_group<sub_group>>` is `true`.
+* `is_fixed_topology_group<ballot_group<sub_group>>::value` is `false`.
+* `is_fixed_topology_group_v<ballot_group<sub_group>>` is `false`.
+
+==== Members
+
+Check the following:
+
+* `id_type` is same as `id<1>`.
+* `range_type` is same as `range<1>`.
+* `linear_id_type` is same as `uint32_t`.
+* `dimensions` is 1.
+* `fence_scope` is equal to `sub_group::fence_scope`.
+
+==== get_group_id
+
+Check that `get_group_id()` return type is `id_type` and return value is
+`1` if the predicate was `true` or `0` if the predicate was `false`.
+
+==== get_local_id
+
+Check that `get_local_id()` return type is `id_type` and return value is less
+than `N1` if the predicate was `true` or less than `N2` if the predicate was
+`false`.
+
+==== get_group_range
+
+Check that `get_group_range()` return type is `range_type` and return value is
+equal to `2`.
+
+==== get_local_range
+
+Check that `get_local_range()` return type is `range_type` and return value is
+equal to `N1` if the predicate was `true` or equal to `N2` if the predicate was
+`false`.
+
+==== get_group_linear_id
+
+Check that `get_group_linear_id()` return type is `linear_id_type` and return
+value is equal to `get_group_id()` converted to `linear_id_type`.
+
+==== get_local_linear_id
+
+Check that `get_local_linear_id()` return type is `linear_id_type` and the
+return value is equal to `get_local_id()` converted to `linear_id_type`.
+
+==== get_group_linear_range
+
+Check that `get_group_linear_range()` return type is `linear_id_type` and return
+value is equal to `get_group_range()` converted to `linear_id_type`.
+
+==== get_local_linear_range
+
+Check that `get_local_linear_range()` return type is `linear_id_type` and return
+value is equal to `get_local_range()` converted to `linear_id_type`.
+
+==== leader
+
+Check that `leader()` return type is `bool` and return value is equal to
+`get_local_id() == 0`.
+
+=== The `fixed_size_group` class API
+
+Let `N` be some power-of-two value greater than 1 that is expected to be a
+divisor of the sub-group size of most devices. The `get_fixed_size_group` is
+called with the `sub_group` of the invocation and `N` as the partition size.
+Let `M` be the result of `get_local_range()` on the sub-group the given
+`fixed_size_group` was created from.
+
+==== Group traits
+
+Check the following:
+
+* `is_group<fixed_size_group<N, sub_group>>::value` is `true`.
+* `is_group_v<fixed_size_group<N, sub_group>>` is `true`.
+* `is_user_constructed_group<fixed_size_group<N, sub_group>>::value` is `true`.
+* `is_user_constructed_group<fixed_size_group<N, sub_group>>` is `true`.
+* `is_fixed_topology_group_v<fixed_size_group<N, sub_group>>::value` is `false`.
+* `is_fixed_topology_group_v<fixed_size_group<N, sub_group>>` is `false`.
+
+==== Members
+
+Check the following:
+
+* `id_type` is same as `id<1>`.
+* `range_type` is same as `range<1>`.
+* `linear_id_type` is same as `uint32_t`.
+* `dimensions` is 1.
+* `fence_scope` is equal to `sub_group::fence_scope`.
+
+==== get_group_id
+
+Check that `get_group_id()` return type is `id<1>` and return value is less than
+`M/N`.
+
+==== get_local_id
+
+Check that `get_local_id()` return type is `id<1>` and return value is less than
+`N`.
+
+==== get_group_range
+
+Check that `get_group_range()` return type is `range_type` and return value is
+equal to `M/N`.
+
+==== get_local_range
+
+Check that `get_local_range()` return type is `range_type` and return value is
+equal to `N`.
+
+==== get_group_linear_id
+
+Check that `get_group_linear_id()` return type is `linear_id_type` and return
+value is equal to `get_group_id()` converted to `linear_id_type`.
+
+==== get_local_linear_id
+
+Check that `get_local_linear_id()` return type is `linear_id_type` and the
+return value is equal to `get_local_id()` converted to
+`linear_id_type`.
+
+==== get_group_linear_range
+
+Check that `get_group_linear_range()` return type is `linear_id_type` and return
+value is equal to `get_group_range()` converted to `linear_id_type`.
+
+==== get_local_linear_range
+
+Check that `get_local_linear_range()` return type is `linear_id_type` and return
+value is equal to `get_local_range()` converted to `linear_id_type`.
+
+==== leader
+
+Check that `leader()` return type is `bool` and return value is equal to
+`get_local_id() == 0`.
+
+=== The `tangle_group` class API
+
+The `get_tangle_group` is called with the `sub_group` of the invocation. 
+Let `M` be the result of `get_local_range()` on this `sub_group` and let `N` be
+some value strictly less than `M`. `get_tangle_group` is called in two split
+control-flows in an if-else-statement, the if-branch with the first `N` items of
+the sub-group and the else branch with the rest.
+
+==== Group traits
+
+Check the following:
+
+* `is_group<tangle_group<sub_group>>::value` is `true`.
+* `is_group_v<tangle_group<sub_group>>` is `true`.
+* `is_user_constructed_group<tangle_group<sub_group>>::value` is `true`.
+* `is_user_constructed_group<tangle_group<sub_group>>` is `true`.
+* `is_fixed_topology_group_v<tangle_group<sub_group>>::value` is `false`.
+* `is_fixed_topology_group_v<tangle_group<sub_group>>` is `false`.
+
+==== Members
+
+Check the following:
+
+* `id_type` is same as `id<1>`.
+* `range_type` is same as `range<1>`.
+* `linear_id_type` is same as `uint32_t`.
+* `dimensions` is 1.
+* `fence_scope` is equal to `sub_group::fence_scope`.
+
+==== get_group_id
+
+Check that `get_group_id()` return type is `id_type` and return value is equal
+to `0`.
+
+==== get_local_id
+
+Check that `get_local_id()` return type is `id_type` and return value is less
+than `N`.
+
+==== get_group_range
+
+Check that `get_group_range()` return type is `range_type` and return value is
+equal to `1`.
+
+==== get_local_range
+
+Check that `get_local_range()` return type is `range_type` and return value is
+equal to `N`.
+
+==== get_group_linear_id
+
+Check that `get_group_linear_id()` return type is `linear_id_type` and return
+value is equal to `get_group_id()` converted to `linear_id_type`.
+
+==== get_local_linear_id
+
+Check that `get_local_linear_id()` return type is `linear_id_type` and the
+return value is equal to `get_local_id()` converted to `linear_id_type`.
+
+==== get_group_linear_range
+
+Check that `get_group_linear_range()` return type is `linear_id_type` and return
+value is equal to `get_group_range()` converted to `linear_id_type`.
+
+==== get_local_linear_range
+
+Check that `get_local_linear_range()` return type is `linear_id_type` and return
+value is equal to `get_local_range()` converted to `linear_id_type`.
+
+==== leader
+
+Check that `leader()` return type is `bool` and return value is equal to
+`get_local_id() == 0`.
+
+=== The `opportunistic_group` class API
+
+The `get_opportunistic_group` is called by all work items.
+Let `M` be the result of `get_local_range()` on the sub-group of the invocation.
+
+==== Group traits
+
+Check the following:
+
+* `is_group<opportunistic_group>::value` is `true`.
+* `is_group_v<opportunistic_group>` is `true`.
+* `is_user_constructed_group<opportunistic_group>::value` is `true`.
+* `is_user_constructed_group<opportunistic_group>` is `true`.
+* `is_fixed_topology_group_v<opportunistic_group>::value` is `false`.
+* `is_fixed_topology_group_v<opportunistic_group>` is `false`.
+
+==== Members
+
+Check the following:
+
+* `id_type` is same as `id<1>`.
+* `range_type` is same as `range<1>`.
+* `linear_id_type` is same as `uint32_t`.
+* `dimensions` is 1.
+* `fence_scope` is equal to `sub_group::fence_scope`.
+
+==== get_group_id
+
+Check that `get_group_id()` return type is `id_type` and return value is equal
+to `0`.
+
+==== get_local_id
+
+Check that `get_local_id()` return type is `id_type` and return value is less
+than `get_local_range().size()`. 
+
+==== get_group_range
+
+Check that `get_group_range()` return type is `range_type` and return value is
+equal to `1`.
+
+==== get_local_range
+
+Check that `get_local_range()` return type is `range_type` and return value is
+less than or equal to `M`.
+
+==== get_group_linear_id
+
+Check that `get_group_linear_id()` return type is `linear_id_type` and return
+value is equal to `get_group_id()` converted to `linear_id_type`.
+
+==== get_local_linear_id
+
+Check that `get_local_linear_id()` return type is `linear_id_type` and the
+return value is equal to `get_local_id()` converted to `linear_id_type`.
+
+==== get_group_linear_range
+
+Check that `get_group_linear_range()` return type is `linear_id_type` and return
+value is equal to `get_group_range()` converted to `linear_id_type`.
+
+==== get_local_linear_range
+
+Check that `get_local_linear_range()` return type is `linear_id_type` and return
+value is equal to `get_local_range()` converted to `linear_id_type`.
+
+==== leader
+
+Check that `leader()` return type is `bool` and return value is equal to
+`get_local_id() == 0`.
+
+=== Group functions
+
+The group functions
+
+* `group_barrier`
+* `group_broadcast`
+
+for `ballot_group`, `fixed_size_group`, `tangle_group`
+and `opportunistic_group` are tested similar to how they are currently tested
+with `group` and `sub_group` in the core CTS. The groups are constructed in the
+same way as for the API testing described above.
+
+=== Group algorithms
+
+The group algorithms
+
+* `joint_any_of`
+* `any_of_group`
+* `joint_all_of`
+* `all_of_group`
+* `joint_none_of`
+* `none_of_group`
+* `shift_group_left`
+* `shift_group_right`
+* `permute_group_by_xor`
+* `select_from_group`
+* `joint_reduce`
+* `reduce_over_group`
+* `joint_exclusive_scan`
+* `exclusive_scan_over_group`
+* `joint_inclusive_scan`
+* `inclusive_scan_over_group`
+
+for `ballot_group`, `fixed_size_group`, `tangle_group`
+and `opportunistic_group` are tested similar to how they are currently tested
+with `group` and `sub_group` in the core CTS.
+
+The groups are constructed as follows:
+
+* `get_ballot_group` is called with a predicate that is `true` for the first `N`
+  work-items in the sub-group.
+* `get_ballot_group` is called with a predicate that is `true` for work-items
+  with odd `sg.get_local_linear_id()` values, where `sg` is the sub-group.
+* `get_ballot_group` is called with a predicate that is `true` for all
+  work-items in the sub-group.
+* `get_ballot_group` is called with a predicate that is `false` for all
+  work-items in the sub-group.
+* `get_fixed_size_group` is called with a partition-size of 1.
+* `get_fixed_size_group` is called with a partition-size of 2, if 2 is greater
+  than or equal to the smallest supported sub-group size on the device.
+* `get_fixed_size_group` is called with a partition-size of 4, if 4 is greater
+  than or equal to the smallest supported sub-group size on the device.
+* `get_fixed_size_group` is called with a partition-size of 8, if 8 is greater
+  than or equal to the smallest supported sub-group size on the device.
+* `get_tangle_group` is called in a branched control-flow with the first `N`
+  work-items in the sub-group.
+* `get_tangle_group` is called in a branched control-flow with work-items with
+  odd `sg.get_local_linear_id()` values, where `sg` is the sub-group.
+* `get_tangle_group` is called by all items in the sub-group.
+* `get_opportunistic_group` is called in a branched control-flow with the first
+  `N` work-items in the sub-group.
+* `get_opportunistic_group` is called in a branched control-flow with work-items
+  with odd `sg.get_local_linear_id()` values, where `sg` is the sub-group.
+* `get_opportunistic_group` is called by all items in the sub-group.
