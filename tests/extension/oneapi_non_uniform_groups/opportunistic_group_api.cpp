@@ -122,7 +122,7 @@ TEST_CASE("Test for opportunistic_group apis.", "[oneapi_non_uniform_groups]") {
   // Static constexpr members.
   STATIC_CHECK(opportunistic_group_t::dimensions == 1);
   STATIC_CHECK(opportunistic_group_t::fence_scope ==
-               sycl::sub_group::fence_scope);
+               sycl::memory_scope::sub_group);
 
   // get_group_id
   CHECK(std::is_same_v<
