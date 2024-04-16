@@ -22,6 +22,149 @@
 #include "non_uniform_group_common.h"
 
 template <typename GroupT, typename T>
+class joint_of_group_kernel;
+
+/**
+ * @brief Provides test for joint non-uniform group bool of operations with
+ * predicate functions
+ * @tparam GroupT Type of the non-uniform group to test with
+ * @tparam T Type pointed by Ptr
+ */
+template <typename GroupT, typename T>
+void joint_of_group(sycl::queue& queue) {
+  const std::string group_name = NonUniformGroupHelper<GroupT>::get_name();
+
+  INFO("Testing group-of predicate function for " + group_name);
+  if (!NonUniformGroupHelper<GroupT>::is_supported(queue.get_device())) {
+    SKIP("Device does not support " + group_name);
+  }
+
+  // 3 functions * 4 predicates
+  constexpr int test_matrix = 3;
+  const std::string test_names[test_matrix] = {
+      "bool joint_any_of(GroupT g, Ptr first, Ptr last, Predicate pred)",
+      "bool joint_all_of(GroupT g, Ptr first, Ptr last, Predicate pred)",
+      "bool joint_none_of(GroupT g, Ptr first, Ptr last, Predicate pred)"};
+  constexpr int test_cases = 4;
+  const std::string test_cases_names[test_cases] = {"none true", "one true",
+                                                    "some true", "all true"};
+
+  sycl::range<1> work_group_range = sycl_cts::util::work_group_range<1>(queue);
+  size_t work_group_size = work_group_range.size();
+
+  const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
+  for (size_t test_case = 0;
+       test_case < NonUniformGroupHelper<GroupT>::num_test_cases; ++test_case) {
+    const std::string test_case_name =
+        NonUniformGroupHelper<GroupT>::get_test_case_name(test_case);
+    INFO("Running test case (" + std::to_string(test_case) + ") with " +
+         test_case_name);
+
+    for (size_t size : sizes) {
+      std::vector<T> v(size);
+      std::iota(v.begin(), v.end(), 1);
+
+      // array to return results:
+      bool res[test_matrix * test_cases] = {false};
+      {
+        sycl::buffer<T, 1> v_sycl(v.data(), sycl::range<1>(size));
+
+        sycl::buffer<bool, 1> res_sycl(
+            res, sycl::range<1>(test_matrix * test_cases));
+
+        queue.submit([&](sycl::handler& cgh) {
+          auto v_acc =
+              v_sycl.template get_access<sycl::access::mode::read_write>(cgh);
+          auto res_acc =
+              res_sycl.get_access<sycl::access::mode::read_write>(cgh);
+
+          sycl::nd_range<1> executionRange(work_group_range, work_group_range);
+
+          cgh.parallel_for<joint_of_group_kernel<
+              GroupT, T>>(executionRange, [=](sycl::nd_item<1> item) {
+            sycl::sub_group sub_group = item.get_sub_group();
+
+            // If this item is not participating in the group, leave early.
+            if (!NonUniformGroupHelper<GroupT>::should_participate(sub_group,
+                                                                   test_case))
+              return;
+
+            GroupT non_uniform_group =
+                NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
+
+            T* v_begin = v_acc.get_pointer();
+            T* v_end = v_begin + v_acc.size();
+
+            // predicates
+            auto none_true = [&](T i) { return i == 0; };
+            auto one_true = [&](T i) { return i == 1; };
+            auto some_true = [&](T i) { return i > size / 2; };
+            auto all_true = [&](T i) { return i <= size; };
+
+            ASSERT_RETURN_TYPE(
+                bool,
+                sycl::joint_any_of(non_uniform_group, v_begin, v_end,
+                                   none_true),
+                "Return type of joint_any_of(GroupT g, Ptr first, Ptr last, "
+                "Predicate pred) is wrong\n");
+            res_acc[0] = !sycl::joint_any_of(non_uniform_group, v_begin, v_end,
+                                             none_true);
+            res_acc[1] =
+                sycl::joint_any_of(non_uniform_group, v_begin, v_end, one_true);
+            res_acc[2] = sycl::joint_any_of(non_uniform_group, v_begin, v_end,
+                                            some_true);
+            res_acc[3] =
+                sycl::joint_any_of(non_uniform_group, v_begin, v_end, all_true);
+
+            ASSERT_RETURN_TYPE(
+                bool,
+                sycl::joint_all_of(non_uniform_group, v_begin, v_end,
+                                   none_true),
+                "Return type of joint_all_of(GroupT g, Ptr first, Ptr last, "
+                "Predicate pred) is wrong\n");
+            res_acc[4] = !sycl::joint_all_of(non_uniform_group, v_begin, v_end,
+                                             none_true);
+            res_acc[5] = !sycl::joint_all_of(non_uniform_group, v_begin, v_end,
+                                             one_true);
+            res_acc[6] = !sycl::joint_all_of(non_uniform_group, v_begin, v_end,
+                                             some_true);
+            res_acc[7] =
+                sycl::joint_all_of(non_uniform_group, v_begin, v_end, all_true);
+
+            ASSERT_RETURN_TYPE(
+                bool,
+                sycl::joint_none_of(non_uniform_group, v_begin, v_end,
+                                    none_true),
+                "Return type of joint_none_of(GroupT g, Ptr first, Ptr last, "
+                "Predicate pred) is wrong\n");
+            res_acc[8] = sycl::joint_none_of(non_uniform_group, v_begin, v_end,
+                                             none_true);
+            res_acc[9] = !sycl::joint_none_of(non_uniform_group, v_begin, v_end,
+                                              one_true);
+            res_acc[10] = !sycl::joint_none_of(non_uniform_group, v_begin,
+                                               v_end, some_true);
+            res_acc[11] = !sycl::joint_none_of(non_uniform_group, v_begin,
+                                               v_end, all_true);
+          });
+        });
+      }
+      int index = 0;
+      for (int i = 0; i < test_matrix; ++i)
+        for (int j = 0; j < test_cases; ++j) {
+          std::string work_group =
+              sycl_cts::util::work_group_print(work_group_range);
+          CAPTURE(group_name, work_group);
+          INFO("Value of " << test_names[i] << " with " << test_cases_names[j]
+                           << " predicate"
+                              " is "
+                           << (res[index] ? "right" : "wrong"));
+          CHECK(res[index++]);
+        }
+    }
+  }
+}
+
+template <typename GroupT, typename T>
 class predicate_function_of_non_uniform_group_kernel;
 
 /**
