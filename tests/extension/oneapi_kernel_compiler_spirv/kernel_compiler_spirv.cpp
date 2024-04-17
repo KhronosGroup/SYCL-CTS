@@ -22,9 +22,15 @@
 
 namespace kernel_compiler_spirv::tests {
 
-static const std::vector<uint8_t> kernels{KERNELS};
-static const std::vector<uint8_t> kernels_fp16{KERNELS_FP16};
-static const std::vector<uint8_t> kernels_fp64{KERNELS_FP64};
+static const std::vector<uint8_t> kernels{
+#include "kernels.inc"
+};
+static const std::vector<uint8_t> kernels_fp16{
+#include "kernels_fp16.inc"
+};
+static const std::vector<uint8_t> kernels_fp64{
+#include "kernels_fp64.inc"
+};
 
 #ifdef SYCL_EXT_ONEAPI_AUTO_LOCAL_RANGE
 
