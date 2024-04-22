@@ -141,8 +141,7 @@ TEST_CASE("Interoperability between composite and component devices",
         cgh.parallel_for(sycl::range{count}, [=](sycl::id<1> it) {
           acc[it] += ptrA[it] + ptrB[it];
         });
-      })
-      .wait();  // why this wait is required?
+      });
 
   auto hostAcc = bufC.get_host_access();
   INFO("Verifying kernel (2 x vector add) results");
@@ -217,8 +216,7 @@ TEST_CASE("Sharing memory to a descendent device",
         cgh.parallel_for(sycl::range{count}, [=](sycl::id<1> it) {
           acc[it] += ptrA[it] + ptrB[it];
         });
-      })
-      .wait();  // why is it required?
+      });
 
   auto hostAcc = bufC.get_host_access();
   INFO("Verifying kernel (2 x vector add) results");
