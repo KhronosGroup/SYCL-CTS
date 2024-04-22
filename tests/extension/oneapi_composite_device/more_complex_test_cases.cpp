@@ -134,14 +134,12 @@ TEST_CASE("Interoperability between composite and component devices",
                      [=](sycl::id<1> it) { acc[it] = ptrA[it] + ptrB[it]; });
   });
 
-  component_queue
-      .submit([&](sycl::handler& cgh) {
-        sycl::accessor acc(bufC, cgh, sycl::read_write);
+  component_queue.submit([&](sycl::handler& cgh) {
+    sycl::accessor acc(bufC, cgh, sycl::read_write);
 
-        cgh.parallel_for(sycl::range{count}, [=](sycl::id<1> it) {
-          acc[it] += ptrA[it] + ptrB[it];
-        });
-      });
+    cgh.parallel_for(sycl::range{count},
+                     [=](sycl::id<1> it) { acc[it] += ptrA[it] + ptrB[it]; });
+  });
 
   auto hostAcc = bufC.get_host_access();
   INFO("Verifying kernel (2 x vector add) results");
@@ -208,15 +206,13 @@ TEST_CASE("Sharing memory to a descendent device",
                      [=](sycl::id<1> it) { acc[it] = ptrA[it] + ptrB[it]; });
   });
 
-  component_queue
-      .submit([&](sycl::handler& cgh) {
-        cgh.depends_on({eventA, eventB});
-        sycl::accessor acc(bufC, cgh, sycl::read_write);
+  component_queue.submit([&](sycl::handler& cgh) {
+    cgh.depends_on({eventA, eventB});
+    sycl::accessor acc(bufC, cgh, sycl::read_write);
 
-        cgh.parallel_for(sycl::range{count}, [=](sycl::id<1> it) {
-          acc[it] += ptrA[it] + ptrB[it];
-        });
-      });
+    cgh.parallel_for(sycl::range{count},
+                     [=](sycl::id<1> it) { acc[it] += ptrA[it] + ptrB[it]; });
+  });
 
   auto hostAcc = bufC.get_host_access();
   INFO("Verifying kernel (2 x vector add) results");
