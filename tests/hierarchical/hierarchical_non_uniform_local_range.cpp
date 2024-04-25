@@ -92,9 +92,12 @@ template <int dim> void check_dim(util::logger &log) {
                 local_range_total>(local_range, local_range);
         cgh.parallel_for_work_group<kernel<dim>>(
             groupRange, localRange, [=](sycl::group<dim> group_pid) {
+              sycl::range<dim> r;
+              auto group_id = group_pid.get_group_id();
+              for (int i = 0; i < dim; ++i) r[i] = group_id[i];
+
               group_pid.parallel_for_work_item(
-                  sycl::range<dim>(group_pid.get_id()),
-                  [&](sycl::h_item<dim> item_id) {
+                  r, [&](sycl::h_item<dim> item_id) {
                     unsigned physical_local_d1 =
                         item_id.get_physical_local()[0];
                     unsigned physical_local_d2 =
