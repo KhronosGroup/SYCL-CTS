@@ -1,4 +1,4 @@
-build/
+build*/
 .idea
 log.txt
 *.pyc

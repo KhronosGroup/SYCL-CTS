@@ -74,7 +74,18 @@ def write_cases_to_file(generated_test_cases, inputFile, outputFile, extension=N
     with open(outputFile, 'w+') as output:
         output.write(newSource)
 
-def create_tests(test_id, types, signatures, kind, template, file_name, check = False):
+def get_split(lst, split_index, n_splits):
+    if split_index is None:
+        return lst
+    split_size = len(lst) // n_splits
+    if split_index + 1 == n_splits:
+        split = lst[split_size * split_index:]
+    else:
+        split = lst[split_size * split_index:split_size * (split_index+1)]
+    assert len(split) >= 1, 'Bad split!'
+    return split
+
+def create_tests(test_id, types, signatures, kind, template, file_name, split_index, n_splits, check = False):
     expanded_signatures =  test_generator.expand_signatures(types, signatures)
 
     # Extensions should be placed on separate files.
@@ -92,13 +103,16 @@ def create_tests(test_id, types, signatures, kind, template, file_name, check = 
 
     if base_signatures and kind == 'base':
         generated_base_test_cases = test_generator.generate_test_cases(test_id, types, base_signatures, check)
-        write_cases_to_file(generated_base_test_cases, template, file_name)
+        test_cases = get_split(generated_base_test_cases, split_index, n_splits)
+        write_cases_to_file("".join(test_cases), template, file_name)
     elif half_signatures and kind == 'half':
         generated_half_test_cases = test_generator.generate_test_cases(test_id + 300000, types, half_signatures, check)
-        write_cases_to_file(generated_half_test_cases, template, file_name, "fp16")
+        test_cases = get_split(generated_half_test_cases, split_index, n_splits)
+        write_cases_to_file("".join(test_cases), template, file_name, "fp16")
     elif double_signatures and kind == 'double':
         generated_double_test_cases = test_generator.generate_test_cases(test_id + 600000, types, double_signatures, check)
-        write_cases_to_file(generated_double_test_cases, template, file_name, "fp64")
+        test_cases = get_split(generated_double_test_cases, split_index, n_splits)
+        write_cases_to_file("".join(test_cases), template, file_name, "fp64")
     else:
         print("No %s overloads to generate for the test category" % kind)
         sys.exit(1)
@@ -132,7 +146,25 @@ def main():
         required=True,
         metavar='<out file>',
         help='CTS test output')
+    argparser.add_argument(
+        '-i',
+        dest='split_index',
+        help='Specifies which split to generate when splitting',
+        type=int
+    )
+    argparser.add_argument(
+        '-n',
+        dest='n_splits',
+        help='Splits the generated test cases into n different files',
+        type=int
+    )
     args = argparser.parse_args()
+
+    if args.n_splits is not None or args.split_index is not None:
+        assert args.n_splits is not None and args.split_index is not None, \
+               "both -i and -n are necessary if one is specified"
+        assert 0 <= args.split_index < args.n_splits, \
+               "the value passed to -i is out of bounds"
 
     use_marray = (args.marray == 'true')
     run = runner(use_marray)
@@ -147,31 +179,38 @@ def main():
 
     if args.test == 'integer':
         integer_signatures = sycl_functions.create_integer_signatures()
-        create_tests(0, expanded_types, integer_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(0, expanded_types, integer_signatures, args.variante, args.template, args.output, 
+                     args.split_index, args.n_splits, verifyResults)
 
     if args.test == 'common':
         common_signatures = sycl_functions.create_common_signatures()
-        create_tests(1000000, expanded_types, common_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(1000000, expanded_types, common_signatures, args.variante, args.template, args.output, 
+                     args.split_index, args.n_splits, verifyResults)
 
     if args.test == 'geometric':
         geomteric_signatures = sycl_functions.create_geometric_signatures()
-        create_tests(2000000, expanded_types, geomteric_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(2000000, expanded_types, geomteric_signatures, args.variante, args.template, args.output, 
+                     args.split_index, args.n_splits, verifyResults)
 
     if args.test == 'relational':
         relational_signatures = sycl_functions.create_relational_signatures()
-        create_tests(3000000, expanded_types, relational_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(3000000, expanded_types, relational_signatures, args.variante, args.template, args.output, 
+                     args.split_index, args.n_splits, verifyResults)
 
     if args.test == 'float':
         float_signatures = sycl_functions.create_float_signatures()
-        create_tests(4000000, expanded_types, float_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(4000000, expanded_types, float_signatures, args.variante, args.template, args.output, 
+                     args.split_index, args.n_splits, verifyResults)
 
     if args.test == 'native':
         native_signatures = sycl_functions.create_native_signatures()
-        create_tests(5000000, expanded_types, native_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(5000000, expanded_types, native_signatures, args.variante, args.template, args.output, 
+                     args.split_index, args.n_splits, verifyResults)
 
     if args.test == 'half':
         half_signatures = sycl_functions.create_half_signatures()
-        create_tests(6000000, expanded_types, half_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(6000000, expanded_types, half_signatures, args.variante, args.template, args.output, 
+                     args.split_index, args.n_splits, verifyResults)
 
 if __name__ == "__main__":
     main()

@@ -347,31 +347,31 @@ def generate_test_case(test_id, types, sig, memory, check, decorated = ""):
 
 def generate_test_cases(test_id, types, sig_list, check):
     random.seed(0)
-    test_source = ""
+    test_cases = []
     decorated_yes = "sycl::access::decorated::yes"
     decorated_no = "sycl::access::decorated::no"
     for sig in sig_list:
         if sig.pntr_indx:#If the signature contains a pointer argument.
-            test_source += generate_test_case(test_id, types, sig, "private", check, decorated_no)
+            test_cases.append(generate_test_case(test_id, types, sig, "private", check, decorated_no))
             test_id += 1
-            test_source += generate_test_case(test_id, types, sig, "private", check, decorated_yes)
+            test_cases.append(generate_test_case(test_id, types, sig, "private", check, decorated_yes))
             test_id += 1
-            test_source += generate_test_case(test_id, types, sig, "local", check, decorated_no)
+            test_cases.append(generate_test_case(test_id, types, sig, "local", check, decorated_no))
             test_id += 1
-            test_source += generate_test_case(test_id, types, sig, "local", check, decorated_yes)
+            test_cases.append(generate_test_case(test_id, types, sig, "local", check, decorated_yes))
             test_id += 1
-            test_source += generate_test_case(test_id, types, sig, "global", check, decorated_no)
+            test_cases.append(generate_test_case(test_id, types, sig, "global", check, decorated_no))
             test_id += 1
-            test_source += generate_test_case(test_id, types, sig, "global", check, decorated_yes)
+            test_cases.append(generate_test_case(test_id, types, sig, "global", check, decorated_yes))
             test_id += 1
         else:
             if check:
-                test_source += generate_test_case(test_id, types, sig, "no_ptr", check)
+                test_cases.append(generate_test_case(test_id, types, sig, "no_ptr", check))
                 test_id += 1
             else:
-                test_source += generate_test_case(test_id, types, sig, "private", check)
+                test_cases.append(generate_test_case(test_id, types, sig, "private", check))
                 test_id += 1
-    return test_source
+    return test_cases
 
 # Lists of the types with equal sizes
 chars = ["char", "signed char", "unsigned char"]
