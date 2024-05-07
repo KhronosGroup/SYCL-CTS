@@ -1,6 +1,6 @@
 """Represents a function signature."""
 class funsig:
-    def __init__(self, namespace, ret_type, name, arg_types=[], accuracy="", comment="", pntr_indx=[], mutations=[], template_arg_map=[]):
+    def __init__(self, namespace, ret_type, name, arg_types=[], accuracy="", comment="", pntr_indx=[], mutations=[], template_arg_map=[], accuracy_mode="ULP"):
         self.namespace = namespace # Namespace of function.
         self.ret_type = ret_type # Function return type.
         self.name = name # Function name.
@@ -18,6 +18,7 @@ class funsig:
         # e.g. int32_t and float are OK, but not int64_t and marray<float, 2>)
         self.template_arg_map = template_arg_map # List of indices mapping template arugments to function argument types.
         # An empty list signifies a non-templated function.
+        self.accuracy_mode = accuracy_mode # A mode for accuracy expectations for a given builtin. Must be either "ULP" or "AbsoluteTolerance"
     def __eq__(self, other):
         if isinstance(other, funsig):
             return ((self.namespace == other.namespace) and
@@ -28,13 +29,14 @@ class funsig:
                     (self.comment == other.comment) and
                     (self.pntr_indx == other.pntr_indx) and
                     (self.mutations == other.mutations) and
-                    (self.template_arg_map == other.template_arg_map))
+                    (self.template_arg_map == other.template_arg_map) and
+                    (self.accuracy_mode == other.accuracy_mode))
         else:
             return False
     def __ne__(self, other):
         return (not self.__eq__(other))
     def __hash__(self):
-        return hash((self.namespace, self.ret_type, self.name, str(self.arg_types), self.accuracy, self.comment, str(self.pntr_indx), str(self.mutations), str(self.template_arg_map)))
+        return hash((self.namespace, self.ret_type, self.name, str(self.arg_types), self.accuracy, self.comment, str(self.pntr_indx), str(self.mutations), str(self.template_arg_map), self.accuracy_mode))
 
 def create_integer_signatures():
     sig_list = []
@@ -164,16 +166,16 @@ def create_common_signatures():
     f_min_4 = funsig("sycl", "genfloath", "min", ["genfloath", "sycl::half"], template_arg_map=[0])
     sig_list.append(f_min_4)
 
-    f_mix = funsig("sycl", "genfloat", "mix", ["genfloat", "genfloat", "genfloat"], "1", template_arg_map=[0,1,2])
+    f_mix = funsig("sycl", "genfloat", "mix", ["genfloat", "genfloat", "genfloat"], "1e-3", template_arg_map=[0,1,2], accuracy_mode="AbsoluteTolerance")
     sig_list.append(f_mix)
 
-    f_mix_2 = funsig("sycl", "genfloatf", "mix", ["genfloatf", "genfloatf", "float"], "1", template_arg_map=[0,1])
+    f_mix_2 = funsig("sycl", "genfloatf", "mix", ["genfloatf", "genfloatf", "float"], "1e-3", template_arg_map=[0,1], accuracy_mode="AbsoluteTolerance")
     sig_list.append(f_mix_2)
 
-    f_mix_3 = funsig("sycl", "genfloatd", "mix", ["genfloatd", "genfloatd", "double"], "1", template_arg_map=[0,1])
+    f_mix_3 = funsig("sycl", "genfloatd", "mix", ["genfloatd", "genfloatd", "double"], "1e-3", template_arg_map=[0,1], accuracy_mode="AbsoluteTolerance")
     sig_list.append(f_mix_3)
 
-    f_mix_4 = funsig("sycl", "genfloath", "mix", ["genfloath", "genfloath", "sycl::half"], "1", template_arg_map=[0,1])
+    f_mix_4 = funsig("sycl", "genfloath", "mix", ["genfloath", "genfloath", "sycl::half"], "1e-3", template_arg_map=[0,1], accuracy_mode="AbsoluteTolerance")
     sig_list.append(f_mix_4)
 
     f_radians = funsig("sycl", "genfloat", "radians", ["genfloat"], "3", template_arg_map=[0])
@@ -191,16 +193,16 @@ def create_common_signatures():
     f_step_4 = funsig("sycl", "genfloath", "step", ["sycl::half", "genfloath"], template_arg_map=[1])
     sig_list.append(f_step_4)
 
-    f_smoothstep = funsig("sycl", "genfloat", "smoothstep", ["genfloat", "genfloat", "genfloat"], template_arg_map=[0,1,2])
+    f_smoothstep = funsig("sycl", "genfloat", "smoothstep", ["genfloat", "genfloat", "genfloat"], "1e-5", template_arg_map=[0,1,2], accuracy_mode="AbsoluteTolerance")
     sig_list.append(f_smoothstep)
 
-    f_smoothstep_2 = funsig("sycl", "genfloatf", "smoothstep", ["float", "float", "genfloatf"], template_arg_map=[2])
+    f_smoothstep_2 = funsig("sycl", "genfloatf", "smoothstep", ["float", "float", "genfloatf"], "1e-5", template_arg_map=[2], accuracy_mode="AbsoluteTolerance")
     sig_list.append(f_smoothstep_2)
 
-    f_smoothstep_3 = funsig("sycl", "genfloatd", "smoothstep", ["double", "double", "genfloatd"], template_arg_map=[2])
+    f_smoothstep_3 = funsig("sycl", "genfloatd", "smoothstep", ["double", "double", "genfloatd"], "1e-5", template_arg_map=[2], accuracy_mode="AbsoluteTolerance")
     sig_list.append(f_smoothstep_3)
 
-    f_smoothstep_4 = funsig("sycl", "genfloath", "smoothstep", ["sycl::half", "sycl::half", "genfloath"], template_arg_map=[2])
+    f_smoothstep_4 = funsig("sycl", "genfloath", "smoothstep", ["sycl::half", "sycl::half", "genfloath"], "1e-5", template_arg_map=[2], accuracy_mode="AbsoluteTolerance")
     sig_list.append(f_smoothstep_4)
 
     f_sign = funsig("sycl", "genfloat", "sign", ["genfloat"], template_arg_map=[0])
