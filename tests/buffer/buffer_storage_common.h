@@ -70,7 +70,7 @@ class buffer_storage_test {
 
     // Case 5 - Vector data
     std::vector<T> data_vector;
-    data_vector.reserve(size);
+    data_vector.resize(size);
     auto data_final5 = data_vector.begin();
 
     check_write_back(log, r, data_final1.get());
