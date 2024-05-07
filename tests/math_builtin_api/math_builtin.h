@@ -99,8 +99,7 @@ typename std::enable_if<std::is_floating_point<T>::value ||
                             std::is_same<sycl::half, T>::value,
                         bool>::type
 verify(sycl_cts::util::logger& log, T value, sycl_cts::resultRef<T> r,
-       float accuracy, AccuracyMode accuracy_mode,
-       const std::string& comment) {
+       float accuracy, AccuracyMode accuracy_mode, const std::string& comment) {
   const T reference = r.res;
 
   if (!r.undefined.empty())
@@ -120,7 +119,7 @@ verify(sycl_cts::util::logger& log, T value, sycl_cts::resultRef<T> r,
       return true;  // Subnormal numbers are the lower border for comparison
 
     const T difference = static_cast<T>(std::fabs(value - reference));
-    switch(accuracy_mode) {
+    switch (accuracy_mode) {
       case AccuracyMode::ULP: {
         const auto ulpsExpected = static_cast<unsigned int>(accuracy);
         const T differenceExpected = ulpsExpected * get_ulp_std(reference);
@@ -300,7 +299,7 @@ void check_function_multi_ptr_global(
     FAIL(log, errorMsg.c_str());
   }
 
-  if (!verify(log, kernelResult, ref, accuracy,accuracy_mode, comment))
+  if (!verify(log, kernelResult, ref, accuracy, accuracy_mode, comment))
     FAIL(log,
          "tests case: " + std::to_string(N) + ". Correctness check failed.");
   if (!verify(log, arg, ptrRef, accuracy, accuracy_mode, comment))
