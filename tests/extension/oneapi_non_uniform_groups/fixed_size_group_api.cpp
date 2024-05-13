@@ -37,6 +37,8 @@ struct checks {
   };
 };
 
+// TODO: Parameterize the tests on this and test edge-cases, like 1 and
+//       the sub-group size.
 constexpr size_t partition_size = 4;
 
 TEST_CASE("Test for fixed_size_group apis.", "[oneapi_non_uniform_groups]") {
