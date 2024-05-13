@@ -20,6 +20,8 @@
 
 #include "group_of.h"
 
+namespace non_uniform_groups::tests {
+
 // use wide types to exclude truncation of init values
 using WideTypes = std::tuple<int32_t, uint32_t, int64_t, uint64_t, float>;
 
@@ -77,3 +79,5 @@ TEST_CASE("Non-uniform group of bool functions",
       queue);
   bool_function_of_non_uniform_group<oneapi_ext::opportunistic_group>(queue);
 }
+
+}  // namespace non_uniform_groups::tests

@@ -20,6 +20,8 @@
 
 #include "group_reduce.h"
 
+namespace non_uniform_groups::tests {
+
 // clang-format off
 #cmakedefine CTS_TYPE @CTS_TYPE@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
@@ -89,3 +91,5 @@ TEMPLATE_LIST_TEST_CASE(
   for_all_combinations<invoke_init_joint_reduce_group>(
       GroupTypes, RetType, ReducedType, Operators, queue);
 }
+
+}  // namespace non_uniform_groups::tests

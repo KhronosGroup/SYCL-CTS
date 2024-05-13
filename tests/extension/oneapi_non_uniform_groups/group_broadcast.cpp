@@ -20,6 +20,8 @@
 
 #include "group_broadcast.h"
 
+namespace non_uniform_groups::tests {
+
 using BroadcastTypes = CustomTypes;
 
 TEMPLATE_LIST_TEST_CASE("Non-uniform group broadcast and select",
@@ -40,3 +42,5 @@ TEMPLATE_LIST_TEST_CASE("Non-uniform group broadcast and select",
                               TestType>(queue);
   broadcast_non_uniform_group<oneapi_ext::opportunistic_group, TestType>(queue);
 }
+
+}  // namespace non_uniform_groups::tests

@@ -26,6 +26,8 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "group_scan.h"
 
+namespace non_uniform_groups::tests {
+
 using TestType = unnamed_type_pack<CTS_TYPE>;
 using ScanTypes = Types;
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
@@ -85,3 +87,5 @@ TEST_CASE(CTS_TYPE_NAME + " non-uniform group joint scan functions with init",
   for_all_combinations<invoke_init_joint_scan_group>(
       GroupTypes, TestType{}, ScanTypes{}, ScanTypes{}, queue);
 };
+
+}  // namespace non_uniform_groups::tests

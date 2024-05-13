@@ -20,6 +20,8 @@
 
 #include "group_permute.h"
 
+namespace non_uniform_groups::tests {
+
 TEST_CASE("Non-uniform-group permute",
           "[oneapi_non_uniform_groups][group_func][fp16]") {
   auto queue = once_per_unit::get_queue();
@@ -43,3 +45,5 @@ TEST_CASE("Non-uniform-group permute",
     WARN("Device does not support half precision floating point operations.");
   }
 }
+
+}  // namespace non_uniform_groups::tests

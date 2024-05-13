@@ -159,10 +159,10 @@ void joint_reduce_group(sycl::queue& queue, const std::string& op_name) {
                 T* v_begin = v_acc.get_pointer();
                 T* v_end = v_begin + v_acc.size();
 
-                ASSERT_RETURN_TYPE(
-                    T,
-                    sycl::joint_reduce(non_uniform_group, v_begin, v_end,
-                                       OpT()),
+                static_assert(
+                    std::is_same_v<T, decltype(sycl::joint_reduce(
+                                          non_uniform_group, v_begin, v_end,
+                                          OpT()))>,
                     "Return type of joint_reduce(GroupT g, Ptr first, Ptr "
                     "last, BinaryOperation binary_op) is wrong\n");
 
@@ -283,10 +283,10 @@ void init_joint_reduce_group(sycl::queue& queue, const std::string& op_name) {
                 U* v_begin = v_acc.get_pointer();
                 U* v_end = v_begin + v_acc.size();
 
-                ASSERT_RETURN_TYPE(
-                    T,
-                    sycl::joint_reduce(non_uniform_group, v_begin, v_end,
-                                       T(init), OpT()),
+                static_assert(
+                    std::is_same_v<T, decltype(sycl::joint_reduce(
+                                          non_uniform_group, v_begin, v_end,
+                                          T(init), OpT()))>,
                     "Return type of joint_reduce(GroupT g, Ptr first, Ptr "
                     "last, T init, BinaryOperation binary_op) is wrong\n");
 
@@ -409,11 +409,11 @@ void reduce_over_group(sycl::queue& queue, const std::string& op_name) {
               sg_id_acc[index] = sub_group.get_group_linear_id();
               nug_id_acc[index] = non_uniform_group.get_group_linear_id();
 
-              ASSERT_RETURN_TYPE(T,
-                                 sycl::reduce_over_group(non_uniform_group,
-                                                         v_acc[index], OpT()),
-                                 "Return type of reduce_over_group(GroupT g, "
-                                 "T x, BinaryOperation binary_op) is wrong\n");
+              static_assert(std::is_same_v<T, decltype(sycl::reduce_over_group(
+                                                  non_uniform_group,
+                                                  v_acc[index], OpT()))>,
+                            "Return type of reduce_over_group(GroupT g, "
+                            "T x, BinaryOperation binary_op) is wrong\n");
               nug_output_acc[index] = sycl::reduce_over_group(
                   non_uniform_group, v_acc[index], OpT());
             });
@@ -526,10 +526,10 @@ void init_reduce_over_group(sycl::queue& queue, const std::string& op_name) {
               sg_id_acc[index] = sub_group.get_group_linear_id();
               nug_id_acc[index] = non_uniform_group.get_group_linear_id();
 
-              ASSERT_RETURN_TYPE(
-                  T,
-                  sycl::reduce_over_group(non_uniform_group, v_acc[index],
-                                          T(init), OpT()),
+              static_assert(
+                  std::is_same_v<T, decltype(sycl::reduce_over_group(
+                                        non_uniform_group, v_acc[index],
+                                        T(init), OpT()))>,
                   "Return type of reduce_over_group(GroupT g, V x, T init, "
                   "BinaryOperation binary_op) is wrong\n");
               nug_output_acc[index] = sycl::reduce_over_group(

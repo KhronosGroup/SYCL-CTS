@@ -109,10 +109,10 @@ void broadcast_non_uniform_group(sycl::queue& queue) {
                 sycl::id<1> last_id = non_uniform_group.get_local_range() - 1;
 
                 // Broadcast from the first work-item
-                ASSERT_RETURN_TYPE(
-                    T,
-                    sycl::group_broadcast(non_uniform_group,
-                                          value_to_broadcast),
+                static_assert(
+                    std::is_same_v<T,
+                                   decltype(sycl::group_broadcast(
+                                       non_uniform_group, value_to_broadcast))>,
                     "Return type of group_broadcast(GroupT g, T x) is wrong\n");
 
                 if (non_uniform_group.leader()) {
@@ -127,10 +127,10 @@ void broadcast_non_uniform_group(sycl::queue& queue) {
                   broadcasted_values_acc[0] = broadcasted_value;
 
                 // Broadcast from the last work-item
-                ASSERT_RETURN_TYPE(
-                    T,
-                    sycl::group_broadcast(non_uniform_group, value_to_broadcast,
-                                          last_id),
+                static_assert(
+                    std::is_same_v<T, decltype(sycl::group_broadcast(
+                                          non_uniform_group, value_to_broadcast,
+                                          last_id))>,
                     "Return type of group_broadcast(GroupT g, T x, "
                     "GroupT::linear_id_type local_linear_id) is wrong\n");
 
@@ -148,10 +148,10 @@ void broadcast_non_uniform_group(sycl::queue& queue) {
                   broadcasted_values_acc[1] = broadcasted_value;
 
                 // Broadcast from a mid work-item
-                ASSERT_RETURN_TYPE(
-                    T,
-                    sycl::group_broadcast(non_uniform_group, value_to_broadcast,
-                                          mid_id),
+                static_assert(
+                    std::is_same_v<T, decltype(sycl::group_broadcast(
+                                          non_uniform_group, value_to_broadcast,
+                                          mid_id))>,
                     "Return type of group_broadcast(GroupT g, T x, "
                     "GroupT::id_type local_id) is wrong\n");
 
@@ -167,10 +167,10 @@ void broadcast_non_uniform_group(sycl::queue& queue) {
                   broadcasted_values_acc[2] = broadcasted_value;
 
                 // Select from the first work-item
-                ASSERT_RETURN_TYPE(
-                    T,
-                    sycl::select_from_group(non_uniform_group,
-                                            value_to_broadcast, first_id),
+                static_assert(
+                    std::is_same_v<T, decltype(sycl::select_from_group(
+                                          non_uniform_group, value_to_broadcast,
+                                          first_id))>,
                     "Return type of select_from_group(GroupT g, T x, "
                     "GroupT::id_type local_id) is wrong\n");
 

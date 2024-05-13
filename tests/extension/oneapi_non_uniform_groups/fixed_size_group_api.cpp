@@ -99,7 +99,6 @@ TEST_CASE("Test for fixed_size_group apis.", "[oneapi_non_uniform_groups]") {
               fixed_size.leader() == (fixed_size.get_local_id() == 0);
         });
   });
-  q.wait();
 
   CheckResults results = {};
   sycl::accessor acc = results_buffer.get_host_access();

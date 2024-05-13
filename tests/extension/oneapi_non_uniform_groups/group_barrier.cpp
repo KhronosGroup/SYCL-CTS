@@ -22,6 +22,8 @@
 
 #include "group_barrier.h"
 
+namespace non_uniform_groups::tests {
+
 template <int D>
 class test_fence;
 
@@ -41,3 +43,5 @@ TEST_CASE("Non-uniform-group barriers",
   non_uniform_group_barrier<oneapi_ext::tangle_group<sycl::sub_group>>(queue);
   non_uniform_group_barrier<oneapi_ext::opportunistic_group>(queue);
 }
+
+}  // namespace non_uniform_groups::tests

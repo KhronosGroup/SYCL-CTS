@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2023 The Khronos Group Inc.
+//  Copyright (c) 2024 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -91,8 +91,9 @@ void shift_non_uniform_group(sycl::queue& queue) {
               T local_var(splat_init<T>(llid + 1));
               T shifted_var(splat_init<T>(llid + 1));
 
-              ASSERT_RETURN_TYPE(
-                  T, sycl::shift_group_left(non_uniform_group, local_var),
+              static_assert(
+                  std::is_same_v<T, decltype(sycl::shift_group_left(
+                                        non_uniform_group, local_var))>,
                   "Return type of shift_group_left(GroupT g, T x) is wrong\n");
 
               shifted_var =
@@ -101,8 +102,9 @@ void shift_non_uniform_group(sycl::queue& queue) {
                   equal(shifted_var, splat_init<T>(llid + 2)) ||
                   (llid + 1 >= non_uniform_group.get_local_linear_range());
 
-              ASSERT_RETURN_TYPE(
-                  T, sycl::shift_group_left(non_uniform_group, local_var, 3),
+              static_assert(
+                  std::is_same_v<T, decltype(sycl::shift_group_left(
+                                        non_uniform_group, local_var, 3))>,
                   "Return type of shift_group_left(GroupT g, T x, "
                   "GroupT::linear_id_type delta) is wrong\n");
 
@@ -112,8 +114,9 @@ void shift_non_uniform_group(sycl::queue& queue) {
                   equal(shifted_var, splat_init<T>(llid + 4)) ||
                   (llid + 3 >= non_uniform_group.get_local_linear_range());
 
-              ASSERT_RETURN_TYPE(
-                  T, sycl::shift_group_right(non_uniform_group, local_var),
+              static_assert(
+                  std::is_same_v<T, decltype(sycl::shift_group_right(
+                                        non_uniform_group, local_var))>,
                   "Return type of shift_group_right(GroupT g, T x) is wrong\n");
 
               shifted_var =
@@ -121,8 +124,9 @@ void shift_non_uniform_group(sycl::queue& queue) {
               res_acc[2 * work_group_size + item.get_local_linear_id()] =
                   equal(shifted_var, splat_init<T>(llid)) || (llid < 1);
 
-              ASSERT_RETURN_TYPE(
-                  T, sycl::shift_group_right(non_uniform_group, local_var, 2),
+              static_assert(
+                  std::is_same_v<T, decltype(sycl::shift_group_right(
+                                        non_uniform_group, local_var, 2))>,
                   "Return type of shift_group_right(GroupT g, T x, "
                   "GroupT::linear_id_type delta) is wrong\n");
 

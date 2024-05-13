@@ -103,7 +103,8 @@ void non_uniform_group_barrier(sycl::queue& queue) {
                                         sycl::range<1>(work_group_size));
 
     sycl::buffer<sms, 1> non_uniform_group_barriers_buf(
-        non_uniform_group_barriers.data(), sycl::range<1>(5));
+        non_uniform_group_barriers.data(),
+        sycl::range<1>(non_uniform_group_barrier_variants));
 
     queue.submit([&](sycl::handler& cgh) {
       sycl::nd_range<1> executionRange(work_group_range, work_group_range);
@@ -132,13 +133,13 @@ void non_uniform_group_barrier(sycl::queue& queue) {
             size_t llid = non_uniform_group.get_local_linear_id();
             size_t max_id = non_uniform_group.get_local_linear_range() - 1;
 
-            ASSERT_RETURN_TYPE(
-                void, sycl::group_barrier(non_uniform_group),
-                "Return type of group_barrier(GroupT g) is wrong\n");
-            ASSERT_RETURN_TYPE(
-                void,
-                sycl::group_barrier(non_uniform_group,
-                                    non_uniform_group.fence_scope),
+            static_assert(std::is_same_v<void, decltype(sycl::group_barrier(
+                                                   non_uniform_group))>,
+                          "Return type of group_barrier(GroupT g) is wrong\n");
+            static_assert(
+                std::is_same_v<void, decltype(sycl::group_barrier(
+                                         non_uniform_group,
+                                         non_uniform_group.fence_scope))>,
                 "Return type of group_barrier(GroupT g, "
                 "memory_scope fence_scope) is wrong\n");
 

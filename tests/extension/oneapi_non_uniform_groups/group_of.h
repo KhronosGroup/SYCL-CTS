@@ -101,10 +101,10 @@ void joint_of_group(sycl::queue& queue) {
             auto some_true = [&](T i) { return i > size / 2; };
             auto all_true = [&](T i) { return i <= size; };
 
-            ASSERT_RETURN_TYPE(
-                bool,
-                sycl::joint_any_of(non_uniform_group, v_begin, v_end,
-                                   none_true),
+            static_assert(
+                std::is_same_v<bool, decltype(sycl::joint_any_of(
+                                         non_uniform_group, v_begin, v_end,
+                                         none_true))>,
                 "Return type of joint_any_of(GroupT g, Ptr first, Ptr last, "
                 "Predicate pred) is wrong\n");
             res_acc[0] = !sycl::joint_any_of(non_uniform_group, v_begin, v_end,
@@ -116,10 +116,10 @@ void joint_of_group(sycl::queue& queue) {
             res_acc[3] =
                 sycl::joint_any_of(non_uniform_group, v_begin, v_end, all_true);
 
-            ASSERT_RETURN_TYPE(
-                bool,
-                sycl::joint_all_of(non_uniform_group, v_begin, v_end,
-                                   none_true),
+            static_assert(
+                std::is_same_v<bool, decltype(sycl::joint_all_of(
+                                         non_uniform_group, v_begin, v_end,
+                                         none_true))>,
                 "Return type of joint_all_of(GroupT g, Ptr first, Ptr last, "
                 "Predicate pred) is wrong\n");
             res_acc[4] = !sycl::joint_all_of(non_uniform_group, v_begin, v_end,
@@ -131,10 +131,10 @@ void joint_of_group(sycl::queue& queue) {
             res_acc[7] =
                 sycl::joint_all_of(non_uniform_group, v_begin, v_end, all_true);
 
-            ASSERT_RETURN_TYPE(
-                bool,
-                sycl::joint_none_of(non_uniform_group, v_begin, v_end,
-                                    none_true),
+            static_assert(
+                std::is_same_v<bool, decltype(sycl::joint_none_of(
+                                         non_uniform_group, v_begin, v_end,
+                                         none_true))>,
                 "Return type of joint_none_of(GroupT g, Ptr first, Ptr last, "
                 "Predicate pred) is wrong\n");
             res_acc[8] = sycl::joint_none_of(non_uniform_group, v_begin, v_end,
@@ -249,9 +249,10 @@ void predicate_function_of_non_uniform_group(sycl::queue& queue) {
           auto all_true = [&](T i) { return i <= size; };
 
           {
-            ASSERT_RETURN_TYPE(
-                bool,
-                sycl::any_of_group(non_uniform_group, local_var, none_true),
+            static_assert(
+                std::is_same_v<bool,
+                               decltype(sycl::any_of_group(
+                                   non_uniform_group, local_var, none_true))>,
                 "Return type of any_of_group(GroupT g, bool pred) is wrong\n");
             res_acc[0] &=
                 !sycl::any_of_group(non_uniform_group, local_var, none_true);
@@ -262,9 +263,10 @@ void predicate_function_of_non_uniform_group(sycl::queue& queue) {
             res_acc[3] &=
                 sycl::any_of_group(non_uniform_group, local_var, all_true);
 
-            ASSERT_RETURN_TYPE(
-                bool,
-                sycl::all_of_group(non_uniform_group, local_var, none_true),
+            static_assert(
+                std::is_same_v<bool,
+                               decltype(sycl::all_of_group(
+                                   non_uniform_group, local_var, none_true))>,
                 "Return type of all_of_group(GroupT g, bool pred) is wrong\n");
             res_acc[4] &=
                 !sycl::all_of_group(non_uniform_group, local_var, none_true);
@@ -283,9 +285,10 @@ void predicate_function_of_non_uniform_group(sycl::queue& queue) {
             res_acc[7] &=
                 sycl::all_of_group(non_uniform_group, local_var, all_true);
 
-            ASSERT_RETURN_TYPE(
-                bool,
-                sycl::none_of_group(non_uniform_group, local_var, none_true),
+            static_assert(
+                std::is_same_v<bool,
+                               decltype(sycl::none_of_group(
+                                   non_uniform_group, local_var, none_true))>,
                 "Return type of none_of_group(GroupT g, bool pred) is "
                 "wrong\n");
             res_acc[8] &=
@@ -399,9 +402,10 @@ void bool_function_of_non_uniform_group(sycl::queue& queue) {
           auto all_true = [&](T i) { return i <= size; };
 
           {
-            ASSERT_RETURN_TYPE(
-                bool,
-                sycl::any_of_group(non_uniform_group, none_true(local_var)),
+            static_assert(
+                std::is_same_v<bool,
+                               decltype(sycl::any_of_group(
+                                   non_uniform_group, none_true(local_var)))>,
                 "Return type of any_of_group(GroupT g, bool pred) is wrong\n");
             res_acc[0] &=
                 !sycl::any_of_group(non_uniform_group, none_true(local_var));
@@ -412,9 +416,10 @@ void bool_function_of_non_uniform_group(sycl::queue& queue) {
             res_acc[3] &=
                 sycl::any_of_group(non_uniform_group, all_true(local_var));
 
-            ASSERT_RETURN_TYPE(
-                bool,
-                sycl::all_of_group(non_uniform_group, none_true(local_var)),
+            static_assert(
+                std::is_same_v<bool,
+                               decltype(sycl::all_of_group(
+                                   non_uniform_group, none_true(local_var)))>,
                 "Return type of all_of_group(GroupT g, bool pred) is wrong\n");
             res_acc[4] =
                 !sycl::all_of_group(non_uniform_group, none_true(local_var));
@@ -433,9 +438,10 @@ void bool_function_of_non_uniform_group(sycl::queue& queue) {
             res_acc[7] &=
                 sycl::all_of_group(non_uniform_group, all_true(local_var));
 
-            ASSERT_RETURN_TYPE(
-                bool,
-                sycl::none_of_group(non_uniform_group, none_true(local_var)),
+            static_assert(
+                std::is_same_v<bool,
+                               decltype(sycl::none_of_group(
+                                   non_uniform_group, none_true(local_var)))>,
                 "Return type of none_of_group(GroupT g, bool pred) is "
                 "wrong\n");
             res_acc[8] &=

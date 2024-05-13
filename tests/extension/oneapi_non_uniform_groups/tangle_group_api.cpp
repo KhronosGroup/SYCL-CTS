@@ -97,7 +97,6 @@ TEST_CASE("Test for tangle_group apis.", "[oneapi_non_uniform_groups]") {
       }
     });
   });
-  q.wait();
 
   CheckResults results = {};
   sycl::accessor acc = results_buffer.get_host_access();

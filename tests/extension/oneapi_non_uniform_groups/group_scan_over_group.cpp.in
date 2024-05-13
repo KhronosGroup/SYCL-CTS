@@ -25,6 +25,8 @@
 
 #include "group_scan.h"
 
+namespace non_uniform_groups::tests {
+
 using TestType = unnamed_type_pack<CTS_TYPE>;
 using ScanTypes = Types;
 
@@ -80,3 +82,5 @@ TEST_CASE(CTS_TYPE_NAME + " non-uniform group scan functions with init",
   for_all_combinations<invoke_init_scan_over_group>(GroupTypes, TestType{},
                                                     ScanTypes{}, queue);
 };
+
+}  // namespace non_uniform_groups::tests

@@ -20,6 +20,8 @@
 
 #include "group_permute.h"
 
+namespace non_uniform_groups::tests {
+
 // hipSYCL does not permute right 8-bit types inside groups
 TEMPLATE_LIST_TEST_CASE("Non-uniform-group permute",
                         "[oneapi_non_uniform_groups][group_func][type_list]",
@@ -40,3 +42,5 @@ TEMPLATE_LIST_TEST_CASE("Non-uniform-group permute",
                             TestType>(queue);
   permute_non_uniform_group<oneapi_ext::opportunistic_group, TestType>(queue);
 }
+
+}  // namespace non_uniform_groups::tests

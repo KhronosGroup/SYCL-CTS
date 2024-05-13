@@ -80,9 +80,9 @@ void permute_non_uniform_group(sycl::queue& queue) {
               T local_var(splat_init<T>(llid + 1));
               T permuted_var(splat_init<T>(llid + 1));
 
-              ASSERT_RETURN_TYPE(
-                  T,
-                  sycl::permute_group_by_xor(non_uniform_group, local_var, 0),
+              static_assert(
+                  std::is_same_v<T, decltype(sycl::permute_group_by_xor(
+                                        non_uniform_group, local_var, 0))>,
                   "Return type of permute_group_by_xor(GroupT g, T x, "
                   "GroupT::linear_id_type mask) is wrong\n");
 

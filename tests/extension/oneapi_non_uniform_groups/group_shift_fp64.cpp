@@ -20,6 +20,8 @@
 
 #include "group_shift.h"
 
+namespace non_uniform_groups::tests {
+
 TEST_CASE("Non-uniform-group shift",
           "[oneapi_non_uniform_groups][group_func][fp64]") {
   auto queue = once_per_unit::get_queue();
@@ -42,3 +44,5 @@ TEST_CASE("Non-uniform-group shift",
     WARN("Device does not support double precision floating point operations.");
   }
 }
+
+}  // namespace non_uniform_groups::tests

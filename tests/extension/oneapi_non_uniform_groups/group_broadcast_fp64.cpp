@@ -20,6 +20,8 @@
 
 #include "group_broadcast.h"
 
+namespace non_uniform_groups::tests {
+
 TEST_CASE("Non-uniform group broadcast and select", "[group_func][fp64]") {
   auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp64)) {
@@ -40,3 +42,5 @@ TEST_CASE("Non-uniform group broadcast and select", "[group_func][fp64]") {
     WARN("Device does not support double precision floating point operations.");
   }
 }
+
+}  // namespace non_uniform_groups::tests

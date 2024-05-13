@@ -20,6 +20,8 @@
 
 #include "group_shift.h"
 
+namespace non_uniform_groups::tests {
+
 // errors in hipSYCL with bool and 8-bit types - only in group shifts
 TEMPLATE_LIST_TEST_CASE("Non-uniform-group shift",
                         "[oneapi_non_uniform_groups][group_func][type_list]",
@@ -40,3 +42,5 @@ TEMPLATE_LIST_TEST_CASE("Non-uniform-group shift",
       queue);
   shift_non_uniform_group<oneapi_ext::opportunistic_group, TestType>(queue);
 }
+
+}  // namespace non_uniform_groups::tests
