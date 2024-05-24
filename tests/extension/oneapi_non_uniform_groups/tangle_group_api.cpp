@@ -70,7 +70,7 @@ TEST_CASE("Test for tangle_group apis.", "[oneapi_non_uniform_groups]") {
 
       auto run_checks = [&](tangle_group_t tangle, size_t expected_size) {
         results[checks::get_group_id] = tangle.get_group_id() == 0;
-        results[checks::get_local_id] = tangle.get_local_id() < split;
+        results[checks::get_local_id] = tangle.get_local_id() < expected_size;
         results[checks::get_group_range] = tangle.get_group_range().size() == 1;
         results[checks::get_local_range] =
             tangle.get_local_range().size() == expected_size;
