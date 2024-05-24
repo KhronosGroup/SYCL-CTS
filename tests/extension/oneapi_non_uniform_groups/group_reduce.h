@@ -22,6 +22,8 @@
 #include "non_uniform_group_common.h"
 
 constexpr size_t init = 8;
+
+// Test size must be a multiple of all the used fixed_size_group sizes.
 constexpr size_t test_size = 8;
 
 template <bool with_init, typename OpT, typename IteratorT>

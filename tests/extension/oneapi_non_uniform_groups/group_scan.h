@@ -30,7 +30,9 @@ class joint_scan_group_kernel;
 // smallest type tested. Currently, the smallest type tested is
 // char/int8_t, so it shouldn't be higher than 127.
 constexpr int init = 42;
-constexpr size_t test_size = 12;
+
+// Test size must be a multiple of all the used fixed_size_group sizes.
+constexpr size_t test_size = 8;
 
 template <typename I, typename T, typename U, typename Group, typename OpT>
 auto joint_inclusive_scan_helper(Group group, T* v_begin, T* v_end,
