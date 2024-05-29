@@ -79,7 +79,7 @@ inline sycl::half min_t<sycl::half>() {
   return static_cast<sycl::half>(powf(2.0f, -14.0f));
 }
 
-enum AccuracyMode { ULP, AbsoluteTolerance };
+enum class AccuracyMode { ULP, AbsoluteTolerance };
 
 inline std::string GetAccuracyModeStr(AccuracyMode accuracy_mode) {
   switch (accuracy_mode) {
