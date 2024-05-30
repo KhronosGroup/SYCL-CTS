@@ -91,6 +91,10 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_COMPOSITE_DEVICE_TESTS
     "Enable extension oneAPI composite_device tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_NON_UNIFORM_GROUPS_TESTS
+    "Enable extension oneAPI non_uniform_groups tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
+
 # TODO: Deprecated - remove
 add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG
     "Enable debug-level logs (deprecated)" OFF)
