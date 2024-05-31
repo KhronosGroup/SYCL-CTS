@@ -1,0 +1,219 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl_ext_oneapi_enqueue_functions
+
+This is a test plan for the API described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/proposed/sycl_ext_oneapi_enqueue_functions.asciidoc[sycl_ext_oneapi_enqueue_functions].
+
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_ENQUEUE_FUNCTIONS` so they can be skipped
+if feature is not supported.
+
+== Tests
+
+* All following tests run with either a queue or handler.
+* Tests that require a handler should create one as follows:
+```C++
+using syclex = sycl::ext::oneapi::experimental;
+
+syclex::submit(q, [&](sycl::handler& h) {
+    // ...
+}
+```
+
+=== Single Task
+
+Define a simple task kernel to compute a value. For each `single_task` overload, launch this kernel using the free-function and the equivalent member function. Assert that the outputs computed from the two launches are the same. The `single_task` overloads are the following:
+
+```C++
+namespace sycl::ext::oneapi::experimental {
+
+template <typename KernelName, typename KernelType>
+void single_task(sycl::queue q, const KernelType& k);
+
+template <typename KernelName, typename KernelType>
+void single_task(sycl::handler h, const KernelType& k);
+
+template <typename Args...>
+void single_task(sycl::queue q, const sycl::kernel& k, Args&&... args);
+
+template <typename Args...>
+void single_task(sycl::handler h, const sycl::kernel& k, Args&&... args);
+
+}
+```
+
+=== Basic Kernel
+
+Define a basic kernel that computes a set of values. Launch this kernel using each `parallel_for` overload and the equivalent `parallel_for` member function. Assert that the output for both kernel launches are the same. The `parallel_for` overloads are the following:
+
+```C++
+namespace sycl::ext::oneapi::experimental {
+
+template <typename KernelName, int Dimensions,
+          typename KernelType, typename... Reductions>
+void parallel_for(sycl::queue q, sycl::range<Dimensions> r,
+                  const KernelType& k, Reductions&&... reductions);
+
+template <typename KernelName, int Dimensions,
+          typename KernelType, typename... Reductions>
+void parallel_for(sycl::handler h, sycl::range<Dimensions> r,
+                  const KernelType& k, Reductions&&... reductions);
+
+template <typename KernelName, int Dimensions,
+          typename Properties,
+          typename KernelType, typename... Reductions>
+void parallel_for(sycl::queue q,
+                  launch_config<sycl::range<Dimensions>, Properties> c,
+                  const KernelType& k, Reductions&&... reductions);
+
+template <typename KernelName, int Dimensions,
+          typename Properties, typename KernelType, typename... Reductions>
+void parallel_for(sycl::handler h,
+                  launch_config<sycl::range<Dimensions>, Properties> c,
+                  const KernelType& k, Reductions&&... reductions);
+
+template <typename KernelName, int Dimensions, typename... Args>
+void parallel_for(sycl::queue q, sycl::range<Dimensions> r,
+                  const sycl::kernel& k, Args&&... args);
+
+template <typename KernelName, int Dimensions, typename... Args>
+void parallel_for(sycl::handler h, sycl::range<Dimensions> r,
+                  const sycl::kernel& k, Args&&... args);
+
+template <typename KernelName, int Dimensions,
+          typename Properties, typename... Args>
+void parallel_for(sycl::queue q,
+                  launch_config<sycl::range<Dimensions>, Properties> c,
+                  const sycl::kernel& k, Args&& args...);
+
+template <typename KernelName, int Dimensions,
+          typename Properties, typename... Args>
+void parallel_for(sycl::handler h,
+                  launch_config<sycl::range<Dimensions>, Properties> c,
+                  const sycl::kernel& k, Args&& args...);
+
+}
+```
+
+=== ND-range Kernel
+
+Define an ND-range kernel that computes a set of values. Launch this kernel using each `nd_launch` overload and the equivalent `parallel_for` member function. Assert that the output for both kernel launches are the same. The `nd_launch` overloads are the following:
+
+```C++
+namespace sycl::ext::oneapi::experimental {
+
+template <typename KernelName, int Dimensions,
+          typename KernelType, typename... Reductions>
+void nd_launch(sycl::queue q, sycl::nd_range<Dimensions> r,
+               const KernelType& k, Reductions&&... reductions);
+
+template <typename KernelName, int Dimensions,
+          typename KernelType, typename... Reductions>
+void nd_launch(sycl::handler h, sycl::nd_range<Dimensions> r,
+               const KernelType& k, Reductions&&... reductions);
+
+template <typename KernelName, int Dimensions,
+          typename Properties,
+          typename KernelType, typename... Reductions>
+void nd_launch(sycl::queue q,
+               launch_config<sycl::nd_range<Dimensions>, Properties> c,
+               const KernelType& k, Reductions&&... reductions);
+
+template <typename KernelName, int Dimensions,
+          typename Properties,
+          typename KernelType, typename... Reductions>
+void nd_launch(sycl::handler h,
+               launch_config<sycl::nd_range<Dimensions>, Properties> c,
+               const KernelType& k, Reductions&&... reductions);
+
+template <typename KernelName, int Dimensions, typename... Args>
+void nd_launch(sycl::queue q, sycl::nd_range<Dimensions> r,
+               const sycl::kernel& k, Args&&... args);
+
+template <typename KernelName, int Dimensions, typename... Args>
+void nd_launch(sycl::handler h, sycl::nd_range<Dimensions> r,
+               const sycl::kernel& k, Args&&... args);
+
+template <typename KernelName, int Dimensions,
+          typename Properties, typename... Args>
+void nd_launch(sycl::queue q,
+               launch_config<sycl::nd_range<Dimensions>, Properties> c,
+               const sycl::kernel& k, Args&& args...);
+
+template <typename KernelName, int Dimensions,
+          typename Properties, typename... Args>
+void nd_launch(sycl::handler h,
+               launch_config<sycl::nd_range<Dimensions>, Properties> c,
+               const sycl::kernel& k, Args&& args...);
+
+}
+```
+
+=== Memory Operations
+
+For the `memcpy`, `copy`, `memset`, and `fill` memory operations, create one or more test buffers and assert that they have the correct values after the operation completes. For the `prefetch` and `mem_advise` operations, assert that they can be called without throwing an exception. The list of memory operations to test are the following:
+
+```C++
+namespace sycl::ext::oneapi::experimental {
+
+void memcpy(sycl::queue q, void* dest, const void* src, size_t numBytes);
+
+void memcpy(sycl::handler h, void* dest, const void* src, size_t numBytes);
+
+template <typename T>
+void copy(sycl::queue q, const T* src, T* dest, size_t count);
+
+template <typename T>
+void copy(sycl::handler h, const T* src, T* dest, size_t count);
+
+void memset(sycl::queue q, void* ptr, int value, size_t numBytes);
+
+void memset(sycl::handler h, void* ptr, int value, size_t numBytes);
+
+template <typename T>
+void fill(sycl::queue q, T* ptr, const T& pattern, size_t count);
+
+template <typename T>
+void fill(sycl::handler h, T* ptr, const T& pattern, size_t count);
+
+void prefetch(sycl::queue q, void* ptr, size_t numBytes);
+
+void prefetch(sycl::handler h, void* ptr, size_t numBytes);
+
+void mem_advise(sycl::queue q, void* ptr, size_t numBytes, int advice);
+
+void mem_advise(sycl::handler h, void* ptr, size_t numBytes, int advice);
+
+}
+```
+
+=== Command Barriers
+
+These tests should use `#ifdef SYCL_EXT_ONEAPI_ENQUEUE_BARRIER` so they can be skipped
+if feature is not supported. For each barrier function, enqueue a some commands before and after enqueuing the barrier. Assert that the commands enqueued after the barrier do not execute until those enqueued before the barrier have completed. The barrier functions are the following:
+
+```C++
+namespace sycl::ext::oneapi::experimental {
+
+void barrier(sycl::queue q);
+
+void barrier(sycl::handler h);
+
+void partial_barrier(sycl::queue q, const std::vector<sycl::event>& events);
+
+void partial_barrier(sycl::handler h, const std::vector<sycl::event>& events);
+
+}
+```
+
