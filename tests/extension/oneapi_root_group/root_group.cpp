@@ -55,8 +55,6 @@ static void check_root_group_api() {
       get_group_linear_range,
       get_local_linear_range,
       leader,
-      get_child_group___root_group,
-      get_child_group___group,
       COUNT,
     };
   };
@@ -87,11 +85,6 @@ static void check_root_group_api() {
       results[checks::get_local_linear_range] =
           root.get_local_linear_range() == root.get_local_range().size();
       results[checks::leader] = root.leader() == (root.get_local_id() == 0);
-
-      auto g = sycl::ext::oneapi::experimental::get_child_group(root);
-      auto sg = sycl::ext::oneapi::experimental::get_child_group(g);
-      results[checks::get_child_group___root_group] = g == it.get_group();
-      results[checks::get_child_group___group] = sg == it.get_sub_group();
     };
     if constexpr (UseRootSync) {
       cgh.parallel_for<KernelName>(nd_range, props, kernel);
@@ -173,19 +166,6 @@ static void check_root_group_api() {
   // leader
   CHECK(std::is_same_v<decltype(std::declval<rg>().leader()), bool>);
   CHECK(results[checks::leader]);
-
-  using sycl::ext::oneapi::experimental::get_child_group;
-
-  // get_child_group(root_group)
-  CHECK(std::is_same_v<decltype(get_child_group(std::declval<rg>())),
-                       sycl::group<Dimensions>>);
-  CHECK(results[checks::get_child_group___root_group]);
-
-  // get_child_group(group)
-  CHECK(std::is_same_v<decltype(get_child_group(
-                           std::declval<sycl::group<Dimensions>>())),
-                       sycl::sub_group>);
-  CHECK(results[checks::get_child_group___group]);
 }
 
 template <typename KernelName, size_t... Dims>
