@@ -198,12 +198,16 @@ function(add_cts_test)
   # To make check that any .cpp files are passed
   # List created because, direct check on "${ARGN}" gives false-positive result
   set(tests_list "${ARGN}")
+  get_filename_component(test_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
   if (tests_list)
-    get_filename_component(test_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
     set(test_exe_name ${test_dir})
     set(test_cases_list "${ARGN}")
 
     add_cts_test_helper(${test_exe_name} "${test_cases_list}")
+  else()
+    if(${test_dir} IN_LIST exclude_categories)
+      message(STATUS "Skipping excluded test: " test_${test_dir})
+    endif()
   endif()
 endfunction()
 

@@ -79,16 +79,27 @@ inline sycl::half min_t<sycl::half>() {
   return static_cast<sycl::half>(powf(2.0f, -14.0f));
 }
 
+enum class AccuracyMode { ULP, AbsoluteTolerance };
+
+inline std::string GetAccuracyModeStr(AccuracyMode accuracy_mode) {
+  switch (accuracy_mode) {
+    case AccuracyMode::ULP:
+      return "ULP";
+    case AccuracyMode::AbsoluteTolerance:
+      return "absolute error tolerance";
+  }
+}
+
 template <typename T>
-bool verify(sycl_cts::util::logger& log, T a, T b, int accuracy,
-            const std::string& comment);
+bool verify(sycl_cts::util::logger& log, T a, T b, float accuracy,
+            AccuracyMode accuracy_mode, const std::string& comment);
 
 template <typename T>
 typename std::enable_if<std::is_floating_point<T>::value ||
                             std::is_same<sycl::half, T>::value,
                         bool>::type
 verify(sycl_cts::util::logger& log, T value, sycl_cts::resultRef<T> r,
-       int accuracy, const std::string& comment) {
+       float accuracy, AccuracyMode accuracy_mode, const std::string& comment) {
   const T reference = r.res;
 
   if (!r.undefined.empty())
@@ -101,21 +112,33 @@ verify(sycl_cts::util::logger& log, T value, sycl_cts::resultRef<T> r,
   if (!std::isnan(value) && !std::isnan(reference) && !std::isinf(value) &&
       !std::isinf(reference)) {
     if (accuracy < 0)
-      return true;  // Implementation-defined or infinite ULP according to spec
+      return true;  // Implementation-defined or infinite ULP/tolerance
+                    // according to spec
 
     if ((std::fabs(value) < min_t<T>()) && (std::fabs(reference) < min_t<T>()))
       return true;  // Subnormal numbers are the lower border for comparison
 
-    const auto ulpsExpected = static_cast<unsigned int>(accuracy);
     const T difference = static_cast<T>(std::fabs(value - reference));
-    const T differenceExpected = ulpsExpected * get_ulp_std(reference);
+    switch (accuracy_mode) {
+      case AccuracyMode::ULP: {
+        const auto ulpsExpected = static_cast<unsigned int>(accuracy);
+        const T differenceExpected = ulpsExpected * get_ulp_std(reference);
 
-    if (difference <= differenceExpected) return true;
+        if (difference <= differenceExpected) return true;
+        break;
+      }
+      case AccuracyMode::AbsoluteTolerance: {
+        if (difference <= accuracy) return true;
+        break;
+      }
+    }
   }
 
   log.note("value: " + printable(value) +
            ", reference: " + printable(reference));
-  std::string msg = "Expected accuracy in ULP: " + std::to_string(accuracy);
+  std::string msg = "Expected accuracy in " +
+                    GetAccuracyModeStr(accuracy_mode) + ": " +
+                    std::to_string(accuracy);
   if (!comment.empty()) msg += ", " + comment;
   log.note(msg);
   return false;
@@ -123,8 +146,8 @@ verify(sycl_cts::util::logger& log, T value, sycl_cts::resultRef<T> r,
 
 template <typename T>
 typename std::enable_if_t<std::is_integral_v<T>, bool> verify(
-    sycl_cts::util::logger& log, T value, sycl_cts::resultRef<T> r, int,
-    const std::string&) {
+    sycl_cts::util::logger& log, T value, sycl_cts::resultRef<T> r, float,
+    AccuracyMode, const std::string&) {
   bool result = value == r.res || !r.undefined.empty();
   if (!result)
     log.note("value: " + std::to_string(value) +
@@ -134,37 +157,39 @@ typename std::enable_if_t<std::is_integral_v<T>, bool> verify(
 
 template <typename T, int N>
 bool verify(sycl_cts::util::logger& log, sycl::vec<T, N> a,
-            sycl_cts::resultRef<sycl::vec<T, N>> r, int accuracy,
-            const std::string& comment) {
+            sycl_cts::resultRef<sycl::vec<T, N>> r, float accuracy,
+            AccuracyMode accuracy_mode, const std::string& comment) {
   sycl::vec<T, N> b = r.res;
   for (int i = 0; i < sycl_cts::math::numElements(a); i++)
     if (r.undefined.find(i) == r.undefined.end() &&
-        !verify(log, a[i], b[i], accuracy, comment))
+        !verify(log, a[i], b[i], accuracy, accuracy_mode, comment))
       return false;
   return true;
 }
 
 template <typename T, size_t N>
 bool verify(sycl_cts::util::logger& log, sycl::marray<T, N> a,
-            sycl_cts::resultRef<sycl::marray<T, N>> r, int accuracy,
-            const std::string& comment) {
+            sycl_cts::resultRef<sycl::marray<T, N>> r, float accuracy,
+            AccuracyMode accuracy_mode, const std::string& comment) {
   sycl::marray<T, N> b = r.res;
   for (size_t i = 0; i < N; i++)
     if (r.undefined.find(i) == r.undefined.end() &&
-        !verify(log, a[i], b[i], accuracy, comment))
+        !verify(log, a[i], b[i], accuracy, accuracy_mode, comment))
       return false;
   return true;
 }
 
 template <typename T>
-bool verify(sycl_cts::util::logger& log, T a, T b, int accuracy,
-            const std::string& comment) {
-  return verify(log, a, sycl_cts::resultRef<T>(b), accuracy, comment);
+bool verify(sycl_cts::util::logger& log, T a, T b, float accuracy,
+            AccuracyMode accuracy_mode, const std::string& comment) {
+  return verify(log, a, sycl_cts::resultRef<T>(b), accuracy, accuracy_mode,
+                comment);
 }
 
 template <int N, typename returnT, typename funT>
 void check_function(sycl_cts::util::logger& log, funT fun,
-                    sycl_cts::resultRef<returnT> ref, int accuracy = 0,
+                    sycl_cts::resultRef<returnT> ref, float accuracy = 0.0f,
+                    AccuracyMode accuracy_mode = AccuracyMode::ULP,
                     const std::string& comment = {}) {
   sycl::range<1> ndRng(1);
   returnT kernelResult;
@@ -183,7 +208,7 @@ void check_function(sycl_cts::util::logger& log, funT fun,
     FAIL(log, errorMsg.c_str());
   }
 
-  if (!verify(log, kernelResult, ref, accuracy, comment))
+  if (!verify(log, kernelResult, ref, accuracy, accuracy_mode, comment))
     FAIL(log,
          "tests case: " + std::to_string(N) + ". Correctness check failed.");
 
@@ -193,14 +218,15 @@ void check_function(sycl_cts::util::logger& log, funT fun,
        ". Correctness check failed on host.");
   // SYCL 2020 specification sets no requirements for math built-ins accuracy
   // on host, hence passing negative value to 'verify' helper to indicate that.
-  CHECK(verify(log, hostRes, ref, -1, comment));
+  CHECK(verify(log, hostRes, ref, -1, accuracy_mode, comment));
 }
 
 template <int N, typename returnT, typename funT, typename argT>
-void check_function_multi_ptr_private(sycl_cts::util::logger& log, funT fun,
-                                      sycl_cts::resultRef<returnT> ref,
-                                      argT ptrRef, int accuracy = 0,
-                                      const std::string& comment = {}) {
+void check_function_multi_ptr_private(
+    sycl_cts::util::logger& log, funT fun, sycl_cts::resultRef<returnT> ref,
+    argT ptrRef, float accuracy = 0.0f,
+    AccuracyMode accuracy_mode = AccuracyMode::ULP,
+    const std::string& comment = {}) {
   sycl::range<1> ndRng(1);
   returnT kernelResult;
   argT kernelResultArg;
@@ -225,10 +251,10 @@ void check_function_multi_ptr_private(sycl_cts::util::logger& log, funT fun,
     FAIL(log, errorMsg.c_str());
   }
 
-  if (!verify(log, kernelResult, ref, accuracy, comment))
+  if (!verify(log, kernelResult, ref, accuracy, accuracy_mode, comment))
     FAIL(log,
          "tests case: " + std::to_string(N) + ". Correctness check failed.");
-  if (!verify(log, kernelResultArg, ptrRef, accuracy, comment))
+  if (!verify(log, kernelResultArg, ptrRef, accuracy, accuracy_mode, comment))
     FAIL(log, "tests case: " + std::to_string(N) +
                   ". Correctness check for ptr failed.");
 
@@ -237,20 +263,22 @@ void check_function_multi_ptr_private(sycl_cts::util::logger& log, funT fun,
   {
     INFO("tests case: " + std::to_string(N) +
          ". Correctness check failed on host.");
-    CHECK(verify(log, hostRes.res, ref, accuracy, comment));
+    CHECK(verify(log, hostRes.res, ref, accuracy, accuracy_mode, comment));
   }
   {
     INFO("tests case: " + std::to_string(N) +
          ". Correctness check for ptr failed on host.");
-    CHECK(verify(log, hostRes.resArg, ptrRef, accuracy, comment));
+    CHECK(
+        verify(log, hostRes.resArg, ptrRef, accuracy, accuracy_mode, comment));
   }
 }
 
 template <int N, typename returnT, typename funT, typename argT>
-void check_function_multi_ptr_global(sycl_cts::util::logger& log, funT fun,
-                                     argT arg, sycl_cts::resultRef<returnT> ref,
-                                     argT ptrRef, int accuracy = 0,
-                                     const std::string& comment = {}) {
+void check_function_multi_ptr_global(
+    sycl_cts::util::logger& log, funT fun, argT arg,
+    sycl_cts::resultRef<returnT> ref, argT ptrRef, float accuracy = 0.0f,
+    AccuracyMode accuracy_mode = AccuracyMode::ULP,
+    const std::string& comment = {}) {
   sycl::range<1> ndRng(1);
   returnT kernelResult;
   auto&& testQueue = once_per_unit::get_queue();
@@ -271,19 +299,20 @@ void check_function_multi_ptr_global(sycl_cts::util::logger& log, funT fun,
     FAIL(log, errorMsg.c_str());
   }
 
-  if (!verify(log, kernelResult, ref, accuracy, comment))
+  if (!verify(log, kernelResult, ref, accuracy, accuracy_mode, comment))
     FAIL(log,
          "tests case: " + std::to_string(N) + ". Correctness check failed.");
-  if (!verify(log, arg, ptrRef, accuracy, comment))
+  if (!verify(log, arg, ptrRef, accuracy, accuracy_mode, comment))
     FAIL(log, "tests case: " + std::to_string(N) +
                   ". Correctness check for ptr failed.");
 }
 
 template <int N, typename returnT, typename funT, typename argT>
-void check_function_multi_ptr_local(sycl_cts::util::logger& log, funT fun,
-                                    argT arg, sycl_cts::resultRef<returnT> ref,
-                                    argT ptrRef, int accuracy = 0,
-                                    const std::string& comment = {}) {
+void check_function_multi_ptr_local(
+    sycl_cts::util::logger& log, funT fun, argT arg,
+    sycl_cts::resultRef<returnT> ref, argT ptrRef, float accuracy = 0.0f,
+    AccuracyMode accuracy_mode = AccuracyMode::ULP,
+    const std::string& comment = {}) {
   sycl::range<1> ndRng(1);
   returnT kernelResult;
   auto&& testQueue = once_per_unit::get_queue();
@@ -310,10 +339,10 @@ void check_function_multi_ptr_local(sycl_cts::util::logger& log, funT fun,
     FAIL(log, errorMsg.c_str());
   }
 
-  if (!verify(log, kernelResult, ref, accuracy, comment))
+  if (!verify(log, kernelResult, ref, accuracy, accuracy_mode, comment))
     FAIL(log,
          "tests case: " + std::to_string(N) + ". Correctness check failed.");
-  if (!verify(log, arg, ptrRef, accuracy, comment))
+  if (!verify(log, arg, ptrRef, accuracy, accuracy_mode, comment))
     FAIL(log, "tests case: " + std::to_string(N) +
                   ". Correctness check for ptr failed.");
 }

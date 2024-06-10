@@ -317,11 +317,12 @@ def generate_test_case(test_id, types, sig, memory, check, decorated = ""):
     testCaseSource = testCaseSource.replace("$RETURN_TYPE", sig.ret_type.name)
     if sig.accuracy:##If the signature contains an accuracy value
         accuracy = sig.accuracy
+        accuracy_mode = sig.accuracy_mode # Accuracy mode should always be set.
         # if accuracy depends on vecSize
         if "vecSize" in accuracy:
             vecSize = str(sig.arg_types[0].dim)
             accuracy = accuracy.replace("vecSize", vecSize)
-        testCaseSource = testCaseSource.replace("$ACCURACY", ", " + accuracy)
+        testCaseSource = testCaseSource.replace("$ACCURACY", ", " + accuracy + ", AccuracyMode::" + accuracy_mode)
     else:
         testCaseSource = testCaseSource.replace("$ACCURACY", "")
     if sig.comment:##If the signature contains comment for accuracy
@@ -478,7 +479,8 @@ def expand_signature(types, signature):
                                         signature.name, [matched_typelists[signature.arg_types[j]][i] 
                                                          for j in range(len(signature.arg_types))],
                                         signature.accuracy, signature.comment, signature.pntr_indx[:],
-                                        signature.mutations[:], signature.template_arg_map[:])
+                                        signature.mutations[:], signature.template_arg_map[:],
+                                        signature.accuracy_mode)
         exp_sig.append(new_sig)
 
     return exp_sig
