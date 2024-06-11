@@ -18,6 +18,7 @@
 //
 *******************************************************************************/
 
+#include <map>
 #include <valarray>
 
 #include "../../group_functions/group_functions_common.h"
