@@ -18,6 +18,8 @@
 //
 *******************************************************************************/
 
+#include <map>
+
 #include "../../group_functions/group_functions_common.h"
 #include "non_uniform_group_common.h"
 
