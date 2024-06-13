@@ -23,6 +23,7 @@
 from collections import defaultdict
 from string import Template
 from itertools import product
+from math import ceil, floor
 
 class Data:
     signs = [True, False]
@@ -384,6 +385,8 @@ def get_space_count(line):
 def add_spaces_to_lines(count, string):
     """Adds a number of spaces to the start of each line"""
     all_lines = string.splitlines(True)
+    if not all_lines:
+        return ''
     new_string = all_lines[0]
     for i in range(1, len(all_lines)):
         new_string += ' ' * count + all_lines[i]
@@ -619,7 +622,7 @@ def substitute_swizzles_templates(type_str, size, index_subset, value_subset, co
         test_string)
     return string
 
-def gen_swizzle_test(type_str, convert_type_str, as_type_str, size):
+def gen_swizzle_test(type_str, convert_type_str, as_type_str, size, num_batches, batch_index):
     string = ''
     if size > 4:
         test_string = SwizzleData.swizzle_full_test_template.substitute(
@@ -654,17 +657,43 @@ def gen_swizzle_test(type_str, convert_type_str, as_type_str, size):
             ', '.join(Data.swizzle_elem_list_dict[size][:size]) + '>',
             test_string)
         return string
-    # size <=4
+   
+    # Case when size <=4
+    # The test files generated for swizzles of vectors of size <= 4 are enormous and are hurting 
+    # compilation times of the suite so we batch the tests according to two command line arguments 
+    # in num_batches and batch_index that will dictate how many tests we can put in a single test file. 
+    # Specifically, the test cases are to be split in num_batches different groups aka batches 
+    # and the batch_index tells the script which batch in particular we want to output to a test file during this run. 
+    # Both of these arguments, num_batches and batch_index, are controlled by the cmake test generation script.
+    
+    total_tests = 0
     for length in range(size, size + 1):
         for index_subset, value_subset in zip(
                 product(
                     Data.swizzle_xyzw_list_dict[size][:size],
                     repeat=length),
                 product(Data.vals_list_dict[size][:size], repeat=length)):
-            string += substitute_swizzles_templates(type_str, size,
-                    index_subset, value_subset, convert_type_str, as_type_str)
+            total_tests += 1
+    batch_size = ceil(total_tests / num_batches)
+    cur_index = 0
+    cur_batch = 0
+    for length in range(size, size + 1):
+        for index_subset, value_subset in zip(
+                product(
+                    Data.swizzle_xyzw_list_dict[size][:size],
+                    repeat=length),
+                product(Data.vals_list_dict[size][:size], repeat=length)):
+            cur_batch = floor(cur_index / batch_size)
+            if cur_batch > batch_index:
+                break
+            if cur_batch == batch_index:
+                string += substitute_swizzles_templates(type_str, size,
+                        index_subset, value_subset, convert_type_str, as_type_str)
+            cur_index += 1
 
+    # Same logic as above repeated for the case when size == 4
     if size == 4:
+        total_tests = 0
         for length in range(size, size + 1):
             for index_subset, value_subset in zip(
                     product(
@@ -672,8 +701,24 @@ def gen_swizzle_test(type_str, convert_type_str, as_type_str, size):
                         repeat=length),
                     product(
                         Data.vals_list_dict[size][:size], repeat=length)):
-                string += substitute_swizzles_templates(type_str, size,
-                        index_subset, value_subset, convert_type_str, as_type_str)
+                total_tests += 1
+        batch_size = ceil(total_tests / num_batches)
+        cur_index = 0
+        cur_batch = 0
+        for length in range(size, size + 1):
+            for index_subset, value_subset in zip(
+                    product(
+                        Data.swizzle_rgba_list_dict[size][:size],
+                        repeat=length),
+                    product(
+                        Data.vals_list_dict[size][:size], repeat=length)):
+                cur_batch = floor(cur_index / batch_size)
+                if cur_batch > batch_index:
+                    break
+                if cur_batch == batch_index:
+                    string += substitute_swizzles_templates(type_str, size,
+                            index_subset, value_subset, convert_type_str, as_type_str)
+                cur_index += 1
     return string
 
 
@@ -724,7 +769,7 @@ def get_reverse_type(type_str):
 # Reason for the TODO above is that this function and several more it calls are
 # not really common and only used to generate vector_swizzles test.
 # FIXME: The test (main template and others) should be updated to use Catch2
-def make_swizzles_tests(type_str, input_file, output_file):
+def make_swizzles_tests(type_str, input_file, output_file, num_batches, batch_index):
     if type_str == 'bool':
         Data.vals_list_dict = cast_to_bool(Data.vals_list_dict)
 
@@ -733,15 +778,15 @@ def make_swizzles_tests(type_str, input_file, output_file):
     convert_type_str = get_reverse_type(type_str)
     as_type_str = get_reverse_type(type_str)
     swizzles[0] = gen_swizzle_test(type_str, convert_type_str,
-                                   as_type_str, 1)
+                                   as_type_str, 1, num_batches, batch_index)
     swizzles[1] = gen_swizzle_test(type_str, convert_type_str,
-                                   as_type_str, 2)
+                                   as_type_str, 2, num_batches, batch_index)
     swizzles[2] = gen_swizzle_test(type_str, convert_type_str,
-                                   as_type_str, 3)
+                                   as_type_str, 3, num_batches, batch_index)
     swizzles[3] = gen_swizzle_test(type_str, convert_type_str,
-                                   as_type_str, 4)
+                                   as_type_str, 4, num_batches, batch_index)
     swizzles[4] = gen_swizzle_test(type_str, convert_type_str,
-                                   as_type_str, 8)
+                                   as_type_str, 8, num_batches, batch_index)
     swizzles[5] = gen_swizzle_test(type_str, convert_type_str,
-                                   as_type_str, 16)
+                                   as_type_str, 16, num_batches, batch_index)
     write_swizzle_source_file(swizzles, input_file, output_file, type_str)

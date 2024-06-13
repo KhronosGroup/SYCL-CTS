@@ -41,6 +41,18 @@ def main():
         choices=get_types(),
         help='Type to generate the test for')
     argparser.add_argument(
+        '-num_batches',
+        dest='num_batches',
+        required=True,
+        type=int,
+        help='Number of batches to split the test cases into')
+    argparser.add_argument(
+        '-batch_index',
+        dest='batch_index',
+        required=True,
+        type=int,
+        help='Batch index of the test batch to write to the output file.') 
+    argparser.add_argument(
         '-o',
         required=True,
         dest="output",
@@ -48,7 +60,7 @@ def main():
         help='CTS test output')
     args = argparser.parse_args()
 
-    make_swizzles_tests(args.ty, args.template, args.output)
+    make_swizzles_tests(args.ty, args.template, args.output, args.num_batches, args.batch_index - 1)
 
 
 if __name__ == '__main__':
