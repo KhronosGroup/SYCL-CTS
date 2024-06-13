@@ -1,6 +1,14 @@
 set(TEST_CASES_LIST "")
 
 set(TYPE_LIST "")
+
+# The vector swizzle tests can become too large if we dont split them into chunks or batches
+# and this can hurt compilation times or even cause it to fail on machines 16 GB of RAM or less.
+# Therefore, we output the tests in batches in order to instead generate a larger number of files
+# which are individually much smaller which in turn speeds up compilation when using multiple threads.
+# It also reduces the memory footprint of the tests. 
+# Some experimentation has shown 32 to be a reasonable value for the number of chunks/batches 
+# where the compilation suceeds iunder constrained space resorces  and we don't produce a huge number of files.
 set(NUM_BATCHES "32")
 get_std_type(TYPE_LIST)
 get_no_vec_alias_type(TYPE_LIST)

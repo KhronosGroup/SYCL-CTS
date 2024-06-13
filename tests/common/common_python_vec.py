@@ -21,9 +21,9 @@
 # ************************************************************************
 
 from collections import defaultdict
-from string import Template
 from itertools import product
 from math import ceil, floor
+from string import Template
 
 class Data:
     signs = [True, False]
