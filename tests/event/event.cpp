@@ -104,8 +104,13 @@ class delayed_host_event : public resolvable_host_event {
       : resolvable_host_event() {
     future = std::async(std::launch::async, [this, delay] {
       std::this_thread::sleep_for(delay);
-      resolve();
+      // For the purpose of the tests it's important that `resolved` will be
+      // true whenever SYCL event is completed. As such, we have to set this
+      // flag before actually resolving the `future` because otherwise the
+      // current thread can go to sleep before the flag is set and the checks
+      // would be failing.
       resolved = true;
+      resolve();
     });
   }
 

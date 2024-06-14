@@ -1046,7 +1046,9 @@ void test_accessor_ptr_device(AccT& accessor, T& expected_data, AccRes& res_acc,
                                                  expected_data);
 
   auto acc_pointer = accessor.get_pointer();
-  res_acc[res_i++] = std::is_same_v<decltype(acc_pointer), sycl::global_ptr<T>>;
+  res_acc[res_i++] =
+      std::is_same_v<decltype(acc_pointer),
+                     sycl::global_ptr<typename AccT::value_type>>;
   res_acc[res_i++] = value_operations::are_equal(*acc_pointer, expected_data);
 }
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL

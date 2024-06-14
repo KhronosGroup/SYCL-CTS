@@ -1,0 +1,98 @@
+/*******************************************************************************
+//
+//  SYCL 2020 Conformance Test Suite
+//
+//  Copyright (c) 2024 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+*******************************************************************************/
+
+#include "group_reduce.h"
+
+namespace non_uniform_groups::tests {
+
+// clang-format off
+#cmakedefine CTS_TYPE @CTS_TYPE@
+#cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
+// clang-format on
+using ReduceTypes = Types;
+
+TEST_CASE(CTS_TYPE_NAME + " non-uniform group reduce functions",
+          "[oneapi_non_uniform_groups][group_func][type_list]") {
+  auto queue = once_per_unit::get_queue();
+  // Get binary operators from TestType
+  const auto Operators = get_op_types<CTS_TYPE>();
+  const auto RetType = unnamed_type_pack<CTS_TYPE>();
+  const auto GroupTypes = unnamed_type_pack<
+      oneapi_ext::ballot_group<sycl::sub_group>,
+      oneapi_ext::fixed_size_group<1, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<4, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<8, sycl::sub_group>,
+      oneapi_ext::tangle_group<sycl::sub_group>,
+      oneapi_ext::opportunistic_group>();
+
+  if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
+    if (!queue.get_device().has(sycl::aspect::fp16))
+      SKIP(
+          "Device does not support half precision floating point "
+          "operations.");
+  } else if (std::is_same_v<std::remove_cv_t<CTS_TYPE>, double>) {
+    if (!queue.get_device().has(sycl::aspect::fp64))
+      SKIP(
+          "Device does not support double precision floating point "
+          "operations.");
+  }
+
+  for_all_combinations<invoke_reduce_over_group>(GroupTypes, RetType, Operators,
+                                                 queue);
+}
+
+TEMPLATE_LIST_TEST_CASE(CTS_TYPE_NAME +
+                            " non-uniform group reduce functions with init",
+                        "[oneapi_non_uniform_groups][group_func][type_list]",
+                        ReduceTypes) {
+  auto queue = once_per_unit::get_queue();
+
+  // Get binary operators from T
+  const auto Operators = get_op_types<CTS_TYPE>();
+  const auto RetType = unnamed_type_pack<CTS_TYPE>();
+  const auto ReducedType = unnamed_type_pack<TestType>();
+  const auto GroupTypes = unnamed_type_pack<
+      oneapi_ext::ballot_group<sycl::sub_group>,
+      oneapi_ext::fixed_size_group<1, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<4, sycl::sub_group>,
+      oneapi_ext::fixed_size_group<8, sycl::sub_group>,
+      oneapi_ext::tangle_group<sycl::sub_group>,
+      oneapi_ext::opportunistic_group>();
+
+  if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
+    if (!queue.get_device().has(sycl::aspect::fp16))
+      SKIP(
+          "Device does not support half precision floating point "
+          "operations.");
+  } else if (std::is_same_v<std::remove_cv_t<CTS_TYPE>, double>) {
+    if (!queue.get_device().has(sycl::aspect::fp64))
+      SKIP(
+          "Device does not support double precision floating point "
+          "operations.");
+  }
+
+  // check all work group dimensions
+  for_all_combinations<invoke_init_reduce_over_group>(
+      GroupTypes, RetType, ReducedType, Operators, queue);
+}
+
+}  // namespace non_uniform_groups::tests
