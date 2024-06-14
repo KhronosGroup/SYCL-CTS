@@ -22,31 +22,31 @@
 
 namespace kernel_compiler_spirv::tests {
 
-static const std::vector<uint8_t> kernels{
+template <typename... Ts>
+std::vector<std::byte> createByteVector(Ts&&... args) noexcept {
+  return {std::byte(std::forward<Ts>(args))...};
+}
+
+static const std::vector<std::byte> kernels = createByteVector(
 #include "kernels.inc"
-};
-static const std::vector<uint8_t> kernels_fp16{
+);
+static const std::vector<std::byte> kernels_fp16 = createByteVector(
 #include "kernels_fp16.inc"
-};
-static const std::vector<uint8_t> kernels_fp64{
+);
+static const std::vector<std::byte> kernels_fp64 = createByteVector(
 #include "kernels_fp64.inc"
-};
+);
 
 #ifdef SYCL_EXT_ONEAPI_AUTO_LOCAL_RANGE
 
 sycl::kernel_bundle<sycl::bundle_state::executable> loadKernelsFromVector(
-    sycl::queue& q, const std::vector<uint8_t>& kernels) {
+    sycl::queue& q, const std::vector<std::byte>& kernels) {
   namespace syclex = sycl::ext::oneapi::experimental;
-
-  // Copy the SPIR-V module to a std::vector<std::byte>.
-  std::vector<std::byte> spv(kernels.size());
-  std::transform(kernels.begin(), kernels.end(), spv.begin(),
-                 [](uint8_t x) { return std::byte(x); });
 
   // Create a kernel bundle from the binary SPIR-V.
   sycl::kernel_bundle<sycl::bundle_state::ext_oneapi_source> kb_src =
       syclex::create_kernel_bundle_from_source(
-          q.get_context(), syclex::source_language::spirv, spv);
+          q.get_context(), syclex::source_language::spirv, kernels);
 
   // Build the SPIR-V module for our device.
   sycl::kernel_bundle<sycl::bundle_state::executable> kb_exe =
