@@ -83,7 +83,7 @@ class TEST_NAME : public util::test_base {
   }
 };
 
-util::test_proxy<TEST_NAME> proxy;
+inline util::test_proxy<TEST_NAME> proxy;
 
 } /* namespace vector_swizzles_$TYPE_NAME__ */
 $ENDIF
