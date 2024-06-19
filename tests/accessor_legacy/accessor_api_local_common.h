@@ -67,7 +67,7 @@ class check_local_accessor_api_methods {
           util::get_cts_object::range<data_dim<dims>::value>::get(1, 1, 1);
       error_buffer_t errorBuffer(errors.get(), sycl::range<1>(2));
 
-      queue.submit([&](sycl::handler &h) {
+      queue.submit([&](sycl::handler& h) {
         auto acc = make_local_accessor_generic<T, dims, mode>(range, h);
         {
           /** check get_count() method

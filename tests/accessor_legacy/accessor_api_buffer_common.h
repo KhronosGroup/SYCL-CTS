@@ -111,8 +111,7 @@ class check_buffer_accessor_api_methods {
     // legacy accessors do not have the size() member function
     if constexpr (target != sycl::access::target::constant_buffer &&
                   target != sycl::access::target::local &&
-                  target != sycl::access::target::host_buffer)
-    {
+                  target != sycl::access::target::host_buffer) {
       /** check size() method
        */
       auto accessorCount = accessor.size();
