@@ -29,9 +29,14 @@
 
 #include <iostream>
 
-struct kernel_1;
-struct kernel_2;
-struct kernel_3;
+// Multiple translation units are instantiated from this .in file and linked together, so we must
+// ensure that kernel names are namespaced to disambiguate their definitions
+namespace kernels CTS_NAMESPACE {
+  struct kernel_1;
+  struct kernel_2;
+  struct kernel_3;
+}
+using namespace kernels CTS_NAMESPACE;
 
 /** Example program, adapted to use the CTS queue. */
 static int test_namespace() {

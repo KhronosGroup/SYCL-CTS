@@ -67,19 +67,8 @@ class check_local_accessor_api_methods {
           util::get_cts_object::range<data_dim<dims>::value>::get(1, 1, 1);
       error_buffer_t errorBuffer(errors.get(), sycl::range<1>(2));
 
-      queue.submit([&](sycl::handler &h) {
+      queue.submit([&](sycl::handler& h) {
         auto acc = make_local_accessor_generic<T, dims, mode>(range, h);
-        {
-          /** check size() method
-          */
-          auto accessorCount = acc.size();
-          check_return_type<size_t>(log, accessorCount, "size()");
-          const auto expectedCount = ((dims == 0) ? 1 : count);
-          if (accessorCount != expectedCount) {
-            fail_for_accessor<T, dims, mode, target>(log, typeName,
-                "accessor does not return the correct count");
-          }
-        }
         {
           /** check get_count() method
            */

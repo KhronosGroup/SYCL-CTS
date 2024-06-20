@@ -74,8 +74,8 @@ TEST_CASE("predefined selectors", "[device_selector]") {
       try {
         auto cpuDevice = util::get_cts_object::device(cpuSelector);
         FAIL("selected a CPU device when none are available");
-      } catch (const sycl::runtime_error &e) {
-        // sycl::runtime_error is expected
+      } catch (const sycl::exception& e) {
+        // sycl::exception is expected
       } catch (...) {
         FAIL("wrong error thrown when no CPU devices are available");
       }
@@ -90,8 +90,8 @@ TEST_CASE("predefined selectors", "[device_selector]") {
       try {
         auto gpuDevice = util::get_cts_object::device(gpuSelector);
         FAIL("selected a GPU device when none are available");
-      } catch (const sycl::runtime_error &e) {
-        // sycl::runtime_error is expected
+      } catch (const sycl::exception& e) {
+        // sycl::exception is expected
       } catch (...) {
         FAIL("wrong error thrown when no GPU devices are available");
       }
@@ -108,8 +108,8 @@ TEST_CASE("predefined selectors", "[device_selector]") {
         auto acceleratorDevice =
             util::get_cts_object::device(acceleratorSelector);
         FAIL("selected an accelerator device when none are available");
-      } catch (const sycl::runtime_error &e) {
-        // sycl::runtime_error is expected
+      } catch (const sycl::exception& e) {
+        // sycl::exception is expected
       } catch (...) {
         FAIL("wrong error thrown when no accelerator devices are available");
       }
