@@ -22,27 +22,31 @@
 
 namespace kernel_compiler_spirv::tests {
 
+template <typename... Ts>
+std::vector<std::byte> createByteVector(Ts&&... args) noexcept {
+  return {std::byte(std::forward<Ts>(args))...};
+}
+
+static const std::vector<std::byte> kernels = createByteVector(
+#include "kernels.inc"
+);
+static const std::vector<std::byte> kernels_fp16 = createByteVector(
+#include "kernels_fp16.inc"
+);
+static const std::vector<std::byte> kernels_fp64 = createByteVector(
+#include "kernels_fp64.inc"
+);
+
 #ifdef SYCL_EXT_ONEAPI_AUTO_LOCAL_RANGE
 
-sycl::kernel_bundle<sycl::bundle_state::executable> loadKernelsFromFile(
-    sycl::queue& q, const std::string& file_name) {
+sycl::kernel_bundle<sycl::bundle_state::executable> loadKernelsFromVector(
+    sycl::queue& q, const std::vector<std::byte>& kernels) {
   namespace syclex = sycl::ext::oneapi::experimental;
-
-  // Read the SPIR-V module from disk.
-  std::ifstream spv_stream(file_name, std::ios::binary);
-  if (!spv_stream.is_open()) {
-    throw std::runtime_error("Failed to open '" + file_name + "'");
-  }
-  spv_stream.seekg(0, std::ios::end);
-  size_t sz = spv_stream.tellg();
-  spv_stream.seekg(0);
-  std::vector<std::byte> spv(sz);
-  spv_stream.read(reinterpret_cast<char*>(spv.data()), sz);
 
   // Create a kernel bundle from the binary SPIR-V.
   sycl::kernel_bundle<sycl::bundle_state::ext_oneapi_source> kb_src =
       syclex::create_kernel_bundle_from_source(
-          q.get_context(), syclex::source_language::spirv, spv);
+          q.get_context(), syclex::source_language::spirv, kernels);
 
   // Build the SPIR-V module for our device.
   sycl::kernel_bundle<sycl::bundle_state::executable> kb_exe =
@@ -176,9 +180,7 @@ void testStruct(sycl::queue& q, const sycl::kernel& kernel) {
   sycl::free(out_p1, q);
 }
 
-void testKernelsFromSpvFile(std::string kernels_file,
-                            std::string fp16_kernel_file,
-                            std::string fp64_kernel_file) {
+void testKernels() {
   const auto getKernel =
       [](sycl::kernel_bundle<sycl::bundle_state::executable>& bundle,
          const std::string& name) {
@@ -186,7 +188,7 @@ void testKernelsFromSpvFile(std::string kernels_file,
       };
 
   sycl::queue q;
-  auto bundle = loadKernelsFromFile(q, kernels_file);
+  auto bundle = loadKernelsFromVector(q, kernels);
 
   // Test kernel retrieval functions.
   {
@@ -220,13 +222,13 @@ void testKernelsFromSpvFile(std::string kernels_file,
 
   // Test OpTypeFloat16 parameters.
   if (q.get_device().has(sycl::aspect::fp16)) {
-    auto fp16_bundle = loadKernelsFromFile(q, fp16_kernel_file);
+    auto fp16_bundle = loadKernelsFromVector(q, kernels_fp16);
     testParam<sycl::half>(q, getKernel(fp16_bundle, "OpTypeFloat16"));
   }
 
   // Test OpTypeFloat64 parameters.
   if (q.get_device().has(sycl::aspect::fp64)) {
-    auto fp64_bundle = loadKernelsFromFile(q, fp64_kernel_file);
+    auto fp64_bundle = loadKernelsFromVector(q, kernels_fp64);
     testParam<double>(q, getKernel(fp64_bundle, "OpTypeFloat64"));
   }
 
@@ -241,7 +243,7 @@ TEST_CASE("Test case for \"Kernel Compiler SPIR-V\" extension",
 #ifndef SYCL_EXT_ONEAPI_KERNEL_COMPILER_SPIRV
   SKIP("SYCL_EXT_ONEAPI_KERNEL_COMPILER_SPIRV is not defined");
 #else
-  testKernelsFromSpvFile(KERNELS_PATH, KERNELS_FP16_PATH, KERNELS_FP64_PATH);
+  testKernels();
 #endif
 }
 

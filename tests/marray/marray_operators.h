@@ -822,11 +822,18 @@ class check_marray_pre_unary_operators_for_type {
     INFO("prefix unary operators for type \"" << type_name << "\": ");
 
     const auto num_elements = marray_common::get_num_elements();
-
-    static const auto unary_operators =
-        named_type_pack<op_upos, op_uneg, op_pre_inc, op_pre_dec, op_lnot,
-                        op_bnot>::generate("unary +", "unary -", "pre ++",
-                                           "pre --", "!", "~");
+    static const auto unary_operators = [] {
+      if constexpr (std::is_same_v<DataT, bool>) {
+        // marray<bool> does not have operator++/--
+        return named_type_pack<op_upos, op_uneg, op_lnot, op_bnot>::generate(
+            "unary +", "unary -", "!", "~");
+      } else {
+        return named_type_pack<op_upos, op_uneg, op_pre_inc, op_pre_dec,
+                               op_lnot, op_bnot>::generate("unary +", "unary -",
+                                                           "pre ++", "pre --",
+                                                           "!", "~");
+      }
+    }();
     for_all_combinations<run_unary, DataT>(num_elements, unary_operators);
   }
 };
@@ -839,11 +846,14 @@ class check_marray_post_unary_operators_for_type {
 
     const auto num_elements = marray_common::get_num_elements();
 
-    static const auto unary_post_operators =
-        named_type_pack<op_post_inc, op_post_dec>::generate("post ++",
-                                                            "post --");
-    for_all_combinations<run_unary_post, DataT>(num_elements,
-                                                unary_post_operators);
+    // marray<bool> does not have operator++/--
+    if constexpr (!std::is_same_v<DataT, bool>) {
+      static const auto unary_post_operators =
+          named_type_pack<op_post_inc, op_post_dec>::generate("post ++",
+                                                              "post --");
+      for_all_combinations<run_unary_post, DataT>(num_elements,
+                                                  unary_post_operators);
+    }
   }
 };
 

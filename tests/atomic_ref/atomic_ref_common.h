@@ -253,7 +253,8 @@ inline bool memory_order_is_supported(sycl::queue& q,
   return it != memory_orders_supported.end();
 }
 
-inline bool memory_scope_is_suppoted(sycl::queue& q, sycl::memory_scope scope) {
+inline bool memory_scope_is_supported(sycl::queue& q,
+                                      sycl::memory_scope scope) {
   std::vector<sycl::memory_scope> memory_scopes_supported =
       q.get_device()
           .get_info<sycl::info::device::atomic_memory_scope_capabilities>();
@@ -266,7 +267,7 @@ inline bool memory_order_and_scope_are_supported(sycl::queue& q,
                                                  sycl::memory_order order,
                                                  sycl::memory_scope scope) {
   return memory_order_is_supported(q, order) &&
-         memory_scope_is_suppoted(q, scope);
+         memory_scope_is_supported(q, scope);
 }
 
 inline bool memory_order_and_scope_are_not_supported(sycl::queue& q,

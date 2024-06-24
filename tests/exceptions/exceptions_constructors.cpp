@@ -194,8 +194,14 @@ TEST_CASE("Constructors for sycl::exception with sycl::errc error codes",
       check_exception(copy, errcode, sycl::sycl_category());
     }
     SECTION("operator=(const exception& other)") {
+      // sycl::exception is not default-constructible, so explicitly construct
+      // `copy` with an error code that is different from `errcode`
+      std::error_code other_errc(errcode == sycl::errc::success
+                                     ? sycl::errc::runtime
+                                     : sycl::errc::success);
+
       sycl::exception e(std_errc);
-      sycl::exception copy;
+      sycl::exception copy(other_errc);
       CHECK_NOTHROW((copy = e));
       check_exception(copy, errcode, sycl::sycl_category());
     }
