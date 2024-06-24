@@ -23,7 +23,7 @@
 namespace enqueue_functions::tests {
 
 #ifdef SYCL_EXT_ONEAPI_ENQUEUE_FUNCTIONS
-namespace syclex = sycl::ext::oneapi::experimental;
+namespace oneapi_ext = sycl::ext::oneapi::experimental;
 
 static void test_single_task() {
   const auto Increment = [](const auto& enqueue,
@@ -52,14 +52,14 @@ static void test_single_task() {
   CHECK(RunKernel([](sycl::queue q, const auto& kernel) {
           q.single_task(kernel);
         }) == RunKernel([](sycl::queue q, const auto& kernel) {
-          syclex::single_task(q, kernel);
+          oneapi_ext::single_task(q, kernel);
         }));
 
   CHECK(RunKernel([](sycl::queue q, const auto& kernel) {
           q.submit([&](sycl::handler& h) { h.single_task(kernel); });
         }) == RunKernel([](sycl::queue q, const auto& kernel) {
-          syclex::submit(
-              q, [&](sycl::handler& h) { syclex::single_task(h, kernel); });
+          oneapi_ext::submit(
+              q, [&](sycl::handler& h) { oneapi_ext::single_task(h, kernel); });
         }));
 }
 
@@ -93,7 +93,7 @@ static void test_parallel_for() {
           q.parallel_for(range, reduction, kernel);
         }) == RunKernel([](sycl::queue q, sycl::range<1> range, auto reduction,
                            const auto& kernel) {
-          syclex::parallel_for(q, range, kernel, reduction);
+          oneapi_ext::parallel_for(q, range, kernel, reduction);
         }));
 
   CHECK(RunKernel([](sycl::queue q, sycl::range<1> range, auto reduction,
@@ -103,8 +103,8 @@ static void test_parallel_for() {
           });
         }) == RunKernel([](sycl::queue q, sycl::range<1> range, auto reduction,
                            const auto& kernel) {
-          syclex::submit(q, [&](sycl::handler& h) {
-            syclex::parallel_for(h, range, kernel, reduction);
+          oneapi_ext::submit(q, [&](sycl::handler& h) {
+            oneapi_ext::parallel_for(h, range, kernel, reduction);
           });
         }));
 
@@ -113,8 +113,8 @@ static void test_parallel_for() {
           q.parallel_for(range, reduction, kernel);
         }) == RunKernel([](sycl::queue q, sycl::range<1> range, auto reduction,
                            const auto& kernel) {
-          syclex::parallel_for(q, syclex::launch_config{range}, kernel,
-                               reduction);
+          oneapi_ext::parallel_for(q, oneapi_ext::launch_config{range}, kernel,
+                                   reduction);
         }));
 
   CHECK(RunKernel([](sycl::queue q, sycl::range<1> range, auto reduction,
@@ -124,9 +124,9 @@ static void test_parallel_for() {
           });
         }) == RunKernel([](sycl::queue q, sycl::range<1> range, auto reduction,
                            const auto& kernel) {
-          syclex::submit(q, [&](sycl::handler& h) {
-            syclex::parallel_for(h, syclex::launch_config{range}, kernel,
-                                 reduction);
+          oneapi_ext::submit(q, [&](sycl::handler& h) {
+            oneapi_ext::parallel_for(h, oneapi_ext::launch_config{range},
+                                     kernel, reduction);
           });
         }));
 }
@@ -163,7 +163,7 @@ static void test_nd_launch() {
           q.parallel_for(range, reduction, kernel);
         }) == RunKernel([](sycl::queue q, sycl::nd_range<1> range,
                            auto reduction, const auto& kernel) {
-          syclex::nd_launch(q, range, kernel, reduction);
+          oneapi_ext::nd_launch(q, range, kernel, reduction);
         }));
 
   CHECK(RunKernel([](sycl::queue q, sycl::nd_range<1> range, auto reduction,
@@ -173,8 +173,8 @@ static void test_nd_launch() {
           });
         }) == RunKernel([](sycl::queue q, sycl::nd_range<1> range,
                            auto reduction, const auto& kernel) {
-          syclex::submit(q, [&](sycl::handler& h) {
-            syclex::nd_launch(h, range, kernel, reduction);
+          oneapi_ext::submit(q, [&](sycl::handler& h) {
+            oneapi_ext::nd_launch(h, range, kernel, reduction);
           });
         }));
 
@@ -183,7 +183,8 @@ static void test_nd_launch() {
           q.parallel_for(range, reduction, kernel);
         }) == RunKernel([](sycl::queue q, sycl::nd_range<1> range,
                            auto reduction, const auto& kernel) {
-          syclex::nd_launch(q, syclex::launch_config{range}, kernel, reduction);
+          oneapi_ext::nd_launch(q, oneapi_ext::launch_config{range}, kernel,
+                                reduction);
         }));
 
   CHECK(RunKernel([](sycl::queue q, sycl::nd_range<1> range, auto reduction,
@@ -193,9 +194,9 @@ static void test_nd_launch() {
           });
         }) == RunKernel([](sycl::queue q, sycl::nd_range<1> range,
                            auto reduction, const auto& kernel) {
-          syclex::submit(q, [&](sycl::handler& h) {
-            syclex::nd_launch(h, syclex::launch_config{range}, kernel,
-                              reduction);
+          oneapi_ext::submit(q, [&](sycl::handler& h) {
+            oneapi_ext::nd_launch(h, oneapi_ext::launch_config{range}, kernel,
+                                  reduction);
           });
         }));
 }
@@ -218,12 +219,12 @@ static void test_memcpy() {
   };
 
   TestMemcpy([](sycl::queue q, auto dest, auto src, size_t n) {
-    syclex::memcpy(q, dest, src, n);
+    oneapi_ext::memcpy(q, dest, src, n);
   });
 
   TestMemcpy([](sycl::queue q, auto dest, auto src, size_t n) {
-    syclex::submit(q,
-                   [&](sycl::handler& h) { syclex::memcpy(h, dest, src, n); });
+    oneapi_ext::submit(
+        q, [&](sycl::handler& h) { oneapi_ext::memcpy(h, dest, src, n); });
   });
 }
 
@@ -245,12 +246,12 @@ static void test_copy() {
   };
 
   TestCopy([](sycl::queue q, auto dest, auto src, size_t count) {
-    syclex::copy(q, dest, src, count);
+    oneapi_ext::copy(q, dest, src, count);
   });
 
   TestCopy([](sycl::queue q, auto dest, auto src, size_t count) {
-    syclex::submit(
-        q, [&](sycl::handler& h) { syclex::copy(h, dest, src, count); });
+    oneapi_ext::submit(
+        q, [&](sycl::handler& h) { oneapi_ext::copy(h, dest, src, count); });
   });
 }
 
@@ -270,12 +271,12 @@ static void test_memset() {
   };
 
   TestMemset([](sycl::queue q, auto ptr, auto value, size_t n) {
-    syclex::memset(q, ptr, value, n);
+    oneapi_ext::memset(q, ptr, value, n);
   });
 
   TestMemset([](sycl::queue q, auto ptr, auto value, size_t n) {
-    syclex::submit(q,
-                   [&](sycl::handler& h) { syclex::memset(h, ptr, value, n); });
+    oneapi_ext::submit(
+        q, [&](sycl::handler& h) { oneapi_ext::memset(h, ptr, value, n); });
   });
 }
 
@@ -295,21 +296,21 @@ static void test_fill() {
   };
 
   TestFill([](sycl::queue q, auto ptr, auto value, size_t n) {
-    syclex::fill(q, ptr, value, n);
+    oneapi_ext::fill(q, ptr, value, n);
   });
 
   TestFill([](sycl::queue q, auto ptr, auto value, size_t n) {
-    syclex::submit(q,
-                   [&](sycl::handler& h) { syclex::fill(h, ptr, value, n); });
+    oneapi_ext::submit(
+        q, [&](sycl::handler& h) { oneapi_ext::fill(h, ptr, value, n); });
   });
 }
 
 static void test_prefetch() {
   sycl::queue q;
   int* buffer = sycl::malloc_shared<int>(1, q);
-  CHECK_NOTHROW(syclex::prefetch(q, buffer, sizeof(*buffer)));
-  CHECK_NOTHROW(syclex::submit(q, [&](sycl::handler& h) {
-    syclex::prefetch(h, buffer, sizeof(*buffer));
+  CHECK_NOTHROW(oneapi_ext::prefetch(q, buffer, sizeof(*buffer)));
+  CHECK_NOTHROW(oneapi_ext::submit(q, [&](sycl::handler& h) {
+    oneapi_ext::prefetch(h, buffer, sizeof(*buffer));
   }));
   sycl::free(buffer, q);
 }
@@ -317,9 +318,9 @@ static void test_prefetch() {
 static void test_mem_advise() {
   sycl::queue q;
   int* buffer = sycl::malloc_shared<int>(1, q);
-  CHECK_NOTHROW(syclex::mem_advise(q, buffer, sizeof(*buffer), 1));
-  CHECK_NOTHROW(syclex::submit(q, [&](sycl::handler& h) {
-    syclex::mem_advise(h, buffer, sizeof(*buffer), 1);
+  CHECK_NOTHROW(oneapi_ext::mem_advise(q, buffer, sizeof(*buffer), 1));
+  CHECK_NOTHROW(oneapi_ext::submit(q, [&](sycl::handler& h) {
+    oneapi_ext::mem_advise(h, buffer, sizeof(*buffer), 1);
   }));
   sycl::free(buffer, q);
 }
@@ -331,13 +332,13 @@ static void test_barrier() {
   bool* test_passed = sycl::malloc_shared<bool>(1, q);
   *task_done = false;
   *test_passed = false;
-  syclex::single_task(q, [=] {
+  oneapi_ext::single_task(q, [=] {
     float sum = 0;
     for (int i = 0; i < 1000; i++) sum += sycl::sqrt(float(i));
     *task_done = (sum > 0);
   });
-  syclex::barrier(q);
-  syclex::single_task(q, [=] { *test_passed = *task_done; });
+  oneapi_ext::barrier(q);
+  oneapi_ext::single_task(q, [=] { *test_passed = *task_done; });
   q.wait();
   CHECK(*task_done);
   CHECK(*test_passed);
@@ -351,15 +352,15 @@ static void test_partial_barrier() {
   bool* test_passed = sycl::malloc_shared<bool>(1, q);
   *task_done = false;
   *test_passed = false;
-  const auto event = syclex::submit_with_event(q, [&](sycl::handler& h) {
-    syclex::single_task(h, [=] {
+  const auto event = oneapi_ext::submit_with_event(q, [&](sycl::handler& h) {
+    oneapi_ext::single_task(h, [=] {
       float sum = 0;
       for (int i = 0; i < 1000; i++) sum += sycl::sqrt(float(i));
       *task_done = (sum > 0);
     });
   });
-  syclex::partial_barrier(q, {event});
-  syclex::single_task(q, [=] { *test_passed = *task_done; });
+  oneapi_ext::partial_barrier(q, {event});
+  oneapi_ext::single_task(q, [=] { *test_passed = *task_done; });
   q.wait();
   CHECK(*task_done);
   CHECK(*test_passed);
