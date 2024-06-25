@@ -99,6 +99,9 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_ROOT_GROUP_TESTS
     "Enable extension oneAPI root group tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_EXT_INTEL_DEVICE_INFO_TESTS
+    "Enable extension intel device info tests" OFF)
+
 # TODO: Deprecated - remove
 add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG
     "Enable debug-level logs (deprecated)" OFF)
@@ -117,6 +120,7 @@ add_cts_option(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS
 
 add_cts_option(SYCL_CTS_ENABLE_FEATURE_SET_FULL
     "Enable full feature set, which includes all features specified in the core SYCL specification" ON)
+
 
 include(AddOpenCLProxy)
 include(AddSYCLExecutable)
