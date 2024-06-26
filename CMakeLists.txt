@@ -99,6 +99,10 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_ROOT_GROUP_TESTS
     "Enable extension oneAPI root group tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_ENQUEUE_FUNCTIONS_TESTS
+    "Enable extension oneAPI enqueue_functions tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
+
 add_cts_option(SYCL_CTS_ENABLE_EXT_INTEL_DEVICE_INFO_TESTS
     "Enable extension intel device info tests" OFF)
 
