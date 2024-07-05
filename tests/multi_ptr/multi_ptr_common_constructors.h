@@ -158,7 +158,8 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
 
     queue.submit([&](sycl::handler &cgh) {
       using kname = kernel_common_constructors<T, Space, Decorated>;
-      auto ref_acc = ref_buf.template get_access(cgh);
+      auto ref_acc =
+          ref_buf.template get_access<sycl::access_mode::read_write>(cgh);
       auto same_type_acc =
           same_type_buf.template get_access<sycl::access_mode::write>(cgh);
       auto same_value_acc =
