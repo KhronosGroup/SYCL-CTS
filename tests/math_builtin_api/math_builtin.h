@@ -222,7 +222,7 @@ void check_function(sycl_cts::util::logger& log, funT fun,
 }
 
 template <int N, typename returnT, typename funT, typename argT>
-void check_function_multi_ptr_private(
+void check_function_ptr_private(
     sycl_cts::util::logger& log, funT fun, sycl_cts::resultRef<returnT> ref,
     argT ptrRef, float accuracy = 0.0f,
     AccuracyMode accuracy_mode = AccuracyMode::ULP,
@@ -274,7 +274,7 @@ void check_function_multi_ptr_private(
 }
 
 template <int N, typename returnT, typename funT, typename argT>
-void check_function_multi_ptr_global(
+void check_function_ptr_global(
     sycl_cts::util::logger& log, funT fun, argT arg,
     sycl_cts::resultRef<returnT> ref, argT ptrRef, float accuracy = 0.0f,
     AccuracyMode accuracy_mode = AccuracyMode::ULP,
@@ -308,7 +308,7 @@ void check_function_multi_ptr_global(
 }
 
 template <int N, typename returnT, typename funT, typename argT>
-void check_function_multi_ptr_local(
+void check_function_ptr_local(
     sycl_cts::util::logger& log, funT fun, argT arg,
     sycl_cts::resultRef<returnT> ref, argT ptrRef, float accuracy = 0.0f,
     AccuracyMode accuracy_mode = AccuracyMode::ULP,
@@ -364,7 +364,7 @@ void test_function(funT fun) {
 }
 
 template <int T, typename returnT, typename funT, typename argT>
-void test_function_multi_ptr_global(funT fun, argT arg) {
+void test_function_ptr_global(funT fun, argT arg) {
   sycl::range<1> ndRng(1);
   returnT* kernelResult = new returnT[1];
   auto&& testQueue = once_per_unit::get_queue();
@@ -384,7 +384,7 @@ void test_function_multi_ptr_global(funT fun, argT arg) {
 }
 
 template <int T, typename returnT, typename funT, typename argT>
-void test_function_multi_ptr_local(funT fun, argT arg) {
+void test_function_ptr_local(funT fun, argT arg) {
   sycl::range<1> ndRng(1);
   returnT* kernelResult = new returnT[1];
   auto&& testQueue = once_per_unit::get_queue();

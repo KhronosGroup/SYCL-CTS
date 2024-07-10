@@ -17,7 +17,7 @@ test_case_templates = { "private" : ("""
                     "local" : ("""
 {
   $DECL
-  test_function_multi_ptr_local<$TEST_ID, $RETURN_TYPE>(
+  test_function_ptr_local<$TEST_ID, $RETURN_TYPE>(
       [=]($ACCESSOR acc){
         $FUNCTION_CALL"
       }, $DATA);
@@ -27,7 +27,7 @@ test_case_templates = { "private" : ("""
                     "global" : ("""
 {
   $DECL
-  test_function_multi_ptr_global<$TEST_ID, $RETURN_TYPE>(
+  test_function_ptr_global<$TEST_ID, $RETURN_TYPE>(
       [=]($ACCESSOR acc){
         $FUNCTION_CALL
       }, $DATA);
@@ -49,7 +49,7 @@ test_case_templates_check = {
     "private" : ("""
 {
   $PTR_REF
-  check_function_multi_ptr_private<$TEST_ID, $RETURN_TYPE>(log,
+  check_function_ptr_private<$TEST_ID, $RETURN_TYPE>(log,
       [=]{
         $FUNCTION_PRIVATE_CALL
       }, ref, refPtr$ACCURACY$COMMENT);
@@ -59,7 +59,7 @@ test_case_templates_check = {
     "local" : ("""
 {
   $PTR_REF
-  check_function_multi_ptr_local<$TEST_ID, $RETURN_TYPE>(log,
+  check_function_ptr_local<$TEST_ID, $RETURN_TYPE>(log,
       [=]($ACCESSOR acc){
         $FUNCTION_CALL
       }, $DATA, ref, refPtr$ACCURACY$COMMENT);
@@ -69,7 +69,7 @@ test_case_templates_check = {
     "global" : ("""
 {
   $PTR_REF
-  check_function_multi_ptr_global<$TEST_ID, $RETURN_TYPE>(log,
+  check_function_ptr_global<$TEST_ID, $RETURN_TYPE>(log,
       [=]($ACCESSOR acc){
         $FUNCTION_CALL
       }, $DATA, ref, refPtr$ACCURACY$COMMENT);
@@ -117,25 +117,38 @@ def generate_value(base_type, dim):
     values = [str(generate_literal_value(base_type)) + get_literal_suffix(base_type) for _ in range(dim)]
     return ','.join(values)
 
-def generate_multi_ptr(var_name, var_type, memory, decorated):
+raw_ptr_arg_decl_template = Template("""
+        std::add_pointer_t<${var_type}> ${var_name} = sycl::multi_ptr<${var_type}, sycl::access::address_space::${addr_space}_space, sycl::access::decorated::no>(${accessor}).get_raw();
+""")
+multi_ptr_arg_decl_template = Template("""
+        sycl::multi_ptr<${var_type}, sycl::access::address_space::${addr_space}_space, ${decorated}> ${var_name}(${accessor});
+""")
+def generate_ptr(var_name, var_type, memory, decorated_or_raw):
     decl = ""
     value = generate_value(var_type.base_type, var_type.dim)
-    if memory == "global":
-        source_name = "multiPtrSourceData"
+    if memory == "global" or memory == "local":
+        source_name = "ptrSourceData"
         decl = var_type.name + " " + source_name + "(" + value + ");\n"
-        decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::global_space," + decorated + "> "
-        decl += var_name + "(acc);\n"
-    if memory == "local":
-        source_name = "multiPtrSourceData"
-        decl = var_type.name + " " + source_name + "(" + value + ");\n"
-        decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::local_space," + decorated + "> "
-        decl += var_name + "(acc);\n"
+        if decorated_or_raw == "raw":
+            decl += raw_ptr_arg_decl_template.substitute(var_type=var_type.name,
+                                                        var_name=var_name,
+                                                        addr_space=memory,
+                                                        accessor="acc")
+        else:
+            decl += multi_ptr_arg_decl_template.substitute(var_type=var_type.name,
+                                                           var_name=var_name,
+                                                           addr_space=memory,
+                                                           decorated=decorated_or_raw,
+                                                           accessor="acc")
     if memory == "private":
-        source_name = "multiPtrSourceData"
+        source_name = "ptrSourceData"
         decl = var_type.name + " " + source_name + "(" + value + ");\n"
-        decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::private_space," + decorated + "> "
-        decl += var_name + " = sycl::address_space_cast<sycl::access::address_space::private_space," + decorated + ">(&"
-        decl += source_name + ");\n"
+        if decorated_or_raw == "raw":
+            decl += "std::add_pointer_t<" + var_type.name + "> " + var_name + " = &" + source_name + ";\n"
+        else:
+            decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::private_space, " + decorated_or_raw + "> "
+            decl += var_name + " = sycl::address_space_cast<sycl::access::address_space::private_space, " + decorated_or_raw + ">(&"
+            decl += source_name + ");\n"
     return decl
 
 def generate_variable(var_name, var_type, var_index):
@@ -161,7 +174,7 @@ def generate_arguments_clamp(sig):
     return (arg_names, "        ".join(args))    
 
 
-def generate_arguments(sig, memory, decorated):
+def generate_arguments(sig, memory, decorated_or_raw):
     arg_src = ""
     arg_names = []
     arg_index = 0
@@ -178,7 +191,7 @@ def generate_arguments(sig, memory, decorated):
 
         current_arg = ""
         if is_pointer:
-            current_arg = generate_multi_ptr(arg_name, arg, memory, decorated )
+            current_arg = generate_ptr(arg_name, arg, memory, decorated_or_raw )
         else:
             current_arg = generate_variable(arg_name, arg, arg_index)
         arg_src += current_arg + "        "
@@ -266,7 +279,7 @@ def generate_function_call(sig, arg_names, arg_src):
 function_private_call_template = Template("""
         ${arg_src}
         ${ret_type} res = ${namespace}::${func_name}(${arg_names});
-        return privatePtrCheck<${ret_type}, ${arg_type}>(res, multiPtrSourceData);
+        return privatePtrCheck<${ret_type}, ${arg_type}>(res, ptrSourceData);
 """)
 def generate_function_private_call(sig, arg_names, arg_src, types):
     fc = function_private_call_template.substitute(
@@ -292,24 +305,24 @@ def generate_reference(sig, arg_names, arg_src):
 
 reference_ptr_template = Template("""
         ${arg_src}
-        ${arg_type} refPtr = multiPtrSourceData;
+        ${arg_type} refPtr = ptrSourceData;
         sycl_cts::resultRef<${ret_type}> ref = reference::${func_name}(${arg_names}, &refPtr);
 """)
 def generate_reference_ptr(types, sig, arg_names, arg_src):
     fc = reference_ptr_template.substitute(
-        arg_src=re.sub(r'^sycl::multi_ptr.*\n?', '', arg_src, flags=re.MULTILINE),
+        arg_src=re.sub(r'^.*sycl::multi_ptr.*\n?', '', arg_src, flags=re.MULTILINE),
         func_name=sig.name,
         ret_type=sig.ret_type.name,
         arg_names=",".join(arg_names[:-1]),
         arg_type=sig.arg_types[-1].name)
     return fc
 
-def generate_test_case(test_id, types, sig, memory, check, decorated = ""):
+def generate_test_case(test_id, types, sig, memory, check, decorated_or_raw = ""):
     testCaseSource = test_case_templates_check[memory] if check else test_case_templates[memory]
     testCaseId = str(test_id)
     # for the clamp function we use a separate argument generator to make sure that its preconditions are met, 
     # otherwise argument generation for clamp would be completely random.
-    (arg_names, arg_src) = generate_arguments(sig, memory, decorated) if sig.name != "clamp" else generate_arguments_clamp(sig) 
+    (arg_names, arg_src) = generate_arguments(sig, memory, decorated_or_raw) if sig.name != "clamp" else generate_arguments_clamp(sig)
     testCaseSource = testCaseSource.replace("$REFERENCE", generate_reference(sig, arg_names, arg_src))
     testCaseSource = testCaseSource.replace("$PTR_REF", generate_reference_ptr(types, sig, arg_names, arg_src))
     testCaseSource = testCaseSource.replace("$TEST_ID", testCaseId)
@@ -333,7 +346,7 @@ def generate_test_case(test_id, types, sig, memory, check, decorated = ""):
     if memory != "private" and memory !="no_ptr":
         # We rely on the fact that all SYCL math builtins have at most one arguments as pointer.
         pointerType = sig.arg_types[sig.pntr_indx[0] - 1]
-        sourcePtrDataName = "multiPtrSourceData"
+        sourcePtrDataName = "ptrSourceData"
         sourcePtrData =  generate_variable(sourcePtrDataName, pointerType, 0)
         testCaseSource = testCaseSource.replace("$DECL", sourcePtrData)
         testCaseSource = testCaseSource.replace("$DATA", sourcePtrDataName)
@@ -357,13 +370,19 @@ def generate_test_cases(test_id, types, sig_list, check):
             test_id += 1
             test_source += generate_test_case(test_id, types, sig, "private", check, decorated_yes)
             test_id += 1
+            test_source += generate_test_case(test_id, types, sig, "private", check, "raw")
+            test_id += 1
             test_source += generate_test_case(test_id, types, sig, "local", check, decorated_no)
             test_id += 1
             test_source += generate_test_case(test_id, types, sig, "local", check, decorated_yes)
             test_id += 1
+            test_source += generate_test_case(test_id, types, sig, "local", check, "raw")
+            test_id += 1
             test_source += generate_test_case(test_id, types, sig, "global", check, decorated_no)
             test_id += 1
             test_source += generate_test_case(test_id, types, sig, "global", check, decorated_yes)
+            test_id += 1
+            test_source += generate_test_case(test_id, types, sig, "global", check, "raw")
             test_id += 1
         else:
             if check:
