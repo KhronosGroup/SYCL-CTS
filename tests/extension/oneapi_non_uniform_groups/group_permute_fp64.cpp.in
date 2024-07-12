@@ -18,28 +18,21 @@
 //
 *******************************************************************************/
 
-#include "group_shift.h"
+// clang-format off
+#cmakedefine CTS_GROUP @CTS_GROUP@
+#cmakedefine CTS_GROUP_NAME std::string("@CTS_GROUP_NAME@")
+// clang-format on
+
+#include "group_permute.h"
 
 namespace non_uniform_groups::tests {
 
-TEST_CASE("Non-uniform-group shift",
+TEST_CASE("Non-uniform-group " + CTS_GROUP_NAME + " permute",
           "[oneapi_non_uniform_groups][group_func][fp64]") {
   auto queue = once_per_unit::get_queue();
 
   if (queue.get_device().has(sycl::aspect::fp64)) {
-    shift_non_uniform_group<oneapi_ext::ballot_group<sycl::sub_group>, double>(
-        queue);
-    shift_non_uniform_group<oneapi_ext::fixed_size_group<1, sycl::sub_group>,
-                            double>(queue);
-    shift_non_uniform_group<oneapi_ext::fixed_size_group<2, sycl::sub_group>,
-                            double>(queue);
-    shift_non_uniform_group<oneapi_ext::fixed_size_group<4, sycl::sub_group>,
-                            double>(queue);
-    shift_non_uniform_group<oneapi_ext::fixed_size_group<8, sycl::sub_group>,
-                            double>(queue);
-    shift_non_uniform_group<oneapi_ext::tangle_group<sycl::sub_group>, double>(
-        queue);
-    shift_non_uniform_group<oneapi_ext::opportunistic_group, double>(queue);
+    permute_non_uniform_group<CTS_GROUP, double>(queue);
   } else {
     WARN("Device does not support double precision floating point operations.");
   }

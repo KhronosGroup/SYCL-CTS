@@ -25,23 +25,18 @@ namespace non_uniform_groups::tests {
 // clang-format off
 #cmakedefine CTS_TYPE @CTS_TYPE@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
+#cmakedefine CTS_GROUP @CTS_GROUP@
+#cmakedefine CTS_GROUP_NAME std::string("@CTS_GROUP_NAME@")
 // clang-format on
 using ReduceTypes = Types;
 
-TEST_CASE(CTS_TYPE_NAME + " non-uniform group reduce functions",
+TEST_CASE(CTS_TYPE_NAME + " non-uniform group " + CTS_GROUP_NAME + " reduce functions",
           "[oneapi_non_uniform_groups][group_func][type_list]") {
   auto queue = once_per_unit::get_queue();
   // Get binary operators from TestType
   const auto Operators = get_op_types<CTS_TYPE>();
   const auto RetType = unnamed_type_pack<CTS_TYPE>();
-  const auto GroupTypes = unnamed_type_pack<
-      oneapi_ext::ballot_group<sycl::sub_group>,
-      oneapi_ext::fixed_size_group<1, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<4, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<8, sycl::sub_group>,
-      oneapi_ext::tangle_group<sycl::sub_group>,
-      oneapi_ext::opportunistic_group>();
+  const auto GroupType = unnamed_type_pack<CTS_GROUP>();
 
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
@@ -55,12 +50,12 @@ TEST_CASE(CTS_TYPE_NAME + " non-uniform group reduce functions",
           "operations.");
   }
 
-  for_all_combinations<invoke_reduce_over_group>(GroupTypes, RetType, Operators,
+  for_all_combinations<invoke_reduce_over_group>(GroupType, RetType, Operators,
                                                  queue);
 }
 
 TEMPLATE_LIST_TEST_CASE(CTS_TYPE_NAME +
-                            " non-uniform group reduce functions with init",
+                            " non-uniform group " + CTS_GROUP_NAME + " reduce functions with init",
                         "[oneapi_non_uniform_groups][group_func][type_list]",
                         ReduceTypes) {
   auto queue = once_per_unit::get_queue();
@@ -69,14 +64,7 @@ TEMPLATE_LIST_TEST_CASE(CTS_TYPE_NAME +
   const auto Operators = get_op_types<CTS_TYPE>();
   const auto RetType = unnamed_type_pack<CTS_TYPE>();
   const auto ReducedType = unnamed_type_pack<TestType>();
-  const auto GroupTypes = unnamed_type_pack<
-      oneapi_ext::ballot_group<sycl::sub_group>,
-      oneapi_ext::fixed_size_group<1, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<4, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<8, sycl::sub_group>,
-      oneapi_ext::tangle_group<sycl::sub_group>,
-      oneapi_ext::opportunistic_group>();
+  const auto GroupType = unnamed_type_pack<CTS_GROUP>();
 
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
@@ -92,7 +80,7 @@ TEMPLATE_LIST_TEST_CASE(CTS_TYPE_NAME +
 
   // check all work group dimensions
   for_all_combinations<invoke_init_reduce_over_group>(
-      GroupTypes, RetType, ReducedType, Operators, queue);
+      GroupType, RetType, ReducedType, Operators, queue);
 }
 
 }  // namespace non_uniform_groups::tests

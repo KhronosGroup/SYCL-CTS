@@ -21,6 +21,8 @@
 // clang-format off
 #cmakedefine CTS_TYPE @CTS_TYPE@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
+#cmakedefine CTS_GROUP @CTS_GROUP@
+#cmakedefine CTS_GROUP_NAME std::string("@CTS_GROUP_NAME@")
 // clang-format on
 
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
@@ -29,20 +31,13 @@
 namespace non_uniform_groups::tests {
 
 using TestType = unnamed_type_pack<CTS_TYPE>;
+using GroupType = unnamed_type_pack<CTS_GROUP>;
 using ScanTypes = Types;
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
-TEST_CASE(CTS_TYPE_NAME + " non-uniform group joint scan functions",
+TEST_CASE(CTS_TYPE_NAME + " non-uniform group " + CTS_GROUP_NAME + " joint scan functions",
           "[oneapi_non_uniform_groups][group_func][type_list]"){
   auto queue = once_per_unit::get_queue();
-  const auto GroupTypes = unnamed_type_pack<
-      oneapi_ext::ballot_group<sycl::sub_group>,
-      oneapi_ext::fixed_size_group<1, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<4, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<8, sycl::sub_group>,
-      oneapi_ext::tangle_group<sycl::sub_group>,
-      oneapi_ext::opportunistic_group>();
 
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
@@ -56,21 +51,13 @@ TEST_CASE(CTS_TYPE_NAME + " non-uniform group joint scan functions",
           "operations.");
   }
 
-  for_all_combinations<invoke_joint_scan_group>(GroupTypes, TestType{},
+  for_all_combinations<invoke_joint_scan_group>(GroupType{}, TestType{},
                                                 ScanTypes{}, queue);
 };
 
-TEST_CASE(CTS_TYPE_NAME + " non-uniform group joint scan functions with init",
+TEST_CASE(CTS_TYPE_NAME + " non-uniform group " + CTS_GROUP_NAME + " joint scan functions with init",
           "[oneapi_non_uniform_groups][group_func][type_list]"){
   auto queue = once_per_unit::get_queue();
-  const auto GroupTypes = unnamed_type_pack<
-      oneapi_ext::ballot_group<sycl::sub_group>,
-      oneapi_ext::fixed_size_group<1, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<4, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<8, sycl::sub_group>,
-      oneapi_ext::tangle_group<sycl::sub_group>,
-      oneapi_ext::opportunistic_group>();
 
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
@@ -85,7 +72,7 @@ TEST_CASE(CTS_TYPE_NAME + " non-uniform group joint scan functions with init",
   }
 
   for_all_combinations<invoke_init_joint_scan_group>(
-      GroupTypes, TestType{}, ScanTypes{}, ScanTypes{}, queue);
+      GroupType{}, TestType{}, ScanTypes{}, ScanTypes{}, queue);
 };
 
 }  // namespace non_uniform_groups::tests
