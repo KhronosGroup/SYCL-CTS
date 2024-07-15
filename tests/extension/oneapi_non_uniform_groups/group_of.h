@@ -82,9 +82,14 @@ void joint_of_group(sycl::queue& queue) {
               sycl::sub_group sub_group = item.get_sub_group();
 
               // If this item is not participating in the group, leave early.
-              if (!NonUniformGroupHelper<GroupT>::should_participate(sub_group,
-                                                                     test_case))
+              if (!NonUniformGroupHelper<GroupT>::should_participate(
+                      sub_group, test_case)) {
+                // If an item is not participating, its results are trivially
+                // correct.
+                for (unsigned i = 0; i < test_matrix * test_cases; ++i)
+                  res_acc[gid][i] = true;
                 return;
+              }
 
               GroupT non_uniform_group =
                   NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
