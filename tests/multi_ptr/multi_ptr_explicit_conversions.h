@@ -77,7 +77,9 @@ class run_explicit_convert_tests {
             res_buf.template get_access<sycl::access_mode::write>(cgh);
         if constexpr (target_space ==
                       sycl::access::address_space::global_space) {
-          auto val_acc = val_buffer.template get_access(cgh);
+          auto val_acc =
+              val_buffer.template get_access<sycl::access_mode::read_write>(
+                  cgh);
           cgh.single_task<kname>([=] {
             input_multi_ptr_t<T> mptr_in(val_acc);
             auto mptr_out =

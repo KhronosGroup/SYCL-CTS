@@ -121,8 +121,12 @@ class run_subscript_op_tests {
             test_device_code(priv_arr_mptr, multi_ptr_negative);
           });
         } else {
-          auto exp_arr_acc = exp_arr_buffer.template get_access(cgh);
-          auto exp_arr_neg_acc = exp_arr_buffer.template get_access(cgh);
+          auto exp_arr_acc =
+              exp_arr_buffer.template get_access<sycl::access_mode::read_write>(
+                  cgh);
+          auto exp_arr_neg_acc =
+              exp_arr_buffer.template get_access<sycl::access_mode::read_write>(
+                  cgh);
           cgh.single_task([=] {
             T *arr_end = const_cast<T *>(&exp_arr_neg_acc[array_size - 1]);
             multi_ptr_t multi_ptr_negative =

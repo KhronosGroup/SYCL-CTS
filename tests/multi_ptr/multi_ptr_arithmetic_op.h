@@ -94,7 +94,8 @@ class run_multi_ptr_arithmetic_op_test {
         auto test_result_acc =
             test_result_buffer.template get_access<sycl::access_mode::write>(
                 cgh);
-        auto arr_acc = arr_buffer.template get_access(cgh);
+        auto arr_acc =
+            arr_buffer.template get_access<sycl::access_mode::read_write>(cgh);
 
         if constexpr (space == sycl::access::address_space::local_space) {
           sycl::local_accessor<T, 1> acc_for_mptr{sycl::range(m_array_size),
