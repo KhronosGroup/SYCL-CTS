@@ -234,10 +234,9 @@ using ExtendedTypes =
     concatenation<FundamentalTypes,
                   std::tuple<bool, sycl::vec<unsigned int, 4>,
                              sycl::vec<long long int, 2>>>::type;
-using ExtendedTypePack = concatenation<
-    Types, unnamed_type_pack<
-               bool, sycl::vec<unsigned int, 4>, sycl::vec<long long int, 2>,
-               sycl::marray<float, 5>, sycl::marray<short int, 7>>>::type;
+using ExtendedTypePack concatenation<
+    FundamentalTypes, unnamed_type_pack<bool, sycl::vec<unsigned int, 4>,
+                                        sycl::vec<long long int, 2>>>::type;
 #else
 using ExtendedTypes = concatenation<
     FundamentalTypes,
