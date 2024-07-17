@@ -161,7 +161,9 @@ class run_access_members_tests {
             test_device_code(priv_val_mptr);
           });
         } else {
-          auto acc_for_multi_ptr = val_buffer.template get_access(cgh);
+          auto acc_for_multi_ptr =
+              val_buffer.template get_access<sycl::access_mode::read_write>(
+                  cgh);
           cgh.single_task<kname>([=] { test_device_code(acc_for_multi_ptr); });
         }
       });
