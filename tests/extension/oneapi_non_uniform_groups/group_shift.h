@@ -28,7 +28,7 @@ class shift_non_uniform_group_kernel;
 
 template <typename GroupT, typename T>
 struct shift_non_uniform_group_test {
-  void operator()(sycl::queue &queue) {
+  void operator()(sycl::queue& queue) {
     const std::string group_name = NonUniformGroupHelper<GroupT>::get_name();
 
     INFO("Testing permute for " + group_name);
