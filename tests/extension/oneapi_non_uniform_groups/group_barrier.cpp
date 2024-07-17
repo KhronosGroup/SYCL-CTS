@@ -27,21 +27,10 @@ namespace non_uniform_groups::tests {
 template <int D>
 class test_fence;
 
-TEST_CASE("Non-uniform-group barriers",
-          "[oneapi_non_uniform_groups][group_func]") {
-  auto queue = once_per_unit::get_queue();
-
-  non_uniform_group_barrier<oneapi_ext::ballot_group<sycl::sub_group>>(queue);
-  non_uniform_group_barrier<oneapi_ext::fixed_size_group<1, sycl::sub_group>>(
-      queue);
-  non_uniform_group_barrier<oneapi_ext::fixed_size_group<2, sycl::sub_group>>(
-      queue);
-  non_uniform_group_barrier<oneapi_ext::fixed_size_group<4, sycl::sub_group>>(
-      queue);
-  non_uniform_group_barrier<oneapi_ext::fixed_size_group<8, sycl::sub_group>>(
-      queue);
-  non_uniform_group_barrier<oneapi_ext::tangle_group<sycl::sub_group>>(queue);
-  non_uniform_group_barrier<oneapi_ext::opportunistic_group>(queue);
+TEMPLATE_LIST_TEST_CASE("Non-uniform-group barriers",
+                        "[oneapi_non_uniform_groups][group_func]",
+                        GroupPackTypes) {
+  for_all_combinations<non_uniform_group_barrier_test>(TestType{});
 }
 
 }  // namespace non_uniform_groups::tests

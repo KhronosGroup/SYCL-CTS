@@ -28,19 +28,12 @@ namespace non_uniform_groups::tests {
 // clang-format on
 using ReduceTypes = Types;
 
-TEST_CASE(CTS_TYPE_NAME + " non-uniform group joint reduce functions",
-          "[oneapi_non_uniform_groups][group_func][type_list]") {
+TEMPLATE_LIST_TEST_CASE(CTS_TYPE_NAME + " non-uniform group joint reduce functions",
+          "[oneapi_non_uniform_groups][group_func][type_list]", GroupPackTypes) {
   auto queue = once_per_unit::get_queue();
   const auto Operators = get_op_types<CTS_TYPE>();
   const auto RetType = unnamed_type_pack<CTS_TYPE>();
-  const auto GroupTypes = unnamed_type_pack<
-      oneapi_ext::ballot_group<sycl::sub_group>,
-      oneapi_ext::fixed_size_group<1, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<4, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<8, sycl::sub_group>,
-      oneapi_ext::tangle_group<sycl::sub_group>,
-      oneapi_ext::opportunistic_group>();
+  const auto GroupTypes = TestType{};
 
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
@@ -60,20 +53,13 @@ TEST_CASE(CTS_TYPE_NAME + " non-uniform group joint reduce functions",
 
 TEMPLATE_LIST_TEST_CASE(
     CTS_TYPE_NAME + " non-uniform group joint reduce functions with init",
-    "[oneapi_non_uniform_groups][group_func][type_list]", ReduceTypes) {
+    "[oneapi_non_uniform_groups][group_func][type_list]", GroupPackTypes) {
   auto queue = once_per_unit::get_queue();
 
   const auto Operators = get_op_types<CTS_TYPE>();
   const auto RetType = unnamed_type_pack<CTS_TYPE>();
-  const auto ReducedType = unnamed_type_pack<TestType>();
-  const auto GroupTypes = unnamed_type_pack<
-      oneapi_ext::ballot_group<sycl::sub_group>,
-      oneapi_ext::fixed_size_group<1, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<4, sycl::sub_group>,
-      oneapi_ext::fixed_size_group<8, sycl::sub_group>,
-      oneapi_ext::tangle_group<sycl::sub_group>,
-      oneapi_ext::opportunistic_group>();
+  const auto ReducedType = Types{};
+  const auto GroupTypes = TestType{};
 
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))

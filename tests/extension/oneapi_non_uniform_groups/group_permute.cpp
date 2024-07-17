@@ -25,22 +25,11 @@ namespace non_uniform_groups::tests {
 // hipSYCL does not permute right 8-bit types inside groups
 TEMPLATE_LIST_TEST_CASE("Non-uniform-group permute",
                         "[oneapi_non_uniform_groups][group_func][type_list]",
-                        CustomTypes) {
+                        GroupPackTypes) {
   auto queue = once_per_unit::get_queue();
 
-  permute_non_uniform_group<oneapi_ext::ballot_group<sycl::sub_group>,
-                            TestType>(queue);
-  permute_non_uniform_group<oneapi_ext::fixed_size_group<1, sycl::sub_group>,
-                            TestType>(queue);
-  permute_non_uniform_group<oneapi_ext::fixed_size_group<2, sycl::sub_group>,
-                            TestType>(queue);
-  permute_non_uniform_group<oneapi_ext::fixed_size_group<4, sycl::sub_group>,
-                            TestType>(queue);
-  permute_non_uniform_group<oneapi_ext::fixed_size_group<8, sycl::sub_group>,
-                            TestType>(queue);
-  permute_non_uniform_group<oneapi_ext::tangle_group<sycl::sub_group>,
-                            TestType>(queue);
-  permute_non_uniform_group<oneapi_ext::opportunistic_group, TestType>(queue);
+  for_all_combinations<permute_non_uniform_group_test>(TestType{},
+                                                       CustomTypePack{}, queue);
 }
 
 }  // namespace non_uniform_groups::tests

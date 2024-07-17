@@ -22,22 +22,13 @@
 
 namespace non_uniform_groups::tests {
 
-TEST_CASE("Non-uniform group broadcast and select", "[group_func][fp64]") {
+TEMPLATE_LIST_TEST_CASE("Non-uniform group broadcast and select",
+                        "[group_func][fp64]", GroupPackTypes) {
   auto queue = once_per_unit::get_queue();
+
   if (queue.get_device().has(sycl::aspect::fp64)) {
-    broadcast_non_uniform_group<oneapi_ext::ballot_group<sycl::sub_group>,
-                                double>(queue);
-    broadcast_non_uniform_group<
-        oneapi_ext::fixed_size_group<1, sycl::sub_group>, double>(queue);
-    broadcast_non_uniform_group<
-        oneapi_ext::fixed_size_group<2, sycl::sub_group>, double>(queue);
-    broadcast_non_uniform_group<
-        oneapi_ext::fixed_size_group<4, sycl::sub_group>, double>(queue);
-    broadcast_non_uniform_group<
-        oneapi_ext::fixed_size_group<8, sycl::sub_group>, double>(queue);
-    broadcast_non_uniform_group<oneapi_ext::tangle_group<sycl::sub_group>,
-                                double>(queue);
-    broadcast_non_uniform_group<oneapi_ext::opportunistic_group, double>(queue);
+    for_all_combinations<broadcast_non_uniform_group_test>(
+        TestType{}, unnamed_type_pack<double>{}, queue);
   } else {
     WARN("Device does not support double precision floating point operations.");
   }
