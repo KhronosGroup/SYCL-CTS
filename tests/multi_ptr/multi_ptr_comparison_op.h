@@ -164,7 +164,9 @@ class run_multi_ptr_comparison_op_test {
       queue.submit([&](sycl::handler &cgh) {
         using kname =
             kernel_comparison_op<T, AddrSpaceT, IsDecoratedT, KernelName>;
-        auto array_acc = array_buffer.template get_access(cgh);
+        auto array_acc =
+            array_buffer.template get_access<sycl::access_mode::read_write>(
+                cgh);
         auto test_result_acc =
             test_result_buffer.template get_access<sycl::access_mode::write>(
                 cgh);
