@@ -158,7 +158,7 @@ TEST_CASE(
   for (auto composite_device : composite_devices) {
     REQUIRE(std::none_of(root_devices.begin(), root_devices.end(),
                          [&](sycl::device& root_device) {
-                           return composite_device != root_device;
+                           return composite_device == root_device;
                          }));
   }
 #endif
