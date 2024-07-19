@@ -23,61 +23,27 @@
 namespace non_uniform_groups::tests {
 
 // use wide types to exclude truncation of init values
-using WideTypes = std::tuple<int32_t, uint32_t, int64_t, uint64_t, float>;
+static const auto wide_types =
+    named_type_pack<int32_t, uint32_t, int64_t, uint64_t, float>::generate(
+        "int32_t", "uint32_t", "int64_t", "uint64_t", "float");
 
 TEMPLATE_LIST_TEST_CASE("Non-uniform group joint of bool functions",
                         "[oneapi_non_uniform_groups][group_func][type_list]",
-                        WideTypes) {
-  auto queue = once_per_unit::get_queue();
-  joint_of_group<oneapi_ext::ballot_group<sycl::sub_group>, TestType>(queue);
-  joint_of_group<oneapi_ext::fixed_size_group<1, sycl::sub_group>, TestType>(
-      queue);
-  joint_of_group<oneapi_ext::fixed_size_group<2, sycl::sub_group>, TestType>(
-      queue);
-  joint_of_group<oneapi_ext::fixed_size_group<4, sycl::sub_group>, TestType>(
-      queue);
-  joint_of_group<oneapi_ext::fixed_size_group<8, sycl::sub_group>, TestType>(
-      queue);
-  joint_of_group<oneapi_ext::tangle_group<sycl::sub_group>, TestType>(queue);
-  joint_of_group<oneapi_ext::opportunistic_group, TestType>(queue);
+                        GroupPackTypes) {
+  for_all_combinations<joint_of_group_test>(TestType{}, wide_types);
 }
 
 TEMPLATE_LIST_TEST_CASE(
     "Non-uniform group of bool functions with predicate functions",
-    "[oneapi_non_uniform_groups][group_func][type_list]", WideTypes) {
-  auto queue = once_per_unit::get_queue();
-  predicate_function_of_non_uniform_group<
-      oneapi_ext::ballot_group<sycl::sub_group>, TestType>(queue);
-  predicate_function_of_non_uniform_group<
-      oneapi_ext::fixed_size_group<1, sycl::sub_group>, TestType>(queue);
-  predicate_function_of_non_uniform_group<
-      oneapi_ext::fixed_size_group<2, sycl::sub_group>, TestType>(queue);
-  predicate_function_of_non_uniform_group<
-      oneapi_ext::fixed_size_group<4, sycl::sub_group>, TestType>(queue);
-  predicate_function_of_non_uniform_group<
-      oneapi_ext::fixed_size_group<8, sycl::sub_group>, TestType>(queue);
-  predicate_function_of_non_uniform_group<
-      oneapi_ext::tangle_group<sycl::sub_group>, TestType>(queue);
-  predicate_function_of_non_uniform_group<oneapi_ext::opportunistic_group,
-                                          TestType>(queue);
+    "[oneapi_non_uniform_groups][group_func][type_list]", GroupPackTypes) {
+  for_all_combinations<predicate_function_of_non_uniform_group_test>(
+      TestType{}, wide_types);
 }
 
-TEST_CASE("Non-uniform group of bool functions",
-          "[oneapi_non_uniform_groups][group_func]") {
-  auto queue = once_per_unit::get_queue();
-  bool_function_of_non_uniform_group<oneapi_ext::ballot_group<sycl::sub_group>>(
-      queue);
-  bool_function_of_non_uniform_group<
-      oneapi_ext::fixed_size_group<1, sycl::sub_group>>(queue);
-  bool_function_of_non_uniform_group<
-      oneapi_ext::fixed_size_group<2, sycl::sub_group>>(queue);
-  bool_function_of_non_uniform_group<
-      oneapi_ext::fixed_size_group<4, sycl::sub_group>>(queue);
-  bool_function_of_non_uniform_group<
-      oneapi_ext::fixed_size_group<8, sycl::sub_group>>(queue);
-  bool_function_of_non_uniform_group<oneapi_ext::tangle_group<sycl::sub_group>>(
-      queue);
-  bool_function_of_non_uniform_group<oneapi_ext::opportunistic_group>(queue);
+TEMPLATE_LIST_TEST_CASE("Non-uniform group of bool functions",
+                        "[oneapi_non_uniform_groups][group_func]",
+                        GroupPackTypes) {
+  for_all_combinations<bool_function_of_non_uniform_group_test>(TestType{});
 }
 
 }  // namespace non_uniform_groups::tests

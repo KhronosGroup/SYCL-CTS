@@ -234,14 +234,23 @@ using ExtendedTypes =
     concatenation<FundamentalTypes,
                   std::tuple<bool, sycl::vec<unsigned int, 4>,
                              sycl::vec<long long int, 2>>>::type;
+using ExtendedTypePack =
+    concatenation<FundamentalTypes,
+                  unnamed_type_pack<bool, sycl::vec<unsigned int, 4>,
+                                    sycl::vec<long long int, 2>>>::type;
 #else
 using ExtendedTypes = concatenation<
     FundamentalTypes,
     std::tuple<bool, sycl::vec<unsigned int, 4>, sycl::vec<long long int, 2>,
                sycl::marray<float, 5>, sycl::marray<short int, 7>>>::type;
+using ExtendedTypePack = concatenation<
+    Types, unnamed_type_pack<
+               bool, sycl::vec<unsigned int, 4>, sycl::vec<long long int, 2>,
+               sycl::marray<float, 5>, sycl::marray<short int, 7>>>::type;
 #endif
 
 using CustomTypes = concatenation<ExtendedTypes, util::custom_type>::type;
+using CustomTypePack = concatenation<ExtendedTypePack, util::custom_type>::type;
 
 template <typename T>
 inline auto get_op_types() {

@@ -22,6 +22,16 @@
 
 namespace oneapi_ext = sycl::ext::oneapi::experimental;
 
+// Group packs to test for.
+using GroupPackTypes = std::tuple<
+    unnamed_type_pack<oneapi_ext::ballot_group<sycl::sub_group>>,
+    unnamed_type_pack<oneapi_ext::fixed_size_group<1, sycl::sub_group>,
+                      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
+                      oneapi_ext::fixed_size_group<4, sycl::sub_group>,
+                      oneapi_ext::fixed_size_group<8, sycl::sub_group>>,
+    unnamed_type_pack<oneapi_ext::tangle_group<sycl::sub_group>>,
+    unnamed_type_pack<oneapi_ext::opportunistic_group>>;
+
 // Helper class for working with non-uniform group of type GroupT. If the
 // result is empty the work-item does not participate in the execution.
 template <typename GroupT>
