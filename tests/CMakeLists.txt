@@ -45,6 +45,26 @@ function(get_std_type OUT_LIST)
   set(${OUT_LIST} ${${OUT_LIST}} ${STD_TYPE_LIST} PARENT_SCOPE)
 endfunction()
 
+function(get_marray_elem_type OUT_LIST)
+  set(TYPE_LIST "")
+  get_std_type(TYPE_LIST)
+
+  list(APPEND TYPE_LIST "custom_int")
+
+  if(SYCL_CTS_ENABLE_FULL_CONFORMANCE)
+    list(APPEND TYPE_LIST
+         "std::uint8_t"
+         "std::int16_t"
+         "std::uint16_t"
+         "std::uint32_t"
+         "std::int64_t"
+         "std::uint64_t"
+    )
+  endif()
+
+  set(${OUT_LIST} ${${OUT_LIST}} ${TYPE_LIST} PARENT_SCOPE)
+endfunction()
+
 function(get_no_vec_alias_type OUT_LIST)
   set(NO_VEC_ALIAS_LIST "")
   list(APPEND NO_VEC_ALIAS_LIST sycl::byte)
