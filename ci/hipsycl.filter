@@ -22,7 +22,7 @@ marray_basic
 marray_bitwise
 marray_pre_post
 marray_relational
-marray_arithmetic_assignement
+marray_arithmetic_assignment
 marray_arithmetic_binary
 math_builtin_api
 multi_ptr
