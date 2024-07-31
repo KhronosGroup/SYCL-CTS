@@ -4800,7 +4800,7 @@ static long double reference_scalblnl(long double x, long n)
 
     return x;
     
-#elif defined(__arm__) // ARM .. sizeof(long double) == sizeof(double) 
+#elif defined(__arm__)  || defined( __aarch64__ )// ARM .. sizeof(long double) == sizeof(double) 
 
 #if __DBL_MAX_EXP__ >= __LDBL_MAX_EXP__
     if(reference_isinfl(x) || reference_isnanl(x))

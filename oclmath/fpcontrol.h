@@ -31,6 +31,11 @@
         __asm__ volatile ("fmrx %0, fpscr" : "=r"(fpscr));
         *mode = fpscr;
         __asm__ volatile ("fmxr fpscr, %0" :: "r"(fpscr | (1U << 24)));
+#elif defined ( __aarch64__ )
+        unsigned fpcr;
+        __asm__ volatile ("mrs %0, fpcr" : "=r"(fpcr));
+        *mode = fpcr;
+        __asm__ volatile ("msr fpcr, %0" :: "r"(fpcr | (1U << 24)));
 #else
         #error ForceFTZ needs an implentation
 #endif
@@ -50,6 +55,11 @@
         __asm__ volatile ("fmrx %0, fpscr" : "=r"(fpscr));
         *mode = fpscr;
         __asm__ volatile ("fmxr fpscr, %0" :: "r"(fpscr & ~(1U << 24)));
+#elif defined ( __aarch64__ )
+        unsigned fpcr;
+        __asm__ volatile ("mrs %0, fpcr" : "=r"(fpcr));
+        *mode = fpcr;
+        __asm__ volatile ("msr fpcr, %0" :: "r"(fpcr & ~(1U << 24)));
 #else
 #error DisableFTZ needs an implentation
 #endif  
@@ -62,8 +72,10 @@
         _mm_setcsr( *mode );
 #elif defined( __PPC__)
         fpu_control = *mode;
-#elif defined (__arm__)
+#elif defined (__arm__) 
         __asm__ volatile ("fmxr fpscr, %0" :: "r"(*mode));
+#elif defined( __aarch64__ )
+        __asm__ volatile ("msr fpcr, %0" :: "r"(*mode));
 #else
         #error RestoreFPState needs an implementation
 #endif

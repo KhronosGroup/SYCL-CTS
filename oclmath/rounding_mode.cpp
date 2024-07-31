@@ -190,6 +190,10 @@ void *FlushToZero( void )
         #define _ARM_FE_FTZ     0x1000000
 		#define _ARM_FE_NFTZ    0x0
         #define _FPU_SETCW(cw) __asm__ ("VMSR FPSCR,%0" : :"ri" (cw))
+    #elif defined(__aarch64__)
+        #define _ARM_FE_FTZ     0x1000000
+		#define _ARM_FE_NFTZ    0x0
+        #define _FPU_SETCW(cw) __asm__ ("MSR FPCR,%0" : :"ri" (cw))
 
 		static const int ftz_modes[ kRoundingModeCount ] = { _ARM_FE_FTZ, _ARM_FE_NFTZ };
 		const int *f = ftz_modes;
@@ -220,6 +224,10 @@ void UnFlushToZero( void *p)
         #define _ARM_FE_FTZ     0x1000000
 		#define _ARM_FE_NFTZ    0x0
         #define _FPU_SETCW(cw) __asm__ ("VMSR FPSCR,%0" : :"ri" (cw))
+    #elif defined(__aarch64__)
+        #define _ARM_FE_FTZ     0x1000000
+		#define _ARM_FE_NFTZ    0x0
+        #define _FPU_SETCW(cw) __asm__ ("MSR FPCR,%0" : :"ri" (cw))
 
 		static const int ftz_modes[ kRoundingModeCount ] = { _ARM_FE_FTZ, _ARM_FE_NFTZ };
 		const int *f = ftz_modes;
@@ -230,7 +238,7 @@ void UnFlushToZero( void *p)
         flags &= ~_FPU_MASK_NI;
         _FPU_SETCW(flags);
         #else
-        #error Unknown arch
+        #error Unknown arch 1
     #endif
 #else
     #error  Please configure FlushToZero and UnFlushToZero to behave properly on this operating system.
