@@ -72,7 +72,7 @@
         _mm_setcsr( *mode );
 #elif defined( __PPC__)
         fpu_control = *mode;
-#elif defined (__arm__) 
+#elif defined (__arm__)
         __asm__ volatile ("fmxr fpscr, %0" :: "r"(*mode));
 #elif defined( __aarch64__ )
         __asm__ volatile ("msr fpcr, %0" :: "r"(*mode));

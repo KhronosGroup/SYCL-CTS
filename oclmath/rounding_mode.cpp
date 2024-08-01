@@ -186,15 +186,14 @@ void *FlushToZero( void )
         union{ unsigned int i;  void *p; }u = { _mm_getcsr() };
         _mm_setcsr( u.i | 0x8040 );
         return u.p;
-    #elif defined( __arm__ )
+    #elif defined( __arm__ ) || defined( __aarch64__ )
         #define _ARM_FE_FTZ     0x1000000
-		#define _ARM_FE_NFTZ    0x0
-        #define _FPU_SETCW(cw) __asm__ ("VMSR FPSCR,%0" : :"ri" (cw))
-    #elif defined(__aarch64__)
-        #define _ARM_FE_FTZ     0x1000000
-		#define _ARM_FE_NFTZ    0x0
-        #define _FPU_SETCW(cw) __asm__ ("MSR FPCR,%0" : :"ri" (cw))
-
+	    #define _ARM_FE_NFTZ    0x0
+        #if defined( __arm__ )
+            #define _FPU_SETCW(cw) __asm__ ("VMSR FPSCR,%0" : :"ri" (cw))
+        #elif defined(__aarch64__)
+            #define _FPU_SETCW(cw) __asm__ ("MSR FPCR,%0" : :"ri" (cw))
+        #endif
 		static const int ftz_modes[ kRoundingModeCount ] = { _ARM_FE_FTZ, _ARM_FE_NFTZ };
 		const int *f = ftz_modes;
 		_FPU_SETCW( f[0] );
@@ -203,7 +202,7 @@ void *FlushToZero( void )
         fpu_control_t flags = 0;
         _FPU_GETCW(flags);
         flags |= _FPU_MASK_NI;
-        _FPU_SETCW(flags);    
+        _FPU_SETCW(flags);
         return NULL;
         #else
         #error Unknown arch
@@ -220,15 +219,14 @@ void UnFlushToZero( void *p)
     #if defined( __i386__ ) || defined( __x86_64__ ) || defined(_MSC_VER)
         union{ void *p; int i;  }u = { p };
         _mm_setcsr( u.i );
-    #elif defined( __arm__ )
+    #elif defined( __arm__ ) || defined( __aarch64__ )
         #define _ARM_FE_FTZ     0x1000000
-		#define _ARM_FE_NFTZ    0x0
-        #define _FPU_SETCW(cw) __asm__ ("VMSR FPSCR,%0" : :"ri" (cw))
-    #elif defined(__aarch64__)
-        #define _ARM_FE_FTZ     0x1000000
-		#define _ARM_FE_NFTZ    0x0
-        #define _FPU_SETCW(cw) __asm__ ("MSR FPCR,%0" : :"ri" (cw))
-
+        #define _ARM_FE_NFTZ    0x0
+        #if defined( __arm__ )
+            #define _FPU_SETCW(cw) __asm__ ("VMSR FPSCR,%0" : :"ri" (cw))
+        #elif defined( __aarch64__ )
+            #define _FPU_SETCW(cw) __asm__ ("MSR FPCR,%0" : :"ri" (cw))
+        #endif
 		static const int ftz_modes[ kRoundingModeCount ] = { _ARM_FE_FTZ, _ARM_FE_NFTZ };
 		const int *f = ftz_modes;
 		_FPU_SETCW( f[1] );
@@ -238,7 +236,7 @@ void UnFlushToZero( void *p)
         flags &= ~_FPU_MASK_NI;
         _FPU_SETCW(flags);
         #else
-        #error Unknown arch 1
+        #error Unknown arch
     #endif
 #else
     #error  Please configure FlushToZero and UnFlushToZero to behave properly on this operating system.
