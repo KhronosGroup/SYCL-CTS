@@ -85,7 +85,7 @@ def handle_args(argv):
                         action='store_true')
     parser.add_argument(
         '--run-only',
-        help='Whether to perform only testing for already compiled tests.',
+        help='Skip build step and perform only testing for already compiled tests.',
         required=False,
         action='store_true')
     args = parser.parse_args(argv)
