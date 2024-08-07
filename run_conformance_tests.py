@@ -96,7 +96,7 @@ def handle_args(argv):
 
     if (args.build_only and args.run_only):
         print('Fatal error: --build-only and --run-only can not be enabled '
-              'together in the single script run.')
+              'together in a single script run.')
         exit(-1)
 
     return (args.cmake_exe, args.build_system_name, args.build_system_call,
