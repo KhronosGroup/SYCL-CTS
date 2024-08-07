@@ -83,16 +83,26 @@ def handle_args(argv):
                         help='Test the reduced feature set instead of the full feature set.',
                         required=False,
                         action='store_true')
+    parser.add_argument(
+        '--run-only',
+        help='Skip build step and perform only testing for already compiled tests.',
+        required=False,
+        action='store_true')
     args = parser.parse_args(argv)
 
     full_conformance = 'OFF' if args.fast else 'ON'
     test_deprecated_features = 'OFF' if args.disable_deprecated_features else 'ON'
     full_feature_set = 'OFF' if args.reduced_feature_set else 'ON'
 
+    if (args.build_only and args.run_only):
+        print('Fatal error: --build-only and --run-only can not be enabled '
+              'together in a single script run.')
+        exit(-1)
+
     return (args.cmake_exe, args.build_system_name, args.build_system_call,
             full_conformance, test_deprecated_features, args.exclude_categories,
             args.implementation_name, args.additional_cmake_args, args.device,
-            args.additional_ctest_args, args.build_only,
+            args.additional_ctest_args, args.build_only, args.run_only,
             full_feature_set)
 
 
@@ -160,19 +170,24 @@ def subprocess_call(parameter_list):
 
 
 def configure_and_run_tests(cmake_call, build_system_call, build_only,
-                            ctest_call):
+                            run_only, ctest_call):
     """
     Configures the tests with cmake to produce a ninja.build file.
     Runs the generated ninja file.
     Runs ctest, overwriting any cached results.
     """
 
-    build_system_call = build_system_call.split()
+    error_code = 0
 
-    subprocess_call(cmake_call)
-    error_code = subprocess_call(build_system_call)
+    if (not run_only):
+        build_system_call = build_system_call.split()
+
+        subprocess_call(cmake_call)
+        error_code = subprocess_call(build_system_call)
+
     if (not build_only):
         error_code = subprocess_call(ctest_call)
+
     return error_code
 
 
@@ -276,7 +291,7 @@ def main(argv=sys.argv[1:]):
     (cmake_exe, build_system_name, build_system_call, full_conformance,
      test_deprecated_features, exclude_categories, implementation_name,
      additional_cmake_args, device, additional_ctest_args,
-     build_only, full_feature_set) = handle_args(argv)
+     build_only, run_only, full_feature_set) = handle_args(argv)
 
     # Generate a cmake call in a form accepted by subprocess.call()
     cmake_call = generate_cmake_call(cmake_exe, build_system_name,
@@ -295,7 +310,7 @@ def main(argv=sys.argv[1:]):
 
     # Configure the build system with cmake, run the build, and run the tests.
     error_code = configure_and_run_tests(cmake_call, build_system_call,
-                                         build_only, ctest_call)
+                                         build_only, run_only, ctest_call)
 
     if build_only:
         return error_code
