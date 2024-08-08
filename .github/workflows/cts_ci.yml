@@ -157,7 +157,7 @@ jobs:
         working-directory: ${{ env.container-workspace }}/build
         run: |
           TS_BEFORE=$(date +%s)
-          cmake --build . --target test_all --parallel ${{ env.parallel-build-jobs }}
+          cmake --build . --target test_conformance --parallel ${{ env.parallel-build-jobs }}
           TS_AFTER=$(date +%s)
           ELAPSED=$(($TS_AFTER - $TS_BEFORE))
           sort --numeric-sort --reverse --output=build_times.log build_times.log
