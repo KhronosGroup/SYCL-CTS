@@ -24,6 +24,7 @@
 import os
 import sys
 import argparse
+import math
 from modules import sycl_types
 from modules import sycl_functions
 from modules import test_generator
@@ -74,34 +75,9 @@ def write_cases_to_file(generated_test_cases, inputFile, outputFile, extension=N
     with open(outputFile, 'w+') as output:
         output.write(newSource)
 
-def create_tests(test_id, types, signatures, kind, template, file_name, check = False):
-    expanded_signatures =  test_generator.expand_signatures(types, signatures)
-
-    # Extensions should be placed on separate files.
-    base_signatures = []
-    half_signatures = []
-    double_signatures = []
-    for sig in expanded_signatures:
-        if contains_base_type(sig, "double"):
-            double_signatures.append(sig)
-            continue
-        if contains_base_type(sig, "sycl::half"):
-            half_signatures.append(sig)
-            continue
-        base_signatures.append(sig)
-
-    if base_signatures and kind == 'base':
-        generated_base_test_cases = test_generator.generate_test_cases(test_id, types, base_signatures, check)
-        write_cases_to_file(generated_base_test_cases, template, file_name)
-    elif half_signatures and kind == 'half':
-        generated_half_test_cases = test_generator.generate_test_cases(test_id + 300000, types, half_signatures, check)
-        write_cases_to_file(generated_half_test_cases, template, file_name, "fp16")
-    elif double_signatures and kind == 'double':
-        generated_double_test_cases = test_generator.generate_test_cases(test_id + 600000, types, double_signatures, check)
-        write_cases_to_file(generated_double_test_cases, template, file_name, "fp64")
-    else:
-        print("No %s overloads to generate for the test category" % kind)
-        sys.exit(1)
+def create_tests(test_id, types, signatures, template, file_name, extension, check = False):
+    generated_test_cases = test_generator.generate_test_cases(test_id, types, signatures, check)
+    write_cases_to_file(generated_test_cases, template, file_name, extension)
 
 def main():
     argparser = argparse.ArgumentParser(
@@ -127,11 +103,22 @@ def main():
         default='false',
         help='Generate tests with marray function arguments')
     argparser.add_argument(
-        '-o',
-        dest="output",
+        '-print-output-files',
+        action='store_true',
+        help='Print all generated output files instead of generating the test files')
+    argparser.add_argument(
+        '-fragment-size',
+        type=int,
+        required=False,
+        help='Generate test files with tests for N math function signatures')
+    argparser.add_argument(
+        '-output-prefix',
         required=True,
-        metavar='<out file>',
-        help='CTS test output')
+        help='CTS test output file name prefix')
+    argparser.add_argument(
+        '-ext',
+        required=True,
+        help='CTS test output file extension')
     args = argparser.parse_args()
 
     use_marray = (args.marray == 'true')
@@ -145,33 +132,81 @@ def main():
 
     verifyResults = True
 
+    test_signatures = []
+    test_id_offset = 0
     if args.test == 'integer':
-        integer_signatures = sycl_functions.create_integer_signatures()
-        create_tests(0, expanded_types, integer_signatures, args.variante, args.template, args.output, verifyResults)
+        test_signatures = sycl_functions.create_integer_signatures()
+        test_id_offset = 0
+    elif args.test == 'common':
+        test_signatures = sycl_functions.create_common_signatures()
+        test_id_offset = 1000000
+    elif args.test == 'geometric':
+        test_signatures = sycl_functions.create_geometric_signatures()
+        test_id_offset = 2000000
+    elif args.test == 'relational':
+        test_signatures = sycl_functions.create_relational_signatures()
+        test_id_offset = 3000000
+    elif args.test == 'float':
+        test_signatures = sycl_functions.create_float_signatures()
+        test_id_offset = 4000000
+    elif args.test == 'native':
+        test_signatures = sycl_functions.create_native_signatures()
+        test_id_offset = 5000000
+    elif args.test == 'half':
+        test_signatures = sycl_functions.create_half_signatures()
+        test_id_offset = 6000000
 
-    if args.test == 'common':
-        common_signatures = sycl_functions.create_common_signatures()
-        create_tests(1000000, expanded_types, common_signatures, args.variante, args.template, args.output, verifyResults)
+    test_signatures = test_generator.expand_signatures(expanded_types, test_signatures, silent=args.print_output_files)
 
-    if args.test == 'geometric':
-        geomteric_signatures = sycl_functions.create_geometric_signatures()
-        create_tests(2000000, expanded_types, geomteric_signatures, args.variante, args.template, args.output, verifyResults)
+    # Extensions should be placed on separate files.
+    base_signatures = []
+    half_signatures = []
+    double_signatures = []
+    for sig in test_signatures:
+        if contains_base_type(sig, "double"):
+            double_signatures.append(sig)
+            continue
+        if contains_base_type(sig, "sycl::half"):
+            half_signatures.append(sig)
+            continue
+        base_signatures.append(sig)
 
-    if args.test == 'relational':
-        relational_signatures = sycl_functions.create_relational_signatures()
-        create_tests(3000000, expanded_types, relational_signatures, args.variante, args.template, args.output, verifyResults)
+    # Update signatures based on the variants
+    extension = None
+    if base_signatures and args.variante == 'base':
+        test_signatures = base_signatures
+    elif half_signatures and args.variante == 'half':
+        test_signatures = half_signatures
+        test_id_offset = test_id_offset + 300000
+        extension = "fp16"
+    elif double_signatures and args.variante == 'double':
+        test_signatures = double_signatures
+        test_id_offset = test_id_offset + 600000
+        extension = "fp64"
+    else:
+        print("No %s overloads to generate for the test category" % args.variante)
+        sys.exit(1)
 
-    if args.test == 'float':
-        float_signatures = sycl_functions.create_float_signatures()
-        create_tests(4000000, expanded_types, float_signatures, args.variante, args.template, args.output, verifyResults)
+    output_files = []
+    if len(test_signatures) != 0:
+        if not args.fragment_size:
+            output_files = [args.output_prefix + "." + args.ext]
+        else:
+            output_files = [args.output_prefix + "_" + str(i) + "." + args.ext for i in range(0, math.ceil(len(test_signatures) / args.fragment_size))]
 
-    if args.test == 'native':
-        native_signatures = sycl_functions.create_native_signatures()
-        create_tests(5000000, expanded_types, native_signatures, args.variante, args.template, args.output, verifyResults)
+    if args.print_output_files:
+        print(';'.join(output_files))
+        # If output files are being printed we will not generate files.
+        return
 
-    if args.test == 'half':
-        half_signatures = sycl_functions.create_half_signatures()
-        create_tests(6000000, expanded_types, half_signatures, args.variante, args.template, args.output, verifyResults)
+    if not args.fragment_size:
+        create_tests(test_id_offset, expanded_types, test_signatures, args.variante, args.template, output_files[0], extension, verifyResults)
+    else:
+        for i in range(0, math.ceil(len(test_signatures) / args.fragment_size)):
+            fragment_start = i * args.fragment_size
+            fragment_end = fragment_start + args.fragment_size
+            current_offset = test_id_offset + fragment_start * 100
+            create_tests(current_offset, expanded_types, test_signatures[fragment_start:fragment_end], args.template, output_files[i], extension, verifyResults)
 
 if __name__ == "__main__":
     main()

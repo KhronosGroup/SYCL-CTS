@@ -425,13 +425,14 @@ def bad_mutation(type1, type2, mutation):
     return True
 
 
-def expand_signature(types, signature):
+def expand_signature(types, signature, silent=False):
     """
     Produces all possible overloads of a function signature.
     We produce the dict of typelists matched_typelists where each line (with the same index in typelists)
     contains possible set of individual types for function arguments and return type.
     """
-    print("signature: " + str(signature.ret_type) + " " + signature.name + " " + str(signature.arg_types))
+    if not silent:
+        print("signature: " + str(signature.ret_type) + " " + signature.name + " " + str(signature.arg_types))
 
     exp_sig = []
 
@@ -513,11 +514,11 @@ def get_unique_signatures(signatures):
 
     return uniq_sig
 
-def expand_signatures(types, signatures):
+def expand_signatures(types, signatures, silent=False):
     ex_sig_list = []
 
     for sig in signatures:
-        ex_sig_list.extend(expand_signature(types, sig))
+        ex_sig_list.extend(expand_signature(types, sig, silent))
 
     return get_unique_signatures(ex_sig_list)
 
