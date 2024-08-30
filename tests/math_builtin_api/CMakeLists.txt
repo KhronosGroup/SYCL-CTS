@@ -30,7 +30,7 @@ foreach(cat ${MATH_CAT_WITH_VARIANT})
       FILE_PREFIX "math_builtin_${cat}_${var}"
       EXT "cpp"
       INPUT "math_builtin.template"
-      EXTRA_ARGS -test ${cat} -variante ${var} -marray true -fragment-size 50
+      EXTRA_ARGS -test ${cat} -variante ${var} -marray true -fragment-size 150
       DEPENDS ${math_builtin_depends}
     )
   endforeach()
@@ -44,7 +44,7 @@ foreach(cat ${MATH_CAT})
     FILE_PREFIX "math_builtin_${cat}"
     EXT "cpp"
     INPUT "math_builtin.template"
-    EXTRA_ARGS -test ${cat} -marray true -fragment-size 50
+    EXTRA_ARGS -test ${cat} -marray true -fragment-size 150
     DEPENDS ${math_builtin_depends}
   )
 endforeach()
