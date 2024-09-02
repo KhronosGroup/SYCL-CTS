@@ -194,6 +194,7 @@ class run_atomic_fence {
                                    " and test_type = " + test_type_name)
                 .create()) {
       auto queue = once_per_unit::get_queue();
+      // Early return for unsupported memory order abd memory scope.
       if (!check_memory_order_scope_capabilities(queue, MemoryOrder,
                                                  MemoryScope, memory_order_name,
                                                  memory_scope_name)) {
@@ -226,11 +227,32 @@ class run_atomic_fence {
         sycl::buffer<bool> res_buf(&res, sycl::range<1>(1));
         sycl::buffer<int> sync_buffer(&sync, sycl::range<1>(1));
         sycl::buffer<int> data_buffer(&data, sycl::range<1>(1));
+        // Using the const host variable MemoryScope in the kernel directly
+        // may cause compile fail for AOT build. We transfer MemoryScope to
+        // device code and in final runtime the device code would not run if
+	// host code early return for unsupported memory capabilities.
+        sycl::buffer<sycl::memory_scope> memory_scope_buffer(&MemoryScope,
+                                                             sycl::range<1>(1));
+        // Transfer order_write to device code.
+        sycl::buffer<sycl::memory_order> memory_order_write_buffer(
+            &order_write, sycl::range<1>(1));
+        // Transfer order_read to device code.
+        sycl::buffer<sycl::memory_order> memory_order_read_buffer(
+            &order_read, sycl::range<1>(1));
         queue.submit([&](sycl::handler& cgh) {
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
           auto sync_flag_acc = get_accessor(cgh, sync_buffer);
           auto data_acc = get_accessor(cgh, data_buffer);
+          auto memory_scope_acc =
+              memory_scope_buffer.template get_access<sycl::access_mode::read>(
+                  cgh);
+          auto memory_order_write_acc =
+              memory_order_write_buffer
+                  .template get_access<sycl::access_mode::read>(cgh);
+          auto memory_order_read_acc =
+              memory_order_read_buffer
+                  .template get_access<sycl::access_mode::read>(cgh);
           cgh.parallel_for(sycl::nd_range<1>(global_range, local_range),
                            [=](sycl::nd_item<1> nditem) {
                              auto g = nditem.get_group();
@@ -246,7 +268,8 @@ class run_atomic_fence {
                                *data = value;
                                // Used atomic_fence to guarantee the order
                                // instructions execution
-                               sycl::atomic_fence(order_write, MemoryScope);
+                               sycl::atomic_fence(memory_order_write_acc[0],
+                                                  memory_scope_acc[0]);
                                // Used atomic sync flag to avoid data raicing
                                sync_flag = 1;
                              } else {
@@ -257,7 +280,8 @@ class run_atomic_fence {
                                    break;
                                  }
                                }
-                               sycl::atomic_fence(order_read, MemoryScope);
+                               sycl::atomic_fence(memory_order_read_acc[0],
+                                                  memory_scope_acc[0]);
                                // After the fence safe non-atomic reading
                                if (write_happened) {
                                  // Non-atomic read of data
