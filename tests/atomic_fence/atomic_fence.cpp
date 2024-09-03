@@ -194,7 +194,7 @@ class run_atomic_fence {
                                    " and test_type = " + test_type_name)
                 .create()) {
       auto queue = once_per_unit::get_queue();
-      // Early return for unsupported memory order abd memory scope.
+      // Early return for unsupported memory order or memory scope.
       if (!check_memory_order_scope_capabilities(queue, MemoryOrder,
                                                  MemoryScope, memory_order_name,
                                                  memory_scope_name)) {
