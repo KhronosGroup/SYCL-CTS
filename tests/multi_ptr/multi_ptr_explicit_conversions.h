@@ -185,6 +185,14 @@ void check_pointer_aliases(const std::string &type_name) {
                               sycl::access::decorated::no>>);
     }
     {
+      INFO("raw_generic_ptr");
+      STATIC_CHECK(
+          std::is_same_v<
+              sycl::raw_generic_ptr<T>,
+              sycl::multi_ptr<T, sycl::access::address_space::generic_space,
+                              sycl::access::decorated::no>>);
+    }
+    {
       INFO("decorated_global_ptr");
       STATIC_CHECK(std::is_same_v<
                    sycl::decorated_global_ptr<T>,
@@ -204,6 +212,14 @@ void check_pointer_aliases(const std::string &type_name) {
           std::is_same_v<
               sycl::decorated_private_ptr<T>,
               sycl::multi_ptr<T, sycl::access::address_space::private_space,
+                              sycl::access::decorated::yes>>);
+    }
+    {
+      INFO("decorated_generic_ptr");
+      STATIC_CHECK(
+          std::is_same_v<
+              sycl::decorated_generic_ptr<T>,
+              sycl::multi_ptr<T, sycl::access::address_space::generic_space,
                               sycl::access::decorated::yes>>);
     }
   }
