@@ -227,8 +227,8 @@ void check_pointer_aliases(const std::string &type_name) {
               sycl::multi_ptr<T, sycl::access::address_space::generic_space,
                               sycl::access::decorated::yes>>);
     }
-  }
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_DPCPP
+  }
 }
 
 template <typename T>
