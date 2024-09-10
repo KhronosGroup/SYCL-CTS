@@ -39,6 +39,11 @@ TEST_CASE("multi_ptr explicit conversions. fp16 type", "[multi_ptr]") {
   check_multi_ptr_explicit_convert_for_type<sycl::half>{}("sycl::half");
 }
 
+DISABLED_FOR_TEST_CASE(DPCPP, hipSYCL)
+("generic_ptr alias. fp16 type", "[multi_ptr]")({
+  using namespace multi_ptr_explicit_conversions;
+  check_generic_ptr_aliases_for_type<sycl::half>{}("sycl::half");
+});
 }  // namespace multi_ptr_explicit_conversions_fp16
 
 #endif  // SYCL_CTS_ENABLE_FEATURE_SET_FULL
