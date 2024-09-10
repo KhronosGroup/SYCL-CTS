@@ -45,8 +45,7 @@ Finally, start the compilation:
 `cmake --build ./build`
 
 After the compilation has finished, test executables for each category will be
-placed in the `build/bin` directory. The `test_all` executable contains tests
-for all categories.
+placed in the `build/bin` directory.
 
 ### CMake Configuration Options
 
@@ -98,7 +97,7 @@ Additionally, the following SYCL implementation-specific options can be used:
 
 Each of the executables produced in the `build/bin` directory acts as a
 standalone test runner that can be used to launch tests for a particular test
-category (or all tests in the case of `build/bin/test_all`).
+category.
 
 The ``--device`` argument is used to specify which device to run the tests on.
 Selection is based on substring matching of the device name. ECMAScript regular

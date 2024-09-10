@@ -88,7 +88,7 @@ def query_cmake_targets(build_dir: str):
     cmake_targets = []
     for rt in raw_targets:
         m = target_pattern.match(rt)
-        if m and m.group(1) != 'test_all':
+        if m:
             cmake_targets.append(m.group(1))
 
     return cmake_targets

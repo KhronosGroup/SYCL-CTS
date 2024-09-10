@@ -158,12 +158,7 @@ function(generate_cts_test)
   add_dependencies(generate_test_sources ${GEN_TEST_FILE_NAME}_gen)
 endfunction()
 
-# create a target to group all tests together into one test executable
-add_executable(test_all)
-
-# create a target to encapsulate all test categories, excluding test_all. This
-# is intended for conformance testing to avoid redundant testing and excessive
-# resource use from building and running test_all.
+# create a target to encapsulate all test categories.
 add_custom_target(test_conformance)
 
 # create test executable targets for each test project using the build_sycl function
@@ -207,8 +202,6 @@ function(add_cts_test_helper)
                PROPERTY FOLDER "Tests/${test_exe_name}")
   set_property(TARGET ${test_exe_name}_objects
                PROPERTY FOLDER "Tests/${test_exe_name}")
-
-  target_sources(test_all PRIVATE $<TARGET_OBJECTS:${test_exe_name}_objects>)
 
   add_dependencies(test_conformance ${test_exe_name})
 endfunction()
@@ -254,7 +247,3 @@ foreach(dir ${test_category_dirs})
     add_subdirectory(${dir})
   endif()
 endforeach()
-
-target_link_libraries(test_all PRIVATE CTS::util CTS::main_function oclmath)
-target_link_libraries(test_all PRIVATE Catch2::Catch2 Threads::Threads)
-add_sycl_to_target(TARGET test_all)
