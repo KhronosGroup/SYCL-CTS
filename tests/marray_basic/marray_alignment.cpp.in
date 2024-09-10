@@ -18,28 +18,21 @@
 //
 *******************************************************************************/
 
-#include "../../util/extensions.h"
 #include "../common/type_coverage.h"
+#include "marray_alignment.h"
 #include "marray_common.h"
-#include "marray_members.h"
 
-namespace marray_members_fp16 {
+// clang-format off
+#cmakedefine CTS_TYPE @CTS_TYPE@
+#cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
+// clang-format on
 
-using namespace sycl_cts;
-using namespace marray_members;
+namespace marray_alignment_core {
 
-TEST_CASE("members fp16", "[marray]") {
-  auto queue = util::get_cts_object::queue();
-  using availability =
-      util::extensions::availability<util::extensions::tag::fp16>;
-  if (!availability::check(queue)) {
-    WARN(
-        "Device does not support half precision floating point operations."
-        "Skipping the test case.");
-    return;
-  }
+using namespace marray_alignment;
 
-  check_marray_members_for_type<sycl::half>{}("sycl::half");
-};
+TEST_CASE(CTS_TYPE_NAME + " alignment core", "[marray]") {
+  check_marray_alignment_for_type<CTS_TYPE>{}(CTS_TYPE_NAME);
+}
 
-}  // namespace marray_members_fp16
+}  // namespace marray_alignment_core

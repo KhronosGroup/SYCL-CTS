@@ -18,9 +18,13 @@ item
 kernel
 kernel_args
 kernel_bundle
-marray
+marray_basic
+marray_bitwise
+marray_pre_post
+marray_relational
+marray_arithmetic_assignment
+marray_arithmetic_binary
 math_builtin_api
-marray
 multi_ptr
 nd_item
 nd_range
