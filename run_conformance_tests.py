@@ -88,8 +88,13 @@ def handle_args(argv):
         help='Skip build step and perform only testing for already compiled tests.',
         required=False,
         action='store_true')
+    parser.add_argument('--commit-hash',
+                        help='Original SYCL-CTS commit hash used for the run',
+                        type=str,
+                        required=False)
     args = parser.parse_args(argv)
 
+    commit_hash = args.commit_hash if args.commit_hash else 'Not specified'
     full_conformance = 'OFF' if args.fast else 'ON'
     test_deprecated_features = 'OFF' if args.disable_deprecated_features else 'ON'
     full_feature_set = 'OFF' if args.reduced_feature_set else 'ON'
@@ -103,7 +108,7 @@ def handle_args(argv):
             full_conformance, test_deprecated_features, args.exclude_categories,
             args.implementation_name, args.additional_cmake_args, args.device,
             args.additional_ctest_args, args.build_only, args.run_only,
-            full_feature_set)
+            commit_hash, full_feature_set)
 
 
 def split_additional_args(additional_args):
@@ -247,7 +252,7 @@ def get_xml_test_results():
 def update_xml_attribs(info_json, implementation_name, test_xml_root,
                        full_conformance, cmake_call, build_system_name,
                        build_system_call, ctest_call, test_deprecated_features,
-                       full_feature_set):
+                       commit_hash, full_feature_set):
     """
     Adds attributes to the root of the xml trees json required by the
     conformance report.
@@ -274,6 +279,7 @@ def update_xml_attribs(info_json, implementation_name, test_xml_root,
     test_xml_root.attrib["DeviceFP64"] = info_json['device-fp64']
 
     # Set Build Information attribs
+    test_xml_root.attrib["CommitHash"] = commit_hash
     test_xml_root.attrib["FullConformanceMode"] = full_conformance
     test_xml_root.attrib["CMakeInput"] = ' '.join(cmake_call)
     test_xml_root.attrib["BuildSystemGenerator"] = build_system_name
@@ -291,7 +297,7 @@ def main(argv=sys.argv[1:]):
     (cmake_exe, build_system_name, build_system_call, full_conformance,
      test_deprecated_features, exclude_categories, implementation_name,
      additional_cmake_args, device, additional_ctest_args,
-     build_only, run_only, full_feature_set) = handle_args(argv)
+     build_only, run_only, commit_hash, full_feature_set) = handle_args(argv)
 
     # Generate a cmake call in a form accepted by subprocess.call()
     cmake_call = generate_cmake_call(cmake_exe, build_system_name,
@@ -326,6 +332,7 @@ def main(argv=sys.argv[1:]):
                                          cmake_call, build_system_name,
                                          build_system_call, ctest_call,
                                          test_deprecated_features,
+                                         commit_hash,
                                          full_feature_set)
 
     # Get the xml report stylesheet and add it to the results.
