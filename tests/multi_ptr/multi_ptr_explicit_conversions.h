@@ -184,6 +184,8 @@ void check_pointer_aliases(const std::string &type_name) {
               sycl::multi_ptr<T, sycl::access::address_space::private_space,
                               sycl::access::decorated::no>>);
     }
+// Not yet supported
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_DPCPP
     {
       INFO("raw_generic_ptr");
       STATIC_CHECK(
@@ -192,6 +194,7 @@ void check_pointer_aliases(const std::string &type_name) {
               sycl::multi_ptr<T, sycl::access::address_space::generic_space,
                               sycl::access::decorated::no>>);
     }
+#endif  //! SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_DPCPP
     {
       INFO("decorated_global_ptr");
       STATIC_CHECK(std::is_same_v<
@@ -214,6 +217,8 @@ void check_pointer_aliases(const std::string &type_name) {
               sycl::multi_ptr<T, sycl::access::address_space::private_space,
                               sycl::access::decorated::yes>>);
     }
+// Not yet supported
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_DPCPP
     {
       INFO("decorated_generic_ptr");
       STATIC_CHECK(
@@ -223,6 +228,7 @@ void check_pointer_aliases(const std::string &type_name) {
                               sycl::access::decorated::yes>>);
     }
   }
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_DPCPP
 }
 
 template <typename T>
