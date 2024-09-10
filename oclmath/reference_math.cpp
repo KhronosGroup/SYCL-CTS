@@ -7,13 +7,19 @@
 ******************************************************************/
 
 #if defined( _MSC_VER )
-# pragma warning( push )
-# pragma warning( disable : 4056 ) /* overflow in floating-point constant arithmetic                        */
-# pragma warning( disable : 4101 ) /* unreferenced local variable                                           */
-# pragma warning( disable : 4146 ) /* unary minus operator applied to unsigned type, result still unsigned  */
-# pragma warning( disable : 4244 ) /* conversion from 'double' to 'float', possible loss of data            */
-# pragma warning( disable : 4723 ) /* potential divide by 0                                                 */
-# pragma warning( disable : 4756 ) /* overflow in constant arithmetic                                       */
+#pragma warning(push)
+// overflow in floating-point constant arithmetic
+#pragma warning(disable : 4056)
+// unreferenced local variable
+#pragma warning(disable : 4101)
+// unary minus operator applied to unsigned type, result still unsigned
+#pragma warning(disable : 4146)
+// conversion from 'double' to 'float', possible loss of data
+#pragma warning(disable : 4244)
+// potential divide by 0
+#pragma warning(disable : 4723)
+// overflow in constant arithmetic
+#pragma warning(disable : 4756)
 #endif
 
 //
@@ -53,7 +59,7 @@
     #define tanhl(X) tanh(X)
     #define coshl(X) cosh(X)
     #define sinhl(X) sinh(X)
-	
+
     float  modff_android( float value, float  *iptr )
     {
         *iptr = truncf( value );
@@ -126,8 +132,8 @@ static void __log2_ep(double *hi, double *lo, double x);
 
 typedef union
 {
-	uint64_t i;
-	double d;
+  uint64_t i;
+  double d;
 }uint64d_t;
 
 static const uint64d_t _CL_NAN = { 0x7ff8000000000000ULL };
@@ -882,41 +888,35 @@ double reference_powr( double x, double y )
         //powr ( +-0, y ) is +inf for finite y < 0. 
         if( y < 0.0 )
             return INFINITY;
-            
-        //powr ( +-0, y ) is +0 for y > 0.    (NaN, y==0 handled above)
+
+        // powr ( +-0, y ) is +0 for y > 0.    (NaN, y==0 handled above)
         return 0.0;
     }
-    
-    // x = +inf  
-	if( isinf(x) )
-	{		
-		if( y < 0 )
-			return 0;
-		return INFINITY;
-	}
-	
-	double fabsx = reference_fabs(x);
-	double fabsy = reference_fabs(y);
-	
-	//y = +-inf cases
-	if( isinf(fabsy) )
-	{
-		if( y < 0 )
-		{
-			if( fabsx < 1 )
-				return INFINITY;
-			return 0;
-		}
-		if( fabsx < 1 )
-			return 0;
-		return INFINITY;
-	}            
-    
-	double hi, lo;
-	__log2_ep(&hi, &lo, x);
-	double prod = y * hi;
-	double result = reference_exp2(prod);
-	
+
+    // x = +inf
+    if (isinf(x)) {
+      if (y < 0) return 0;
+      return INFINITY;
+    }
+
+    double fabsx = reference_fabs(x);
+    double fabsy = reference_fabs(y);
+
+    // y = +-inf cases
+    if (isinf(fabsy)) {
+      if (y < 0) {
+        if (fabsx < 1) return INFINITY;
+        return 0;
+      }
+      if (fabsx < 1) return 0;
+      return INFINITY;
+    }
+
+    double hi, lo;
+    __log2_ep(&hi, &lo, x);
+    double prod = y * hi;
+    double result = reference_exp2(prod);
+
     return result;
 }
 
@@ -951,25 +951,34 @@ double reference_add( double x, double y )
     __m128 va = _mm_set_ss( (float) a );
     __m128 vb = _mm_set_ss( (float) b );
     va = _mm_add_ss( va, vb );
-    _mm_store_ss( (float*) &a, va );
+    _mm_store_ss((float*)&a, va);
 #elif defined(__PPC__)
-    // Most Power host CPUs do not support the non-IEEE mode (NI) which flushes denorm's to zero.
-    // As such, the reference add with FTZ must be emulated in sw.
+    // Most Power host CPUs do not support the non-IEEE mode (NI) which flushes
+    // denorm's to zero. As such, the reference add with FTZ must be emulated in
+    // sw.
     if (fpu_control & _FPU_MASK_NI) {
-      union{ cl_uint u; cl_float d; } ua; ua.d = a;
-      union{ cl_uint u; cl_float d; } ub; ub.d = b;
+      union {
+        cl_uint u;
+        cl_float d;
+      } ua;
+      ua.d = a;
+      union {
+        cl_uint u;
+        cl_float d;
+      } ub;
+      ub.d = b;
       cl_uint mantA, mantB;
       cl_ulong addendA, addendB, sum;
-      int expA = extractf( a, &mantA );
-      int expB = extractf( b, &mantB );
+      int expA = extractf(a, &mantA);
+      int expB = extractf(b, &mantB);
       cl_uint signA = ua.u & 0x80000000U;
       cl_uint signB = ub.u & 0x80000000U;
 
       // Force matching exponents if an operand is 0
       if (a == 0.0f) {
-	expA = expB;
+        expA = expB;
       } else if (b == 0.0f) {
-	expB = expA;
+        expB = expA;
       }
 
       addendA = (cl_ulong)mantA << 32;
@@ -977,23 +986,22 @@ double reference_add( double x, double y )
 
       if (expA >= expB) {
         // Shift B relative to the A so that their exponents match
-        if( expA > expB )
-	  shift_right_sticky_64( &addendB, expA - expB );
+        if (expA > expB) shift_right_sticky_64(&addendB, expA - expB);
 
         // add
-        if( signA ^ signB )
-	  sub64( &addendA, addendB, &signA, &expA );
+        if (signA ^ signB)
+          sub64(&addendA, addendB, &signA, &expA);
         else
-	  add64( &addendA, addendB, &expA );
-      } else  {
+          add64(&addendA, addendB, &expA);
+      } else {
         // Shift the A relative to B so that their exponents match
-        shift_right_sticky_64( &addendA, expB - expA );
+        shift_right_sticky_64(&addendA, expB - expA);
 
         // add
-        if( signA ^ signB )
-	  sub64( &addendB, addendA, &signB, &expB );
+        if (signA ^ signB)
+          sub64(&addendB, addendA, &signB, &expB);
         else
-	  add64( &addendB, addendA, &expB );
+          add64(&addendB, addendA, &expB);
 
         addendA = addendB;
         expA = expB;
@@ -1001,10 +1009,10 @@ double reference_add( double x, double y )
       }
 
       // round to IEEE result
-      if (gIsInRTZMode)	{
-	ua.d = round_toward_zero_float_ftz( addendA, expA );
+      if (gIsInRTZMode) {
+        ua.d = round_toward_zero_float_ftz(addendA, expA);
       } else {
-	ua.d = round_to_nearest_even_float_ftz( addendA, expA );
+        ua.d = round_to_nearest_even_float_ftz(addendA, expA);
       }
       // Set the sign
       ua.u |= signA;
@@ -1015,74 +1023,86 @@ double reference_add( double x, double y )
 #else
     a += b;
 #endif
-    return (double) a;
- }
-
-
-double reference_subtract( double x, double y )
-{ 
-    volatile float a = (float) x;
-    volatile float b = (float) y;
-#if defined( __SSE__ ) || (defined( _MSC_VER ) && (defined(_M_IX86) || defined(_M_X64)))
-    // defeat x87
-    __m128 va = _mm_set_ss( (float) a );
-    __m128 vb = _mm_set_ss( (float) b );
-    va = _mm_sub_ss( va, vb );
-    _mm_store_ss( (float*) &a, va );
-#else
-    a -= b;
-#endif
-    return a;
+    return (double)a;
 }
 
-//double reference_divide( double x, double y ){ return (float) x / (float) y; }
-double reference_multiply( double x, double y)
-{ 
-    volatile float a = (float) x;
-    volatile float b = (float) y;
-#if defined( __SSE__ ) || (defined( _MSC_VER ) && (defined(_M_IX86) || defined(_M_X64)))
-    // defeat x87
-    __m128 va = _mm_set_ss( (float) a );
-    __m128 vb = _mm_set_ss( (float) b );
-    va = _mm_mul_ss( va, vb );
-    _mm_store_ss( (float*) &a, va );
-#elif defined(__PPC__) 
-    // Most Power host CPUs do not support the non-IEEE mode (NI) which flushes denorm's to zero.
-    // As such, the reference multiply with FTZ must be emulated in sw.
-    if (fpu_control & _FPU_MASK_NI) {
-      // extract exponent and mantissa 
-      //   exponent is a standard unbiased signed integer
-      //   mantissa is a cl_uint, with leading non-zero bit positioned at the MSB
-      union{ cl_uint u; cl_float d; } ua; ua.d = a;
-      union{ cl_uint u; cl_float d; } ub; ub.d = b;
-      cl_uint mantA, mantB;
-      int expA = extractf( a, &mantA );
-      int expB = extractf( b, &mantB );
-        
-      // exact product of A and B
-      int exponent = expA + expB;
-      cl_uint sign = (ua.u ^ ub.u) & 0x80000000U;
-      cl_ulong product = (cl_ulong) mantA * (cl_ulong) mantB;
-    
-      // renormalize -- 1.m * 1.n yields a number between 1.0 and 3.99999.. 
-      //  The MSB might not be set. If so, fix that. Otherwise, reflect the fact that we got another power of two from the multiplication
-      if( 0 == (0x8000000000000000ULL & product) )
-        product <<= 1;
-      else
-        exponent++;         // 2**31 * 2**31 gives 2**62. If the MSB was set, then our exponent increased.
-    
-      // round to IEEE result -- we do not do flushing to zero here. That part is handled manually in ternary.c.
-      if (gIsInRTZMode)	{
-	ua.d = round_toward_zero_float_ftz( product, exponent);
-      } else {
-	ua.d = round_to_nearest_even_float_ftz( product, exponent);
-      }
-      // Set the sign
-      ua.u |= sign;
-      a = ua.d;
+double reference_subtract(double x, double y) {
+  volatile float a = (float)x;
+  volatile float b = (float)y;
+#if defined(__SSE__) || \
+    (defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)))
+  // defeat x87
+  __m128 va = _mm_set_ss((float)a);
+  __m128 vb = _mm_set_ss((float)b);
+  va = _mm_sub_ss(va, vb);
+  _mm_store_ss((float*)&a, va);
+#else
+  a -= b;
+#endif
+  return a;
+}
+
+// double reference_divide( double x, double y ){ return (float) x / (float) y;
+// }
+double reference_multiply(double x, double y) {
+  volatile float a = (float)x;
+  volatile float b = (float)y;
+#if defined(__SSE__) || \
+    (defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)))
+  // defeat x87
+  __m128 va = _mm_set_ss((float)a);
+  __m128 vb = _mm_set_ss((float)b);
+  va = _mm_mul_ss(va, vb);
+  _mm_store_ss((float*)&a, va);
+#elif defined(__PPC__)
+  // Most Power host CPUs do not support the non-IEEE mode (NI) which flushes
+  // denorm's to zero. As such, the reference multiply with FTZ must be emulated
+  // in sw.
+  if (fpu_control & _FPU_MASK_NI) {
+    // extract exponent and mantissa
+    //   exponent is a standard unbiased signed integer
+    //   mantissa is a cl_uint, with leading non-zero bit positioned at the MSB
+    union {
+      cl_uint u;
+      cl_float d;
+    } ua;
+    ua.d = a;
+    union {
+      cl_uint u;
+      cl_float d;
+    } ub;
+    ub.d = b;
+    cl_uint mantA, mantB;
+    int expA = extractf(a, &mantA);
+    int expB = extractf(b, &mantB);
+
+    // exact product of A and B
+    int exponent = expA + expB;
+    cl_uint sign = (ua.u ^ ub.u) & 0x80000000U;
+    cl_ulong product = (cl_ulong)mantA * (cl_ulong)mantB;
+
+    // renormalize -- 1.m * 1.n yields a number between 1.0 and 3.99999..
+    //  The MSB might not be set. If so, fix that. Otherwise, reflect the fact
+    //  that we got another power of two from the multiplication
+    if (0 == (0x8000000000000000ULL & product))
+      product <<= 1;
+    else
+      exponent++;  // 2**31 * 2**31 gives 2**62. If the MSB was set, then our
+                   // exponent increased.
+
+    // round to IEEE result -- we do not do flushing to zero here. That part is
+    // handled manually in ternary.c.
+    if (gIsInRTZMode) {
+      ua.d = round_toward_zero_float_ftz(product, exponent);
     } else {
-      a *= b;
+      ua.d = round_to_nearest_even_float_ftz(product, exponent);
     }
+    // Set the sign
+    ua.u |= sign;
+    a = ua.d;
+  } else {
+    a *= b;
+  }
 #else
     a *= b;
 #endif
@@ -1103,9 +1123,9 @@ double reference_multiply( double x, double y)
 }*/
 double reference_lgamma_r( double x, int *signp )
 {
-	// This is not currently tested
-	*signp = 0;
-	return x;
+  // This is not currently tested
+  *signp = 0;
+  return x;
 }
 
 
@@ -1354,21 +1374,28 @@ double reference_expm1( double x )
     static const double reduction[17] = { -0.5, -0.4375, -0.375, -0.3125, -0.25, -0.1875, -0.125, -0.0625, 
                                            0.0,
                                           +0.0625, +0.125, +0.1875, +0.25, +0.3125, +0.375, +0.4375, +0.5  };
-    
-	
+
     // exponentials[i] = expm1(reduction[i])
-    static const double exponentials[17] = {	HEX_DBL( -, 1, 92e9a0720d3ec, -, 2 ),	HEX_DBL( -, 1, 6adb1cd9205ee, -, 2 ),	
-												HEX_DBL( -, 1, 40373d42ce2e3, -, 2 ),	HEX_DBL( -, 1, 12d35a41ba104, -, 2 ),	
-												HEX_DBL( -, 1, c5041854df7d4, -, 3 ),	HEX_DBL( -, 1, 5e25fb4fde211, -, 3 ),	
-												HEX_DBL( -, 1, e14aed893eef4, -, 4 ),	HEX_DBL( -, 1, f0540438fd5c3, -, 5 ),	
-												HEX_DBL( +, 0, 0,             +, 0 ),	
-												HEX_DBL( +, 1, 082b577d34ed8, -, 4 ),	HEX_DBL( +, 1, 10b022db7ae68, -, 3 ),	
-												HEX_DBL( +, 1, a65c0b85ac1a9, -, 3 ),	HEX_DBL( +, 1, 22d78f0fa061a, -, 2 ),	
-												HEX_DBL( +, 1, 77a45d8117fd5, -, 2 ),	HEX_DBL( +, 1, d1e944f6fbdaa, -, 2 ),	
-												HEX_DBL( +, 1, 190048ef6002,  -, 1 ),	HEX_DBL( +, 1, 4c2531c3c0d38, -, 1 ),	
-											};
-											
-    
+    static const double exponentials[17] = {
+        HEX_DBL(-, 1, 92e9a0720d3ec, -, 2),
+        HEX_DBL(-, 1, 6adb1cd9205ee, -, 2),
+        HEX_DBL(-, 1, 40373d42ce2e3, -, 2),
+        HEX_DBL(-, 1, 12d35a41ba104, -, 2),
+        HEX_DBL(-, 1, c5041854df7d4, -, 3),
+        HEX_DBL(-, 1, 5e25fb4fde211, -, 3),
+        HEX_DBL(-, 1, e14aed893eef4, -, 4),
+        HEX_DBL(-, 1, f0540438fd5c3, -, 5),
+        HEX_DBL(+, 0, 0, +, 0),
+        HEX_DBL(+, 1, 082b577d34ed8, -, 4),
+        HEX_DBL(+, 1, 10b022db7ae68, -, 3),
+        HEX_DBL(+, 1, a65c0b85ac1a9, -, 3),
+        HEX_DBL(+, 1, 22d78f0fa061a, -, 2),
+        HEX_DBL(+, 1, 77a45d8117fd5, -, 2),
+        HEX_DBL(+, 1, d1e944f6fbdaa, -, 2),
+        HEX_DBL(+, 1, 190048ef6002, -, 1),
+        HEX_DBL(+, 1, 4c2531c3c0d38, -, 1),
+    };
+
     f -= reduction[index];
     
     // find expm1(f)
@@ -1394,149 +1421,287 @@ double reference_expm1( double x )
         return f;       // precise answer for x near 1
         
     // table of e**(i-150)
-    static const double exp_table[128+150+1] = 
-    {
-		HEX_DBL( +, 1, 82e16284f5ec5, -, 217 ),	HEX_DBL( +, 1, 06e9996332ba1, -, 215 ),	
-		HEX_DBL( +, 1, 6555cb289e44b, -, 214 ),	HEX_DBL( +, 1, e5ab364643354, -, 213 ),	
-		HEX_DBL( +, 1, 4a0bd18e64df7, -, 211 ),	HEX_DBL( +, 1, c094499cc578e, -, 210 ),	
-		HEX_DBL( +, 1, 30d759323998c, -, 208 ),	HEX_DBL( +, 1, 9e5278ab1d4cf, -, 207 ),	
-		HEX_DBL( +, 1, 198fa3f30be25, -, 205 ),	HEX_DBL( +, 1, 7eae636d6144e, -, 204 ),	
-		HEX_DBL( +, 1, 040f1036f4863, -, 202 ),	HEX_DBL( +, 1, 6174e477a895f, -, 201 ),	
-		HEX_DBL( +, 1, e065b82dd95a,  -, 200 ),	HEX_DBL( +, 1, 4676be491d129, -, 198 ),	
-		HEX_DBL( +, 1, bbb5da5f7c823, -, 197 ),	HEX_DBL( +, 1, 2d884eef5fdcb, -, 195 ),	
-		HEX_DBL( +, 1, 99d3397ab8371, -, 194 ),	HEX_DBL( +, 1, 1681497ed15b3, -, 192 ),	
-		HEX_DBL( +, 1, 7a870f597fdbd, -, 191 ),	HEX_DBL( +, 1, 013c74edba307, -, 189 ),	
-		HEX_DBL( +, 1, 5d9ec4ada7938, -, 188 ),	HEX_DBL( +, 1, db2edfd20fa7c, -, 187 ),	
-		HEX_DBL( +, 1, 42eb9f39afb0b, -, 185 ),	HEX_DBL( +, 1, b6e4f282b43f4, -, 184 ),	
-		HEX_DBL( +, 1, 2a42764857b19, -, 182 ),	HEX_DBL( +, 1, 9560792d19314, -, 181 ),	
-		HEX_DBL( +, 1, 137b6ce8e052c, -, 179 ),	HEX_DBL( +, 1, 766b45dd84f18, -, 178 ),	
-		HEX_DBL( +, 1, fce362fe6e7d,  -, 177 ),	HEX_DBL( +, 1, 59d34dd8a5473, -, 175 ),	
-		HEX_DBL( +, 1, d606847fc727a, -, 174 ),	HEX_DBL( +, 1, 3f6a58b795de3, -, 172 ),	
-		HEX_DBL( +, 1, b2216c6efdac1, -, 171 ),	HEX_DBL( +, 1, 2705b5b153fb8, -, 169 ),	
-		HEX_DBL( +, 1, 90fa1509bd50d, -, 168 ),	HEX_DBL( +, 1, 107df698da211, -, 166 ),	
-		HEX_DBL( +, 1, 725ae6e7b9d35, -, 165 ),	HEX_DBL( +, 1, f75d6040aeff6, -, 164 ),	
-		HEX_DBL( +, 1, 56126259e093c, -, 162 ),	HEX_DBL( +, 1, d0ec7df4f7bd4, -, 161 ),	
-		HEX_DBL( +, 1, 3bf2cf6722e46, -, 159 ),	HEX_DBL( +, 1, ad6b22f55db42, -, 158 ),	
-		HEX_DBL( +, 1, 23d1f3e5834a,  -, 156 ),	HEX_DBL( +, 1, 8c9feab89b876, -, 155 ),	
-		HEX_DBL( +, 1, 0d88cf37f00dd, -, 153 ),	HEX_DBL( +, 1, 6e55d2bf838a7, -, 152 ),	
-		HEX_DBL( +, 1, f1e6b68529e33, -, 151 ),	HEX_DBL( +, 1, 525be4e4e601d, -, 149 ),	
-		HEX_DBL( +, 1, cbe0a45f75eb1, -, 148 ),	HEX_DBL( +, 1, 3884e838aea68, -, 146 ),	
-		HEX_DBL( +, 1, a8c1f14e2af5d, -, 145 ),	HEX_DBL( +, 1, 20a717e64a9bd, -, 143 ),	
-		HEX_DBL( +, 1, 8851d84118908, -, 142 ),	HEX_DBL( +, 1, 0a9bdfb02d24,  -, 140 ),	
-		HEX_DBL( +, 1, 6a5bea046b42e, -, 139 ),	HEX_DBL( +, 1, ec7f3b269efa8, -, 138 ),	
-		HEX_DBL( +, 1, 4eafb87eab0f2, -, 136 ),	HEX_DBL( +, 1, c6e2d05bbc,    -, 135 ),	
-		HEX_DBL( +, 1, 35208867c2683, -, 133 ),	HEX_DBL( +, 1, a425b317eeacd, -, 132 ),	
-		HEX_DBL( +, 1, 1d8508fa8246a, -, 130 ),	HEX_DBL( +, 1, 840fbc08fdc8a, -, 129 ),	
-		HEX_DBL( +, 1, 07b7112bc1ffe, -, 127 ),	HEX_DBL( +, 1, 666d0dad2961d, -, 126 ),	
-		HEX_DBL( +, 1, e726c3f64d0fe, -, 125 ),	HEX_DBL( +, 1, 4b0dc07cabf98, -, 123 ),	
-		HEX_DBL( +, 1, c1f2daf3b6a46, -, 122 ),	HEX_DBL( +, 1, 31c5957a47de2, -, 120 ),	
-		HEX_DBL( +, 1, 9f96445648b9f, -, 119 ),	HEX_DBL( +, 1, 1a6baeadb4fd1, -, 117 ),	
-		HEX_DBL( +, 1, 7fd974d372e45, -, 116 ),	HEX_DBL( +, 1, 04da4d1452919, -, 114 ),	
-		HEX_DBL( +, 1, 62891f06b345,  -, 113 ),	HEX_DBL( +, 1, e1dd273aa8a4a, -, 112 ),	
-		HEX_DBL( +, 1, 4775e0840bfdd, -, 110 ),	HEX_DBL( +, 1, bd109d9d94bda, -, 109 ),	
-		HEX_DBL( +, 1, 2e73f53fba844, -, 107 ),	HEX_DBL( +, 1, 9b138170d6bfe, -, 106 ),	
-		HEX_DBL( +, 1, 175af0cf60ec5, -, 104 ),	HEX_DBL( +, 1, 7baee1bffa80b, -, 103 ),	
-		HEX_DBL( +, 1, 02057d1245ceb, -, 101 ),	HEX_DBL( +, 1, 5eafffb34ba31, -, 100 ),	
-		HEX_DBL( +, 1, dca23bae16424, -, 99 ),	HEX_DBL( +, 1, 43e7fc88b8056, -, 97 ),	
-		HEX_DBL( +, 1, b83bf23a9a9eb, -, 96 ),	HEX_DBL( +, 1, 2b2b8dd05b318, -, 94 ),	
-		HEX_DBL( +, 1, 969d47321e4cc, -, 93 ),	HEX_DBL( +, 1, 1452b7723aed2, -, 91 ),	
-		HEX_DBL( +, 1, 778fe2497184c, -, 90 ),	HEX_DBL( +, 1, fe7116182e9cc, -, 89 ),	
-		HEX_DBL( +, 1, 5ae191a99585a, -, 87 ),	HEX_DBL( +, 1, d775d87da854d, -, 86 ),	
-		HEX_DBL( +, 1, 4063f8cc8bb98, -, 84 ),	HEX_DBL( +, 1, b374b315f87c1, -, 83 ),	
-		HEX_DBL( +, 1, 27ec458c65e3c, -, 81 ),	HEX_DBL( +, 1, 923372c67a074, -, 80 ),	
-		HEX_DBL( +, 1, 1152eaeb73c08, -, 78 ),	HEX_DBL( +, 1, 737c5645114b5, -, 77 ),	
-		HEX_DBL( +, 1, f8e6c24b5592e, -, 76 ),	HEX_DBL( +, 1, 571db733a9d61, -, 74 ),	
-		HEX_DBL( +, 1, d257d547e083f, -, 73 ),	HEX_DBL( +, 1, 3ce9b9de78f85, -, 71 ),	
-		HEX_DBL( +, 1, aebabae3a41b5, -, 70 ),	HEX_DBL( +, 1, 24b6031b49bda, -, 68 ),	
-		HEX_DBL( +, 1, 8dd5e1bb09d7e, -, 67 ),	HEX_DBL( +, 1, 0e5b73d1ff53d, -, 65 ),	
-		HEX_DBL( +, 1, 6f741de1748ec, -, 64 ),	HEX_DBL( +, 1, f36bd37f42f3e, -, 63 ),	
-		HEX_DBL( +, 1, 536452ee2f75c, -, 61 ),	HEX_DBL( +, 1, cd480a1b7482,  -, 60 ),	
-		HEX_DBL( +, 1, 39792499b1a24, -, 58 ),	HEX_DBL( +, 1, aa0de4bf35b38, -, 57 ),	
-		HEX_DBL( +, 1, 2188ad6ae3303, -, 55 ),	HEX_DBL( +, 1, 898471fca6055, -, 54 ),	
-		HEX_DBL( +, 1, 0b6c3afdde064, -, 52 ),	HEX_DBL( +, 1, 6b7719a59f0e,  -, 51 ),	
-		HEX_DBL( +, 1, ee001eed62aa, -, 50 ),	HEX_DBL( +, 1, 4fb547c775da8, -, 48 ),	
-		HEX_DBL( +, 1, c8464f7616468, -, 47 ),	HEX_DBL( +, 1, 36121e24d3bba, -, 45 ),	
-		HEX_DBL( +, 1, a56e0c2ac7f75, -, 44 ),	HEX_DBL( +, 1, 1e642baeb84a,  -, 42 ),	
-		HEX_DBL( +, 1, 853f01d6d53ba, -, 41 ),	HEX_DBL( +, 1, 0885298767e9a, -, 39 ),	
-		HEX_DBL( +, 1, 67852a7007e42, -, 38 ),	HEX_DBL( +, 1, e8a37a45fc32e, -, 37 ),	
-		HEX_DBL( +, 1, 4c1078fe9228a, -, 35 ),	HEX_DBL( +, 1, c3527e433fab1, -, 34 ),	
-		HEX_DBL( +, 1, 32b48bf117da2, -, 32 ),	HEX_DBL( +, 1, a0db0d0ddb3ec, -, 31 ),	
-		HEX_DBL( +, 1, 1b48655f37267, -, 29 ),	HEX_DBL( +, 1, 81056ff2c5772, -, 28 ),	
-		HEX_DBL( +, 1, 05a628c699fa1, -, 26 ),	HEX_DBL( +, 1, 639e3175a689d, -, 25 ),	
-		HEX_DBL( +, 1, e355bbaee85cb, -, 24 ),	HEX_DBL( +, 1, 4875ca227ec38, -, 22 ),	
-		HEX_DBL( +, 1, be6c6fdb01612, -, 21 ),	HEX_DBL( +, 1, 2f6053b981d98, -, 19 ),	
-		HEX_DBL( +, 1, 9c54c3b43bc8b, -, 18 ),	HEX_DBL( +, 1, 18354238f6764, -, 16 ),	
-		HEX_DBL( +, 1, 7cd79b5647c9b, -, 15 ),	HEX_DBL( +, 1, 02cf22526545a, -, 13 ),	
-		HEX_DBL( +, 1, 5fc21041027ad, -, 12 ),	HEX_DBL( +, 1, de16b9c24a98f, -, 11 ),	
-		HEX_DBL( +, 1, 44e51f113d4d6, -, 9 ),	HEX_DBL( +, 1, b993fe00d5376, -, 8 ),	
-		HEX_DBL( +, 1, 2c155b8213cf4, -, 6 ),	HEX_DBL( +, 1, 97db0ccceb0af, -, 5 ),	
-		HEX_DBL( +, 1, 152aaa3bf81cc, -, 3 ),	HEX_DBL( +, 1, 78b56362cef38, -, 2 ),	
-		HEX_DBL( +, 1, 0, +, 0 ),				HEX_DBL( +, 1, 5bf0a8b145769, +, 1 ),	
-		HEX_DBL( +, 1, d8e64b8d4ddae, +, 2 ),	HEX_DBL( +, 1, 415e5bf6fb106, +, 4 ),	
-		HEX_DBL( +, 1, b4c902e273a58, +, 5 ),	HEX_DBL( +, 1, 28d389970338f, +, 7 ),	
-		HEX_DBL( +, 1, 936dc5690c08f, +, 8 ),	HEX_DBL( +, 1, 122885aaeddaa, +, 10 ),	
-		HEX_DBL( +, 1, 749ea7d470c6e, +, 11 ),	HEX_DBL( +, 1, fa7157c470f82, +, 12 ),	
-		HEX_DBL( +, 1, 5829dcf95056,  +, 14 ),	HEX_DBL( +, 1, d3c4488ee4f7f, +, 15 ),	
-		HEX_DBL( +, 1, 3de1654d37c9a, +, 17 ),	HEX_DBL( +, 1, b00b5916ac955, +, 18 ),	
-		HEX_DBL( +, 1, 259ac48bf05d7, +, 20 ),	HEX_DBL( +, 1, 8f0ccafad2a87, +, 21 ),	
-		HEX_DBL( +, 1, 0f2ebd0a8002,  +, 23 ),	HEX_DBL( +, 1, 709348c0ea4f9, +, 24 ),	
-		HEX_DBL( +, 1, f4f22091940bd, +, 25 ),	HEX_DBL( +, 1, 546d8f9ed26e1, +, 27 ),	
-		HEX_DBL( +, 1, ceb088b68e804, +, 28 ),	HEX_DBL( +, 1, 3a6e1fd9eecfd, +, 30 ),	
-		HEX_DBL( +, 1, ab5adb9c436,   +, 31 ),	HEX_DBL( +, 1, 226af33b1fdc1, +, 33 ),	
-		HEX_DBL( +, 1, 8ab7fb5475fb7, +, 34 ),	HEX_DBL( +, 1, 0c3d3920962c9, +, 36 ),	
-		HEX_DBL( +, 1, 6c932696a6b5d, +, 37 ),	HEX_DBL( +, 1, ef822f7f6731d, +, 38 ),	
-		HEX_DBL( +, 1, 50bba3796379a, +, 40 ),	HEX_DBL( +, 1, c9aae4631c056, +, 41 ),	
-		HEX_DBL( +, 1, 370470aec28ed, +, 43 ),	HEX_DBL( +, 1, a6b765d8cdf6d, +, 44 ),	
-		HEX_DBL( +, 1, 1f43fcc4b662c, +, 46 ),	HEX_DBL( +, 1, 866f34a725782, +, 47 ),	
-		HEX_DBL( +, 1, 0953e2f3a1ef7, +, 49 ),	HEX_DBL( +, 1, 689e221bc8d5b, +, 50 ),	
-		HEX_DBL( +, 1, ea215a1d20d76, +, 51 ),	HEX_DBL( +, 1, 4d13fbb1a001a, +, 53 ),	
-		HEX_DBL( +, 1, c4b334617cc67, +, 54 ),	HEX_DBL( +, 1, 33a43d282a519, +, 56 ),	
-		HEX_DBL( +, 1, a220d397972eb, +, 57 ),	HEX_DBL( +, 1, 1c25c88df6862, +, 59 ),	
-		HEX_DBL( +, 1, 8232558201159, +, 60 ),	HEX_DBL( +, 1, 0672a3c9eb871, +, 62 ),	
-		HEX_DBL( +, 1, 64b41c6d37832, +, 63 ),	HEX_DBL( +, 1, e4cf766fe49be, +, 64 ),	
-		HEX_DBL( +, 1, 49767bc0483e3, +, 66 ),	HEX_DBL( +, 1, bfc951eb8bb76, +, 67 ),	
-		HEX_DBL( +, 1, 304d6aeca254b, +, 69 ),	HEX_DBL( +, 1, 9d97010884251, +, 70 ),	
-		HEX_DBL( +, 1, 19103e4080b45, +, 72 ),	HEX_DBL( +, 1, 7e013cd114461, +, 73 ),	
-		HEX_DBL( +, 1, 03996528e074c, +, 75 ),	HEX_DBL( +, 1, 60d4f6fdac731, +, 76 ),	
-		HEX_DBL( +, 1, df8c5af17ba3b, +, 77 ),	HEX_DBL( +, 1, 45e3076d61699, +, 79 ),	
-		HEX_DBL( +, 1, baed16a6e0da7, +, 80 ),	HEX_DBL( +, 1, 2cffdfebde1a1, +, 82 ),	
-		HEX_DBL( +, 1, 9919cabefcb69, +, 83 ),	HEX_DBL( +, 1, 160345c9953e3, +, 85 ),	
-		HEX_DBL( +, 1, 79dbc9dc53c66, +, 86 ),	HEX_DBL( +, 1, 00c810d464097, +, 88 ),	
-		HEX_DBL( +, 1, 5d009394c5c27, +, 89 ),	HEX_DBL( +, 1, da57de8f107a8, +, 90 ),	
-		HEX_DBL( +, 1, 425982cf597cd, +, 92 ),	HEX_DBL( +, 1, b61e5ca3a5e31, +, 93 ),	
-		HEX_DBL( +, 1, 29bb825dfcf87, +, 95 ),	HEX_DBL( +, 1, 94a90db0d6fe2, +, 96 ),	
-		HEX_DBL( +, 1, 12fec759586fd, +, 98 ),	HEX_DBL( +, 1, 75c1dc469e3af, +, 99 ),	
-		HEX_DBL( +, 1, fbfd219c43b04, +, 100 ),	HEX_DBL( +, 1, 5936d44e1a146, +, 102 ),	
-		HEX_DBL( +, 1, d531d8a7ee79c, +, 103 ),	HEX_DBL( +, 1, 3ed9d24a2d51b, +, 105 ),	
-		HEX_DBL( +, 1, b15cfe5b6e17b, +, 106 ),	HEX_DBL( +, 1, 268038c2c0e,   +, 108 ),	
-		HEX_DBL( +, 1, 9044a73545d48, +, 109 ),	HEX_DBL( +, 1, 1002ab6218b38, +, 111 ),	
-		HEX_DBL( +, 1, 71b3540cbf921, +, 112 ),	HEX_DBL( +, 1, f6799ea9c414a, +, 113 ),	
-		HEX_DBL( +, 1, 55779b984f3eb, +, 115 ),	HEX_DBL( +, 1, d01a210c44aa4, +, 116 ),	
-		HEX_DBL( +, 1, 3b63da8e9121,  +, 118 ),	HEX_DBL( +, 1, aca8d6b0116b8, +, 119 ),	
-		HEX_DBL( +, 1, 234de9e0c74e9, +, 121 ),	HEX_DBL( +, 1, 8bec7503ca477, +, 122 ),	
-		HEX_DBL( +, 1, 0d0eda9796b9,  +, 124 ),	HEX_DBL( +, 1, 6db0118477245, +, 125 ),	
-		HEX_DBL( +, 1, f1056dc7bf22d, +, 126 ),	HEX_DBL( +, 1, 51c2cc3433801, +, 128 ),	
-		HEX_DBL( +, 1, cb108ffbec164, +, 129 ),	HEX_DBL( +, 1, 37f780991b584, +, 131 ),	
-		HEX_DBL( +, 1, a801c0ea8ac4d, +, 132 ),	HEX_DBL( +, 1, 20247cc4c46c1, +, 134 ),	
-		HEX_DBL( +, 1, 87a0553328015, +, 135 ),	HEX_DBL( +, 1, 0a233dee4f9bb, +, 137 ),	
-		HEX_DBL( +, 1, 69b7f55b808ba, +, 138 ),	HEX_DBL( +, 1, eba064644060a, +, 139 ),	
-		HEX_DBL( +, 1, 4e184933d9364, +, 141 ),	HEX_DBL( +, 1, c614fe2531841, +, 142 ),	
-		HEX_DBL( +, 1, 3494a9b171bf5, +, 144 ),	HEX_DBL( +, 1, a36798b9d969b, +, 145 ),	
-		HEX_DBL( +, 1, 1d03d8c0c04af, +, 147 ),	HEX_DBL( +, 1, 836026385c974, +, 148 ),	
-		HEX_DBL( +, 1, 073fbe9ac901d, +, 150 ),	HEX_DBL( +, 1, 65cae0969f286, +, 151 ),	
-		HEX_DBL( +, 1, e64a58639cae8, +, 152 ),	HEX_DBL( +, 1, 4a77f5f9b50f9, +, 154 ),	
-		HEX_DBL( +, 1, c12744a3a28e3, +, 155 ),	HEX_DBL( +, 1, 313b3b6978e85, +, 157 ),	
-		HEX_DBL( +, 1, 9eda3a31e587e, +, 158 ),	HEX_DBL( +, 1, 19ebe56b56453, +, 160 ),	
-		HEX_DBL( +, 1, 7f2bc6e599b7e, +, 161 ),	HEX_DBL( +, 1, 04644610df2ff, +, 163 ),	
-		HEX_DBL( +, 1, 61e8b490ac4e6, +, 164 ),	HEX_DBL( +, 1, e103201f299b3, +, 165 ),	
-		HEX_DBL( +, 1, 46e1b637beaf5, +, 167 ),	HEX_DBL( +, 1, bc473cfede104, +, 168 ),	
-		HEX_DBL( +, 1, 2deb1b9c85e2d, +, 170 ),	HEX_DBL( +, 1, 9a5981ca67d1,  +, 171 ),	
-		HEX_DBL( +, 1, 16dc8a9ef670b, +, 173 ),	HEX_DBL( +, 1, 7b03166942309, +, 174 ),	
-		HEX_DBL( +, 1, 0190be03150a7, +, 176 ),	HEX_DBL( +, 1, 5e1152f9a8119, +, 177 ),	
-		HEX_DBL( +, 1, dbca9263f8487, +, 178 ),	HEX_DBL( +, 1, 43556dee93bee, +, 180 ),	
-		HEX_DBL( +, 1, b774c12967dfa, +, 181 ),	HEX_DBL( +, 1, 2aa4306e922c2, +, 183 ),	
-		HEX_DBL( +, 1, 95e54c5dd4217, +, 184 )    };
-    
+    static const double exp_table[128 + 150 + 1] = {
+        HEX_DBL(+, 1, 82e16284f5ec5, -, 217),
+        HEX_DBL(+, 1, 06e9996332ba1, -, 215),
+        HEX_DBL(+, 1, 6555cb289e44b, -, 214),
+        HEX_DBL(+, 1, e5ab364643354, -, 213),
+        HEX_DBL(+, 1, 4a0bd18e64df7, -, 211),
+        HEX_DBL(+, 1, c094499cc578e, -, 210),
+        HEX_DBL(+, 1, 30d759323998c, -, 208),
+        HEX_DBL(+, 1, 9e5278ab1d4cf, -, 207),
+        HEX_DBL(+, 1, 198fa3f30be25, -, 205),
+        HEX_DBL(+, 1, 7eae636d6144e, -, 204),
+        HEX_DBL(+, 1, 040f1036f4863, -, 202),
+        HEX_DBL(+, 1, 6174e477a895f, -, 201),
+        HEX_DBL(+, 1, e065b82dd95a, -, 200),
+        HEX_DBL(+, 1, 4676be491d129, -, 198),
+        HEX_DBL(+, 1, bbb5da5f7c823, -, 197),
+        HEX_DBL(+, 1, 2d884eef5fdcb, -, 195),
+        HEX_DBL(+, 1, 99d3397ab8371, -, 194),
+        HEX_DBL(+, 1, 1681497ed15b3, -, 192),
+        HEX_DBL(+, 1, 7a870f597fdbd, -, 191),
+        HEX_DBL(+, 1, 013c74edba307, -, 189),
+        HEX_DBL(+, 1, 5d9ec4ada7938, -, 188),
+        HEX_DBL(+, 1, db2edfd20fa7c, -, 187),
+        HEX_DBL(+, 1, 42eb9f39afb0b, -, 185),
+        HEX_DBL(+, 1, b6e4f282b43f4, -, 184),
+        HEX_DBL(+, 1, 2a42764857b19, -, 182),
+        HEX_DBL(+, 1, 9560792d19314, -, 181),
+        HEX_DBL(+, 1, 137b6ce8e052c, -, 179),
+        HEX_DBL(+, 1, 766b45dd84f18, -, 178),
+        HEX_DBL(+, 1, fce362fe6e7d, -, 177),
+        HEX_DBL(+, 1, 59d34dd8a5473, -, 175),
+        HEX_DBL(+, 1, d606847fc727a, -, 174),
+        HEX_DBL(+, 1, 3f6a58b795de3, -, 172),
+        HEX_DBL(+, 1, b2216c6efdac1, -, 171),
+        HEX_DBL(+, 1, 2705b5b153fb8, -, 169),
+        HEX_DBL(+, 1, 90fa1509bd50d, -, 168),
+        HEX_DBL(+, 1, 107df698da211, -, 166),
+        HEX_DBL(+, 1, 725ae6e7b9d35, -, 165),
+        HEX_DBL(+, 1, f75d6040aeff6, -, 164),
+        HEX_DBL(+, 1, 56126259e093c, -, 162),
+        HEX_DBL(+, 1, d0ec7df4f7bd4, -, 161),
+        HEX_DBL(+, 1, 3bf2cf6722e46, -, 159),
+        HEX_DBL(+, 1, ad6b22f55db42, -, 158),
+        HEX_DBL(+, 1, 23d1f3e5834a, -, 156),
+        HEX_DBL(+, 1, 8c9feab89b876, -, 155),
+        HEX_DBL(+, 1, 0d88cf37f00dd, -, 153),
+        HEX_DBL(+, 1, 6e55d2bf838a7, -, 152),
+        HEX_DBL(+, 1, f1e6b68529e33, -, 151),
+        HEX_DBL(+, 1, 525be4e4e601d, -, 149),
+        HEX_DBL(+, 1, cbe0a45f75eb1, -, 148),
+        HEX_DBL(+, 1, 3884e838aea68, -, 146),
+        HEX_DBL(+, 1, a8c1f14e2af5d, -, 145),
+        HEX_DBL(+, 1, 20a717e64a9bd, -, 143),
+        HEX_DBL(+, 1, 8851d84118908, -, 142),
+        HEX_DBL(+, 1, 0a9bdfb02d24, -, 140),
+        HEX_DBL(+, 1, 6a5bea046b42e, -, 139),
+        HEX_DBL(+, 1, ec7f3b269efa8, -, 138),
+        HEX_DBL(+, 1, 4eafb87eab0f2, -, 136),
+        HEX_DBL(+, 1, c6e2d05bbc, -, 135),
+        HEX_DBL(+, 1, 35208867c2683, -, 133),
+        HEX_DBL(+, 1, a425b317eeacd, -, 132),
+        HEX_DBL(+, 1, 1d8508fa8246a, -, 130),
+        HEX_DBL(+, 1, 840fbc08fdc8a, -, 129),
+        HEX_DBL(+, 1, 07b7112bc1ffe, -, 127),
+        HEX_DBL(+, 1, 666d0dad2961d, -, 126),
+        HEX_DBL(+, 1, e726c3f64d0fe, -, 125),
+        HEX_DBL(+, 1, 4b0dc07cabf98, -, 123),
+        HEX_DBL(+, 1, c1f2daf3b6a46, -, 122),
+        HEX_DBL(+, 1, 31c5957a47de2, -, 120),
+        HEX_DBL(+, 1, 9f96445648b9f, -, 119),
+        HEX_DBL(+, 1, 1a6baeadb4fd1, -, 117),
+        HEX_DBL(+, 1, 7fd974d372e45, -, 116),
+        HEX_DBL(+, 1, 04da4d1452919, -, 114),
+        HEX_DBL(+, 1, 62891f06b345, -, 113),
+        HEX_DBL(+, 1, e1dd273aa8a4a, -, 112),
+        HEX_DBL(+, 1, 4775e0840bfdd, -, 110),
+        HEX_DBL(+, 1, bd109d9d94bda, -, 109),
+        HEX_DBL(+, 1, 2e73f53fba844, -, 107),
+        HEX_DBL(+, 1, 9b138170d6bfe, -, 106),
+        HEX_DBL(+, 1, 175af0cf60ec5, -, 104),
+        HEX_DBL(+, 1, 7baee1bffa80b, -, 103),
+        HEX_DBL(+, 1, 02057d1245ceb, -, 101),
+        HEX_DBL(+, 1, 5eafffb34ba31, -, 100),
+        HEX_DBL(+, 1, dca23bae16424, -, 99),
+        HEX_DBL(+, 1, 43e7fc88b8056, -, 97),
+        HEX_DBL(+, 1, b83bf23a9a9eb, -, 96),
+        HEX_DBL(+, 1, 2b2b8dd05b318, -, 94),
+        HEX_DBL(+, 1, 969d47321e4cc, -, 93),
+        HEX_DBL(+, 1, 1452b7723aed2, -, 91),
+        HEX_DBL(+, 1, 778fe2497184c, -, 90),
+        HEX_DBL(+, 1, fe7116182e9cc, -, 89),
+        HEX_DBL(+, 1, 5ae191a99585a, -, 87),
+        HEX_DBL(+, 1, d775d87da854d, -, 86),
+        HEX_DBL(+, 1, 4063f8cc8bb98, -, 84),
+        HEX_DBL(+, 1, b374b315f87c1, -, 83),
+        HEX_DBL(+, 1, 27ec458c65e3c, -, 81),
+        HEX_DBL(+, 1, 923372c67a074, -, 80),
+        HEX_DBL(+, 1, 1152eaeb73c08, -, 78),
+        HEX_DBL(+, 1, 737c5645114b5, -, 77),
+        HEX_DBL(+, 1, f8e6c24b5592e, -, 76),
+        HEX_DBL(+, 1, 571db733a9d61, -, 74),
+        HEX_DBL(+, 1, d257d547e083f, -, 73),
+        HEX_DBL(+, 1, 3ce9b9de78f85, -, 71),
+        HEX_DBL(+, 1, aebabae3a41b5, -, 70),
+        HEX_DBL(+, 1, 24b6031b49bda, -, 68),
+        HEX_DBL(+, 1, 8dd5e1bb09d7e, -, 67),
+        HEX_DBL(+, 1, 0e5b73d1ff53d, -, 65),
+        HEX_DBL(+, 1, 6f741de1748ec, -, 64),
+        HEX_DBL(+, 1, f36bd37f42f3e, -, 63),
+        HEX_DBL(+, 1, 536452ee2f75c, -, 61),
+        HEX_DBL(+, 1, cd480a1b7482, -, 60),
+        HEX_DBL(+, 1, 39792499b1a24, -, 58),
+        HEX_DBL(+, 1, aa0de4bf35b38, -, 57),
+        HEX_DBL(+, 1, 2188ad6ae3303, -, 55),
+        HEX_DBL(+, 1, 898471fca6055, -, 54),
+        HEX_DBL(+, 1, 0b6c3afdde064, -, 52),
+        HEX_DBL(+, 1, 6b7719a59f0e, -, 51),
+        HEX_DBL(+, 1, ee001eed62aa, -, 50),
+        HEX_DBL(+, 1, 4fb547c775da8, -, 48),
+        HEX_DBL(+, 1, c8464f7616468, -, 47),
+        HEX_DBL(+, 1, 36121e24d3bba, -, 45),
+        HEX_DBL(+, 1, a56e0c2ac7f75, -, 44),
+        HEX_DBL(+, 1, 1e642baeb84a, -, 42),
+        HEX_DBL(+, 1, 853f01d6d53ba, -, 41),
+        HEX_DBL(+, 1, 0885298767e9a, -, 39),
+        HEX_DBL(+, 1, 67852a7007e42, -, 38),
+        HEX_DBL(+, 1, e8a37a45fc32e, -, 37),
+        HEX_DBL(+, 1, 4c1078fe9228a, -, 35),
+        HEX_DBL(+, 1, c3527e433fab1, -, 34),
+        HEX_DBL(+, 1, 32b48bf117da2, -, 32),
+        HEX_DBL(+, 1, a0db0d0ddb3ec, -, 31),
+        HEX_DBL(+, 1, 1b48655f37267, -, 29),
+        HEX_DBL(+, 1, 81056ff2c5772, -, 28),
+        HEX_DBL(+, 1, 05a628c699fa1, -, 26),
+        HEX_DBL(+, 1, 639e3175a689d, -, 25),
+        HEX_DBL(+, 1, e355bbaee85cb, -, 24),
+        HEX_DBL(+, 1, 4875ca227ec38, -, 22),
+        HEX_DBL(+, 1, be6c6fdb01612, -, 21),
+        HEX_DBL(+, 1, 2f6053b981d98, -, 19),
+        HEX_DBL(+, 1, 9c54c3b43bc8b, -, 18),
+        HEX_DBL(+, 1, 18354238f6764, -, 16),
+        HEX_DBL(+, 1, 7cd79b5647c9b, -, 15),
+        HEX_DBL(+, 1, 02cf22526545a, -, 13),
+        HEX_DBL(+, 1, 5fc21041027ad, -, 12),
+        HEX_DBL(+, 1, de16b9c24a98f, -, 11),
+        HEX_DBL(+, 1, 44e51f113d4d6, -, 9),
+        HEX_DBL(+, 1, b993fe00d5376, -, 8),
+        HEX_DBL(+, 1, 2c155b8213cf4, -, 6),
+        HEX_DBL(+, 1, 97db0ccceb0af, -, 5),
+        HEX_DBL(+, 1, 152aaa3bf81cc, -, 3),
+        HEX_DBL(+, 1, 78b56362cef38, -, 2),
+        HEX_DBL(+, 1, 0, +, 0),
+        HEX_DBL(+, 1, 5bf0a8b145769, +, 1),
+        HEX_DBL(+, 1, d8e64b8d4ddae, +, 2),
+        HEX_DBL(+, 1, 415e5bf6fb106, +, 4),
+        HEX_DBL(+, 1, b4c902e273a58, +, 5),
+        HEX_DBL(+, 1, 28d389970338f, +, 7),
+        HEX_DBL(+, 1, 936dc5690c08f, +, 8),
+        HEX_DBL(+, 1, 122885aaeddaa, +, 10),
+        HEX_DBL(+, 1, 749ea7d470c6e, +, 11),
+        HEX_DBL(+, 1, fa7157c470f82, +, 12),
+        HEX_DBL(+, 1, 5829dcf95056, +, 14),
+        HEX_DBL(+, 1, d3c4488ee4f7f, +, 15),
+        HEX_DBL(+, 1, 3de1654d37c9a, +, 17),
+        HEX_DBL(+, 1, b00b5916ac955, +, 18),
+        HEX_DBL(+, 1, 259ac48bf05d7, +, 20),
+        HEX_DBL(+, 1, 8f0ccafad2a87, +, 21),
+        HEX_DBL(+, 1, 0f2ebd0a8002, +, 23),
+        HEX_DBL(+, 1, 709348c0ea4f9, +, 24),
+        HEX_DBL(+, 1, f4f22091940bd, +, 25),
+        HEX_DBL(+, 1, 546d8f9ed26e1, +, 27),
+        HEX_DBL(+, 1, ceb088b68e804, +, 28),
+        HEX_DBL(+, 1, 3a6e1fd9eecfd, +, 30),
+        HEX_DBL(+, 1, ab5adb9c436, +, 31),
+        HEX_DBL(+, 1, 226af33b1fdc1, +, 33),
+        HEX_DBL(+, 1, 8ab7fb5475fb7, +, 34),
+        HEX_DBL(+, 1, 0c3d3920962c9, +, 36),
+        HEX_DBL(+, 1, 6c932696a6b5d, +, 37),
+        HEX_DBL(+, 1, ef822f7f6731d, +, 38),
+        HEX_DBL(+, 1, 50bba3796379a, +, 40),
+        HEX_DBL(+, 1, c9aae4631c056, +, 41),
+        HEX_DBL(+, 1, 370470aec28ed, +, 43),
+        HEX_DBL(+, 1, a6b765d8cdf6d, +, 44),
+        HEX_DBL(+, 1, 1f43fcc4b662c, +, 46),
+        HEX_DBL(+, 1, 866f34a725782, +, 47),
+        HEX_DBL(+, 1, 0953e2f3a1ef7, +, 49),
+        HEX_DBL(+, 1, 689e221bc8d5b, +, 50),
+        HEX_DBL(+, 1, ea215a1d20d76, +, 51),
+        HEX_DBL(+, 1, 4d13fbb1a001a, +, 53),
+        HEX_DBL(+, 1, c4b334617cc67, +, 54),
+        HEX_DBL(+, 1, 33a43d282a519, +, 56),
+        HEX_DBL(+, 1, a220d397972eb, +, 57),
+        HEX_DBL(+, 1, 1c25c88df6862, +, 59),
+        HEX_DBL(+, 1, 8232558201159, +, 60),
+        HEX_DBL(+, 1, 0672a3c9eb871, +, 62),
+        HEX_DBL(+, 1, 64b41c6d37832, +, 63),
+        HEX_DBL(+, 1, e4cf766fe49be, +, 64),
+        HEX_DBL(+, 1, 49767bc0483e3, +, 66),
+        HEX_DBL(+, 1, bfc951eb8bb76, +, 67),
+        HEX_DBL(+, 1, 304d6aeca254b, +, 69),
+        HEX_DBL(+, 1, 9d97010884251, +, 70),
+        HEX_DBL(+, 1, 19103e4080b45, +, 72),
+        HEX_DBL(+, 1, 7e013cd114461, +, 73),
+        HEX_DBL(+, 1, 03996528e074c, +, 75),
+        HEX_DBL(+, 1, 60d4f6fdac731, +, 76),
+        HEX_DBL(+, 1, df8c5af17ba3b, +, 77),
+        HEX_DBL(+, 1, 45e3076d61699, +, 79),
+        HEX_DBL(+, 1, baed16a6e0da7, +, 80),
+        HEX_DBL(+, 1, 2cffdfebde1a1, +, 82),
+        HEX_DBL(+, 1, 9919cabefcb69, +, 83),
+        HEX_DBL(+, 1, 160345c9953e3, +, 85),
+        HEX_DBL(+, 1, 79dbc9dc53c66, +, 86),
+        HEX_DBL(+, 1, 00c810d464097, +, 88),
+        HEX_DBL(+, 1, 5d009394c5c27, +, 89),
+        HEX_DBL(+, 1, da57de8f107a8, +, 90),
+        HEX_DBL(+, 1, 425982cf597cd, +, 92),
+        HEX_DBL(+, 1, b61e5ca3a5e31, +, 93),
+        HEX_DBL(+, 1, 29bb825dfcf87, +, 95),
+        HEX_DBL(+, 1, 94a90db0d6fe2, +, 96),
+        HEX_DBL(+, 1, 12fec759586fd, +, 98),
+        HEX_DBL(+, 1, 75c1dc469e3af, +, 99),
+        HEX_DBL(+, 1, fbfd219c43b04, +, 100),
+        HEX_DBL(+, 1, 5936d44e1a146, +, 102),
+        HEX_DBL(+, 1, d531d8a7ee79c, +, 103),
+        HEX_DBL(+, 1, 3ed9d24a2d51b, +, 105),
+        HEX_DBL(+, 1, b15cfe5b6e17b, +, 106),
+        HEX_DBL(+, 1, 268038c2c0e, +, 108),
+        HEX_DBL(+, 1, 9044a73545d48, +, 109),
+        HEX_DBL(+, 1, 1002ab6218b38, +, 111),
+        HEX_DBL(+, 1, 71b3540cbf921, +, 112),
+        HEX_DBL(+, 1, f6799ea9c414a, +, 113),
+        HEX_DBL(+, 1, 55779b984f3eb, +, 115),
+        HEX_DBL(+, 1, d01a210c44aa4, +, 116),
+        HEX_DBL(+, 1, 3b63da8e9121, +, 118),
+        HEX_DBL(+, 1, aca8d6b0116b8, +, 119),
+        HEX_DBL(+, 1, 234de9e0c74e9, +, 121),
+        HEX_DBL(+, 1, 8bec7503ca477, +, 122),
+        HEX_DBL(+, 1, 0d0eda9796b9, +, 124),
+        HEX_DBL(+, 1, 6db0118477245, +, 125),
+        HEX_DBL(+, 1, f1056dc7bf22d, +, 126),
+        HEX_DBL(+, 1, 51c2cc3433801, +, 128),
+        HEX_DBL(+, 1, cb108ffbec164, +, 129),
+        HEX_DBL(+, 1, 37f780991b584, +, 131),
+        HEX_DBL(+, 1, a801c0ea8ac4d, +, 132),
+        HEX_DBL(+, 1, 20247cc4c46c1, +, 134),
+        HEX_DBL(+, 1, 87a0553328015, +, 135),
+        HEX_DBL(+, 1, 0a233dee4f9bb, +, 137),
+        HEX_DBL(+, 1, 69b7f55b808ba, +, 138),
+        HEX_DBL(+, 1, eba064644060a, +, 139),
+        HEX_DBL(+, 1, 4e184933d9364, +, 141),
+        HEX_DBL(+, 1, c614fe2531841, +, 142),
+        HEX_DBL(+, 1, 3494a9b171bf5, +, 144),
+        HEX_DBL(+, 1, a36798b9d969b, +, 145),
+        HEX_DBL(+, 1, 1d03d8c0c04af, +, 147),
+        HEX_DBL(+, 1, 836026385c974, +, 148),
+        HEX_DBL(+, 1, 073fbe9ac901d, +, 150),
+        HEX_DBL(+, 1, 65cae0969f286, +, 151),
+        HEX_DBL(+, 1, e64a58639cae8, +, 152),
+        HEX_DBL(+, 1, 4a77f5f9b50f9, +, 154),
+        HEX_DBL(+, 1, c12744a3a28e3, +, 155),
+        HEX_DBL(+, 1, 313b3b6978e85, +, 157),
+        HEX_DBL(+, 1, 9eda3a31e587e, +, 158),
+        HEX_DBL(+, 1, 19ebe56b56453, +, 160),
+        HEX_DBL(+, 1, 7f2bc6e599b7e, +, 161),
+        HEX_DBL(+, 1, 04644610df2ff, +, 163),
+        HEX_DBL(+, 1, 61e8b490ac4e6, +, 164),
+        HEX_DBL(+, 1, e103201f299b3, +, 165),
+        HEX_DBL(+, 1, 46e1b637beaf5, +, 167),
+        HEX_DBL(+, 1, bc473cfede104, +, 168),
+        HEX_DBL(+, 1, 2deb1b9c85e2d, +, 170),
+        HEX_DBL(+, 1, 9a5981ca67d1, +, 171),
+        HEX_DBL(+, 1, 16dc8a9ef670b, +, 173),
+        HEX_DBL(+, 1, 7b03166942309, +, 174),
+        HEX_DBL(+, 1, 0190be03150a7, +, 176),
+        HEX_DBL(+, 1, 5e1152f9a8119, +, 177),
+        HEX_DBL(+, 1, dbca9263f8487, +, 178),
+        HEX_DBL(+, 1, 43556dee93bee, +, 180),
+        HEX_DBL(+, 1, b774c12967dfa, +, 181),
+        HEX_DBL(+, 1, 2aa4306e922c2, +, 183),
+        HEX_DBL(+, 1, 95e54c5dd4217, +, 184)};
+
     // scale by e**i --  (expm1(f) + 1)*e**i - 1  = expm1(f) * e**i + e**i - 1 = e**i 
     return exp_table[exponent+150] + (f * exp_table[exponent+150] - 1.0);
 }
@@ -1610,20 +1775,16 @@ double reference_relaxed_log2( double x )
   return reference_log2(x);
 }
 
-double reference_log2( double x )
-{
-	if( isnan(x) || x < 0.0 || x == -INFINITY)
-		return cl_make_nan();
-	
-	if( x == 0.0f) 
-		return -INFINITY;
-		
-	if( x == INFINITY )
-		return INFINITY;
+double reference_log2(double x) {
+  if (isnan(x) || x < 0.0 || x == -INFINITY) return cl_make_nan();
 
-	double hi, lo;
-	__log2_ep( &hi, &lo, x );
-	return hi;
+  if (x == 0.0f) return -INFINITY;
+
+  if (x == INFINITY) return INFINITY;
+
+  double hi, lo;
+  __log2_ep(&hi, &lo, x);
+  return hi;
 }
 
 double reference_log1p( double x )
@@ -1839,97 +2000,123 @@ static const double //two52 = 4.50359962737049600000e+15, /* 0x43300000, 0x00000
                     w6  = -1.63092934096575273989e-03; /* 0xBF5AB89D, 0x0B9E43E4 */
 
     static const double zero=  0.00000000000000000000e+00;
-	double t,y,z,nadj,p,p1,p2,p3,q,r,w;
-	cl_int i,hx,lx,ix;
+    double t, y, z, nadj, p, p1, p2, p3, q, r, w;
+    cl_int i, hx, lx, ix;
 
     union{ double d; cl_ulong u;}u; u.d = x;
 
-	hx = (cl_int) (u.u >> 32);
-	lx = (cl_int) (u.u & 0xffffffffULL);
+    hx = (cl_int)(u.u >> 32);
+    lx = (cl_int)(u.u & 0xffffffffULL);
 
     /* purge off +-inf, NaN, +-0, and negative arguments */
-	ix = hx&0x7fffffff;
-	if(ix>=0x7ff00000) return x*x;
-	if((ix|lx)==0) return float_fail();
-	if(ix<0x3b900000) {	/* |x|<2**-70, return -log(|x|) */
-	    if(hx<0) {
-	        return -reference_log(-x);
-	    } else return -reference_log(x);
-	}
-	if(hx<0) {
-	    if(ix>=0x43300000) 	/* |x|>=2**52, must be -integer */
-			return float_fail();
-	    t = reference_sinpi(x);
-	    if(t==zero) return float_fail(); /* -integer */
-	    nadj = reference_log(pi/reference_fabs(t*x));
-	    x = -x;
-	}
+    ix = hx & 0x7fffffff;
+    if (ix >= 0x7ff00000) return x * x;
+    if ((ix | lx) == 0) return float_fail();
+    if (ix < 0x3b900000) { /* |x|<2**-70, return -log(|x|) */
+      if (hx < 0) {
+        return -reference_log(-x);
+      } else
+        return -reference_log(x);
+    }
+    if (hx < 0) {
+      if (ix >= 0x43300000) /* |x|>=2**52, must be -integer */
+        return float_fail();
+      t = reference_sinpi(x);
+      if (t == zero) return float_fail(); /* -integer */
+      nadj = reference_log(pi / reference_fabs(t * x));
+      x = -x;
+    }
 
     /* purge off 1 and 2 */
-	if((((ix-0x3ff00000)|lx)==0)||(((ix-0x40000000)|lx)==0)) r = 0;
+    if ((((ix - 0x3ff00000) | lx) == 0) || (((ix - 0x40000000) | lx) == 0))
+      r = 0;
     /* for x < 2.0 */
-	else if(ix<0x40000000) {
-	    if(ix<=0x3feccccc) { 	/* lgamma(x) = lgamma(x+1)-log(x) */
-		r = -reference_log(x);
-		if(ix>=0x3FE76944) {y = 1.0-x; i= 0;}
-		else if(ix>=0x3FCDA661) {y= x-(tc-one); i=1;}
-	  	else {y = x; i=2;}
-	    } else {
-	  	r = zero;
-	        if(ix>=0x3FFBB4C3) {y=2.0-x;i=0;} /* [1.7316,2] */
-	        else if(ix>=0x3FF3B4C4) {y=x-tc;i=1;} /* [1.23,1.73] */
-		else {y=x-one;i=2;}
-	    }
-	    switch(i) {
-	      case 0:
-		z = y*y;
-		p1 = a0+z*(a2+z*(a4+z*(a6+z*(a8+z*a10))));
-		p2 = z*(a1+z*(a3+z*(a5+z*(a7+z*(a9+z*a11)))));
-		p  = y*p1+p2;
-		r  += (p-0.5*y); break;
-	      case 1:
-		z = y*y;
-		w = z*y;
-		p1 = t0+w*(t3+w*(t6+w*(t9 +w*t12)));	/* parallel comp */
-		p2 = t1+w*(t4+w*(t7+w*(t10+w*t13)));
-		p3 = t2+w*(t5+w*(t8+w*(t11+w*t14)));
-		p  = z*p1-(tt-w*(p2+y*p3));
-		r += (tf + p); break;
-	      case 2:	
-		p1 = y*(u0+y*(u1+y*(u2+y*(u3+y*(u4+y*u5)))));
-		p2 = one+y*(v1+y*(v2+y*(v3+y*(v4+y*v5))));
-		r += (-0.5*y + p1/p2);
-	    }
-	}
-	else if(ix<0x40200000) { 			/* x < 8.0 */
-	    i = (int)x;
-	    t = zero;
-	    y = x-(double)i;
-	    p = y*(s0+y*(s1+y*(s2+y*(s3+y*(s4+y*(s5+y*s6))))));
-	    q = one+y*(r1+y*(r2+y*(r3+y*(r4+y*(r5+y*r6)))));
-	    r = half*y+p/q;
-	    z = one;	/* lgamma(1+s) = log(s) + lgamma(s) */
-	    switch(i) {
-	    case 7: z *= (y+6.0);	/* FALLTHRU */
-	    case 6: z *= (y+5.0);	/* FALLTHRU */
-	    case 5: z *= (y+4.0);	/* FALLTHRU */
-	    case 4: z *= (y+3.0);	/* FALLTHRU */
-	    case 3: z *= (y+2.0);	/* FALLTHRU */
-		    r += reference_log(z); break;
-	    }
-    /* 8.0 <= x < 2**58 */
-	} else if (ix < 0x43900000) {
-	    t = reference_log(x);
-	    z = one/x;
-	    y = z*z;
-	    w = w0+z*(w1+y*(w2+y*(w3+y*(w4+y*(w5+y*w6)))));
-	    r = (x-half)*(t-one)+w;
-	} else 
-    /* 2**58 <= x <= inf */
-	    r =  x*(reference_log(x)-one);
-	if(hx<0) r = nadj - r;
-	return r;
-
+    else if (ix < 0x40000000) {
+      if (ix <= 0x3feccccc) { /* lgamma(x) = lgamma(x+1)-log(x) */
+        r = -reference_log(x);
+        if (ix >= 0x3FE76944) {
+          y = 1.0 - x;
+          i = 0;
+        } else if (ix >= 0x3FCDA661) {
+          y = x - (tc - one);
+          i = 1;
+        } else {
+          y = x;
+          i = 2;
+        }
+      } else {
+        r = zero;
+        if (ix >= 0x3FFBB4C3) {
+          y = 2.0 - x;
+          i = 0;
+        } /* [1.7316,2] */
+        else if (ix >= 0x3FF3B4C4) {
+          y = x - tc;
+          i = 1;
+        } /* [1.23,1.73] */
+        else {
+          y = x - one;
+          i = 2;
+        }
+      }
+      switch (i) {
+        case 0:
+          z = y * y;
+          p1 = a0 + z * (a2 + z * (a4 + z * (a6 + z * (a8 + z * a10))));
+          p2 = z * (a1 + z * (a3 + z * (a5 + z * (a7 + z * (a9 + z * a11)))));
+          p = y * p1 + p2;
+          r += (p - 0.5 * y);
+          break;
+        case 1:
+          z = y * y;
+          w = z * y;
+          p1 =
+              t0 + w * (t3 + w * (t6 + w * (t9 + w * t12))); /* parallel comp */
+          p2 = t1 + w * (t4 + w * (t7 + w * (t10 + w * t13)));
+          p3 = t2 + w * (t5 + w * (t8 + w * (t11 + w * t14)));
+          p = z * p1 - (tt - w * (p2 + y * p3));
+          r += (tf + p);
+          break;
+        case 2:
+          p1 = y * (u0 + y * (u1 + y * (u2 + y * (u3 + y * (u4 + y * u5)))));
+          p2 = one + y * (v1 + y * (v2 + y * (v3 + y * (v4 + y * v5))));
+          r += (-0.5 * y + p1 / p2);
+      }
+    } else if (ix < 0x40200000) { /* x < 8.0 */
+      i = (int)x;
+      t = zero;
+      y = x - (double)i;
+      p = y *
+          (s0 + y * (s1 + y * (s2 + y * (s3 + y * (s4 + y * (s5 + y * s6))))));
+      q = one + y * (r1 + y * (r2 + y * (r3 + y * (r4 + y * (r5 + y * r6)))));
+      r = half * y + p / q;
+      z = one; /* lgamma(1+s) = log(s) + lgamma(s) */
+      switch (i) {
+        case 7:
+          z *= (y + 6.0); /* FALLTHRU */
+        case 6:
+          z *= (y + 5.0); /* FALLTHRU */
+        case 5:
+          z *= (y + 4.0); /* FALLTHRU */
+        case 4:
+          z *= (y + 3.0); /* FALLTHRU */
+        case 3:
+          z *= (y + 2.0); /* FALLTHRU */
+          r += reference_log(z);
+          break;
+      }
+      /* 8.0 <= x < 2**58 */
+    } else if (ix < 0x43900000) {
+      t = reference_log(x);
+      z = one / x;
+      y = z * z;
+      w = w0 + z * (w1 + y * (w2 + y * (w3 + y * (w4 + y * (w5 + y * w6)))));
+      r = (x - half) * (t - one) + w;
+    } else
+      /* 2**58 <= x <= inf */
+      r = x * (reference_log(x) - one);
+    if (hx < 0) r = nadj - r;
+    return r;
 }
 
 #endif // _MSC_VER
@@ -2059,9 +2246,9 @@ long double reference_cospil( long double x)
     return reference_sinl( xhi );
 
 #else
-	// phase adjust
-	x += 0.5L;
-	
+    // phase adjust
+    x += 0.5L;
+
     // reduce to [-0.5, 0.5]
     if( x < -0.5L )
         x = -1.0L - x;
@@ -2830,144 +3017,140 @@ long double reference_sinpil( long double x)
     return reference_sinl( r * M_PIL );   
 }
 
-long double reference_tanpil( long double x)
-{
-    // set aside the sign  (allows us to preserve sign of -0)
-    long double sign = reference_copysignl( 1.0L, x);
-    long double z = reference_fabsl(x);
+long double reference_tanpil(long double x) {
+  // set aside the sign  (allows us to preserve sign of -0)
+  long double sign = reference_copysignl(1.0L, x);
+  long double z = reference_fabsl(x);
 
-    // if big and even  -- caution: only works if x only has single precision
-    if( z >= HEX_LDBL( +, 1, 0, +, 53 ) )
-    {
-        if( z == INFINITY )
-            return x - x;       // nan
-            
-        return reference_copysignl( 0.0L, x);   // tanpi ( n ) is copysign( 0.0, n)  for even integers n.
-    }
-    
-    // reduce to the range [ -0.5, 0.5 ]
-    long double nearest = reference_rintl( z );     // round to nearest even places n + 0.5 values in the right place for us
-    int64_t i = (int64_t) nearest;          // test above against 0x1.0p53 avoids overflow here
-    z -= nearest;                   
-    
-    //correction for odd integer x for the right sign of zero
-    if( (i&1) && z == 0.0L )
-        sign = -sign;
-    
-    // track changes to the sign
-    sign *= reference_copysignl(1.0L, z);       // really should just be an xor
-    z = reference_fabsl(z);                    // remove the sign again
-    
-    // reduce once more
-    // If we don't do this, rounding error in z * M_PI will cause us not to return infinities properly
-    if( z > 0.25L )
-    {
-        z = 0.5L - z;
-        return sign / reference_tanl( z * M_PIL );      // use system tan to get the right result
-    }
-    
-    //
-    return sign * reference_tanl( z * M_PIL );          // use system tan to get the right result
+  // if big and even  -- caution: only works if x only has single precision
+  if (z >= HEX_LDBL(+, 1, 0, +, 53)) {
+    if (z == INFINITY) return x - x;  // nan
+
+    return reference_copysignl(
+        0.0L, x);  // tanpi ( n ) is copysign( 0.0, n)  for even integers n.
+  }
+
+  // reduce to the range [ -0.5, 0.5 ]
+  long double nearest =
+      reference_rintl(z);  // round to nearest even places n + 0.5 values in the
+                           // right place for us
+  int64_t i =
+      (int64_t)nearest;  // test above against 0x1.0p53 avoids overflow here
+  z -= nearest;
+
+  // correction for odd integer x for the right sign of zero
+  if ((i & 1) && z == 0.0L) sign = -sign;
+
+  // track changes to the sign
+  sign *= reference_copysignl(1.0L, z);  // really should just be an xor
+  z = reference_fabsl(z);                // remove the sign again
+
+  // reduce once more
+  // If we don't do this, rounding error in z * M_PI will cause us not to return
+  // infinities properly
+  if (z > 0.25L) {
+    z = 0.5L - z;
+    return sign /
+           reference_tanl(z * M_PIL);  // use system tan to get the right result
+  }
+
+  //
+  return sign *
+         reference_tanl(z * M_PIL);  // use system tan to get the right result
 }
 
-long double reference_pownl( long double x, int i ){ return reference_powl( x, (long double) i ); }
-
-long double reference_powrl( long double x, long double y )
-{  
-    //powr ( x, y ) returns NaN for x < 0. 
-    if( x < 0.0L )
-        return cl_make_nan();
-
-    //powr ( x, NaN ) returns the NaN for x >= 0. 
-    //powr ( NaN, y ) returns the NaN. 
-    if( isnan(x) || isnan(y) )
-        return x + y;   // Note: behavior different here than for pow(1,NaN), pow(NaN, 0)
-
-    if( x == 1.0L )
-    {
-        //powr ( +1, +-inf ) returns NaN. 
-        if( reference_fabsl(y) == INFINITY )
-            return cl_make_nan();
-        
-        //powr ( +1, y ) is 1 for finite y.    (NaN handled above)
-        return 1.0L;
-    }
-
-    if( y == 0.0L )
-    {
-        //powr ( +inf, +-0 ) returns NaN. 
-        //powr ( +-0, +-0 ) returns NaN. 
-        if( x == 0.0L || x == INFINITY )
-            return cl_make_nan(); 
-    
-        //powr ( x, +-0 ) is 1 for finite x > 0.  (x <= 0, NaN, INF already handled above)
-        return 1.0L;
-    }
-    
-    if( x == 0.0L )
-    {
-        //powr ( +-0, -inf) is +inf. 
-        //powr ( +-0, y ) is +inf for finite y < 0. 
-        if( y < 0.0L )
-            return INFINITY;
-            
-        //powr ( +-0, y ) is +0 for y > 0.    (NaN, y==0 handled above)
-        return 0.0L;
-    }
-        
-	return reference_powl( x, y );
+long double reference_pownl(long double x, int i) {
+  return reference_powl(x, (long double)i);
 }
 
-//long double my_fdiml( long double x, long double y){ return fdim( (double) x, (double) y ); }
-long double reference_addl( long double x, long double y)
-{ 
-    volatile double a = (double) x;
-    volatile double b = (double) y;
+long double reference_powrl(long double x, long double y) {
+  // powr ( x, y ) returns NaN for x < 0.
+  if (x < 0.0L) return cl_make_nan();
 
-#if defined( __SSE2__ )
-    // defeat x87
-    __m128d va = _mm_set_sd( (double) a );
-    __m128d vb = _mm_set_sd( (double) b );
-    va = _mm_add_sd( va, vb );
-    _mm_store_sd( (double*) &a, va );
+  // powr ( x, NaN ) returns the NaN for x >= 0.
+  // powr ( NaN, y ) returns the NaN.
+  if (isnan(x) || isnan(y))
+    return x +
+           y;  // Note: behavior different here than for pow(1,NaN), pow(NaN, 0)
+
+  if (x == 1.0L) {
+    // powr ( +1, +-inf ) returns NaN.
+    if (reference_fabsl(y) == INFINITY) return cl_make_nan();
+
+    // powr ( +1, y ) is 1 for finite y.    (NaN handled above)
+    return 1.0L;
+  }
+
+  if (y == 0.0L) {
+    // powr ( +inf, +-0 ) returns NaN.
+    // powr ( +-0, +-0 ) returns NaN.
+    if (x == 0.0L || x == INFINITY) return cl_make_nan();
+
+    // powr ( x, +-0 ) is 1 for finite x > 0.  (x <= 0, NaN, INF already handled
+    // above)
+    return 1.0L;
+  }
+
+  if (x == 0.0L) {
+    // powr ( +-0, -inf) is +inf.
+    // powr ( +-0, y ) is +inf for finite y < 0.
+    if (y < 0.0L) return INFINITY;
+
+    // powr ( +-0, y ) is +0 for y > 0.    (NaN, y==0 handled above)
+    return 0.0L;
+  }
+
+  return reference_powl(x, y);
+}
+
+// long double my_fdiml( long double x, long double y){ return fdim( (double) x,
+// (double) y ); }
+long double reference_addl(long double x, long double y) {
+  volatile double a = (double)x;
+  volatile double b = (double)y;
+
+#if defined(__SSE2__)
+  // defeat x87
+  __m128d va = _mm_set_sd((double)a);
+  __m128d vb = _mm_set_sd((double)b);
+  va = _mm_add_sd(va, vb);
+  _mm_store_sd((double*)&a, va);
 #else
-    a += b;
+  a += b;
 #endif
-    return (long double) a;
+  return (long double)a;
 }
 
-long double reference_subtractl( long double x, long double y)
-{ 
-    volatile double a = (double) x;
-    volatile double b = (double) y;
+long double reference_subtractl(long double x, long double y) {
+  volatile double a = (double)x;
+  volatile double b = (double)y;
 
-#if defined( __SSE2__ )
-    // defeat x87
-    __m128d va = _mm_set_sd( (double) a );
-    __m128d vb = _mm_set_sd( (double) b );
-    va = _mm_sub_sd( va, vb );
-    _mm_store_sd( (double*) &a, va );
+#if defined(__SSE2__)
+  // defeat x87
+  __m128d va = _mm_set_sd((double)a);
+  __m128d vb = _mm_set_sd((double)b);
+  va = _mm_sub_sd(va, vb);
+  _mm_store_sd((double*)&a, va);
 #else
-    a -= b;
+  a -= b;
 #endif
-    return (long double) a;
+  return (long double)a;
 }
 
-long double reference_multiplyl( long double x, long double y)
-{ 
-    volatile double a = (double) x;
-    volatile double b = (double) y;
+long double reference_multiplyl(long double x, long double y) {
+  volatile double a = (double)x;
+  volatile double b = (double)y;
 
-#if defined( __SSE2__ )
-    // defeat x87
-    __m128d va = _mm_set_sd( (double) a );
-    __m128d vb = _mm_set_sd( (double) b );
-    va = _mm_mul_sd( va, vb );
-    _mm_store_sd( (double*) &a, va );
+#if defined(__SSE2__)
+  // defeat x87
+  __m128d va = _mm_set_sd((double)a);
+  __m128d vb = _mm_set_sd((double)b);
+  va = _mm_mul_sd(va, vb);
+  _mm_store_sd((double*)&a, va);
 #else
-    a *= b;
+  a *= b;
 #endif
-    return (long double) a;
+  return (long double)a;
 }
 
 /*long double my_remquol( long double x, long double y, int *iptr )
@@ -2982,115 +3165,117 @@ long double reference_multiplyl( long double x, long double y)
 
     return remquo( (double) x, (double) y, iptr );
 }*/
-long double reference_lgamma_rl( long double x, int *signp )
-{
-//	long double lgamma_val = (long double)reference_lgamma( (double)x );
-//	*signp = signgam;
-    *signp = 0;
-	return x;
+long double reference_lgamma_rl(long double x, int* signp) {
+  // long double lgamma_val = (long double)reference_lgamma( (double)x );
+  // *signp = signgam;
+  *signp = 0;
+  return x;
 }
 
+int reference_isequall(long double x, long double y) { return x == y; }
+int reference_isfinitel(long double x) { return 0 != isfinite(x); }
+int reference_isgreaterl(long double x, long double y) { return x > y; }
+int reference_isgreaterequall(long double x, long double y) { return x >= y; }
+int reference_isinfl(long double x) { return 0 != isinf(x); }
+int reference_islessl(long double x, long double y) { return x < y; }
+int reference_islessequall(long double x, long double y) { return x <= y; }
+int reference_islessgreaterl(long double x, long double y) {
+  return 0 != islessgreater(x, y);
+}
+int reference_isnanl(long double x) { return 0 != isnan(x); }
+int reference_isnormall(long double x) { return 0 != isnormal((double)x); }
+int reference_isnotequall(long double x, long double y) { return x != y; }
+int reference_isorderedl(long double x, long double y) {
+  return x == x && y == y;
+}
+int reference_isunorderedl(long double x, long double y) {
+  return isnan(x) || isnan(y);
+}
+int reference_signbitl(long double x) { return 0 != signbit(x); }
 
-int reference_isequall( long double x, long double y){ return x == y; }
-int reference_isfinitel( long double x){ return 0 != isfinite(x); }
-int reference_isgreaterl( long double x, long double y){ return x > y; }
-int reference_isgreaterequall( long double x, long double y){ return x >= y; }
-int reference_isinfl( long double x){ return 0 != isinf(x); }
-int reference_islessl( long double x, long double y){ return x < y; }
-int reference_islessequall( long double x, long double y){ return x <= y; }
-int reference_islessgreaterl( long double x, long double y){  return 0 != islessgreater( x, y ); }
-int reference_isnanl( long double x){ return 0 != isnan( x ); }
-int reference_isnormall( long double x){ return 0 != isnormal( (double) x ); }
-int reference_isnotequall( long double x, long double y){ return x != y; }
-int reference_isorderedl( long double x, long double y){ return x == x && y == y; }
-int reference_isunorderedl( long double x, long double y){ return isnan(x) || isnan( y ); }
-int reference_signbitl( long double x){ return 0 != signbit( x ); }
-
-long double reference_copysignl( long double x, long double y);
-long double reference_roundl( long double x );
+long double reference_copysignl(long double x, long double y);
+long double reference_roundl(long double x);
 long double reference_cbrtl(long double x);
 
-long double reference_copysignl( long double x, long double y )
-{
-    // We hope that the long double to double conversion proceeds with sign fidelity,
-    // even for zeros and NaNs
-    union{ double d; cl_ulong u;}u; u.d = (double) y;
-    
-    x = reference_fabsl(x);
-    if( u.u >> 63 )
-        x = -x;
-        
-    return x;
+long double reference_copysignl(long double x, long double y) {
+  // We hope that the long double to double conversion proceeds with sign
+  // fidelity, even for zeros and NaNs
+  union {
+    double d;
+    cl_ulong u;
+  } u;
+  u.d = (double)y;
+
+  x = reference_fabsl(x);
+  if (u.u >> 63) x = -x;
+
+  return x;
 }
 
-long double reference_roundl( long double x )
-{
-    // Since we are just using this to verify double precision, we can
-    // use the double precision copysign here
+long double reference_roundl(long double x) {
+  // Since we are just using this to verify double precision, we can
+  // use the double precision copysign here
 
 #if defined(__MINGW32__) && defined(__x86_64__)
-    long double absx = reference_fabsl(x);
-    if (absx < 0.5L)
-	return reference_copysignl(0.0L, x);
+  long double absx = reference_fabsl(x);
+  if (absx < 0.5L) return reference_copysignl(0.0L, x);
 #endif
-    return round( (double) x );
+  return round((double)x);
 }
 
-long double reference_truncl( long double x )
-{
-    // Since we are just using this to verify double precision, we can
-    // use the double precision copysign here
-    return trunc( (double) x );
+long double reference_truncl(long double x) {
+  // Since we are just using this to verify double precision, we can
+  // use the double precision copysign here
+  return trunc((double)x);
 }
 
 static long double reference_scalblnl(long double x, long n);
 
-long double reference_cbrtl(long double x)
-{
-	double yhi = HEX_DBL( +, 1, 5555555555555, -, 2 );
-	double ylo = HEX_DBL( +, 1, 558, -, 56 );
-	
-	double fabsx = reference_fabs( x );
-	
-    if( isnan(x) || fabsx == 1.0 || fabsx == 0.0 || isinf(x) )
-        return x; 
-	
-	double iy = 0.0;
-	double log2x_hi, log2x_lo;
-	
-	// extended precision log .... accurate to at least 64-bits + couple of guard bits
-	__log2_ep(&log2x_hi, &log2x_lo, fabsx);
-	
-	double ylog2x_hi, ylog2x_lo;
-	
-	double y_hi = yhi;
-	double y_lo = ylo;
-	
-	// compute product of y*log2(x)
-	MulDD(&ylog2x_hi, &ylog2x_lo, log2x_hi, log2x_lo, y_hi, y_lo);
-	
-	long double powxy;
-	if(isinf(ylog2x_hi) || (reference_fabs(ylog2x_hi) > 2200)) {
-		powxy = reference_signbit(ylog2x_hi) ? HEX_DBL( +, 0, 0, +, 0 ) : INFINITY;
-    } else {
-        // separate integer + fractional part
-        long int m = lrint(ylog2x_hi);
-        AddDD(&ylog2x_hi, &ylog2x_lo, ylog2x_hi, ylog2x_lo, -m, 0.0);
-        
-        // revert to long double arithemtic
-        long double ylog2x = (long double) ylog2x_hi + (long double) ylog2x_lo;
-        powxy = reference_exp2l( ylog2x );
-        powxy = reference_scalblnl(powxy, m); 
-    }
-				
-	return reference_copysignl( powxy, x ); 
+long double reference_cbrtl(long double x) {
+  double yhi = HEX_DBL(+, 1, 5555555555555, -, 2);
+  double ylo = HEX_DBL(+, 1, 558, -, 56);
+
+  double fabsx = reference_fabs(x);
+
+  if (isnan(x) || fabsx == 1.0 || fabsx == 0.0 || isinf(x)) return x;
+
+  double iy = 0.0;
+  double log2x_hi, log2x_lo;
+
+  // extended precision log .... accurate to at least 64-bits + couple of guard
+  // bits
+  __log2_ep(&log2x_hi, &log2x_lo, fabsx);
+
+  double ylog2x_hi, ylog2x_lo;
+
+  double y_hi = yhi;
+  double y_lo = ylo;
+
+  // compute product of y*log2(x)
+  MulDD(&ylog2x_hi, &ylog2x_lo, log2x_hi, log2x_lo, y_hi, y_lo);
+
+  long double powxy;
+  if (isinf(ylog2x_hi) || (reference_fabs(ylog2x_hi) > 2200)) {
+    powxy = reference_signbit(ylog2x_hi) ? HEX_DBL(+, 0, 0, +, 0) : INFINITY;
+  } else {
+    // separate integer + fractional part
+    long int m = lrint(ylog2x_hi);
+    AddDD(&ylog2x_hi, &ylog2x_lo, ylog2x_hi, ylog2x_lo, -m, 0.0);
+
+    // revert to long double arithemtic
+    long double ylog2x = (long double)ylog2x_hi + (long double)ylog2x_lo;
+    powxy = reference_exp2l(ylog2x);
+    powxy = reference_scalblnl(powxy, m);
+  }
+
+  return reference_copysignl(powxy, x);
 }
 
 /*
 long double scalbnl( long double x, int i )
 {
     //suitable for checking double precision scalbn only
-    
+
     if( i > 3000 )
         return copysignl( INFINITY, x);
     if( i < -3000 )
@@ -3103,7 +3288,7 @@ long double scalbnl( long double x, int i )
             x *= HEX_LDBL( +, 1, 0, +, 1000 );
             i -= 1000;
         }
-        
+
         union{ cl_ulong u; double d;}u;
         u.u = (cl_ulong)( i + 1023 ) << 52;
         x *= (long double) u.d;
@@ -3115,157 +3300,141 @@ long double scalbnl( long double x, int i )
             x *= HEX_LDBL( +, 1, 0, -, 1000 );
             i += 1000;
         }
-        
+
         union{ cl_ulong u; double d;}u;
         u.u = (cl_ulong)( i + 1023 ) << 52;
         x *= (long double) u.d;
     }
-    
+
     return x;
 }
 */
 
-long double reference_rintl( long double x )
-{
+long double reference_rintl(long double x) {
 #if defined(__PPC__)
-  // On PPC, long doubles are maintained as 2 doubles. Therefore, the combined 
+  // On PPC, long doubles are maintained as 2 doubles. Therefore, the combined
   // mantissa can represent more than LDBL_MANT_DIG binary digits.
   x = rintl(x);
 #else
-    static long double magic[2] = { 0.0L, 0.0L};
-    
-    if( 0.0L == magic[0] )
-    {
-        magic[0] = scalbnl(0.5L, LDBL_MANT_DIG);
-        magic[1] = scalbnl(-0.5L, LDBL_MANT_DIG);
-    }
+  static long double magic[2] = {0.0L, 0.0L};
 
-    if( reference_fabsl(x) < magic[0] && x != 0.0L )
-    {
-        long double m = magic[ x < 0 ];
-        x += m;
-        x -= m;
-    }
-#endif // __PPC__ 
-    return x;
+  if (0.0L == magic[0]) {
+    magic[0] = scalbnl(0.5L, LDBL_MANT_DIG);
+    magic[1] = scalbnl(-0.5L, LDBL_MANT_DIG);
+  }
+
+  if (reference_fabsl(x) < magic[0] && x != 0.0L) {
+    long double m = magic[x < 0];
+    x += m;
+    x -= m;
+  }
+#endif  // __PPC__
+  return x;
 }
 
 // extended precision sqrt using newton iteration on 1/sqrt(x).
 // Final result is computed as x * 1/sqrt(x)
-static void __sqrt_ep(double *rhi, double *rlo, double xhi, double xlo)
-{
-    // approximate reciprocal sqrt
-    double thi = 1.0 / sqrt( xhi );
-    double tlo = 0.0;
-    
-    // One newton iteration in double-double
-    double yhi, ylo;
-    MulDD(&yhi, &ylo, thi, tlo, thi, tlo);
-    MulDD(&yhi, &ylo, yhi, ylo, xhi, xlo);
-    AddDD(&yhi, &ylo, -yhi, -ylo, 3.0, 0.0);
-    MulDD(&yhi, &ylo, yhi, ylo, thi, tlo);
-    MulDD(&yhi, &ylo, yhi, ylo, 0.5, 0.0);
-    
-    MulDD(rhi, rlo, yhi, ylo, xhi, xlo);
+static void __sqrt_ep(double* rhi, double* rlo, double xhi, double xlo) {
+  // approximate reciprocal sqrt
+  double thi = 1.0 / sqrt(xhi);
+  double tlo = 0.0;
+
+  // One newton iteration in double-double
+  double yhi, ylo;
+  MulDD(&yhi, &ylo, thi, tlo, thi, tlo);
+  MulDD(&yhi, &ylo, yhi, ylo, xhi, xlo);
+  AddDD(&yhi, &ylo, -yhi, -ylo, 3.0, 0.0);
+  MulDD(&yhi, &ylo, yhi, ylo, thi, tlo);
+  MulDD(&yhi, &ylo, yhi, ylo, 0.5, 0.0);
+
+  MulDD(rhi, rlo, yhi, ylo, xhi, xlo);
 }
 
-long double reference_acoshl( long double x )
-{
-/*
- * ====================================================
- * This function derived from fdlibm http://www.netlib.org
- * It is Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunSoft, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
- * is preserved.
- * ====================================================
- *
- */
-    if( isnan(x) || isinf(x))
-        return x + fabsl(x);
-        
-    if( x < 1.0L )
-        return cl_make_nan();
+long double reference_acoshl(long double x) {
+  /*
+   * ====================================================
+   * This function derived from fdlibm http://www.netlib.org
+   * It is Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+   *
+   * Developed at SunSoft, a Sun Microsystems, Inc. business.
+   * Permission to use, copy, modify, and distribute this
+   * software is freely granted, provided that this notice
+   * is preserved.
+   * ====================================================
+   *
+   */
+  if (isnan(x) || isinf(x)) return x + fabsl(x);
 
-    if( x == 1.0L )
-        return 0.0L;
-    
-    if( x > HEX_LDBL( +, 1, 0, +, 60 ) )
-        return reference_logl(x) + 0.693147180559945309417232121458176568L;
-        
-    if( x > 2.0L )
-        return reference_logl(2.0L * x - 1.0L / (x + sqrtl(x*x - 1.0L)));
-    
-    double hi, lo;
-    MulD(&hi, &lo, x, x);
-    AddDD(&hi, &lo, hi, lo, -1.0, 0.0);
-    __sqrt_ep(&hi, &lo, hi, lo);
-    AddDD(&hi, &lo, hi, lo, x, 0.0);
-    double correction = lo / hi;
-    __log2_ep(&hi, &lo, hi);
-	double log2Hi = HEX_DBL( +, 1, 62e42fefa39ef, -, 1 );
-	double log2Lo = HEX_DBL( +, 1, abc9e3b39803f, -, 56 );
-    MulDD(&hi, &lo, hi, lo, log2Hi, log2Lo);
-    AddDD(&hi, &lo, hi, lo, correction, 0.0);
-    
-    return hi + lo;
+  if (x < 1.0L) return cl_make_nan();
+
+  if (x == 1.0L) return 0.0L;
+
+  if (x > HEX_LDBL(+, 1, 0, +, 60))
+    return reference_logl(x) + 0.693147180559945309417232121458176568L;
+
+  if (x > 2.0L)
+    return reference_logl(2.0L * x - 1.0L / (x + sqrtl(x * x - 1.0L)));
+
+  double hi, lo;
+  MulD(&hi, &lo, x, x);
+  AddDD(&hi, &lo, hi, lo, -1.0, 0.0);
+  __sqrt_ep(&hi, &lo, hi, lo);
+  AddDD(&hi, &lo, hi, lo, x, 0.0);
+  double correction = lo / hi;
+  __log2_ep(&hi, &lo, hi);
+  double log2Hi = HEX_DBL(+, 1, 62e42fefa39ef, -, 1);
+  double log2Lo = HEX_DBL(+, 1, abc9e3b39803f, -, 56);
+  MulDD(&hi, &lo, hi, lo, log2Hi, log2Lo);
+  AddDD(&hi, &lo, hi, lo, correction, 0.0);
+
+  return hi + lo;
 }
 
-long double reference_asinhl( long double x )
-{
-    long double cutoff = 0.0L;
-    const long double ln2 = HEX_LDBL( +, b, 17217f7d1cf79ab, -, 4 );	
-    
-    if( cutoff == 0.0L )
-        cutoff = reference_ldexpl(1.0L, -LDBL_MANT_DIG);
+long double reference_asinhl(long double x) {
+  long double cutoff = 0.0L;
+  const long double ln2 = HEX_LDBL(+, b, 17217f7d1cf79ab, -, 4);
 
-    if( isnan(x) || isinf(x) )
-        return x + x;
-        
-    long double absx = reference_fabsl(x);
-    if( absx < cutoff )
-        return x;
+  if (cutoff == 0.0L) cutoff = reference_ldexpl(1.0L, -LDBL_MANT_DIG);
 
-    long double sign = reference_copysignl(1.0L, x);
+  if (isnan(x) || isinf(x)) return x + x;
 
-	if( absx <= 4.0/3.0 ) {
-		return sign * reference_log1pl( absx + x*x / (1.0 + sqrtl(1.0 + x*x)));
-	}
-	else if( absx <= HEX_LDBL( +, 1, 0, +, 27 ) ) {
-		return sign * reference_logl( 2.0L * absx + 1.0L / (sqrtl( x * x + 1.0 ) + absx));
-	}
-    else {
-        return sign * ( reference_logl( absx ) + ln2 );
-    }
+  long double absx = reference_fabsl(x);
+  if (absx < cutoff) return x;
+
+  long double sign = reference_copysignl(1.0L, x);
+
+  if (absx <= 4.0 / 3.0) {
+    return sign * reference_log1pl(absx + x * x / (1.0 + sqrtl(1.0 + x * x)));
+  } else if (absx <= HEX_LDBL(+, 1, 0, +, 27)) {
+    return sign *
+           reference_logl(2.0L * absx + 1.0L / (sqrtl(x * x + 1.0) + absx));
+  } else {
+    return sign * (reference_logl(absx) + ln2);
+  }
 }
 
-long double reference_atanhl( long double x )
-{ 
-/*
- * ====================================================
- * This function is from fdlibm: http://www.netlib.org
- *   It is Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunSoft, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
- * is preserved.
- * ====================================================
- */
-    if( isnan(x)  )
-        return x + x;
-    
-    long double signed_half = reference_copysignl( 0.5L, x );
-    x = reference_fabsl(x);
-    if( x > 1.0L )
-        return cl_make_nan();
-        
-    if( x < 0.5L )
-        return signed_half * reference_log1pl( 2.0L * ( x + x*x / (1-x) ) );
-    
-    return signed_half * reference_log1pl(2.0L * x / (1-x));
+long double reference_atanhl(long double x) {
+  /*
+   * ====================================================
+   * This function is from fdlibm: http://www.netlib.org
+   *   It is Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+   *
+   * Developed at SunSoft, a Sun Microsystems, Inc. business.
+   * Permission to use, copy, modify, and distribute this
+   * software is freely granted, provided that this notice
+   * is preserved.
+   * ====================================================
+   */
+  if (isnan(x)) return x + x;
+
+  long double signed_half = reference_copysignl(0.5L, x);
+  x = reference_fabsl(x);
+  if (x > 1.0L) return cl_make_nan();
+
+  if (x < 0.5L)
+    return signed_half * reference_log1pl(2.0L * (x + x * x / (1 - x)));
+
+  return signed_half * reference_log1pl(2.0L * x / (1 - x));
 }
 
 long double reference_exp2l(  long double z)
@@ -3466,19 +3635,16 @@ long double reference_hypotl( long double x, long double y )
 
 long double reference_log2l( long double x )
 {
-	if( isnan(x) || x < 0.0 || x == -INFINITY)
-		return NAN;
-	
-	if( x == 0.0f) 
-		return -INFINITY;
-		
-	if( x == INFINITY )
-		return INFINITY;
-	
-    double hi, lo;
-    __log2_ep( &hi, &lo, x);
-    
-    return (long double) hi + (long double) lo;
+  if (isnan(x) || x < 0.0 || x == -INFINITY) return NAN;
+
+  if (x == 0.0f) return -INFINITY;
+
+  if (x == INFINITY) return INFINITY;
+
+  double hi, lo;
+  __log2_ep(&hi, &lo, x);
+
+  return (long double)hi + (long double)lo;
 }
 
 long double reference_log1pl(  long double x)
@@ -3574,21 +3740,24 @@ long double reference_lgammal( long double x)
     return reference_lgamma( x );
 }
 
-static uint32_t two_over_pi[] = { 0x0, 0x28be60db, 0x24e44152, 0x27f09d5f, 0x11f534dd, 0x3036d8a5, 0x1993c439, 0x107f945, 0x23abdebb, 0x31586dc9, 
-0x6e3a424, 0x374b8019, 0x92eea09, 0x3464873f, 0x21deb1cb, 0x4a69cfb, 0x288235f5, 0xbaed121, 0xe99c702, 0x1ad17df9, 
-0x13991d6, 0xe60d4ce, 0x1f49c845, 0x3e2ef7e4, 0x283b1ff8, 0x25fff781, 0x1980fef2, 0x3c462d68, 0xa6d1f6d, 0xd9fb3c9, 
-0x3cb09b74, 0x3d18fd9a, 0x1e5fea2d, 0x1d49eeb1, 0x3ebe5f17, 0x2cf41ce7, 0x378a5292, 0x3a9afed7, 0x3b11f8d5, 0x3421580c, 
-0x3046fc7b, 0x1aeafc33, 0x3bc209af, 0x10d876a7, 0x2391615e, 0x3986c219, 0x199855f1, 0x1281a102, 0xdffd880, 0x135cc9cc, 
-0x10606155
-};
+static uint32_t two_over_pi[] = {
+    0x0,        0x28be60db, 0x24e44152, 0x27f09d5f, 0x11f534dd, 0x3036d8a5,
+    0x1993c439, 0x107f945,  0x23abdebb, 0x31586dc9, 0x6e3a424,  0x374b8019,
+    0x92eea09,  0x3464873f, 0x21deb1cb, 0x4a69cfb,  0x288235f5, 0xbaed121,
+    0xe99c702,  0x1ad17df9, 0x13991d6,  0xe60d4ce,  0x1f49c845, 0x3e2ef7e4,
+    0x283b1ff8, 0x25fff781, 0x1980fef2, 0x3c462d68, 0xa6d1f6d,  0xd9fb3c9,
+    0x3cb09b74, 0x3d18fd9a, 0x1e5fea2d, 0x1d49eeb1, 0x3ebe5f17, 0x2cf41ce7,
+    0x378a5292, 0x3a9afed7, 0x3b11f8d5, 0x3421580c, 0x3046fc7b, 0x1aeafc33,
+    0x3bc209af, 0x10d876a7, 0x2391615e, 0x3986c219, 0x199855f1, 0x1281a102,
+    0xdffd880,  0x135cc9cc, 0x10606155};
 
-static uint32_t pi_over_two[] = { 0x1, 0x2487ed51, 0x42d1846, 0x26263314, 0x1701b839, 0x28948127 }; 
+static uint32_t pi_over_two[] = {0x1,        0x2487ed51, 0x42d1846,
+                                 0x26263314, 0x1701b839, 0x28948127};
 
-typedef union 
-	{
-		uint64_t u;
-		double   d;
-	}d_ui64_t;
+typedef union {
+  uint64_t u;
+  double d;
+} d_ui64_t;
 
 // radix or base of representation
 #define RADIX (30)
@@ -3604,41 +3773,40 @@ d_ui64_t two_pow_two_mradix = { (uint64_t) (1023-2*RADIX) << 52 };
 // extended fixed point representation of double precision
 // floating point number.
 // x = sign * [ sum_{i = 0 to 2} ( X[i] * 2^(index - i)*RADIX ) ]
-typedef struct
-	{
-		uint32_t X[3];		// three 32 bit integers are sufficient to represnt double in base_30
-		int index;			// exponent bias
-		int sign;			// sign of double
-	}eprep_t;
+typedef struct {
+  uint32_t X[3];  // three 32 bit integers are sufficient to represnt double in
+                  // base_30
+  int index;      // exponent bias
+  int sign;       // sign of double
+} eprep_t;
 
 static eprep_t double_to_eprep(double x);
 
-static eprep_t double_to_eprep(double x)
-{
-	eprep_t result;
-	
-	result.sign = ( signbit( (float) x ) == 0) ? 1 : -1;
-	x = fabs( x );
-	
-	int index = 0;
-	while( x > tp_pradix ) {
-		index++;
-		x *= tp_mradix;
-	}
-	while( x < 1 ) {
-		index--;
-		x *= tp_pradix;
-	}
-	
-	result.index = index;
-	int i = 0;
-	result.X[0] = result.X[1] = result.X[2] = 0;
-	while( x != 0.0 ) {
-		result.X[i] = (uint32_t) x;
-		x = (x - (double) result.X[i]) * tp_pradix;
-		i++;
-	}
-	return result;
+static eprep_t double_to_eprep(double x) {
+  eprep_t result;
+
+  result.sign = (signbit((float)x) == 0) ? 1 : -1;
+  x = fabs(x);
+
+  int index = 0;
+  while (x > tp_pradix) {
+    index++;
+    x *= tp_mradix;
+  }
+  while (x < 1) {
+    index--;
+    x *= tp_pradix;
+  }
+
+  result.index = index;
+  int i = 0;
+  result.X[0] = result.X[1] = result.X[2] = 0;
+  while (x != 0.0) {
+    result.X[i] = (uint32_t)x;
+    x = (x - (double)result.X[i]) * tp_pradix;
+    i++;
+  }
+  return result;
 }
 
 /*
@@ -3648,26 +3816,26 @@ static eprep_t double_to_eprep(double x)
  uint64_t lowpart, roundbits, t1;
  int expo, expofinal, shift;
  double res;
- 
- nb.d = (double) R[0]; 
- 
+
+ nb.d = (double) R[0];
+
  t1   = R[1];
  lowpart  = (t1 << RADIX) + R[2];
- expo = ((nb.u & 0x7ff0000000000000ULL) >> 52) - 1023; 
- 
+ expo = ((nb.u & 0x7ff0000000000000ULL) >> 52) - 1023;
+
  expofinal = expo + RADIX*index;
- 
+
  if (expofinal >  1023) {
  d_ui64_t inf = { 0x7ff0000000000000ULL };
  res = inf.d;
  }
- 
- else if (expofinal >= -1022){		
+
+ else if (expofinal >= -1022){
  shift = expo + 2*RADIX - 53;
  roundbits = lowpart << (64-shift);
- lowpart = lowpart >> shift;     
+ lowpart = lowpart >> shift;
  if (lowpart & 0x0000000000000001ULL) {
- if(roundbits == 0) { 
+ if(roundbits == 0) {
  int i;
  for (i=3; i < digits; i++)
  roundbits = roundbits | R[i];
@@ -3678,46 +3846,46 @@ static eprep_t double_to_eprep(double x)
  else
  rndcorr.d = 0.0;
  }
- else 
+ else
  rndcorr.u = (uint64_t) (expo - 52 + 1023) << 52;
  }
  else{
  rndcorr.d = 0.0;
  }
- 
+
  lowpart = lowpart >> 1;
- nb.u = nb.u | lowpart;   
- res  = nb.d + rndcorr.d; 
- 
+ nb.u = nb.u | lowpart;
+ res  = nb.d + rndcorr.d;
+
  if(index*RADIX + 1023 > 0) {
  nb.u = 0;
- nb.u = (uint64_t) (index*RADIX + 1023) << 52;  		
+ nb.u = (uint64_t) (index*RADIX + 1023) << 52;
  res *= nb.d;
  }
- else { 
+ else {
  nb.u = 0;
- nb.u = (uint64_t) (index*RADIX + 1023 + 2*RADIX) << 52;  		
- res *= two_pow_two_mradix.d;  
- res *= nb.d;                  
+ nb.u = (uint64_t) (index*RADIX + 1023 + 2*RADIX) << 52;
+ res *= two_pow_two_mradix.d;
+ res *= nb.d;
  }
- } 
- else { 
+ }
+ else {
  if (expofinal < -1022 - 53 ) {
  res = 0.0;
  }
  else {
- lowpart = lowpart >> (expo + (2*RADIX) - 52);     
- nb.u = nb.u | lowpart; 
+ lowpart = lowpart >> (expo + (2*RADIX) - 52);
+ nb.u = nb.u | lowpart;
  nb.u = (nb.u & 0x000FFFFFFFFFFFFFULL) | 0x0010000000000000ULL;
  nb.u = nb.u >> (-1023 - expofinal);
  if(nb.u & 0x0000000000000001ULL)
  rndcorr.u = 1;
  else
  rndcorr.d = 0.0;
- res  = 0.5*(nb.d + rndcorr.d); 
- }          
- } 
- 
+ res  = 0.5*(nb.d + rndcorr.d);
+ }
+ }
+
  return sgn*res;
  }
  */
@@ -3725,173 +3893,180 @@ static double eprep_to_double( eprep_t epx );
 
 static double eprep_to_double( eprep_t epx )
 {
-	double res = 0.0;
-	
-	res += ldexp((double) epx.X[0], (epx.index - 0)*RADIX);
-	res += ldexp((double) epx.X[1], (epx.index - 1)*RADIX);
-	res += ldexp((double) epx.X[2], (epx.index - 2)*RADIX);
-	
-	return copysign(res, epx.sign);
+  double res = 0.0;
+
+  res += ldexp((double)epx.X[0], (epx.index - 0) * RADIX);
+  res += ldexp((double)epx.X[1], (epx.index - 1) * RADIX);
+  res += ldexp((double)epx.X[2], (epx.index - 2) * RADIX);
+
+  return copysign(res, epx.sign);
 }
 
 static int payne_hanek( double *y, int *exception );
 
-static int payne_hanek( double *y, int *exception )
-{
-	double x = *y;
-	
-	// exception cases .. no reduction required
-	if( isnan( x ) || isinf( x ) || (fabs( x ) <= M_PI_4) ) {
-		*exception = 1;
-		return 0;
-	}
-	
-	*exception = 0;
-	
-	// After computation result[0] contains integer part while result[1]....result[DIGITS-1] 
-	// contain fractional part. So we are doing computation with (DIGITS-1)*RADIX precision.
-	// Default DIGITS=6 and RADIX=30 so default precision is 150 bits. Kahan-McDonald algorithm 
-	// shows that a double precision x, closest to pi/2 is 6381956970095103 x 2^797 which can 
-	// cause 61 digits of cancellation in computation of f = x*2/pi - floor(x*2/pi) ... thus we need
-	// at least 114 bits (61 leading zeros + 53 bits of mentissa of f) of precision to accurately compute
-	// f in double precision. Since we are using 150 bits (still an overkill), we should be safe. Extra
-	// bits can act as guard bits for correct rounding.
-	uint64_t result[DIGITS+2];
-	
-	// compute extended precision representation of x
-	eprep_t epx = double_to_eprep( x );
-	int index = epx.index;
-	int i, j;
-	// extended precision multiplication of 2/pi*x .... we will loose at max two RADIX=30 bit digits in 
-	// the worst case
-	for(i = 0; i < (DIGITS+2); i++) {
-		result[i] = 0;
-		result[i] += ((index + i - 0) >= 0) ? ((uint64_t) two_over_pi[index + i - 0] * (uint64_t) epx.X[0]) : 0;
-		result[i] += ((index + i - 1) >= 0) ? ((uint64_t) two_over_pi[index + i - 1] * (uint64_t) epx.X[1]) : 0;
-		result[i] += ((index + i - 2) >= 0) ? ((uint64_t) two_over_pi[index + i - 2] * (uint64_t) epx.X[2]) : 0;
-	}
-	
-	// Carry propagation.
-	uint64_t tmp;
-	for(i = DIGITS+2-1; i > 0; i--) {
-		tmp = result[i] >> RADIX;
-		result[i - 1] += tmp;
-		result[i] -= (tmp << RADIX);
-	}
-	
-	// we dont ned to normalize the integer part since only last two bits of this will be used
-	// subsequently algorithm which remain unaltered by this normalization.
-	// tmp = result[0] >> RADIX;
-	// result[0] -= (tmp << RADIX);	
-	unsigned int N = (unsigned int) result[0];
-	
-	// if the result is > pi/4, bring it to (-pi/4, pi/4] range. Note that testing if the final
-	// x_star = pi/2*(x*2/pi - k) > pi/4 is equivalent to testing, at this stage, if r[1] (the first fractional
-	// digit) is greater than (2^RADIX)/2 and substracting pi/4 from x_star to bring it to mentioned
-	// range is equivalent to substracting fractional part at this stage from one and changing the sign.
-	int sign = 1;
-	if(result[1] > (uint64_t)(1 << (RADIX - 1))) {
-		for(i = 1; i < (DIGITS + 2); i++)
-			result[i] = (~((unsigned int)result[i]) & 0x3fffffff);
-		N += 1;
-		sign = -1;
-	}
-	
-	// Again as per Kahan-McDonald algorithim there may be 61 leading zeros in the worst case
-	// (when x is multiple of 2/pi very close to an integer) so we need to get rid of these zeros
-	// and adjust the index of final result. So in the worst case, precision of comupted result is 
-	// 90 bits (150 bits original bits - 60 lost in cancellation). 
-	int ind = 1;
-	for(i = 1; i < (DIGITS+2); i++) {
-		if(result[i] != 0)
-			break;
-		else
-			ind++;
-	}
-	
-	uint64_t r[DIGITS-1];
-	for(i = 0; i < (DIGITS-1); i++) {
-		r[i] = 0;
-		for(j = 0; j <= i; j++) {
-			r[i] += (result[ind+i-j] * (uint64_t) pi_over_two[j]);
-		}
-	}
-	for(i = (DIGITS-2); i > 0; i--) {
-		tmp = r[i] >> RADIX;
-		r[i - 1] += tmp;
-		r[i] -= (tmp << RADIX);
-	}
-	tmp = r[0] >> RADIX;
-	r[0] -= (tmp << RADIX);
-	
-	eprep_t epr;
-	epr.sign = epx.sign*sign;
-	if(tmp != 0) {
-		epr.index = -ind + 1;
-		epr.X[0] = (uint32_t) tmp;
-		epr.X[1] = (uint32_t) r[0];
-		epr.X[2] = (uint32_t) r[1];
-	}
-	else {
-		epr.index = -ind;
-		epr.X[0] = (uint32_t) r[0];
-		epr.X[1] = (uint32_t) r[1];
-		epr.X[2] = (uint32_t) r[2];		
-	}
-	
-	*y = eprep_to_double( epr );
-	return epx.sign*N;
+static int payne_hanek(double* y, int* exception) {
+  double x = *y;
+
+  // exception cases .. no reduction required
+  if (isnan(x) || isinf(x) || (fabs(x) <= M_PI_4)) {
+    *exception = 1;
+    return 0;
+  }
+
+  *exception = 0;
+
+  // After computation result[0] contains integer part while
+  // result[1]....result[DIGITS-1] contain fractional part. So we are
+  // doing computation with (DIGITS-1)*RADIX precision. Default DIGITS=6
+  // and RADIX=30 so default precision is 150 bits. Kahan-McDonald
+  // algorithm shows that a double precision x, closest to pi/2 is
+  // 6381956970095103 x 2^797 which can cause 61 digits of cancellation in
+  // computation of f = x*2/pi - floor(x*2/pi) ... thus we need at least
+  // 114 bits (61 leading zeros + 53 bits of mentissa of f) of precision
+  // to accurately compute f in double precision. Since we are using 150
+  // bits (still an overkill), we should be safe. Extra bits can act as
+  // guard bits for correct rounding.
+  uint64_t result[DIGITS + 2];
+
+  // compute extended precision representation of x
+  eprep_t epx = double_to_eprep(x);
+  int index = epx.index;
+  int i, j;
+  // extended precision multiplication of 2/pi*x .... we will loose at max
+  // two RADIX=30 bit digits in the worst case
+  for (i = 0; i < (DIGITS + 2); i++) {
+    result[i] = 0;
+    result[i] +=
+        ((index + i - 0) >= 0)
+            ? ((uint64_t)two_over_pi[index + i - 0] * (uint64_t)epx.X[0])
+            : 0;
+    result[i] +=
+        ((index + i - 1) >= 0)
+            ? ((uint64_t)two_over_pi[index + i - 1] * (uint64_t)epx.X[1])
+            : 0;
+    result[i] +=
+        ((index + i - 2) >= 0)
+            ? ((uint64_t)two_over_pi[index + i - 2] * (uint64_t)epx.X[2])
+            : 0;
+  }
+
+  // Carry propagation.
+  uint64_t tmp;
+  for (i = DIGITS + 2 - 1; i > 0; i--) {
+    tmp = result[i] >> RADIX;
+    result[i - 1] += tmp;
+    result[i] -= (tmp << RADIX);
+  }
+
+  // we dont ned to normalize the integer part since only last two bits of
+  // this will be used subsequently algorithm which remain unaltered by
+  // this normalization. tmp = result[0] >> RADIX; result[0] -= (tmp <<
+  // RADIX);
+  unsigned int N = (unsigned int)result[0];
+
+  // if the result is > pi/4, bring it to (-pi/4, pi/4] range. Note that
+  // testing if the final x_star = pi/2*(x*2/pi - k) > pi/4 is equivalent
+  // to testing, at this stage, if r[1] (the first fractional digit) is
+  // greater than (2^RADIX)/2 and substracting pi/4 from x_star to bring
+  // it to mentioned range is equivalent to substracting fractional part
+  // at this stage from one and changing the sign.
+  int sign = 1;
+  if (result[1] > (uint64_t)(1 << (RADIX - 1))) {
+    for (i = 1; i < (DIGITS + 2); i++)
+      result[i] = (~((unsigned int)result[i]) & 0x3fffffff);
+    N += 1;
+    sign = -1;
+  }
+
+  // Again as per Kahan-McDonald algorithim there may be 61 leading zeros
+  // in the worst case (when x is multiple of 2/pi very close to an
+  // integer) so we need to get rid of these zeros and adjust the index of
+  // final result. So in the worst case, precision of comupted result is
+  // 90 bits (150 bits original bits - 60 lost in cancellation).
+  int ind = 1;
+  for (i = 1; i < (DIGITS + 2); i++) {
+    if (result[i] != 0)
+      break;
+    else
+      ind++;
+  }
+
+  uint64_t r[DIGITS - 1];
+  for (i = 0; i < (DIGITS - 1); i++) {
+    r[i] = 0;
+    for (j = 0; j <= i; j++) {
+      r[i] += (result[ind + i - j] * (uint64_t)pi_over_two[j]);
+    }
+  }
+  for (i = (DIGITS - 2); i > 0; i--) {
+    tmp = r[i] >> RADIX;
+    r[i - 1] += tmp;
+    r[i] -= (tmp << RADIX);
+  }
+  tmp = r[0] >> RADIX;
+  r[0] -= (tmp << RADIX);
+
+  eprep_t epr;
+  epr.sign = epx.sign * sign;
+  if (tmp != 0) {
+    epr.index = -ind + 1;
+    epr.X[0] = (uint32_t)tmp;
+    epr.X[1] = (uint32_t)r[0];
+    epr.X[2] = (uint32_t)r[1];
+  } else {
+    epr.index = -ind;
+    epr.X[0] = (uint32_t)r[0];
+    epr.X[1] = (uint32_t)r[1];
+    epr.X[2] = (uint32_t)r[2];
+  }
+
+  *y = eprep_to_double(epr);
+  return epx.sign * N;
 }
 
-double reference_relaxed_cos(double x)
-{
-  if(isnan(x))
-    return NAN;
+double reference_relaxed_cos(double x) {
+  if (isnan(x)) return NAN;
   return (float)cos((float)x);
 }
 
-double reference_cos(double x) 
-{
-	int exception;
-	int N = payne_hanek( &x, &exception );
-	if( exception )
-		return cos( x );
-	unsigned int c = N & 3;
-	switch ( c ) {
-		case 0:
-			return  cos( x );
-		case 1:
-			return -sin( x );
-		case 2:
-			return -cos( x );
-		case 3:
-			return  sin( x );			
-	}
-	return 0.0;
+double reference_cos(double x) {
+  int exception;
+  int N = payne_hanek(&x, &exception);
+  if (exception) return cos(x);
+  unsigned int c = N & 3;
+  switch (c) {
+    case 0:
+      return cos(x);
+    case 1:
+      return -sin(x);
+    case 2:
+      return -cos(x);
+    case 3:
+      return sin(x);
+  }
+  return 0.0;
 }
 
 double reference_relaxed_sin(double x){
   return (float)sin((float)x);
 }
 
-double reference_sin(double x) 
-{
-	int exception;
-	int N = payne_hanek( &x, &exception );
-	if( exception )
-		return sin( x );	
-	int c = N & 3;
-	switch ( c ) {
-		case 0:
-			return  sin( x );
-		case 1:
-			return  cos( x );
-		case 2:
-			return -sin( x );
-		case 3:
-			return -cos( x );			
-	}
-	return 0.0;
+double reference_sin(double x) {
+  int exception;
+  int N = payne_hanek(&x, &exception);
+  if (exception) return sin(x);
+  int c = N & 3;
+  switch (c) {
+    case 0:
+      return sin(x);
+    case 1:
+      return cos(x);
+    case 2:
+      return -sin(x);
+    case 3:
+      return -cos(x);
+  }
+  return 0.0;
 }
 
 double reference_relaxed_sincos(double x, double * y){
@@ -3899,165 +4074,152 @@ double reference_relaxed_sincos(double x, double * y){
   return reference_relaxed_sin(x);
 }
 
-double reference_sincos(double x, double *y)
-{
-	int exception;
-	int N = payne_hanek( &x, &exception );
-	if( exception ) {
-		*y = cos( x );
-		return sin( x );
-	}
-	int c = N & 3;
-	switch ( c ) {
-		case 0:
-			*y = cos( x );
-			return  sin( x );
-		case 1:
-			*y = -sin( x );
-			return  cos( x );
-		case 2:
-			*y = -cos( x );
-			return -sin( x );
-		case 3:
-			*y = sin( x );
-			return -cos( x );			
-	}
-	return 0.0;	
+double reference_sincos(double x, double* y) {
+  int exception;
+  int N = payne_hanek(&x, &exception);
+  if (exception) {
+    *y = cos(x);
+    return sin(x);
+  }
+  int c = N & 3;
+  switch (c) {
+    case 0:
+      *y = cos(x);
+      return sin(x);
+    case 1:
+      *y = -sin(x);
+      return cos(x);
+    case 2:
+      *y = -cos(x);
+      return -sin(x);
+    case 3:
+      *y = sin(x);
+      return -cos(x);
+  }
+  return 0.0;
 }
 
 double reference_relaxed_tan(double x){
   return ((float) reference_relaxed_sin((float)x))/((float) reference_relaxed_cos((float)x));
 }
 
-double reference_tan(double x)
-{
-	int exception;
-	int N = payne_hanek( &x, &exception );
-	if( exception )
-		return tan( x );	
-	int c = N & 3;
-	switch ( c ) {
-		case 0:
-			return  tan( x );
-		case 1:
-			return -1.0 / tan( x );
-		case 2:
-			return tan( x );
-		case 3:
-			return -1.0 / tan( x );			
-	}
-	return 0.0;	
+double reference_tan(double x) {
+  int exception;
+  int N = payne_hanek(&x, &exception);
+  if (exception) return tan(x);
+  int c = N & 3;
+  switch (c) {
+    case 0:
+      return tan(x);
+    case 1:
+      return -1.0 / tan(x);
+    case 2:
+      return tan(x);
+    case 3:
+      return -1.0 / tan(x);
+  }
+  return 0.0;
 }
 
-long double reference_cosl(long double xx) 
-{
-	double x = (double) xx;
-	int exception;
-	int N = payne_hanek( &x, &exception );
-	if( exception )
-		return cosl( x );
-	unsigned int c = N & 3;
-	switch ( c ) {
-		case 0:
-			return  cosl( x );
-		case 1:
-			return -sinl( x );
-		case 2:
-			return -cosl( x );
-		case 3:
-			return  sinl( x );			
-	}
-	return 0.0;
+long double reference_cosl(long double xx) {
+  double x = (double)xx;
+  int exception;
+  int N = payne_hanek(&x, &exception);
+  if (exception) return cosl(x);
+  unsigned int c = N & 3;
+  switch (c) {
+    case 0:
+      return cosl(x);
+    case 1:
+      return -sinl(x);
+    case 2:
+      return -cosl(x);
+    case 3:
+      return sinl(x);
+  }
+  return 0.0;
 }
 
-long double reference_sinl(long double xx) 
-{
-	// we use system tanl after reduction which 
-	// can flush denorm input to zero so
-	//take care of it here.
-	if(reference_fabsl(xx) < HEX_DBL( +, 1, 0, -, 1022 ))
-		return xx;
-	
-	double x = (double) xx;
-	int exception;
-	int N = payne_hanek( &x, &exception );
-	if( exception )
-		return sinl( x );	
-	int c = N & 3;
-	switch ( c ) {
-		case 0:
-			return  sinl( x );
-		case 1:
-			return  cosl( x );
-		case 2:
-			return -sinl( x );
-		case 3:
-			return -cosl( x );			
-	}
-	return 0.0;
+long double reference_sinl(long double xx) {
+  // we use system tanl after reduction which
+  // can flush denorm input to zero so
+  // take care of it here.
+  if (reference_fabsl(xx) < HEX_DBL(+, 1, 0, -, 1022)) return xx;
+
+  double x = (double)xx;
+  int exception;
+  int N = payne_hanek(&x, &exception);
+  if (exception) return sinl(x);
+  int c = N & 3;
+  switch (c) {
+    case 0:
+      return sinl(x);
+    case 1:
+      return cosl(x);
+    case 2:
+      return -sinl(x);
+    case 3:
+      return -cosl(x);
+  }
+  return 0.0;
 }
 
-long double reference_sincosl(long double xx, long double *y)
-{
-	// we use system tanl after reduction which 
-	// can flush denorm input to zero so
-	//take care of it here.
-	if(reference_fabsl(xx) < HEX_DBL( +, 1, 0, -, 1022 ))
-	{
-		*y = cosl(xx);
-		return xx;
-	}
-	
-	double x = (double) xx;
-	int exception;
-	int N = payne_hanek( &x, &exception );
-	if( exception ) {
-		*y = cosl( x );
-		return sinl( x );
-	}
-	int c = N & 3;
-	switch ( c ) {
-		case 0:
-			*y = cosl( x );
-			return  sinl( x );
-		case 1:
-			*y = -sinl( x );
-			return  cosl( x );
-		case 2:
-			*y = -cosl( x );
-			return -sinl( x );
-		case 3:
-			*y = sinl( x );
-			return -cosl( x );			
-	}
-	return 0.0;	
+long double reference_sincosl(long double xx, long double* y) {
+  // we use system tanl after reduction which
+  // can flush denorm input to zero so
+  // take care of it here.
+  if (reference_fabsl(xx) < HEX_DBL(+, 1, 0, -, 1022)) {
+    *y = cosl(xx);
+    return xx;
+  }
+
+  double x = (double)xx;
+  int exception;
+  int N = payne_hanek(&x, &exception);
+  if (exception) {
+    *y = cosl(x);
+    return sinl(x);
+  }
+  int c = N & 3;
+  switch (c) {
+    case 0:
+      *y = cosl(x);
+      return sinl(x);
+    case 1:
+      *y = -sinl(x);
+      return cosl(x);
+    case 2:
+      *y = -cosl(x);
+      return -sinl(x);
+    case 3:
+      *y = sinl(x);
+      return -cosl(x);
+  }
+  return 0.0;
 }
 
-long double reference_tanl(long double xx)
-{
-	// we use system tanl after reduction which 
-	// can flush denorm input to zero so
-	//take care of it here.
-	if(reference_fabsl(xx) < HEX_DBL( +, 1, 0, -, 1022 ))
-		return xx;
-	
-	double x = (double) xx;
-	int exception;
-	int N = payne_hanek( &x, &exception );
-	if( exception )
-		return tanl( x );	
-	int c = N & 3;
-	switch ( c ) {
-		case 0:
-			return  tanl( x );
-		case 1:
-			return -1.0 / tanl( x );
-		case 2:
-			return tanl( x );
-		case 3:
-			return -1.0 / tanl( x );			
-	}
-	return 0.0;	
+long double reference_tanl(long double xx) {
+  // we use system tanl after reduction which
+  // can flush denorm input to zero so
+  // take care of it here.
+  if (reference_fabsl(xx) < HEX_DBL(+, 1, 0, -, 1022)) return xx;
+
+  double x = (double)xx;
+  int exception;
+  int N = payne_hanek(&x, &exception);
+  if (exception) return tanl(x);
+  int c = N & 3;
+  switch (c) {
+    case 0:
+      return tanl(x);
+    case 1:
+      return -1.0 / tanl(x);
+    case 2:
+      return tanl(x);
+    case 3:
+      return -1.0 / tanl(x);
+  }
+  return 0.0;
 }
 
 static double __loglTable1[64][3] = {
@@ -4205,552 +4367,491 @@ static double __loglTable3[8][3] = {
 {HEX_DBL( +, 1, ffc8061f5492b, -, 1 ), HEX_DBL( +, 1, 43183c878274e, -, 11 ), HEX_DBL( +, 1, 5885dd1eb6582, -, 65 )}
 };
 
-static void __log2_ep(double *hi, double *lo, double x)
-{
-	union { uint64_t i; double d; } uu;
-	
-	int m;
-	double f = reference_frexp(x, &m);
-	
-	// bring f in [0.75, 1.5)
-	if( f < 0.75 ) {
-		f *= 2.0;
-		m -= 1;
-	}
-	
-	// index first table .... brings down to [1-2^-7, 1+2^6)
-	uu.d = f;
-	int index = (int) (((uu.i + ((uint64_t) 1 << 51)) & 0x000fc00000000000ULL) >> 46);
-	double r1 = __loglTable1[index][0];
-	double logr1hi = __loglTable1[index][1];
-	double logr1lo = __loglTable1[index][2];
-	// since log1rhi has 39 bits of precision, we have 14 bit in hand ... since |m| <= 1023
-	// which needs 10bits at max, we can directly add m to log1hi without spilling
-	logr1hi += m;
-	
-	// argument reduction needs to be in double-double since reduced argument will form the
-	// leading term of polynomial approximation which sets the precision we eventually achieve
-	double zhi, zlo;
-	MulD(&zhi, &zlo, r1, uu.d);
-	
-	// second index table .... brings down to [1-2^-12, 1+2^-11)
-	uu.d = zhi;
-	index = (int) (((uu.i + ((uint64_t) 1 << 46)) & 0x00007e0000000000ULL) >> 41);
-	double r2 = __loglTable2[index][0];
-	double logr2hi = __loglTable2[index][1];
-	double logr2lo = __loglTable2[index][2];
-	
-	// reduce argument
-	MulDD(&zhi, &zlo, zhi, zlo, r2, 0.0);
-	
-	// third index table .... brings down to [1-2^-14, 1+2^-13)
-	// Actually reduction to 2^-11 would have been sufficient to calculate
-	// second order term in polynomial in double rather than double-double, I 
-	// reduced it a bit more to make sure other systematic arithmetic errors 
-	// are guarded against .... also this allow lower order product of leading polynomial
-	// term i.e. Ao_hi*z_lo + Ao_lo*z_hi to be done in double rather than double-double ...
-	// hence only term that needs to be done in double-double is Ao_hi*z_hi
-	uu.d = zhi;
-	index = (int) (((uu.i + ((uint64_t) 1 << 41)) & 0x0000038000000000ULL) >> 39);
-	double r3 = __loglTable3[index][0];
-	double logr3hi = __loglTable3[index][1];
-	double logr3lo = __loglTable3[index][2];
-	
-	// log2(x) = m + log2(r1) + log2(r1) + log2(1 + (zh + zlo)) 
-	// calculate sum of first three terms ... note that m has already
-	// been added to log2(r1)_hi
-	double log2hi, log2lo;
-	AddDD(&log2hi, &log2lo, logr1hi, logr1lo, logr2hi, logr2lo);
-	AddDD(&log2hi, &log2lo, logr3hi, logr3lo, log2hi, log2lo);
-	
-	// final argument reduction .... zhi will be in [1-2^-14, 1+2^-13) after this
-	MulDD(&zhi, &zlo, zhi, zlo, r3, 0.0);
-	// we dont need to do full double-double substract here. substracting 1.0 for higher
-	// term is exact
-	zhi = zhi - 1.0;
-	// normalize
-	AddD(&zhi, &zlo, zhi, zlo);
-	
-	// polynomail fitting to compute log2(1 + z) ... forth order polynomial fit
-	// to log2(1 + z)/z gives minimax absolute error of O(2^-76) with z in [-2^-14, 2^-13]
-	// log2(1 + z)/z = Ao + A1*z + A2*z^2 + A3*z^3 + A4*z^4
-	// => log2(1 + z) = Ao*z + A1*z^2 + A2*z^3 + A3*z^4 + A4*z^5
-	// => log2(1 + z) = (Aohi + Aolo)*(zhi + zlo) + z^2*(A1 + A2*z + A3*z^2 + A4*z^3)
-	// since we are looking for at least 64 digits of precision and z in [-2^-14, 2^-13], final term 
-	// can be done in double .... also Aolo*zhi + Aohi*zlo can be done in double .... 
-	// Aohi*zhi needs to be done in double-double
-	
-	double Aohi = HEX_DBL( +, 1, 71547652b82fe, +, 0 );
-	double Aolo = HEX_DBL( +, 1, 777c9cbb675c, -, 56 );
-	double y;
-	y = HEX_DBL( +, 1, 276d2736fade7, -, 2 );
-	y = HEX_DBL( -, 1, 7154765782df1, -, 2 ) + y*zhi;
-	y = HEX_DBL( +, 1, ec709dc3a0f67, -, 2 ) + y*zhi;
-	y = HEX_DBL( -, 1, 71547652b82fe, -, 1 ) + y*zhi;
-	double zhisq = zhi*zhi;
-	y = y*zhisq;
-	y = y + zhi*Aolo;
-	y = y + zlo*Aohi;
-	
-	MulD(&zhi, &zlo, Aohi, zhi);
-	AddDD(&zhi, &zlo, zhi, zlo, y, 0.0);
-	AddDD(&zhi, &zlo, zhi, zlo, log2hi, log2lo);
-	
-	*hi = zhi;
-	*lo = zlo;
+static void __log2_ep(double* hi, double* lo, double x) {
+  union {
+    uint64_t i;
+    double d;
+  } uu;
+
+  int m;
+  double f = reference_frexp(x, &m);
+
+  // bring f in [0.75, 1.5)
+  if (f < 0.75) {
+    f *= 2.0;
+    m -= 1;
+  }
+
+  // index first table .... brings down to [1-2^-7, 1+2^6)
+  uu.d = f;
+  int index =
+      (int)(((uu.i + ((uint64_t)1 << 51)) & 0x000fc00000000000ULL) >> 46);
+  double r1 = __loglTable1[index][0];
+  double logr1hi = __loglTable1[index][1];
+  double logr1lo = __loglTable1[index][2];
+  // since log1rhi has 39 bits of precision, we have 14 bit in hand ... since
+  // |m| <= 1023 which needs 10bits at max, we can directly add m to log1hi
+  // without spilling
+  logr1hi += m;
+
+  // argument reduction needs to be in double-double since reduced argument will
+  // form the leading term of polynomial approximation which sets the precision
+  // we eventually achieve
+  double zhi, zlo;
+  MulD(&zhi, &zlo, r1, uu.d);
+
+  // second index table .... brings down to [1-2^-12, 1+2^-11)
+  uu.d = zhi;
+  index = (int)(((uu.i + ((uint64_t)1 << 46)) & 0x00007e0000000000ULL) >> 41);
+  double r2 = __loglTable2[index][0];
+  double logr2hi = __loglTable2[index][1];
+  double logr2lo = __loglTable2[index][2];
+
+  // reduce argument
+  MulDD(&zhi, &zlo, zhi, zlo, r2, 0.0);
+
+  // third index table .... brings down to [1-2^-14, 1+2^-13)
+  // Actually reduction to 2^-11 would have been sufficient to calculate
+  // second order term in polynomial in double rather than double-double, I
+  // reduced it a bit more to make sure other systematic arithmetic errors
+  // are guarded against .... also this allow lower order product of leading
+  // polynomial term i.e. Ao_hi*z_lo + Ao_lo*z_hi to be done in double rather
+  // than double-double ... hence only term that needs to be done in
+  // double-double is Ao_hi*z_hi
+  uu.d = zhi;
+  index = (int)(((uu.i + ((uint64_t)1 << 41)) & 0x0000038000000000ULL) >> 39);
+  double r3 = __loglTable3[index][0];
+  double logr3hi = __loglTable3[index][1];
+  double logr3lo = __loglTable3[index][2];
+
+  // log2(x) = m + log2(r1) + log2(r1) + log2(1 + (zh + zlo))
+  // calculate sum of first three terms ... note that m has already
+  // been added to log2(r1)_hi
+  double log2hi, log2lo;
+  AddDD(&log2hi, &log2lo, logr1hi, logr1lo, logr2hi, logr2lo);
+  AddDD(&log2hi, &log2lo, logr3hi, logr3lo, log2hi, log2lo);
+
+  // final argument reduction .... zhi will be in [1-2^-14, 1+2^-13) after this
+  MulDD(&zhi, &zlo, zhi, zlo, r3, 0.0);
+  // we dont need to do full double-double substract here. substracting 1.0 for
+  // higher term is exact
+  zhi = zhi - 1.0;
+  // normalize
+  AddD(&zhi, &zlo, zhi, zlo);
+
+  // polynomail fitting to compute log2(1 + z) ... forth order polynomial fit
+  // to log2(1 + z)/z gives minimax absolute error of O(2^-76) with z in
+  // [-2^-14, 2^-13] log2(1 + z)/z = Ao + A1*z + A2*z^2 + A3*z^3 + A4*z^4
+  // => log2(1 + z) = Ao*z + A1*z^2 + A2*z^3 + A3*z^4 + A4*z^5
+  // => log2(1 + z) = (Aohi + Aolo)*(zhi + zlo) + z^2*(A1 + A2*z + A3*z^2 +
+  // A4*z^3) since we are looking for at least 64 digits of precision and z in
+  // [-2^-14, 2^-13], final term can be done in double .... also Aolo*zhi +
+  // Aohi*zlo can be done in double .... Aohi*zhi needs to be done in
+  // double-double
+
+  double Aohi = HEX_DBL(+, 1, 71547652b82fe, +, 0);
+  double Aolo = HEX_DBL(+, 1, 777c9cbb675c, -, 56);
+  double y;
+  y = HEX_DBL(+, 1, 276d2736fade7, -, 2);
+  y = HEX_DBL(-, 1, 7154765782df1, -, 2) + y * zhi;
+  y = HEX_DBL(+, 1, ec709dc3a0f67, -, 2) + y * zhi;
+  y = HEX_DBL(-, 1, 71547652b82fe, -, 1) + y * zhi;
+  double zhisq = zhi * zhi;
+  y = y * zhisq;
+  y = y + zhi * Aolo;
+  y = y + zlo * Aohi;
+
+  MulD(&zhi, &zlo, Aohi, zhi);
+  AddDD(&zhi, &zlo, zhi, zlo, y, 0.0);
+  AddDD(&zhi, &zlo, zhi, zlo, log2hi, log2lo);
+
+  *hi = zhi;
+  *lo = zlo;
 }
 
-long double reference_powl( long double x, long double y )
-{	
+long double reference_powl(long double x, long double y) {
+  // this will be used for testing doubles i.e. arguments will
+  // be doubles so cast the input back to double ... returned
+  // result will be long double though .... > 53 bits of precision
+  // if platform allows.
+  // ===========
+  // New finding.
+  // ===========
+  // this function is getting used for computing reference cube root (cbrt)
+  // as follows __powl( x, 1.0L/3.0L ) so if the y are assumed to
+  // be double and is converted from long double to double, truncation
+  // causes errors. So we need to tread y as long double and convert it
+  // to hi, lo doubles when performing y*log2(x).
 
-    
-	// this will be used for testing doubles i.e. arguments will
-	// be doubles so cast the input back to double ... returned 
-	// result will be long double though .... > 53 bits of precision
-	// if platform allows.
-	// ===========
-	// New finding.
-	// ===========
-	// this function is getting used for computing reference cube root (cbrt)
-	// as follows __powl( x, 1.0L/3.0L ) so if the y are assumed to
-	// be double and is converted from long double to double, truncation
-	// causes errors. So we need to tread y as long double and convert it
-	// to hi, lo doubles when performing y*log2(x). 
-	
-//	double x = (double) xx;
-//	double y = (double) yy;
-	
-	static const double neg_epsilon = HEX_DBL( +, 1, 0, +, 53 );
-	
-	//if x = 1, return x for any y, even NaN
-	if( x == 1.0 )
-		return x;
-	
-	//if y == 0, return 1 for any x, even NaN
-	if( y == 0.0 )
-		return 1.0L;
-	
-	//get NaNs out of the way
-	if( x != x  || y != y )
-		return x + y;
-	
-	//do the work required to sort out edge cases
-	double fabsy = reference_fabs( y );
-	double fabsx = reference_fabs( x );
-	double iy = reference_rint( fabsy );			//we do round to nearest here so that |fy| <= 0.5
-	if( iy > fabsy )//convert nearbyint to floor
-		iy -= 1.0;
-	int isOddInt = 0;
-	if( fabsy == iy && !reference_isinf(fabsy) && iy < neg_epsilon )
-		isOddInt = 	(int) (iy - 2.0 * rint( 0.5 * iy ));		//might be 0, -1, or 1
-	
-	///test a few more edge cases
-	//deal with x == 0 cases
-	if( x == 0.0 )
-	{
-		if( ! isOddInt )
-			x = 0.0;
-		
-		if( y < 0 )
-			x = 1.0/ x;
-		
-		return x;
-	}
-	
-	//x == +-Inf cases
-	if( isinf(fabsx) )
-	{
-		if( x < 0 )
-		{
-			if( isOddInt )
-			{
-				if( y < 0 )
-					return -0.0;
-				else
-					return -INFINITY;
-			}
-			else
-			{
-				if( y < 0 )
-					return 0.0;
-				else
-					return INFINITY;
-			}
-		}
-		
-		if( y < 0 )
-			return 0;
-		return INFINITY;
-	}
-	
-	//y = +-inf cases
-	if( isinf(fabsy) )
-	{
-		if( x == -1 )
-			return 1;
-		
-		if( y < 0 )
-		{
-			if( fabsx < 1 )
-				return INFINITY;
-			return 0;
-		}
-		if( fabsx < 1 )
-			return 0;
-		return INFINITY;
-	}
-	
-	// x < 0 and y non integer case
-	if( x < 0 && iy != fabsy )
-	{
-		//return nan;
-		return cl_make_nan();
-	}
-	
-	//speedy resolution of sqrt and reciprocal sqrt
-	if( fabsy == 0.5 )
-	{
-		long double xl = sqrtl( x );
-		if( y < 0 )
-			xl = 1.0/ xl;
-		return xl;
-	}
-	
-	double log2x_hi, log2x_lo;
-	
-	// extended precision log .... accurate to at least 64-bits + couple of guard bits
-	__log2_ep(&log2x_hi, &log2x_lo, fabsx);
-	
-	double ylog2x_hi, ylog2x_lo;
-	
-	double y_hi = (double) y;
-	double y_lo = (double) ( y - (long double) y_hi);
-	
-	// compute product of y*log2(x)
-	// scale to avoid overflow in double-double multiplication
-	if( reference_fabs( y ) > HEX_DBL( +, 1, 0, +, 970 ) ) {
-		y_hi = reference_ldexp(y_hi, -53);
-		y_lo = reference_ldexp(y_lo, -53);
-	}
-	MulDD(&ylog2x_hi, &ylog2x_lo, log2x_hi, log2x_lo, y_hi, y_lo);
-	if( fabs( y ) > HEX_DBL( +, 1, 0, +, 970 ) ) {
-		ylog2x_hi = reference_ldexp(ylog2x_hi, 53);
-		ylog2x_lo = reference_ldexp(ylog2x_lo, 53);
-	}
+  // double x = (double) xx;
+  // double y = (double) yy;
 
-	long double powxy;
-	if(isinf(ylog2x_hi) || (reference_fabs(ylog2x_hi) > 2200)) {
-		powxy = reference_signbit(ylog2x_hi) ? HEX_DBL( +, 0, 0, +, 0 ) : INFINITY;
-    } else {
-        // separate integer + fractional part
-        long int m = lrint(ylog2x_hi);
-        AddDD(&ylog2x_hi, &ylog2x_lo, ylog2x_hi, ylog2x_lo, -m, 0.0);
-        
-        // revert to long double arithemtic
-        long double ylog2x = (long double) ylog2x_hi + (long double) ylog2x_lo;
-        long double tmp = reference_exp2l( ylog2x );
-        powxy = reference_scalblnl(tmp, m); 
-    }
-	
-	// if y is odd integer and x is negative, reverse sign
-	if( isOddInt & reference_signbit(x))
-		powxy = -powxy;
-	return powxy;
-}
+  static const double neg_epsilon = HEX_DBL(+, 1, 0, +, 53);
 
-double reference_nextafter(double xx, double yy)
-{
-	float x = (float) xx;
-	float y = (float) yy;
-	
-	// take care of nans
-	if( x != x )
-		return x;
-	
-	if( y != y )
-		return y;
-		
-	if( x == y )
-		return y;
-	
-	int32f_t a, b;
-	
-	a.f  = x;
-	b.f  = y;
-	
-	if( a.i & 0x80000000 )
-		a.i = 0x80000000 - a.i;
-	if(b.i & 0x80000000 )
-		b.i = 0x80000000 - b.i;
-		
-	a.i += (a.i < b.i) ? 1 : -1;
-	a.i = (a.i < 0) ? (cl_int) 0x80000000 - a.i : a.i;
-	
-	return a.f;	
-}
+  // if x = 1, return x for any y, even NaN
+  if (x == 1.0) return x;
 
+  // if y == 0, return 1 for any x, even NaN
+  if (y == 0.0) return 1.0L;
 
-long double reference_nextafterl(long double xx, long double yy)
-{
-	double x = (double) xx;
-	double y = (double) yy;
-	
-	// take care of nans
-	if( x != x )
-		return x;
-	
-	if( y != y )
-		return y;
-	
-	int64d_t a, b;
-	
-	a.d  = x;
-	b.d  = y;
-	
-	int64_t tmp = 0x8000000000000000LL;
-	
-	if( a.l & tmp )
-		a.l = tmp - a.l;
-	if(b.l & tmp )
-		b.l = tmp - b.l;
-	
-	// edge case. if (x == y) or (x = 0.0f and y = -0.0f) or (x = -0.0f and y = 0.0f)
-	// test needs to be done using integer rep because 
-	// subnormals may be flushed to zero on some platforms
-	if( a.l == b.l )
-		return y;
-	
-	a.l += (a.l < b.l) ? 1 : -1;
-	a.l = (a.l < 0) ? tmp - a.l : a.l;
-	
-	return a.d;	
-}
+  // get NaNs out of the way
+  if (x != x || y != y) return x + y;
 
-double reference_fdim(double xx, double yy)
-{
-	float x = (float) xx;
-	float y = (float) yy;
-	
-	if( x != x )
-		return x;
-		
-	if( y != y )
-		return y;
-		
-	float r = ( x > y ) ? (float) reference_subtract( x, y) : 0.0f;
-	return r;
+  // do the work required to sort out edge cases
+  double fabsy = reference_fabs(y);
+  double fabsx = reference_fabs(x);
+  double iy =
+      reference_rint(fabsy);  // we do round to nearest here so that |fy| <= 0.5
+  if (iy > fabsy)             // convert nearbyint to floor
+    iy -= 1.0;
+  int isOddInt = 0;
+  if (fabsy == iy && !reference_isinf(fabsy) && iy < neg_epsilon)
+    isOddInt = (int)(iy - 2.0 * rint(0.5 * iy));  // might be 0, -1, or 1
 
-}
+  /// test a few more edge cases
+  // deal with x == 0 cases
+  if (x == 0.0) {
+    if (!isOddInt) x = 0.0;
 
+    if (y < 0) x = 1.0 / x;
 
-long double reference_fdiml(long double xx, long double yy)
-{
-	double x = (double) xx;
-	double y = (double) yy;
-	
-	if( x != x )
-		return x;
-		
-	if( y != y )
-		return y;
-	
-	double r = ( x > y ) ? (double) reference_subtractl(x, y) : 0.0;
-	return r;
-}
+    return x;
+  }
 
-double reference_remquo(double xd, double yd, int *n)
-{   
-	float xx = (float) xd;
-	float yy = (float) yd;
-	
-    if( isnan(xx) || isnan(yy) ||
-        fabsf(xx) == INFINITY  ||
-        yy == 0.0 )
-    {
-        *n = 0;
-        return cl_make_nan();
-    }
-
-	if( fabsf(yy) == INFINITY || xx == 0.0f ) {
-		*n = 0;
-		return xd;
-	}
-	
-	if( fabsf(xx) == fabsf(yy) ) {
-		*n = (xx == yy) ? 1 : -1;
-		return reference_signbit( xx ) ? -0.0 : 0.0;
-	}
-
-	int signx = reference_signbit( xx ) ? -1 : 1;
-	int signy = reference_signbit( yy ) ? -1 : 1;
-	int signn = (signx == signy) ? 1 : -1;
-	float x = fabsf(xx);
-	float y = fabsf(yy);
-
-	int ex, ey;
-	ex = reference_ilogb( x ); 
-	ey = reference_ilogb( y );
-	float xr = x; 
-	float yr = y;
-	uint32_t q = 0;
-    
-	if(ex-ey >= -1) {
-
-        yr = (float) reference_ldexp( y, -ey );
-        xr = (float) reference_ldexp( x, -ex );
-        
-        if(ex-ey >= 0) {
-            
-		
-            int i;
-            for(i = ex-ey; i > 0; i--) {
-                q <<= 1;
-                if(xr >= yr) {
-                    xr -= yr;
-                    q += 1;
-                }
-                xr += xr;
-            }
-            q <<= 1;
-            if( xr > yr ) {
-                xr -= yr;
-                q += 1;
-            }
-        }
-        else //ex-ey = -1
-            xr = reference_ldexp(xr, ex-ey); 
-    }
-            
-	if( (yr < 2.0f*xr) || ( (yr == 2.0f*xr) && (q & 0x00000001) ) ) {
-		xr -= yr;
-		q += 1;
-	}
-    
-    if(ex-ey >= -1)
-        xr = reference_ldexp(xr, ey);
-	
-	int qout = q & 0x0000007f;
-	if( signn < 0)
-		qout = -qout;
-	if( xx < 0.0 )
-		xr = -xr;
-	
-	*n = qout;
-	
-	return xr;
-}
-
-long double reference_remquol(long double xd, long double yd, int *n)
-{
-
-	double xx = (double) xd;
-	double yy = (double) yd;
-	
-    if( isnan(xx) || isnan(yy) ||
-        fabs(xx) == INFINITY  ||
-        yy == 0.0 )
-    {
-        *n = 0;
-        return cl_make_nan();
-    }
-
-	if( reference_fabs(yy) == INFINITY || xx == 0.0 ) {
-		*n = 0;
-		return xd;
-	}
-	
-	if( reference_fabs(xx) == reference_fabs(yy) ) {
-		*n = (xx == yy) ? 1 : -1;
-		return reference_signbit( xx ) ? -0.0 : 0.0;
-	}
-
-	int signx = reference_signbit( xx ) ? -1 : 1;
-	int signy = reference_signbit( yy ) ? -1 : 1;
-	int signn = (signx == signy) ? 1 : -1;
-	double x = reference_fabs(xx);
-	double y = reference_fabs(yy);
-
-	int ex, ey;
-	ex = reference_ilogbl( x ); 
-	ey = reference_ilogbl( y );
-	double xr = x; 
-	double yr = y;
-	uint32_t q = 0;
-	
-	if(ex-ey >= -1) {
-		
-		yr = reference_ldexp( y, -ey );
-		xr = reference_ldexp( x, -ex );
-		int i;
-		
-        if(ex-ey >= 0) {
-        
-            for(i = ex-ey; i > 0; i--) {
-                q <<= 1;
-                if(xr >= yr) {
-                    xr -= yr;
-                    q += 1;
-                }
-                xr += xr;
-            }
-            q <<= 1;
-            if( xr > yr ) {
-                xr -= yr;
-                q += 1;
-            }
-        }
+  // x == +-Inf cases
+  if (isinf(fabsx)) {
+    if (x < 0) {
+      if (isOddInt) {
+        if (y < 0)
+          return -0.0;
         else
-            xr = reference_ldexp(xr, ex-ey);
-	}
-	
-	if( (yr < 2.0*xr) || ( (yr == 2.0*xr) && (q & 0x00000001) ) ) {
-		xr -= yr;
-		q += 1;
-	}
-	
-    if(ex-ey >= -1)
-        xr = reference_ldexp(xr, ey);
-    
-	int qout = q & 0x0000007f;
-	if( signn < 0)
-		qout = -qout;
-	if( xx < 0.0 )
-		xr = -xr;
-	
-	*n = qout;	
-	return xr;
+          return -INFINITY;
+      } else {
+        if (y < 0)
+          return 0.0;
+        else
+          return INFINITY;
+      }
+    }
+
+    if (y < 0) return 0;
+    return INFINITY;
+  }
+
+  // y = +-inf cases
+  if (isinf(fabsy)) {
+    if (x == -1) return 1;
+
+    if (y < 0) {
+      if (fabsx < 1) return INFINITY;
+      return 0;
+    }
+    if (fabsx < 1) return 0;
+    return INFINITY;
+  }
+
+  // x < 0 and y non integer case
+  if (x < 0 && iy != fabsy) {
+    // return nan;
+    return cl_make_nan();
+  }
+
+  // speedy resolution of sqrt and reciprocal sqrt
+  if (fabsy == 0.5) {
+    long double xl = sqrtl(x);
+    if (y < 0) xl = 1.0 / xl;
+    return xl;
+  }
+
+  double log2x_hi, log2x_lo;
+
+  // extended precision log .... accurate to at least 64-bits + couple of guard
+  // bits
+  __log2_ep(&log2x_hi, &log2x_lo, fabsx);
+
+  double ylog2x_hi, ylog2x_lo;
+
+  double y_hi = (double)y;
+  double y_lo = (double)(y - (long double)y_hi);
+
+  // compute product of y*log2(x)
+  // scale to avoid overflow in double-double multiplication
+  if (reference_fabs(y) > HEX_DBL(+, 1, 0, +, 970)) {
+    y_hi = reference_ldexp(y_hi, -53);
+    y_lo = reference_ldexp(y_lo, -53);
+  }
+  MulDD(&ylog2x_hi, &ylog2x_lo, log2x_hi, log2x_lo, y_hi, y_lo);
+  if (fabs(y) > HEX_DBL(+, 1, 0, +, 970)) {
+    ylog2x_hi = reference_ldexp(ylog2x_hi, 53);
+    ylog2x_lo = reference_ldexp(ylog2x_lo, 53);
+  }
+
+  long double powxy;
+  if (isinf(ylog2x_hi) || (reference_fabs(ylog2x_hi) > 2200)) {
+    powxy = reference_signbit(ylog2x_hi) ? HEX_DBL(+, 0, 0, +, 0) : INFINITY;
+  } else {
+    // separate integer + fractional part
+    long int m = lrint(ylog2x_hi);
+    AddDD(&ylog2x_hi, &ylog2x_lo, ylog2x_hi, ylog2x_lo, -m, 0.0);
+
+    // revert to long double arithemtic
+    long double ylog2x = (long double)ylog2x_hi + (long double)ylog2x_lo;
+    long double tmp = reference_exp2l(ylog2x);
+    powxy = reference_scalblnl(tmp, m);
+  }
+
+  // if y is odd integer and x is negative, reverse sign
+  if (isOddInt & reference_signbit(x)) powxy = -powxy;
+  return powxy;
 }
 
-static double reference_scalbn(double x, int n)
-{  
-    if(reference_isinf(x) || reference_isnan(x) || x == 0.0)
-        return x;
-    
-    int bias = 1023;
-    union { double d; cl_long l; } u;
-    u.d = (double) x;
-    int e = (int)((u.l & 0x7ff0000000000000LL) >> 52);
-    if(e == 0)
-    {
-    	u.l |= ((cl_long)1023 << 52);
-    	u.d -= 1.0;
-    	e = (int)((u.l & 0x7ff0000000000000LL) >> 52) - 1022;
-    } 
-    e += n;
-    if(e >= 2047 || n >= 2098 ) 
-        return reference_copysign(INFINITY, x);
-    if(e < -51 || n <-2097 )
-        return reference_copysign(0.0, x);
-    if(e <= 0)
-    {
-        bias += (e-1);
-        e = 1;
-    }
-    u.l &= 0x800fffffffffffffLL;
-    u.l |= ((cl_long)e << 52);
-    x = u.d;
-    u.l = ((cl_long)bias << 52);
-    return x * u.d;
+double reference_nextafter(double xx, double yy) {
+  float x = (float)xx;
+  float y = (float)yy;
+
+  // take care of nans
+  if (x != x) return x;
+
+  if (y != y) return y;
+
+  if (x == y) return y;
+
+  int32f_t a, b;
+
+  a.f = x;
+  b.f = y;
+
+  if (a.i & 0x80000000) a.i = 0x80000000 - a.i;
+  if (b.i & 0x80000000) b.i = 0x80000000 - b.i;
+
+  a.i += (a.i < b.i) ? 1 : -1;
+  a.i = (a.i < 0) ? (cl_int)0x80000000 - a.i : a.i;
+
+  return a.f;
+}
+
+long double reference_nextafterl(long double xx, long double yy) {
+  double x = (double)xx;
+  double y = (double)yy;
+
+  // take care of nans
+  if (x != x) return x;
+
+  if (y != y) return y;
+
+  int64d_t a, b;
+
+  a.d = x;
+  b.d = y;
+
+  int64_t tmp = 0x8000000000000000LL;
+
+  if (a.l & tmp) a.l = tmp - a.l;
+  if (b.l & tmp) b.l = tmp - b.l;
+
+  // edge case. if (x == y) or (x = 0.0f and y = -0.0f) or (x = -0.0f and y =
+  // 0.0f) test needs to be done using integer rep because subnormals may be
+  // flushed to zero on some platforms
+  if (a.l == b.l) return y;
+
+  a.l += (a.l < b.l) ? 1 : -1;
+  a.l = (a.l < 0) ? tmp - a.l : a.l;
+
+  return a.d;
+}
+
+double reference_fdim(double xx, double yy) {
+  float x = (float)xx;
+  float y = (float)yy;
+
+  if (x != x) return x;
+
+  if (y != y) return y;
+
+  float r = (x > y) ? (float)reference_subtract(x, y) : 0.0f;
+  return r;
+}
+
+long double reference_fdiml(long double xx, long double yy) {
+  double x = (double)xx;
+  double y = (double)yy;
+
+  if (x != x) return x;
+
+  if (y != y) return y;
+
+  double r = (x > y) ? (double)reference_subtractl(x, y) : 0.0;
+  return r;
+}
+
+double reference_remquo(double xd, double yd, int* n) {
+  float xx = (float)xd;
+  float yy = (float)yd;
+
+  if (isnan(xx) || isnan(yy) || fabsf(xx) == INFINITY || yy == 0.0) {
+    *n = 0;
+    return cl_make_nan();
+  }
+
+  if (fabsf(yy) == INFINITY || xx == 0.0f) {
+    *n = 0;
+    return xd;
+  }
+
+  if (fabsf(xx) == fabsf(yy)) {
+    *n = (xx == yy) ? 1 : -1;
+    return reference_signbit(xx) ? -0.0 : 0.0;
+  }
+
+  int signx = reference_signbit(xx) ? -1 : 1;
+  int signy = reference_signbit(yy) ? -1 : 1;
+  int signn = (signx == signy) ? 1 : -1;
+  float x = fabsf(xx);
+  float y = fabsf(yy);
+
+  int ex, ey;
+  ex = reference_ilogb(x);
+  ey = reference_ilogb(y);
+  float xr = x;
+  float yr = y;
+  uint32_t q = 0;
+
+  if (ex - ey >= -1) {
+    yr = (float)reference_ldexp(y, -ey);
+    xr = (float)reference_ldexp(x, -ex);
+
+    if (ex - ey >= 0) {
+      int i;
+      for (i = ex - ey; i > 0; i--) {
+        q <<= 1;
+        if (xr >= yr) {
+          xr -= yr;
+          q += 1;
+        }
+        xr += xr;
+      }
+      q <<= 1;
+      if (xr > yr) {
+        xr -= yr;
+        q += 1;
+      }
+    } else  // ex-ey = -1
+      xr = reference_ldexp(xr, ex - ey);
+  }
+
+  if ((yr < 2.0f * xr) || ((yr == 2.0f * xr) && (q & 0x00000001))) {
+    xr -= yr;
+    q += 1;
+  }
+
+  if (ex - ey >= -1) xr = reference_ldexp(xr, ey);
+
+  int qout = q & 0x0000007f;
+  if (signn < 0) qout = -qout;
+  if (xx < 0.0) xr = -xr;
+
+  *n = qout;
+
+  return xr;
+}
+
+long double reference_remquol(long double xd, long double yd, int* n) {
+  double xx = (double)xd;
+  double yy = (double)yd;
+
+  if (isnan(xx) || isnan(yy) || fabs(xx) == INFINITY || yy == 0.0) {
+    *n = 0;
+    return cl_make_nan();
+  }
+
+  if (reference_fabs(yy) == INFINITY || xx == 0.0) {
+    *n = 0;
+    return xd;
+  }
+
+  if (reference_fabs(xx) == reference_fabs(yy)) {
+    *n = (xx == yy) ? 1 : -1;
+    return reference_signbit(xx) ? -0.0 : 0.0;
+  }
+
+  int signx = reference_signbit(xx) ? -1 : 1;
+  int signy = reference_signbit(yy) ? -1 : 1;
+  int signn = (signx == signy) ? 1 : -1;
+  double x = reference_fabs(xx);
+  double y = reference_fabs(yy);
+
+  int ex, ey;
+  ex = reference_ilogbl(x);
+  ey = reference_ilogbl(y);
+  double xr = x;
+  double yr = y;
+  uint32_t q = 0;
+
+  if (ex - ey >= -1) {
+    yr = reference_ldexp(y, -ey);
+    xr = reference_ldexp(x, -ex);
+    int i;
+
+    if (ex - ey >= 0) {
+      for (i = ex - ey; i > 0; i--) {
+        q <<= 1;
+        if (xr >= yr) {
+          xr -= yr;
+          q += 1;
+        }
+        xr += xr;
+      }
+      q <<= 1;
+      if (xr > yr) {
+        xr -= yr;
+        q += 1;
+      }
+    } else
+      xr = reference_ldexp(xr, ex - ey);
+  }
+
+  if ((yr < 2.0 * xr) || ((yr == 2.0 * xr) && (q & 0x00000001))) {
+    xr -= yr;
+    q += 1;
+  }
+
+  if (ex - ey >= -1) xr = reference_ldexp(xr, ey);
+
+  int qout = q & 0x0000007f;
+  if (signn < 0) qout = -qout;
+  if (xx < 0.0) xr = -xr;
+
+  *n = qout;
+  return xr;
+}
+
+static double reference_scalbn(double x, int n) {
+  if (reference_isinf(x) || reference_isnan(x) || x == 0.0) return x;
+
+  int bias = 1023;
+  union {
+    double d;
+    cl_long l;
+  } u;
+  u.d = (double)x;
+  int e = (int)((u.l & 0x7ff0000000000000LL) >> 52);
+  if (e == 0) {
+    u.l |= ((cl_long)1023 << 52);
+    u.d -= 1.0;
+    e = (int)((u.l & 0x7ff0000000000000LL) >> 52) - 1022;
+  }
+  e += n;
+  if (e >= 2047 || n >= 2098) return reference_copysign(INFINITY, x);
+  if (e < -51 || n < -2097) return reference_copysign(0.0, x);
+  if (e <= 0) {
+    bias += (e - 1);
+    e = 1;
+  }
+  u.l &= 0x800fffffffffffffLL;
+  u.l |= ((cl_long)e << 52);
+  x = u.d;
+  u.l = ((cl_long)bias << 52);
+  return x * u.d;
 }
 
 static long double reference_scalblnl(long double x, long n)
@@ -4812,9 +4913,9 @@ static long double reference_scalblnl(long double x, long n)
     int e = (int)((u.l & 0x7ff0000000000000LL) >> 52);
     if(e == 0)
     {
-    	u.l |= ((cl_long)1023 << 52);
-    	u.d -= 1.0;
-    	e = (int)((u.l & 0x7ff0000000000000LL) >> 52) - 1022;
+      u.l |= ((cl_long)1023 << 52);
+      u.d -= 1.0;
+      e = (int)((u.l & 0x7ff0000000000000LL) >> 52) - 1022;
     } 
     e += n;
     if(e >= 2047) 
@@ -4834,7 +4935,7 @@ static long double reference_scalblnl(long double x, long n)
 #endif    
     
 #else  // PPC
-	return scalblnl(x, n);
+  return scalblnl(x, n);
 #endif
 }
 
@@ -4871,297 +4972,233 @@ long double reference_expl(long double x)
   }
   return expl(x + bias) * scale;
 #else
-	return expl( x );
+  return expl(x);
 #endif
 }
 
-double reference_sinh(double x)
-{
-	return sinh(x);
-}
+double reference_sinh(double x) { return sinh(x); }
 
-long double reference_sinhl(long double x)
-{
-	return sinhl(x);
-}
+long double reference_sinhl(long double x) { return sinhl(x); }
 
-double reference_fmod(double x, double y)
-{
-	if( x == 0.0 && fabs(y) > 0.0 )
-		return x;
+double reference_fmod(double x, double y) {
+  if (x == 0.0 && fabs(y) > 0.0) return x;
 
-	if( fabs(x) == INFINITY || y == 0 )
-		return cl_make_nan();
+  if (fabs(x) == INFINITY || y == 0) return cl_make_nan();
 
-	if( fabs(y) == INFINITY )	// we know x is finite from above
-		return x;
+  if (fabs(y) == INFINITY)  // we know x is finite from above
+    return x;
 #if defined(_MSC_VER) && defined(_M_X64)
-	return fmod( x, y );
+  return fmod(x, y);
 #else
-	return fmodf( (float) x, (float) y );
+  return fmodf((float)x, (float)y);
 #endif
 }
 
-long double reference_fmodl(long double x, long double y)
-{
-	if( x == 0.0L && fabsl(y) > 0.0L )
-		return x;
+long double reference_fmodl(long double x, long double y) {
+  if (x == 0.0L && fabsl(y) > 0.0L) return x;
 
-	if( fabsl(x) == INFINITY || y == 0.0L )
-		return cl_make_nan();
+  if (fabsl(x) == INFINITY || y == 0.0L) return cl_make_nan();
 
-	if( fabsl(y) == INFINITY )	// we know x is finite from above
-		return x;
+  if (fabsl(y) == INFINITY)  // we know x is finite from above
+    return x;
 
-	return fmod( (double) x, (double) y );
+  return fmod((double)x, (double)y);
 }
 
-double reference_modf(double x, double *n)
-{
-	float nr;
+double reference_modf(double x, double* n) {
+  float nr;
 #if defined(__ANDROID__)
-    float yr =  modff_android((float) x, &nr );
+  float yr = modff_android((float)x, &nr);
 #else
-	float yr = modff((float) x, &nr);
+  float yr = modff((float)x, &nr);
 #endif
-	*n = nr;
-	return yr;
+  *n = nr;
+  return yr;
 }
 
-long double reference_modfl(long double x, long double *n)
-{
-	double nr;
-	double yr = modf((double) x, &nr);
-	*n = nr;
-	return yr;
+long double reference_modfl(long double x, long double* n) {
+  double nr;
+  double yr = modf((double)x, &nr);
+  *n = nr;
+  return yr;
 }
 
-long double reference_fractl(long double x, long double *ip )
-{
-	if(isnan(x)) {
-		*ip = cl_make_nan();
-		return cl_make_nan();
-	}
-	
-    double i;
-    double f = modf((double) x, &i );
-    if( f < 0.0 )
-    {
-        f = 1.0 + f;
-        i -= 1.0;
-        if( f == 1.0 )
-            f = HEX_DBL( +, 1, fffffffffffff, -, 1 ); 
-    }
-    *ip = i;
-    return f;
+long double reference_fractl(long double x, long double* ip) {
+  if (isnan(x)) {
+    *ip = cl_make_nan();
+    return cl_make_nan();
+  }
+
+  double i;
+  double f = modf((double)x, &i);
+  if (f < 0.0) {
+    f = 1.0 + f;
+    i -= 1.0;
+    if (f == 1.0) f = HEX_DBL(+, 1, fffffffffffff, -, 1);
+  }
+  *ip = i;
+  return f;
 }
 
-long double reference_fabsl(long double x)
-{
-	return fabsl( x );
-}
+long double reference_fabsl(long double x) { return fabsl(x); }
 
 double reference_relaxed_log( double x )
 {
   return (float)reference_log((float)x);
 }
 
-double reference_log(double x)
-{
-	if( x == 0.0 )
-		return -INFINITY;
-		
-	if( x < 0.0 )
-		return cl_make_nan();
-		
-	if( isinf(x) )
-		return INFINITY;
-		
-	double log2Hi = HEX_DBL( +, 1, 62e42fefa39ef, -, 1 );
-	double logxHi, logxLo;
-	__log2_ep(&logxHi, &logxLo, x);
-	return logxHi*log2Hi;
+double reference_log(double x) {
+  if (x == 0.0) return -INFINITY;
+
+  if (x < 0.0) return cl_make_nan();
+
+  if (isinf(x)) return INFINITY;
+
+  double log2Hi = HEX_DBL(+, 1, 62e42fefa39ef, -, 1);
+  double logxHi, logxLo;
+  __log2_ep(&logxHi, &logxLo, x);
+  return logxHi * log2Hi;
 }
 
-long double reference_logl(long double x)
-{
-	if( x == 0.0 )
-		return -INFINITY;
-		
-	if( x < 0.0 )
-		return cl_make_nan();
-	
-	if( isinf(x) )
-		return INFINITY;	
-		
-	double log2Hi = HEX_DBL( +, 1, 62e42fefa39ef, -, 1 );
-	double log2Lo = HEX_DBL( +, 1, abc9e3b39803f, -, 56 );
-	double logxHi, logxLo;
-	__log2_ep(&logxHi, &logxLo, x);
-	
-	//double rhi, rlo;
-	//MulDD(&rhi, &rlo, logxHi, logxLo, log2Hi, log2Lo);
-	//return (long double) rhi + (long double) rlo;
-	
-	long double lg2 = (long double) log2Hi + (long double) log2Lo;
-	long double logx = (long double) logxHi + (long double) logxLo;
-	return logx*lg2;
+long double reference_logl(long double x) {
+  if (x == 0.0) return -INFINITY;
+
+  if (x < 0.0) return cl_make_nan();
+
+  if (isinf(x)) return INFINITY;
+
+  double log2Hi = HEX_DBL(+, 1, 62e42fefa39ef, -, 1);
+  double log2Lo = HEX_DBL(+, 1, abc9e3b39803f, -, 56);
+  double logxHi, logxLo;
+  __log2_ep(&logxHi, &logxLo, x);
+
+  // double rhi, rlo;
+  // MulDD(&rhi, &rlo, logxHi, logxLo, log2Hi, log2Lo);
+  // return (long double) rhi + (long double) rlo;
+
+  long double lg2 = (long double)log2Hi + (long double)log2Lo;
+  long double logx = (long double)logxHi + (long double)logxLo;
+  return logx * lg2;
 }
 
 double reference_relaxed_pow( double x, double y) {
   return (float)reference_exp2( ((float)y) * (float)reference_log2((float)x));
 }
 
-double reference_pow( double x, double y )
-{	
-	static const double neg_epsilon = HEX_DBL( +, 1, 0, +, 53 );
-	
-	//if x = 1, return x for any y, even NaN
-	if( x == 1.0 )
-		return x;
-	
-	//if y == 0, return 1 for any x, even NaN
-	if( y == 0.0 )
-		return 1.0;
-	
-	//get NaNs out of the way
-	if( x != x  || y != y )
-		return x + y;
-	
-	//do the work required to sort out edge cases
-	double fabsy = reference_fabs( y );
-	double fabsx = reference_fabs( x );
-	double iy = reference_rint( fabsy );			//we do round to nearest here so that |fy| <= 0.5
-	if( iy > fabsy )//convert nearbyint to floor
-		iy -= 1.0;
-	int isOddInt = 0;
-	if( fabsy == iy && !reference_isinf(fabsy) && iy < neg_epsilon )
-		isOddInt = 	(int) (iy - 2.0 * rint( 0.5 * iy ));		//might be 0, -1, or 1
-	
-	///test a few more edge cases
-	//deal with x == 0 cases
-	if( x == 0.0 )
-	{
-		if( ! isOddInt )
-			x = 0.0;
-		
-		if( y < 0 )
-			x = 1.0/ x;
-		
-		return x;
-	}
-	
-	//x == +-Inf cases
-	if( isinf(fabsx) )
-	{
-		if( x < 0 )
-		{
-			if( isOddInt )
-			{
-				if( y < 0 )
-					return -0.0;
-				else
-					return -INFINITY;
-			}
-			else
-			{
-				if( y < 0 )
-					return 0.0;
-				else
-					return INFINITY;
-			}
-		}
-		
-		if( y < 0 )
-			return 0;
-		return INFINITY;
-	}
-	
-	//y = +-inf cases
-	if( isinf(fabsy) )
-	{
-		if( x == -1 )
-			return 1;
-		
-		if( y < 0 )
-		{
-			if( fabsx < 1 )
-				return INFINITY;
-			return 0;
-		}
-		if( fabsx < 1 )
-			return 0;
-		return INFINITY;
-	}
-	
-	// x < 0 and y non integer case
-	if( x < 0 && iy != fabsy )
-	{
-		//return nan;
-		return cl_make_nan();
-	}
-	
-	//speedy resolution of sqrt and reciprocal sqrt
-	if( fabsy == 0.5 )
-	{
-		long double xl = reference_sqrt( x );
-		if( y < 0 )
-			xl = 1.0/ xl;
-		return xl;
-	}
-	
-	double hi, lo;
-	__log2_ep(&hi, &lo, fabsx);
-	double prod = y * hi;
-	double result = reference_exp2(prod);
-	return isOddInt ? reference_copysignd(result, x) : result;
+double reference_pow(double x, double y) {
+  static const double neg_epsilon = HEX_DBL(+, 1, 0, +, 53);
+
+  // if x = 1, return x for any y, even NaN
+  if (x == 1.0) return x;
+
+  // if y == 0, return 1 for any x, even NaN
+  if (y == 0.0) return 1.0;
+
+  // get NaNs out of the way
+  if (x != x || y != y) return x + y;
+
+  // do the work required to sort out edge cases
+  double fabsy = reference_fabs(y);
+  double fabsx = reference_fabs(x);
+  double iy =
+      reference_rint(fabsy);  // we do round to nearest here so that |fy| <= 0.5
+  if (iy > fabsy)             // convert nearbyint to floor
+    iy -= 1.0;
+  int isOddInt = 0;
+  if (fabsy == iy && !reference_isinf(fabsy) && iy < neg_epsilon)
+    isOddInt = (int)(iy - 2.0 * rint(0.5 * iy));  // might be 0, -1, or 1
+
+  /// test a few more edge cases
+  // deal with x == 0 cases
+  if (x == 0.0) {
+    if (!isOddInt) x = 0.0;
+
+    if (y < 0) x = 1.0 / x;
+
+    return x;
+  }
+
+  // x == +-Inf cases
+  if (isinf(fabsx)) {
+    if (x < 0) {
+      if (isOddInt) {
+        if (y < 0)
+          return -0.0;
+        else
+          return -INFINITY;
+      } else {
+        if (y < 0)
+          return 0.0;
+        else
+          return INFINITY;
+      }
+    }
+
+    if (y < 0) return 0;
+    return INFINITY;
+  }
+
+  // y = +-inf cases
+  if (isinf(fabsy)) {
+    if (x == -1) return 1;
+
+    if (y < 0) {
+      if (fabsx < 1) return INFINITY;
+      return 0;
+    }
+    if (fabsx < 1) return 0;
+    return INFINITY;
+  }
+
+  // x < 0 and y non integer case
+  if (x < 0 && iy != fabsy) {
+    // return nan;
+    return cl_make_nan();
+  }
+
+  // speedy resolution of sqrt and reciprocal sqrt
+  if (fabsy == 0.5) {
+    long double xl = reference_sqrt(x);
+    if (y < 0) xl = 1.0 / xl;
+    return xl;
+  }
+
+  double hi, lo;
+  __log2_ep(&hi, &lo, fabsx);
+  double prod = y * hi;
+  double result = reference_exp2(prod);
+  return isOddInt ? reference_copysignd(result, x) : result;
 }
 
-double reference_sqrt(double x)
-{
-	return sqrt(x);
-}
+double reference_sqrt(double x) { return sqrt(x); }
 
-double reference_floor(double x)
-{
-	return floorf((float) x);
-}
+double reference_floor(double x) { return floorf((float)x); }
 
-double reference_ldexp(double value, int exponent)
-{
+double reference_ldexp(double value, int exponent) {
 #ifdef __MINGW32__
-/*
- * ====================================================
- * This function is from fdlibm: http://www.netlib.org
- *   It is Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunSoft, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
- * is preserved.
- * ====================================================
- */
-	if(!finite(value)||value==0.0) return value;
-	return scalbn(value,exponent);
+  /*
+   * ====================================================
+   * This function is from fdlibm: http://www.netlib.org
+   *   It is Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+   *
+   * Developed at SunSoft, a Sun Microsystems, Inc. business.
+   * Permission to use, copy, modify, and distribute this
+   * software is freely granted, provided that this notice
+   * is preserved.
+   * ====================================================
+   */
+  if (!finite(value) || value == 0.0) return value;
+  return scalbn(value, exponent);
 #else
-	return reference_scalbn(value, exponent);
+  return reference_scalbn(value, exponent);
 #endif
 }
 
-long double reference_ldexpl(long double x, int n)
-{
-	return ldexpl( x, n);
-}
+long double reference_ldexpl(long double x, int n) { return ldexpl(x, n); }
 
-long double reference_coshl(long double x)
-{
-	return coshl(x);
-}
+long double reference_coshl(long double x) { return coshl(x); }
 
-double reference_ceil(double x)
-{
-	return ceilf((float) x);
-}
+double reference_ceil(double x) { return ceilf((float)x); }
 
 long double reference_ceill(long double x)
 {
@@ -5328,171 +5365,131 @@ long double reference_acosl(long double x)
 
 double reference_log10(double x)
 {
-	if( x == 0.0 )
-		return -INFINITY;
-		
-	if( x < 0.0 )
-		return cl_make_nan();
-		
-	if( isinf(x) )
-		return INFINITY;
-		
-	double log2Hi = HEX_DBL( +, 1, 34413509f79fe, -, 2 );
-	double logxHi, logxLo;
-	__log2_ep(&logxHi, &logxLo, x);
-	return logxHi*log2Hi;
+  if (x == 0.0) return -INFINITY;
+
+  if (x < 0.0) return cl_make_nan();
+
+  if (isinf(x)) return INFINITY;
+
+  double log2Hi = HEX_DBL(+, 1, 34413509f79fe, -, 2);
+  double logxHi, logxLo;
+  __log2_ep(&logxHi, &logxLo, x);
+  return logxHi * log2Hi;
 }
 
 long double reference_log10l(long double x)
 {
-	if( x == 0.0 )
-		return -INFINITY;
-		
-	if( x < 0.0 )
-		return cl_make_nan();
-	
-	if( isinf(x) )
-		return INFINITY;	
-		
-	double log2Hi = HEX_DBL( +, 1, 34413509f79fe, -, 2 );
-	double log2Lo = HEX_DBL( +, 1, e623e2566b02d, -, 55 );
-	double logxHi, logxLo;
-	__log2_ep(&logxHi, &logxLo, x);
-	
-	//double rhi, rlo;
-	//MulDD(&rhi, &rlo, logxHi, logxLo, log2Hi, log2Lo);
-	//return (long double) rhi + (long double) rlo;
-	
-	long double lg2 = (long double) log2Hi + (long double) log2Lo;
-	long double logx = (long double) logxHi + (long double) logxLo;
-	return logx*lg2;
+  if (x == 0.0) return -INFINITY;
+
+  if (x < 0.0) return cl_make_nan();
+
+  if (isinf(x)) return INFINITY;
+
+  double log2Hi = HEX_DBL(+, 1, 34413509f79fe, -, 2);
+  double log2Lo = HEX_DBL(+, 1, e623e2566b02d, -, 55);
+  double logxHi, logxLo;
+  __log2_ep(&logxHi, &logxLo, x);
+
+  // double rhi, rlo;
+  // MulDD(&rhi, &rlo, logxHi, logxLo, log2Hi, log2Lo);
+  // return (long double) rhi + (long double) rlo;
+
+  long double lg2 = (long double)log2Hi + (long double)log2Lo;
+  long double logx = (long double)logxHi + (long double)logxLo;
+  return logx * lg2;
 }
 
-double reference_acos(double x)
-{
-	return acos( x );
-}
+double reference_acos(double x) { return acos(x); }
 
 double reference_atan2(double x, double y)
 {
 #if defined(_WIN32)
-	// fix edge cases for Windows
-	if (isinf(x) && isinf(y)) {
-		double retval = (y > 0) ? M_PI_4 : 3.f * M_PI_4;
-		return (x > 0) ? retval : -retval;
-	}
+  // fix edge cases for Windows
+  if (isinf(x) && isinf(y)) {
+    double retval = (y > 0) ? M_PI_4 : 3.f * M_PI_4;
+    return (x > 0) ? retval : -retval;
+  }
 #endif // _WIN32
-	return atan2(x, y);
+  return atan2(x, y);
 }
 
 long double reference_atan2l(long double x, long double y)
 {
 #if defined(_WIN32)
-	// fix edge cases for Windows
-	if (isinf(x) && isinf(y)) {
-		long double retval = (y > 0) ? M_PI_4 : 3.f * M_PI_4;
-		return (x > 0) ? retval : -retval;
-	}
+  // fix edge cases for Windows
+  if (isinf(x) && isinf(y)) {
+    long double retval = (y > 0) ? M_PI_4 : 3.f * M_PI_4;
+    return (x > 0) ? retval : -retval;
+  }
 #endif // _WIN32
-	return atan2l(x, y);
+  return atan2l(x, y);
 }
 
-double reference_frexp(double a, int *exp)
-{
-	if(isnan(a) || isinf(a) || a == 0.0)
-	{
-		*exp = 0;
-		return a;
-	}
-	
-	union {
-		cl_double d;
-		cl_ulong l;
-	} u;
-	
-	u.d = a;
-	
-	// separate out sign
-	cl_ulong s = u.l & 0x8000000000000000ULL;
-	u.l &= 0x7fffffffffffffffULL;
-	int bias = -1022;
-	
-	if((u.l & 0x7ff0000000000000ULL) == 0)
-	{
-		double d = u.l;
-		u.d = d;
-		bias -= 1074;
-	}
-	
-	int e = (int)((u.l & 0x7ff0000000000000ULL) >> 52);
-	u.l &= 0x000fffffffffffffULL;
-	e += bias;
-	u.l |= ((cl_ulong)1022 << 52);
-	u.l |= s;
-	
-	*exp = e;
-	return u.d;
+double reference_frexp(double a, int* exp) {
+  if (isnan(a) || isinf(a) || a == 0.0) {
+    *exp = 0;
+    return a;
+  }
+
+  union {
+    cl_double d;
+    cl_ulong l;
+  } u;
+
+  u.d = a;
+
+  // separate out sign
+  cl_ulong s = u.l & 0x8000000000000000ULL;
+  u.l &= 0x7fffffffffffffffULL;
+  int bias = -1022;
+
+  if ((u.l & 0x7ff0000000000000ULL) == 0) {
+    double d = u.l;
+    u.d = d;
+    bias -= 1074;
+  }
+
+  int e = (int)((u.l & 0x7ff0000000000000ULL) >> 52);
+  u.l &= 0x000fffffffffffffULL;
+  e += bias;
+  u.l |= ((cl_ulong)1022 << 52);
+  u.l |= s;
+
+  *exp = e;
+  return u.d;
 }
 
-long double reference_frexpl(long double a, int *exp)
-{
-	if(isnan(a) || isinf(a) || a == 0.0)
-	{
-		*exp = 0;
-		return a;
-	}
-	
-	if(sizeof(long double) == sizeof(double))
-	{
-		return reference_frexp(a, exp);
-	}
-	else
-	{
-		return frexpl(a, exp);
-	}
+long double reference_frexpl(long double a, int* exp) {
+  if (isnan(a) || isinf(a) || a == 0.0) {
+    *exp = 0;
+    return a;
+  }
+
+  if (sizeof(long double) == sizeof(double)) {
+    return reference_frexp(a, exp);
+  } else {
+    return frexpl(a, exp);
+  }
 }
 
+double reference_atan(double x) { return atan(x); }
 
-double reference_atan(double x)
-{
-	return atan( x );
+long double reference_atanl(long double x) { return atanl(x); }
+
+long double reference_asinl(long double x) { return asinl(x); }
+
+double reference_asin(double x) { return asin(x); }
+
+double reference_fabs(double x) { return fabs(x); }
+
+double reference_cosh(double x) { return cosh(x); }
+
+long double reference_sqrtl(long double x) {
+  volatile double dx = x;
+  return sqrt(dx);
 }
 
-long double reference_atanl(long double x)
-{
-	return atanl( x );
-}
-
-long double reference_asinl(long double x)
-{
-	return asinl( x );
-}
-
-double reference_asin(double x)
-{
-	return asin( x );
-}
-
-double reference_fabs(double x)
-{
-	return fabs( x);
-}
-
-double reference_cosh(double x)
-{
-	return cosh( x );
-}
-
-long double reference_sqrtl(long double x)
-{
-    volatile double dx = x;
-	return sqrt( dx );
-}
-
-long double reference_tanhl(long double x)
-{
-	return tanhl( x );
-}
+long double reference_tanhl(long double x) { return tanhl(x); }
 
 long double reference_floorl(long double x)
 {
@@ -5519,11 +5516,7 @@ long double reference_floorl(long double x)
     return r;
 }
 
-
-double reference_tanh(double x)
-{
-	return tanh( x );
-}
+double reference_tanh(double x) { return tanh(x); }
 
 long double reference_assignmentl( long double x ){ return x; }
 
@@ -5534,5 +5527,5 @@ int reference_notl( long double x )
 }
 
 #if defined( _MSC_VER )
-# pragma warning( pop )
+#pragma warning(pop)
 #endif
