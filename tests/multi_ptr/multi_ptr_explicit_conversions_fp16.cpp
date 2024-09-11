@@ -24,6 +24,8 @@
 
 #include "multi_ptr_explicit_conversions.h"
 
+#include "../common/disabled_for_test_case.h"
+
 namespace multi_ptr_explicit_conversions_fp16 {
 
 TEST_CASE("multi_ptr explicit conversions. fp16 type", "[multi_ptr]") {

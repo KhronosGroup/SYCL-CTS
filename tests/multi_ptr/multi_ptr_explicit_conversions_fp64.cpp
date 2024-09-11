@@ -24,6 +24,8 @@
 
 #include "multi_ptr_explicit_conversions.h"
 
+#include "../common/disabled_for_test_case.h"
+
 namespace multi_ptr_explicit_conversions_fp64 {
 
 TEST_CASE("multi_ptr explicit conversions. fp64 type", "[multi_ptr]") {
@@ -38,6 +40,12 @@ TEST_CASE("multi_ptr explicit conversions. fp64 type", "[multi_ptr]") {
   }
   check_multi_ptr_explicit_convert_for_type<double>{}("double");
 }
+
+DISABLED_FOR_TEST_CASE(DPCPP, hipSYCL)
+("generic_ptr alias. fp64 type", "[multi_ptr]")({
+  using namespace multi_ptr_explicit_conversions;
+  check_generic_ptr_aliases_for_type<double>{}("double");
+});
 
 }  // namespace multi_ptr_explicit_conversions_fp64
 

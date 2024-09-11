@@ -22,6 +22,7 @@
 
 #if SYCL_CTS_ENABLE_FEATURE_SET_FULL
 
+#include "../common/disabled_for_test_case.h"
 #include "../common/type_coverage.h"
 #include "multi_ptr_common.h"
 #include "multi_ptr_explicit_conversions.h"
