@@ -218,9 +218,6 @@ function(generate_multifile_cts_test)
   add_dependencies(generate_test_sources ${GEN_TEST_FILE_PREFIX}_gen)
 endfunction()
 
-# create a target to group all tests together into one test executable
-add_executable(test_all)
-
 # create a target to encapsulate all test categories.
 add_custom_target(test_conformance)
 
