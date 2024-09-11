@@ -102,6 +102,7 @@
         <tr><td>Half Precision Floating Point</td><td><xsl:value-of select="./@DeviceFP16" /></td></tr>
         <tr><td>Double Precision Floating Point</td><td><xsl:value-of select="./@DeviceFP64" /></td></tr>
         <tr><td class="site-header" colspan="2">Build Information</td></tr>
+        <tr><td>SYCL-CTS commit hash</td><td><xsl:value-of select="./@CommitHash"/></td></tr>
         <tr><td>Full Conformance Mode</td><td><xsl:value-of select="./@FullConformanceMode" /></td></tr>
         <tr><td>CMake Input</td><td><xsl:value-of select="./@CMakeInput" /></td></tr>
         <tr><td>Build System Generator</td><td><xsl:value-of select="./@BuildSystemGenerator" /></td></tr>

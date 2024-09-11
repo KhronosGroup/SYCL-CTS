@@ -230,7 +230,7 @@ This adds a test case with the description `"a simple test case"` and the _tag_ 
 Both can later be used to narrow down the set of test cases that will be executed during runtime.
 
 When configuring CMake, the new test category will automatically be detected and a target with the name `test_simple` is added.
-You can run the test case by either executing `./bin/test_simple` directly, or alternatively as part of `./bin/test_all`.
+You can run the test case by executing `./bin/test_simple`.
 
 IMPORTANT: For historic reasons, the CTS currently contains many test cases that are written in a different style.
 Please see <<New-style vs Legacy Test Cases>> for more information.
