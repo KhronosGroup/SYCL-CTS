@@ -158,6 +158,66 @@ function(generate_cts_test)
   add_dependencies(generate_test_sources ${GEN_TEST_FILE_NAME}_gen)
 endfunction()
 
+# Test generation routine
+function(generate_multifile_cts_test)
+  cmake_parse_arguments(
+    GEN_TEST
+    ""
+    "TESTS;GENERATOR;FILE_PREFIX;EXT;INPUT"
+    "EXTRA_ARGS;DEPENDS"
+    ${ARGN}
+  )
+  get_filename_component(test_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+  if(${test_dir} IN_LIST exclude_categories)
+    return()
+  endif()
+
+  message(STATUS "Setup test generation rules for prefix: " ${GEN_TEST_FILE_PREFIX})
+
+  set(GEN_TEST_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/${GEN_TEST_INPUT})
+
+  # Execute generator to get the files that will be generated.
+  execute_process(COMMAND
+                    ${PYTHON_EXECUTABLE}
+                    ${GEN_TEST_GENERATOR}
+                    ${GEN_TEST_INPUT}
+                    -output-prefix ${CMAKE_CURRENT_BINARY_DIR}/${GEN_TEST_FILE_PREFIX}
+                    -ext ${GEN_TEST_EXT}
+                    -print-output-files
+                    ${GEN_TEST_EXTRA_ARGS}
+                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                  OUTPUT_VARIABLE GEN_TEST_OUTPUT_FILES
+                  OUTPUT_STRIP_TRAILING_WHITESPACE
+                  ECHO_ERROR_VARIABLE)
+
+  # Add the file to the out test list
+  set(${GEN_TEST_TESTS} ${${GEN_TEST_TESTS}} ${GEN_TEST_OUTPUT_FILES} PARENT_SCOPE)
+
+  set(extra_deps "")
+  foreach(filename ${GEN_TEST_DEPENDS})
+    list(APPEND extra_deps ${CMAKE_CURRENT_SOURCE_DIR}/${filename})
+  endforeach()
+
+  add_custom_command(OUTPUT ${GEN_TEST_OUTPUT_FILES}
+    COMMAND
+      ${PYTHON_EXECUTABLE}
+      ${GEN_TEST_GENERATOR}
+      ${GEN_TEST_INPUT}
+      -output-prefix ${CMAKE_CURRENT_BINARY_DIR}/${GEN_TEST_FILE_PREFIX}
+      -ext ${GEN_TEST_EXT}
+      ${GEN_TEST_EXTRA_ARGS}
+    DEPENDS
+      ${GEN_TEST_GENERATOR}
+      ${GEN_TEST_INPUT}
+      ${extra_deps}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    COMMENT "Generating test ${GEN_TEST_FILE_PREFIX}..."
+    )
+
+  add_custom_target(${GEN_TEST_FILE_PREFIX}_gen DEPENDS ${GEN_TEST_OUTPUT_FILES})
+  add_dependencies(generate_test_sources ${GEN_TEST_FILE_PREFIX}_gen)
+endfunction()
+
 # create a target to encapsulate all test categories.
 add_custom_target(test_conformance)
 

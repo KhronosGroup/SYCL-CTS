@@ -25,11 +25,12 @@ foreach(cat ${MATH_CAT_WITH_VARIANT})
     endif()
     # Invoke our generator
     # the path to the generated cpp file will be added to TEST_CASES_LIST
-    generate_cts_test(TESTS TEST_CASES_LIST
+    generate_multifile_cts_test(TESTS TEST_CASES_LIST
       GENERATOR "generate_math_builtin.py"
-      OUTPUT "math_builtin_${cat}_${var}.cpp"
+      FILE_PREFIX "math_builtin_${cat}_${var}"
+      EXT "cpp"
       INPUT "math_builtin.template"
-      EXTRA_ARGS -test ${cat} -variante ${var} -marray true
+      EXTRA_ARGS -test ${cat} -variante ${var} -marray true -fragment-size 150
       DEPENDS ${math_builtin_depends}
     )
   endforeach()
@@ -38,11 +39,12 @@ endforeach()
 foreach(cat ${MATH_CAT})
   # Invoke our generator
   # the path to the generated cpp file will be added to TEST_CASES_LIST
-  generate_cts_test(TESTS TEST_CASES_LIST
+  generate_multifile_cts_test(TESTS TEST_CASES_LIST
     GENERATOR "generate_math_builtin.py"
-    OUTPUT "math_builtin_${cat}.cpp"
+    FILE_PREFIX "math_builtin_${cat}"
+    EXT "cpp"
     INPUT "math_builtin.template"
-    EXTRA_ARGS -test ${cat} -marray true
+    EXTRA_ARGS -test ${cat} -marray true -fragment-size 150
     DEPENDS ${math_builtin_depends}
   )
 endforeach()
