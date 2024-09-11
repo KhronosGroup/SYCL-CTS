@@ -341,7 +341,7 @@ public:
 
   using range_t = sycl::range<dataDims>;
   using offset_t = sycl::id<dataDims>;
-  using data_t = std::vector<sycl::cl_uchar>;
+  using data_t = std::vector<sycl::opencl::cl_uchar>;
   using buffer_t = sycl::buffer<T, dataDims, allocatorT...>;
 
 public:
@@ -384,7 +384,7 @@ public:
 
   using range_t = sycl::range<dataDims>;
   using offset_t = sycl::id<dataDims>;
-  using data_t = std::vector<sycl::cl_uchar>;
+  using data_t = std::vector<sycl::opencl::cl_uchar>;
   using buffer_t = sycl::buffer<T, dataDims, allocatorT...>;
 
 public:

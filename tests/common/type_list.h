@@ -219,22 +219,22 @@ inline auto get_vector_types() {
   static const auto pack = named_type_pack<
       bool, char, signed char, unsigned char, short, unsigned short, int,
       unsigned int, long, unsigned long, long long, unsigned long long, float,
-      sycl::cl_float, sycl::byte, sycl::cl_bool, sycl::cl_char, sycl::cl_uchar,
-      sycl::cl_short, sycl::cl_ushort, sycl::cl_int, sycl::cl_uint,
-      sycl::cl_long, sycl::cl_ulong>::generate("bool", "char", "signed char",
+      sycl::opencl::cl_float, sycl::byte, sycl::opencl::cl_bool, sycl::opencl::cl_char, sycl::opencl::cl_uchar,
+      sycl::opencl::cl_short, sycl::opencl::cl_ushort, sycl::opencl::cl_int, sycl::opencl::cl_uint,
+      sycl::opencl::cl_long, sycl::opencl::cl_ulong>::generate("bool", "char", "signed char",
                                                "unsigned char", "short",
                                                "unsigned short", "int",
                                                "unsigned int", "long",
                                                "unsigned long", "long long",
                                                "unsigned long long", "float",
-                                               "sycl::cl_float", "sycl::byte",
-                                               "sycl::cl_bool", "sycl::cl_char",
-                                               "sycl::cl_uchar",
-                                               "sycl::cl_short",
-                                               "sycl::cl_ushort",
-                                               "sycl::cl_int", "sycl::cl_uint",
-                                               "sycl::cl_long",
-                                               "sycl::cl_ulong");
+                                               "sycl::opencl::cl_float", "sycl::byte",
+                                               "sycl::opencl::cl_bool", "sycl::opencl::cl_char",
+                                               "sycl::opencl::cl_uchar",
+                                               "sycl::opencl::cl_short",
+                                               "sycl::opencl::cl_ushort",
+                                               "sycl::opencl::cl_int", "sycl::opencl::cl_uint",
+                                               "sycl::opencl::cl_long",
+                                               "sycl::opencl::cl_ulong");
 #else
   static const auto pack =
       named_type_pack<bool, char, signed char, unsigned char, short,

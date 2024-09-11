@@ -19,7 +19,7 @@
 
 namespace TEST_NAMESPACE {
 
-using user_alias = sycl::vec<sycl::cl_int, 4>;
+using user_alias = sycl::vec<sycl::opencl::cl_int, 4>;
 
 /**
  *  @brief Run specific image accessors' tests for core type set
@@ -50,9 +50,9 @@ public:
                         sycl::cl_uint4,
                         sycl::cl_float4,
                         user_alias>::generate(
-                        "sycl::cl_int",
-                        "sycl::cl_uint",
-                        "sycl::cl_float",
+                        "sycl::opencl::cl_int",
+                        "sycl::opencl::cl_uint",
+                        "sycl::opencl::cl_float",
                         "user_alias");
 
     for_all_types<check_type>(types, log, queue);

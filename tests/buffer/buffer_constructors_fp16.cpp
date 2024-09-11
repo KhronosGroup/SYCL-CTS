@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-// Provides buffer constructors tests for sycl::half and sycl::cl_half
+// Provides buffer constructors tests for sycl::half and sycl::opencl::cl_half
 //
 *******************************************************************************/
 
@@ -40,7 +40,7 @@ public:
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_type_and_vectors<
         buffer_constructors_common::check_buffer_ctors_for_type,
-        sycl::cl_half>(log, "sycl::cl_half");
+        sycl::opencl::cl_half>(log, "sycl::opencl::cl_half");
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   }
 };

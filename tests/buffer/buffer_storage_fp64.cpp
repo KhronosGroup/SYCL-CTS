@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-// Provides buffer storage methods tests for double and sycl::cl_double
+// Provides buffer storage methods tests for double and sycl::opencl::cl_double
 //
 *******************************************************************************/
 
@@ -38,7 +38,7 @@ public:
                          double>(log, "double");
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_type_and_vectors<buffer_storage_common::check_buffer_storage_for_type,
-                         sycl::cl_double>(log, "sycl::cl_double");
+                         sycl::opencl::cl_double>(log, "sycl::opencl::cl_double");
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   }
 };

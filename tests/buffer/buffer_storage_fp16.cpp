@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 // Provides buffer storage methods tests for sycl::half and
-sycl::cl_half
+sycl::opencl::cl_half
 //
 *******************************************************************************/
 
@@ -39,7 +39,7 @@ public:
                          sycl::half>(log, "sycl::half");
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_type_and_vectors<buffer_storage_common::check_buffer_storage_for_type,
-                         sycl::cl_half>(log, "sycl::cl_half");
+                         sycl::opencl::cl_half>(log, "sycl::opencl::cl_half");
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   }
 };

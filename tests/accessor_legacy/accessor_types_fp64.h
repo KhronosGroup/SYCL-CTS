@@ -60,8 +60,8 @@ public:
     // Extended type coverage
     for_type_and_vectors<check_type, double>(
         log, queue, "double");
-    for_type_and_vectors<check_type, sycl::cl_double>(
-        log, queue, "sycl::cl_double");
+    for_type_and_vectors<check_type, sycl::opencl::cl_double>(
+        log, queue, "sycl::opencl::cl_double");
 
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 
