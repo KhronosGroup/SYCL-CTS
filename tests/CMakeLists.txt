@@ -221,9 +221,7 @@ endfunction()
 # create a target to group all tests together into one test executable
 add_executable(test_all)
 
-# create a target to encapsulate all test categories, excluding test_all. This
-# is intended for conformance testing to avoid redundant testing and excessive
-# resource use from building and running test_all.
+# create a target to encapsulate all test categories.
 add_custom_target(test_conformance)
 
 # create test executable targets for each test project using the build_sycl function
