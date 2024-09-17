@@ -12,7 +12,7 @@
 #include "kernels.h"
 #include "sycl_link.h"
 
-#define TEST_NAME sycl_link_verify_prop_list_existance
+#define TEST_NAME sycl_link_verify_prop_list_existence
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
