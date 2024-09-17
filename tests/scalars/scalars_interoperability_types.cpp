@@ -38,16 +38,16 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  void get_info(test_base::info &out) const override {
+  void get_info(test_base::info& out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-  std::string errorStr = std::string(
-      "The following device type does not have the correct ");
+  std::string errorStr =
+      std::string("The following device type does not have the correct ");
 
   /** execute the test
    */
-  void run(util::logger &log) override {
+  void run(util::logger& log) override {
     {
       auto myQueue = util::get_cts_object::queue();
 
@@ -60,42 +60,40 @@ class TEST_NAME : public util::test_base {
         FAIL(log,
              "The following host type does not have the correct size: cl_bool");
       }
-      check_type_min_size_sign_log<sycl::opencl::cl_bool>(log, 1, false,
-                                                      "sycl::opencl::cl_bool");
-      check_type_min_size_sign_log<sycl::opencl::cl_char>(log, 1, true,
-                                                      "sycl::opencl::cl_char");
-      check_type_min_size_sign_log<sycl::opencl::cl_uchar>(log, 1, false,
-                                                       "sycl::opencl::cl_uchar");
-      check_type_min_size_sign_log<sycl::opencl::cl_short>(log, 2, true,
-                                                       "sycl::opencl::cl_short");
-      check_type_min_size_sign_log<sycl::opencl::cl_ushort>(log, 2, false,
-                                                        "sycl::opencl::cl_ushort");
-      check_type_min_size_sign_log<sycl::opencl::cl_int>(log, 4, true,
-                                                     "sycl::opencl::cl_int");
-      check_type_min_size_sign_log<sycl::opencl::cl_uint>(log, 4, false,
-                                                      "sycl::opencl::cl_uint");
-      check_type_min_size_sign_log<sycl::opencl::cl_long>(log, 8, true,
-                                                      "sycl::opencl::cl_long");
-      check_type_min_size_sign_log<sycl::opencl::cl_ulong>(log, 8, false,
-                                                       "sycl::opencl::cl_ulong");
+      check_type_min_size_sign_log<sycl::opencl::cl_bool>(
+          log, 1, false, "sycl::opencl::cl_bool");
+      check_type_min_size_sign_log<sycl::opencl::cl_char>(
+          log, 1, true, "sycl::opencl::cl_char");
+      check_type_min_size_sign_log<sycl::opencl::cl_uchar>(
+          log, 1, false, "sycl::opencl::cl_uchar");
+      check_type_min_size_sign_log<sycl::opencl::cl_short>(
+          log, 2, true, "sycl::opencl::cl_short");
+      check_type_min_size_sign_log<sycl::opencl::cl_ushort>(
+          log, 2, false, "sycl::opencl::cl_ushort");
+      check_type_min_size_sign_log<sycl::opencl::cl_int>(
+          log, 4, true, "sycl::opencl::cl_int");
+      check_type_min_size_sign_log<sycl::opencl::cl_uint>(
+          log, 4, false, "sycl::opencl::cl_uint");
+      check_type_min_size_sign_log<sycl::opencl::cl_long>(
+          log, 8, true, "sycl::opencl::cl_long");
+      check_type_min_size_sign_log<sycl::opencl::cl_ulong>(
+          log, 8, false, "sycl::opencl::cl_ulong");
 
       // Floating Point Interop Data Types
-      check_type_min_size_sign_log<sycl::opencl::cl_half>(log, 2, true,
-                                                      "sycl::opencl::cl_half");
-      check_type_min_size_sign_log<sycl::opencl::cl_float>(log, 4, true,
-                                                       "sycl::opencl::cl_float");
-      check_type_min_size_sign_log<sycl::opencl::cl_double>(log, 8, true,
-                                                        "sycl::opencl::cl_double");
+      check_type_min_size_sign_log<sycl::opencl::cl_half>(
+          log, 2, true, "sycl::opencl::cl_half");
+      check_type_min_size_sign_log<sycl::opencl::cl_float>(
+          log, 4, true, "sycl::opencl::cl_float");
+      check_type_min_size_sign_log<sycl::opencl::cl_double>(
+          log, 8, true, "sycl::opencl::cl_double");
 
       bool signResults[11];
       bool sizeResults[12];
       {
-        sycl::buffer<bool, 1> bufSignResult(signResults,
-                                                sycl::range<1>(11));
-        sycl::buffer<bool, 1> bufSizeResult(sizeResults,
-                                                sycl::range<1>(12));
+        sycl::buffer<bool, 1> bufSignResult(signResults, sycl::range<1>(11));
+        sycl::buffer<bool, 1> bufSizeResult(sizeResults, sycl::range<1>(12));
 
-        myQueue.submit([&](sycl::handler &cgh) {
+        myQueue.submit([&](sycl::handler& cgh) {
           auto accSignResult =
               bufSignResult.get_access<sycl::access_mode::read_write>(cgh);
           auto accSizeResult =
@@ -134,7 +132,7 @@ class TEST_NAME : public util::test_base {
         });
 
         if (device_supports_fp16) {
-          myQueue.submit([&](sycl::handler &cgh) {
+          myQueue.submit([&](sycl::handler& cgh) {
             auto accSignResult =
                 bufSignResult.get_access<sycl::access_mode::read_write>(cgh);
             auto accSizeResult =
@@ -153,7 +151,7 @@ class TEST_NAME : public util::test_base {
 
         if (device_supports_fp64) {
           myQueue
-              .submit([&](sycl::handler &cgh) {
+              .submit([&](sycl::handler& cgh) {
                 auto accSignResult =
                     bufSignResult.get_access<sycl::access_mode::read_write>(
                         cgh);
@@ -164,10 +162,12 @@ class TEST_NAME : public util::test_base {
                 cgh.single_task<scalars_interopability_fp64>([=] {
                   // Floating Point 64 Interop Data Type
                   // sign
-                  accSignResult[10] = check_type_sign<sycl::opencl::cl_double>(true);
+                  accSignResult[10] =
+                      check_type_sign<sycl::opencl::cl_double>(true);
 
                   // size
-                  accSizeResult[11] = check_type_min_size<sycl::opencl::cl_double>(8);
+                  accSizeResult[11] =
+                      check_type_min_size<sycl::opencl::cl_double>(8);
                 });
               })
               .wait_and_throw();

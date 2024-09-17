@@ -18,28 +18,27 @@ namespace TEST_NAMESPACE {
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
-  */
-  void get_info(test_base::info &out) const override {
+   */
+  void get_info(test_base::info& out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
-  */
-  void run(util::logger &log) override {
+   */
+  void run(util::logger& log) override {
     {
       auto queue = util::get_cts_object::queue();
 
       if (!queue.get_device().has(sycl::aspect::fp16)) {
         log.note(
-          "Device does not support half precision floating point operations");
+            "Device does not support half precision floating point operations");
         return;
       }
       // Test using queue constructed already
-      for_type_and_vectors<check_type, sycl::half>(queue, log,
-          "sycl::half");
+      for_type_and_vectors<check_type, sycl::half>(queue, log, "sycl::half");
 #if SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
-      for_type_and_vectors<check_type, sycl::opencl::cl_half>(queue, log,
-          "sycl::opencl::cl_half");
+      for_type_and_vectors<check_type, sycl::opencl::cl_half>(
+          queue, log, "sycl::opencl::cl_half");
 #endif
     }
   }

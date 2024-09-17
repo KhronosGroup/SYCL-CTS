@@ -57,16 +57,26 @@ class TEST_NAME : public util::test_base {
     for_type_and_vectors<check_type, sycl::byte>(log, "sycl::byte");
 
 #if SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
-    for_type_and_vectors<check_type, sycl::opencl::cl_bool>(log, "sycl::opencl::cl_bool");
-    for_type_and_vectors<check_type, sycl::opencl::cl_char>(log, "sycl::opencl::cl_char");
-    for_type_and_vectors<check_type, sycl::opencl::cl_uchar>(log, "sycl::opencl::cl_uchar");
-    for_type_and_vectors<check_type, sycl::opencl::cl_short>(log, "sycl::opencl::cl_short");
-    for_type_and_vectors<check_type, sycl::opencl::cl_ushort>(log, "sycl::opencl::cl_ushort");
-    for_type_and_vectors<check_type, sycl::opencl::cl_int>(log, "sycl::opencl::cl_int");
-    for_type_and_vectors<check_type, sycl::opencl::cl_uint>(log, "sycl::opencl::cl_uint");
-    for_type_and_vectors<check_type, sycl::opencl::cl_long>(log, "sycl::opencl::cl_long");
-    for_type_and_vectors<check_type, sycl::opencl::cl_ulong>(log, "sycl::opencl::cl_ulong");
-    for_type_and_vectors<check_type, sycl::opencl::cl_float>(log, "sycl::opencl::cl_float");
+    for_type_and_vectors<check_type, sycl::opencl::cl_bool>(
+        log, "sycl::opencl::cl_bool");
+    for_type_and_vectors<check_type, sycl::opencl::cl_char>(
+        log, "sycl::opencl::cl_char");
+    for_type_and_vectors<check_type, sycl::opencl::cl_uchar>(
+        log, "sycl::opencl::cl_uchar");
+    for_type_and_vectors<check_type, sycl::opencl::cl_short>(
+        log, "sycl::opencl::cl_short");
+    for_type_and_vectors<check_type, sycl::opencl::cl_ushort>(
+        log, "sycl::opencl::cl_ushort");
+    for_type_and_vectors<check_type, sycl::opencl::cl_int>(
+        log, "sycl::opencl::cl_int");
+    for_type_and_vectors<check_type, sycl::opencl::cl_uint>(
+        log, "sycl::opencl::cl_uint");
+    for_type_and_vectors<check_type, sycl::opencl::cl_long>(
+        log, "sycl::opencl::cl_long");
+    for_type_and_vectors<check_type, sycl::opencl::cl_ulong>(
+        log, "sycl::opencl::cl_ulong");
+    for_type_and_vectors<check_type, sycl::opencl::cl_float>(
+        log, "sycl::opencl::cl_float");
 #endif
 
 #ifdef INT8_MAX
