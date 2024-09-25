@@ -53,6 +53,8 @@
 #define INTERNAL_CTS_SYCL_IMPL_DPCPP ()
 #elif SYCL_CTS_COMPILING_WITH_HIPSYCL
 #define INTERNAL_CTS_SYCL_IMPL_hipSYCL ()
+#elif SYCL_CTS_COMPILING_WITH_SIMSYCL
+#define INTERNAL_CTS_SYCL_IMPL_SimSYCL ()
 #else
 #error Unknown SYCL implementation
 #endif
