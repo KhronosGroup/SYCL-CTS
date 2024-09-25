@@ -1,0 +1,73 @@
+/*******************************************************************************
+//
+//  SYCL 2020 Conformance Test Suite
+//
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+//  Provides generic sycl::accessor placeholder buffer range constructor test
+//  for generic types
+//
+*******************************************************************************/
+
+#include "../common/common.h"
+
+// clang-format off
+#cmakedefine CTS_TYPE @CTS_TYPE@
+#cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
+// clang-format on
+
+// FIXME: re-enable when sycl::accessor is implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+
+#include "../accessor_basic/accessor_common.h"
+#include "generic_accessor_placeholder_buffer_range_constructor.h"
+
+using namespace generic_accessor_placeholder_buffer_range_constructor;
+#endif
+
+#include "../common/disabled_for_test_case.h"
+
+namespace generic_accessor_placeholder_buffer_range_constructor_core {
+
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+(CTS_TYPE_NAME + " Generic sycl::accessor placeholder buffer range constructor.",
+ "[accessor]", test_combinations)({
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
+    if (!queue.get_device().has(sycl::aspect::fp16))
+      SKIP(
+          "Device does not support half precision floating point "
+          "operations.");
+  } else if (std::is_same_v<std::remove_cv_t<CTS_TYPE>, double>) {
+    if (!queue.get_device().has(sycl::aspect::fp64))
+      SKIP(
+          "Device does not support double precision floating point "
+          "operations.");
+  }
+
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  if constexpr (std::is_same_v<CTS_TYPE, user_struct>)
+    run_generic_placeholder_buffer_range_constructor_test<CTS_TYPE, TestType>{}(
+        CTS_TYPE_NAME);
+  else
+    for_type_vectors_marray<
+        run_generic_placeholder_buffer_range_constructor_test, CTS_TYPE,
+        TestType>(CTS_TYPE_NAME);
+#else
+  run_generic_placeholder_buffer_range_constructor_test<CTS_TYPE, TestType>{}(CTS_TYPE_NAME);
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+});
+
+}  // namespace generic_accessor_placeholder_buffer_range_constructor_core
