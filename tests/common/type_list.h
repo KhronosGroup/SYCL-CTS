@@ -27,12 +27,12 @@ struct user_struct {
 
   element_type operator[](size_t) const { return b; }
 
-  friend bool operator==(const user_struct &lhs, const user_struct &rhs) {
+  friend bool operator==(const user_struct& lhs, const user_struct& rhs) {
     static constexpr auto eps = 1e-4f;
     return (((lhs.a + eps > rhs.a) && (lhs.a < rhs.a + eps)) &&
             (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
-  friend bool operator!=(const user_struct &lhs, const user_struct &rhs) {
+  friend bool operator!=(const user_struct& lhs, const user_struct& rhs) {
     return !(lhs == rhs);
   }
 };
@@ -45,7 +45,7 @@ class Base {
   PrimaryType member;
   Base() = default;
   Base(int value) { value_operations::assign(member, value); }
-  bool operator==(const Base &rhs) const { return member == rhs.member; }
+  bool operator==(const Base& rhs) const { return member == rhs.member; }
 };
 
 template <typename PrimaryType>
@@ -63,22 +63,22 @@ struct no_cnstr {
   int b;
   char c;
 
-  constexpr auto &operator=(const int &v) {
+  constexpr auto& operator=(const int& v) {
     a = v;
     b = v;
     c = v;
     return *this;
   }
 
-  friend bool operator==(const no_cnstr &lhs, const no_cnstr &rhs) {
+  friend bool operator==(const no_cnstr& lhs, const no_cnstr& rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
 
-  friend bool operator!=(const no_cnstr &lhs, const no_cnstr &rhs) {
+  friend bool operator!=(const no_cnstr& lhs, const no_cnstr& rhs) {
     return !(lhs == rhs);
   }
 
-  friend no_cnstr operator+(const no_cnstr &lhs, int i) {
+  friend no_cnstr operator+(const no_cnstr& lhs, int i) {
     return {lhs.a + static_cast<float>(i), lhs.b + i,
             static_cast<char>(lhs.c + i)};
   }
@@ -101,16 +101,16 @@ struct def_cnstr {
     c = val;
   }
 
-  constexpr auto &operator=(const int &v) {
+  constexpr auto& operator=(const int& v) {
     assign(v);
     return *this;
   }
 
-  inline friend bool operator==(const def_cnstr &lhs, const def_cnstr &rhs) {
+  inline friend bool operator==(const def_cnstr& lhs, const def_cnstr& rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
 
-  friend bool operator!=(const def_cnstr &lhs, const def_cnstr &rhs) {
+  friend bool operator!=(const def_cnstr& lhs, const def_cnstr& rhs) {
     return !(lhs == rhs);
   }
 };
@@ -127,11 +127,11 @@ class no_def_cnstr {
 
   constexpr no_def_cnstr(int val) : a(val * 3.0f), b(val * 2), c(val) {}
 
-  friend bool operator==(const no_def_cnstr &lhs, const no_def_cnstr &rhs) {
+  friend bool operator==(const no_def_cnstr& lhs, const no_def_cnstr& rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
 
-  friend bool operator!=(const no_def_cnstr &lhs, const no_def_cnstr &rhs) {
+  friend bool operator!=(const no_def_cnstr& lhs, const no_def_cnstr& rhs) {
     return !(lhs == rhs);
   }
 };
@@ -143,21 +143,21 @@ struct arrow_operator_overloaded {
   int b;
   char c;
 
-  void operator=(const int &v) {
+  void operator=(const int& v) {
     this->a = v;
     this->b = v;
     this->c = v;
   }
 
-  arrow_operator_overloaded *operator->() { return this; }
-  const arrow_operator_overloaded *operator->() const { return this; }
+  arrow_operator_overloaded* operator->() { return this; }
+  const arrow_operator_overloaded* operator->() const { return this; }
 
-  friend bool operator==(const arrow_operator_overloaded &lhs,
-                         const arrow_operator_overloaded &rhs) {
+  friend bool operator==(const arrow_operator_overloaded& lhs,
+                         const arrow_operator_overloaded& rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
-  friend bool operator!=(const arrow_operator_overloaded &lhs,
-                         const arrow_operator_overloaded &rhs) {
+  friend bool operator!=(const arrow_operator_overloaded& lhs,
+                         const arrow_operator_overloaded& rhs) {
     return !(lhs == rhs);
   }
 };
@@ -219,22 +219,18 @@ inline auto get_vector_types() {
   static const auto pack = named_type_pack<
       bool, char, signed char, unsigned char, short, unsigned short, int,
       unsigned int, long, unsigned long, long long, unsigned long long, float,
-      sycl::cl_float, sycl::byte, sycl::cl_bool, sycl::cl_char, sycl::cl_uchar,
-      sycl::cl_short, sycl::cl_ushort, sycl::cl_int, sycl::cl_uint,
-      sycl::cl_long, sycl::cl_ulong>::generate("bool", "char", "signed char",
-                                               "unsigned char", "short",
-                                               "unsigned short", "int",
-                                               "unsigned int", "long",
-                                               "unsigned long", "long long",
-                                               "unsigned long long", "float",
-                                               "sycl::cl_float", "sycl::byte",
-                                               "sycl::cl_bool", "sycl::cl_char",
-                                               "sycl::cl_uchar",
-                                               "sycl::cl_short",
-                                               "sycl::cl_ushort",
-                                               "sycl::cl_int", "sycl::cl_uint",
-                                               "sycl::cl_long",
-                                               "sycl::cl_ulong");
+      sycl::opencl::cl_float, sycl::byte, sycl::opencl::cl_bool,
+      sycl::opencl::cl_char, sycl::opencl::cl_uchar, sycl::opencl::cl_short,
+      sycl::opencl::cl_ushort, sycl::opencl::cl_int, sycl::opencl::cl_uint,
+      sycl::opencl::cl_long, sycl::opencl::cl_ulong>::
+      generate("bool", "char", "signed char", "unsigned char", "short",
+               "unsigned short", "int", "unsigned int", "long", "unsigned long",
+               "long long", "unsigned long long", "float",
+               "sycl::opencl::cl_float", "sycl::byte", "sycl::opencl::cl_bool",
+               "sycl::opencl::cl_char", "sycl::opencl::cl_uchar",
+               "sycl::opencl::cl_short", "sycl::opencl::cl_ushort",
+               "sycl::opencl::cl_int", "sycl::opencl::cl_uint",
+               "sycl::opencl::cl_long", "sycl::opencl::cl_ulong");
 #else
   static const auto pack =
       named_type_pack<bool, char, signed char, unsigned char, short,

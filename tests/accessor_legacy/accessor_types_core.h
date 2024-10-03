@@ -82,49 +82,49 @@ public:
                         "user alias");
 
 #ifdef INT8_MAX
-    if (!std::is_same<std::int8_t, sycl::cl_char>::value) {
+    if (!std::is_same<std::int8_t, sycl::opencl::cl_char>::value) {
       for_type_and_vectors<check_type, std::int8_t>(
           log, queue, "std::int8_t");
     }
 #endif
 #ifdef UINT8_MAX
-    if (!std::is_same<std::uint8_t, sycl::cl_uchar>::value) {
+    if (!std::is_same<std::uint8_t, sycl::opencl::cl_uchar>::value) {
       for_type_and_vectors<check_type, std::uint8_t>(
           log, queue, "std::uint8_t");
     }
 #endif
 #ifdef INT16_MAX
-    if (!std::is_same<std::int16_t, sycl::cl_short>::value) {
+    if (!std::is_same<std::int16_t, sycl::opencl::cl_short>::value) {
       for_type_and_vectors<check_type, std::int16_t>(
           log, queue, "std::int16_t");
     }
 #endif
 #ifdef UINT16_MAX
-    if (!std::is_same<std::uint16_t, sycl::cl_ushort>::value) {
+    if (!std::is_same<std::uint16_t, sycl::opencl::cl_ushort>::value) {
       for_type_and_vectors<check_type, std::uint16_t>(
           log, queue, "std::uint16_t");
     }
 #endif
 #ifdef INT32_MAX
-    if (!std::is_same<std::int32_t, sycl::cl_int>::value) {
+    if (!std::is_same<std::int32_t, sycl::opencl::cl_int>::value) {
       for_type_and_vectors<check_type, std::int32_t>(
           log, queue, "std::int32_t");
     }
 #endif
 #ifdef UINT32_MAX
-    if (!std::is_same<std::uint32_t, sycl::cl_uint>::value) {
+    if (!std::is_same<std::uint32_t, sycl::opencl::cl_uint>::value) {
       for_type_and_vectors<check_type, std::uint32_t>(
           log, queue, "std::uint32_t");
     }
 #endif
 #ifdef INT64_MAX
-    if (!std::is_same<std::int64_t, sycl::cl_long>::value) {
+    if (!std::is_same<std::int64_t, sycl::opencl::cl_long>::value) {
       for_type_and_vectors<check_type, std::int64_t>(
           log, queue, "std::int64_t");
     }
 #endif
 #ifdef UINT64_MAX
-    if (!std::is_same<std::uint64_t, sycl::cl_ulong>::value) {
+    if (!std::is_same<std::uint64_t, sycl::opencl::cl_ulong>::value) {
       for_type_and_vectors<check_type, std::uint64_t>(
           log, queue, "std::uint64_t");
     }

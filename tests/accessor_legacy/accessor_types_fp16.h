@@ -55,8 +55,8 @@ public:
     // Extended type coverage
     for_type_and_vectors<check_type, sycl::half>(
         log, queue, "sycl::half");
-    for_type_and_vectors<check_type, sycl::cl_half>(
-        log, queue, "sycl::cl_half");
+    for_type_and_vectors<check_type, sycl::opencl::cl_half>(
+        log, queue, "sycl::opencl::cl_half");
 
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 

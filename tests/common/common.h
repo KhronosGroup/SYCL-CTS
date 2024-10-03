@@ -430,8 +430,8 @@ struct image_access;
  */
 template <>
 struct image_access<1> {
-  using int_type = sycl::cl_int;
-  using float_type = sycl::cl_float;
+  using int_type = sycl::opencl::cl_int;
+  using float_type = sycl::opencl::cl_float;
   static int_type get_int(const sycl::id<1>& i) {
     return int_type(i.get(0));
   }
