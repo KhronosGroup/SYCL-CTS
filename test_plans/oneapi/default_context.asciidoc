@@ -1,0 +1,84 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl_ext_oneapi_default_context
+
+This is a test plan for the default SYCL context extension defined in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_default_context.asciidoc[sycl_ext_oneapi_default_context.asciidoc].
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_DEFAULT_CONTEXT` so they can
+be skipped if feature is not supported.
+
+== Tests
+The extension defines a default context that can be retrieved using the following new method for the platform class:
+
+[source,c++]
+----
+context ext_oneapi_get_default_context()
+----
+
+It also updates the `queue` class to use this context instead of creating a new one.
+
+=== Default Context Devices Test
+
+The default context should contain all of a platform's device. The test should create a platform and get its default context. The test should then check that the context has all of the devices from the platform.
+
+=== Queue Constructor Test
+
+When constructing a `queue` without specifying a `context`, the `queue` should use the default context. The test should create a new `context` using the default constructor and retrieve the platform's default context. The test should then do the following:
+
+1. Check that the new `context` differs from the default context.
+2. Check that a `queue` created without specifying a `context` uses the default context. This check should include the following `queue` constructors:
++
+[source,c++]
+----
+explicit queue(const property_list& propList = {});`
+
+explicit queue(const async_handler& asyncHandler,
+                const property_list& propList = {});`
+
+template <typename DeviceSelector>
+explicit queue(const DeviceSelector& deviceSelector,
+                const property_list& propList = {});
+
+template <typename DeviceSelector>
+explicit queue(const DeviceSelector& deviceSelector,
+                const async_handler& asyncHandler,
+                const property_list& propList = {});
+
+explicit queue(const device& syclDevice, const property_list& propList = {});
+
+explicit queue(const device& syclDevice, const async_handler& asyncHandler,
+                const property_list& propList = {});
+----
+3. Check that a `queue` created with the new `context` uses that `context` and not the default context. This check should include the following `queue` constructors:
++
+[source,c++]
+----
+template <typename DeviceSelector>
+explicit queue(const context& syclContext,
+                const DeviceSelector& deviceSelector,
+                const property_list& propList = {});
+
+template <typename DeviceSelector>
+explicit queue(const context& syclContext,
+                const DeviceSelector& deviceSelector,
+                const async_handler& asyncHandler,
+                const property_list& propList = {});
+
+explicit queue(const context& syclContext, const device& syclDevice,
+                const property_list& propList = {});
+
+explicit queue(const context& syclContext, const device& syclDevice,
+                const async_handler& asyncHandler,
+                const property_list& propList = {});
+----
