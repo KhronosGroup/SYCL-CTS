@@ -103,6 +103,10 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_ENQUEUE_FUNCTIONS_TESTS
     "Enable extension oneAPI enqueue_functions tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_LOCAL_MEMORY_TESTS
+    "Enable extension oneAPI local_memory tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
+
 # TODO: Deprecated - remove
 add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG
     "Enable debug-level logs (deprecated)" OFF)
