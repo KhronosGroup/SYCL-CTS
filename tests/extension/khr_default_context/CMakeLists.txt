@@ -1,4 +1,4 @@
-if(SYCL_CTS_ENABLE_EXT_ONEAPI_DEFAULT_CONTEXT_TESTS)
+if(SYCL_CTS_ENABLE_EXT_KHR_DEFAULT_CONTEXT_TESTS)
     file(GLOB test_cases_list *.cpp)
 
     add_cts_test(${test_cases_list})

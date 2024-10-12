@@ -22,11 +22,11 @@
 
 namespace default_context::tests {
 
-#ifdef SYCL_EXT_ONEAPI_DEFAULT_CONTEXT
+#ifdef SYCL_KHR_DEFAULT_CONTEXT
 
 static void testDefaultContext() {
   sycl::platform platform{};
-  sycl::context defaultContext = platform.ext_oneapi_get_default_context();
+  sycl::context defaultContext = platform.khr_get_default_context();
   CHECK(defaultContext.get_devices() == platform.get_devices());
 }
 
@@ -37,12 +37,12 @@ static void testQueueConstructors() {
   sycl::device syclDevice;
   sycl::context syclContext;
   sycl::context defaultContext =
-      sycl::platform{}.ext_oneapi_get_default_context();
+      sycl::platform{}.khr_get_default_context();
 
   // Check that a default-constructed context is not the default context.
   CHECK(syclContext != defaultContext);
 
-  // Default context constructor
+  // Default context constructors
   CHECK(defaultContext == sycl::queue{propList}.get_context());
   CHECK(defaultContext == sycl::queue{asyncHandler, propList}.get_context());
   CHECK(defaultContext == sycl::queue{deviceSelector, propList}.get_context());
@@ -68,9 +68,9 @@ static void testQueueConstructors() {
 #endif
 
 TEST_CASE("Test case for \"Default Context\" extension",
-          "[oneapi_default_context") {
-#ifndef SYCL_EXT_ONEAPI_DEFAULT_CONTEXT
-  SKIP("SYCL_EXT_ONEAPI_DEFAULT_CONTEXT is not defined");
+          "[khr_default_context") {
+#ifndef SYCL_KHR_DEFAULT_CONTEXT
+  SKIP("SYCL_KHR_DEFAULT_CONTEXT is not defined");
 #else
   testDefaultContext();
   testQueueConstructors();
