@@ -36,8 +36,7 @@ static void testQueueConstructors() {
   const auto& deviceSelector = sycl::default_selector_v;
   sycl::device syclDevice;
   sycl::context syclContext;
-  sycl::context defaultContext =
-      sycl::platform{}.khr_get_default_context();
+  sycl::context defaultContext = sycl::platform{}.khr_get_default_context();
 
   // Check that a default-constructed context is not the default context.
   CHECK(syclContext != defaultContext);
