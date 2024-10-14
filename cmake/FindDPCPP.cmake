@@ -72,8 +72,8 @@ set_target_properties(DPCPP::Runtime PROPERTIES
 
 set(CMAKE_CXX_COMPILER ${DPCPP_CXX_EXECUTABLE})
 # Use DPC++ compiler instead of default linker for building SYCL application
-set(CMAKE_CXX_LINK_EXECUTABLE "${DPCPP_CXX_EXECUTABLE} <FLAGS> \
-    <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
+set(CMAKE_CXX_LINK_EXECUTABLE "${DPCPP_CXX_EXECUTABLE} <FLAGS> <OBJECTS> -o <TARGET> \
+    <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <LINK_LIBRARIES>")
 
 function(add_sycl_to_target)
     set(options)
