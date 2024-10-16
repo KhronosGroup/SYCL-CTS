@@ -67,7 +67,7 @@ static void testQueueConstructors() {
 #endif
 
 TEST_CASE("Test case for \"Default Context\" extension",
-          "[khr_default_context") {
+          "[khr_default_context]") {
 #ifndef SYCL_KHR_DEFAULT_CONTEXT
   SKIP("SYCL_KHR_DEFAULT_CONTEXT is not defined");
 #else
