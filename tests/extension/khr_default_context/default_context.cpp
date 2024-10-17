@@ -22,15 +22,23 @@
 
 namespace default_context::tests {
 
-#ifdef SYCL_KHR_DEFAULT_CONTEXT
+TEST_CASE(
+    "the default context extension defines the SYCL_KHR_DEFAULT_CONTEXT macro",
+    "[khr_default_context]") {
+#ifndef SYCL_KHR_DEFAULT_CONTEXT
+  static_assert(false, "SYCL_KHR_DEFAULT_CONTEXT is not defined");
+#endif
+}
 
-static void testDefaultContext() {
+TEST_CASE("the default context contains all of the default platform's devices",
+          "[khr_default_context]") {
   sycl::platform platform{};
   sycl::context defaultContext = platform.khr_get_default_context();
   CHECK(defaultContext.get_devices() == platform.get_devices());
 }
 
-static void testQueueConstructors() {
+TEST_CASE("queue constructors use the default context or the context parameter",
+          "[khr_default_context]") {
   const sycl::property_list& propList = {};
   cts_async_handler asyncHandler;
   const auto& deviceSelector = sycl::default_selector_v;
@@ -62,18 +70,6 @@ static void testQueueConstructors() {
   CHECK(syclContext ==
         sycl::queue{syclContext, syclDevice, asyncHandler, propList}
             .get_context());
-}
-
-#endif
-
-TEST_CASE("Test case for \"Default Context\" extension",
-          "[khr_default_context]") {
-#ifndef SYCL_KHR_DEFAULT_CONTEXT
-  SKIP("SYCL_KHR_DEFAULT_CONTEXT is not defined");
-#else
-  testDefaultContext();
-  testQueueConstructors();
-#endif
 }
 
 }  // namespace default_context::tests
