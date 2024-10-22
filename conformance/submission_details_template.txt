@@ -58,10 +58,12 @@ Target SYCL device:
 # and device combinations.
 #
 SYCL implementation version(s):
+Device(s):
+Platform:
+Backend:
 Host architecture(s):
 Host operating system(s) and version(s):
 Host toolchains(s) and version(s):
-SYCL backend/platform/device combinations(s):
 
 # Environment requirements.
 #
