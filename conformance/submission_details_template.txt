@@ -59,8 +59,8 @@ Target SYCL device:
 #
 SYCL implementation version(s):
 Device(s):
-Platform:
-Backend:
+Platform(s):
+Backend(s):
 Host architecture(s):
 Host operating system(s) and version(s):
 Host toolchains(s) and version(s):
