@@ -75,13 +75,6 @@ Environment requirements:
 # List of KHR extension supported by the SYCL implementation.
 # KHR extensions:
 
-# Supported optional features.
-#
-# List of optional features supported by the SYCL implementation, and the
-# backend/platform/device combninations for which they are supported.
-#
-Optional features:
-
 # Tests version.
 #
 # Commit SHA (full hash) of the commit which was used to run the tests.
