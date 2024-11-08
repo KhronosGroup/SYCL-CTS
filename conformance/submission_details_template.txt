@@ -42,12 +42,11 @@ SYCL Version:
 # backend, platform and device.
 #
 SYCL implementation and version:
+Device:
+Backend / platform:
 Host architecture:
 Host operating system and version:
 Host toolchain and version:
-Target SYCL backend:
-Target SYCL platform:
-Target SYCL device:
 
 # Conformant products.
 #
@@ -58,10 +57,11 @@ Target SYCL device:
 # and device combinations.
 #
 SYCL implementation version(s):
+Device(s):
+Backend / platform(s):
 Host architecture(s):
 Host operating system(s) and version(s):
 Host toolchains(s) and version(s):
-SYCL backend/platform/device combinations(s):
 
 # Environment requirements.
 #
@@ -74,13 +74,6 @@ Environment requirements:
 #
 # List of KHR extension supported by the SYCL implementation.
 # KHR extensions:
-
-# Supported optional features.
-#
-# List of optional features supported by the SYCL implementation, and the
-# backend/platform/device combninations for which they are supported.
-#
-Optional features:
 
 # Tests version.
 #

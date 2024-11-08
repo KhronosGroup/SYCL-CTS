@@ -210,6 +210,41 @@ void check_pointer_aliases(const std::string &type_name) {
 }
 
 template <typename T>
+void check_generic_pointer_aliases(const std::string& type_name) {
+  SECTION(sycl_cts::section_name("Check explicit generic pointer aliases")
+              .with("T", type_name)
+              .create()) {
+    // FIXME: Enable when aliases defined in implementations.
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_DPCPP
+    {
+      INFO("decorated_generic_ptr");
+      STATIC_CHECK(
+          std::is_same_v<
+              sycl::decorated_generic_ptr<T>,
+              sycl::multi_ptr<T, sycl::access::address_space::generic_space,
+                              sycl::access::decorated::yes>>);
+    }
+    {
+      INFO("raw_generic_ptr");
+      STATIC_CHECK(
+          std::is_same_v<
+              sycl::raw_generic_ptr<T>,
+              sycl::multi_ptr<T, sycl::access::address_space::generic_space,
+                              sycl::access::decorated::no>>);
+    }
+#endif  //! SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_DPCPP
+  }
+}
+
+template <typename T>
+class check_generic_ptr_aliases_for_type {
+ public:
+  void operator()(const std::string& type_name) {
+    check_generic_pointer_aliases<T>(type_name);
+  }
+};
+
+template <typename T>
 class check_multi_ptr_explicit_convert_for_type {
  public:
   void operator()(const std::string &type_name) {
