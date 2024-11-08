@@ -90,8 +90,7 @@ public:
       using verifier = check_accessor_constructor_image<accTag, property_list>;
 
       auto context = util::get_cts_object::context();
-      property_list properties {
-          sycl::property::buffer::context_bound(context)};
+      property_list properties;
 
       const auto constructorName = usesHander ?
           "constructor(image, handler, property_list)" :
