@@ -6,7 +6,7 @@ on:
   push:
     branches:
       # Run on our default base branch to prime ccache for faster CI runs in PRs.
-      - SYCL-2020
+      - main
 
 jobs:
   # Pushing container images requires DockerHub credentials, provided as GitHub secrets.
