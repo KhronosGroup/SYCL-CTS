@@ -50,6 +50,7 @@ void test_range_kernels(
   const sycl::range<dims> range_two_const(range_two);
   const sycl::range<dims> range_const(range);
 
+  // make sure bitwise shift rhs is smaller than number of bits in size_t.
   sycl::range<dims> range_quarter(range / 4);
   const sycl::range<dims> range_quarter_const(range_quarter);
 
