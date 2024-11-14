@@ -21,8 +21,8 @@
 //  parallel_for({N}, some_kernel)
 //  parallel_for({N1, N2}, some_kernel)
 //  parallel_for({N1, N2, N3}, some_kernel)
-//  Test plan:
-https://github.com/KhronosGroup/SYCL-CTS/blob/SYCL-2020/test_plans/parallel_for_simplifications.asciidoc
+//
+//  Test plan: /test_plans/parallel_for_simplifications.asciidoc
 //
 *******************************************************************************/
 
