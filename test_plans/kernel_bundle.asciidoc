@@ -7,7 +7,7 @@ This is a test plan cover kernel_bundle functionality that is not covered by cur
 
 == Testing scope
 
-Tests intend to cover functions from 4.11. Kernel bundles that are not covered in https://github.com/KhronosGroup/SYCL-CTS/tree/SYCL-2020/tests/kernel_bundle
+Tests intend to cover functions from 4.11. Kernel bundles that are not covered in https://github.com/KhronosGroup/SYCL-CTS/tree/main/tests/kernel_bundle
 
 === Device coverage
 
@@ -116,7 +116,7 @@ Check that result of `get_kernel_ids`:
 
 === Tests for working with specialization constants
 
-Partially tested in https://github.com/KhronosGroup/SYCL-CTS/blob/SYCL-2020/tests/specialization_constants/specialization_constants_via_kernel_bundle.h
+Partially tested in https://github.com/KhronosGroup/SYCL-CTS/blob/main/tests/spec_constants/spec_constants_via_kernel_bundle.h
 
 There are two spec constant defined: `SpecName` and `OtherSpecName`.
 kernel_handler::get_specialization_constant<OtherSpecName>() shouldn't be used in any kernel in the application.
