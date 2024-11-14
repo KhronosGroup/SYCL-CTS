@@ -31,11 +31,11 @@ static void check_root_group_api() {
   auto bundle =
       sycl::get_kernel_bundle<sycl::bundle_state::executable>(q.get_context());
   auto kernel = bundle.get_kernel<KernelName>();
+  auto local_range = sycl::range<Dimensions>(Dims...);
   auto maxWGs = kernel.template ext_oneapi_get_info<
       sycl::ext::oneapi::experimental::info::kernel_queue_specific::
-          max_num_work_group_sync>(q);
+          max_num_work_groups>(q, local_range, 0);
   REQUIRE(maxWGs >= 1);
-  auto local_range = sycl::range<Dimensions>(Dims...);
   auto global_range = local_range;
   global_range[0] *= maxWGs;
   REQUIRE(global_range.size() == local_range.size() * maxWGs);
@@ -175,11 +175,11 @@ static void check_root_group_barrier() {
   auto bundle =
       sycl::get_kernel_bundle<sycl::bundle_state::executable>(q.get_context());
   auto kernel = bundle.get_kernel<KernelName>();
+  auto local_range = sycl::range<Dimensions>(Dims...);
   auto maxWGs = kernel.template ext_oneapi_get_info<
       sycl::ext::oneapi::experimental::info::kernel_queue_specific::
-          max_num_work_group_sync>(q);
+          max_num_work_groups>(q, local_range, 3);
   REQUIRE(maxWGs >= 1);
-  auto local_range = sycl::range<Dimensions>(Dims...);
   auto global_range = local_range;
   global_range[0] *= maxWGs;
   REQUIRE(global_range.size() == local_range.size() * maxWGs);
