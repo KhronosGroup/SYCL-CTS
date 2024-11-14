@@ -178,7 +178,7 @@ static void check_root_group_barrier() {
   auto local_range = sycl::range<Dimensions>(Dims...);
   auto maxWGs = kernel.template ext_oneapi_get_info<
       sycl::ext::oneapi::experimental::info::kernel_queue_specific::
-          max_num_work_groups>(q, local_range, 3);
+          max_num_work_groups>(q, local_range, 0);
   REQUIRE(maxWGs >= 1);
   auto global_range = local_range;
   global_range[0] *= maxWGs;
