@@ -27,7 +27,7 @@
 namespace language::constant_evaluation {
 
 // A very inefficient way to compute Fibonacci's series using recursion which is
-// forbidden inside non constant-evaluated kernel code/
+// forbidden inside non constant-evaluated kernel code.
 auto constexpr f(int v) {
   if (v < 2) return v;
   return f(v - 1) + f(v - 2);
