@@ -215,7 +215,7 @@ void check_generic_pointer_aliases(const std::string& type_name) {
               .with("T", type_name)
               .create()) {
     // FIXME: Enable when aliases defined in implementations.
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_DPCPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
     {
       INFO("decorated_generic_ptr");
       STATIC_CHECK(
@@ -232,7 +232,7 @@ void check_generic_pointer_aliases(const std::string& type_name) {
               sycl::multi_ptr<T, sycl::access::address_space::generic_space,
                               sycl::access::decorated::no>>);
     }
-#endif  //! SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_DPCPP
+#endif  //! SYCL_CTS_COMPILING_WITH_HIPSYCL
   }
 }
 
