@@ -18,11 +18,6 @@
 
 #include "compat.h"
 
-#if (defined(_WIN32) && defined(_MSC_VER))
-#include "errorHelpers.h"
-#include "testHarness.h"
-#endif
-
 typedef enum {
   kDefaultRoundingMode = 0,
   kRoundToNearestEven,
