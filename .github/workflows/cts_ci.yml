@@ -6,7 +6,7 @@ on:
   push:
     branches:
       # Run on our default base branch to prime ccache for faster CI runs in PRs.
-      - SYCL-2020
+      - main
 
 jobs:
   # Pushing container images requires DockerHub credentials, provided as GitHub secrets.
@@ -56,7 +56,7 @@ jobs:
       matrix:
         include:
           - sycl-impl: dpcpp
-            version: 20a088e1231c4ac85fd74c0de79c563977d2f38c
+            version: 6456fe89646deb8bf30c0eb32827a62ff6e58ffb
           - sycl-impl: hipsycl
             version: 3d8b1cd
     steps:
@@ -114,7 +114,7 @@ jobs:
       matrix:
         include:
           - sycl-impl: dpcpp
-            version: 20a088e1231c4ac85fd74c0de79c563977d2f38c
+            version: 6456fe89646deb8bf30c0eb32827a62ff6e58ffb
           - sycl-impl: hipsycl
             version: 3d8b1cd
     env:

@@ -7,7 +7,7 @@ This is a test plan for the for new constructors of class `sycl::queue` describe
 
 == Testing scope
 
-Tests intend to cover not covered constructors from 4.6.5.1. Queue interface that are not covered in https://github.com/KhronosGroup/SYCL-CTS/blob/SYCL-2020/tests/queue/queue_constructors.cpp
+Tests intend to cover not covered constructors from 4.6.5.1. Queue interface that are not covered in https://github.com/KhronosGroup/SYCL-CTS/blob/main/tests/queue/queue_constructors.cpp
 
 === Device coverage
 

@@ -7,7 +7,7 @@ This is a test plan cover sycl::kernel functionality that is not covered by curr
 
 == Testing scope
 
-Tests intend to cover functions from 4.11.13. The kernel class that are not covered in https://github.com/KhronosGroup/SYCL-CTS/tree/SYCL-2020/tests/kernel
+Tests intend to cover functions from 4.11.13. The kernel class that are not covered in https://github.com/KhronosGroup/SYCL-CTS/tree/main/tests/kernel
 
 === Device coverage
 
