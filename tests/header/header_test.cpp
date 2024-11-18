@@ -45,6 +45,7 @@ class TEST_NAME : public util::test_base {
 #define TEST_FAIL
     log.note("SYCL_LANGUAGE_VERSION not present");
 #else
+    static_assert(SYCL_LANGUAGE_VERSION, "202012");
     log.note("SYCL_LANGUAGE_VERSION = %d", static_cast<int>(SYCL_LANGUAGE_VERSION));
 #endif
 
