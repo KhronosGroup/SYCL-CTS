@@ -414,8 +414,8 @@ namespace pixel_tag {
   struct upper: generic {};
 };
 
-// hipSYCL does not yet support images
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// hipSYCL and SimSYCL do not yet support images
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_SIMSYCL
 
 /**
  * @brief Helps with retrieving the right access type for reading/writing
