@@ -36,7 +36,6 @@
 #include "get_cts_object.h"
 #include "macros.h"
 #include "string_makers.h"
-#include "sycl/backend_types.hpp"
 #include "value_operations.h"
 
 #include <algorithm>
