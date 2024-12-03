@@ -36,6 +36,7 @@
 #include "get_cts_object.h"
 #include "macros.h"
 #include "string_makers.h"
+#include "sycl/backend_types.hpp"
 #include "value_operations.h"
 
 #include <algorithm>
@@ -157,6 +158,22 @@ void check_get_info_param(const ObjectT& object) {
   // Check get_info return type
   auto returnValue = object.template get_info<InfoDesc>();
   check_return_type<ReturnT>(returnValue, "object::get_info()");
+}
+/**
+ * @brief Helper function to check an info parameter for specific backend.
+ */
+template <typename InfoDesc, typename ReturnT, sycl::backend Backend,
+          typename ObjectT>
+void check_get_info_param_backend_specific(const ObjectT& object) {
+  try {
+    check_get_info_param<InfoDesc, ReturnT>(object);
+    CHECK(object.get_backend() == Backend);
+  } catch (const sycl::exception& e) {
+    CHECK(e.code() == sycl::make_error_code(sycl::errc::invalid));
+    CHECK(object.get_backend() != Backend);
+  } catch (...) {
+    FAIL("Unexpected exception");
+  }
 }
 
 /**
