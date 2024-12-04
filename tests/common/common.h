@@ -169,7 +169,9 @@ void check_get_info_param_backend_specific(const ObjectT& object) {
     check_get_info_param<InfoDesc, ReturnT>(object);
     CHECK(object.get_backend() == Backend);
   } catch (const sycl::exception& e) {
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
     CHECK(e.code() == sycl::make_error_code(sycl::errc::invalid));
+#endif
     CHECK(object.get_backend() != Backend);
   } catch (...) {
     FAIL("Unexpected exception");
