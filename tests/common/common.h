@@ -158,6 +158,7 @@ void check_get_info_param(const ObjectT& object) {
   auto returnValue = object.template get_info<InfoDesc>();
   check_return_type<ReturnT>(returnValue, "object::get_info()");
 }
+
 /**
  * @brief Helper function to check an info parameter for specific backend.
  */
