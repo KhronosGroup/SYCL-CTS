@@ -28,10 +28,7 @@ struct Point3D {
   int x;
   int y;
   int z;
-  Point3D() : x{0}, y{0}, z{0} {}
-  Point3D(int x) : x{x}, y{0}, z{0} {}
-  Point3D(int x, int y) : x{x}, y{y}, z{0} {}
-  Point3D(int x, int y, int z) : x{x}, y{y}, z{z} {}
+  Point3D(int x = 1, int y = -2, int z = 3) : x{x}, y{y}, z{z} {}
 };
 
 static bool operator==(const Point3D& a, const Point3D& b) {
@@ -119,8 +116,7 @@ template <typename T>
 static void testLocalMemoryAvailability() {
   constexpr size_t N = 10;
   const auto kernel = [=](sycl::nd_item<1> item, bool* passed) {
-    auto ptr = sycl::ext::oneapi::group_local_memory<T[N]>(item.get_group());
-    T(&array)[N] = *ptr;
+    auto array = *sycl::ext::oneapi::group_local_memory<T[N]>(item.get_group());
     array[(N - 1) - item.get_local_linear_id()] = item.get_local_linear_id();
     sycl::group_barrier(item.get_group());
     passed[item.get_global_id()] =
@@ -134,9 +130,8 @@ template <typename T>
 static void testLocalMemoryForOverwriteAvailability() {
   constexpr size_t N = 10;
   const auto kernel = [=](sycl::nd_item<1> item, bool* passed) {
-    auto ptr = sycl::ext::oneapi::group_local_memory_for_overwrite<T[N]>(
+    auto array = *sycl::ext::oneapi::group_local_memory_for_overwrite<T[N]>(
         item.get_group());
-    T(&array)[N] = *ptr;
     array[(N - 1) - item.get_local_linear_id()] = item.get_local_linear_id();
     sycl::group_barrier(item.get_group());
     passed[item.get_global_id()] =
