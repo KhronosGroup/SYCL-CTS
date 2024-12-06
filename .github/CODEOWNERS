@@ -4,8 +4,7 @@
 # Implementation specific cmake configuration file needs approval from
 # the corresponding owner only.
 /cmake/FindDPCPP.cmake @bader
+/cmake/AdaptDPCPP.cmake @bader
 /cmake/FindhipSYCL.cmake @illuhad
-# TODO: remove FindIntel_SYCL configuration file
-/cmake/FindIntel_SYCL.cmake @bader
 
 /test_plans @gmlueck @KhronosGroup/sycl-cts-reviewers
