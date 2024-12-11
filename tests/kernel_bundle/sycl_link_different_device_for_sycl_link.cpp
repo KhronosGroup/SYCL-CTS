@@ -41,10 +41,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
     sycl::queue q{devices[0]};
 
-    const auto first_simple_kernel_id =
+        const auto first_simple_kernel_id =
         sycl::get_kernel_id<first_simple_kernel>();
     auto kernel_bundle = sycl::get_kernel_bundle<sycl::bundle_state::object>(
-        q.get_context(), {first_simple_kernel_id});
+        q.get_context(), {q.get_device()}, {first_simple_kernel_id});
     vector_with_object_bundles vector_with_kb{kernel_bundle};
 
     expect_throws<sycl::errc::invalid>(
