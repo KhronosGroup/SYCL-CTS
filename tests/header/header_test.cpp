@@ -39,15 +39,6 @@ class TEST_NAME : public util::test_base {
   /** execute this test
   */
   void run(util::logger &log) override {
-/** checks that SYCL_LANGUAGE_VERSION is defined
-*/
-#if !defined(SYCL_LANGUAGE_VERSION)
-#define TEST_FAIL
-    log.note("SYCL_LANGUAGE_VERSION not present");
-#else
-    static_assert(std::is_same_v<decltype(SYCL_LANGUAGE_VERSION), long>);
-    static_assert(SYCL_LANGUAGE_VERSION == 202012L);
-#endif
 
 /** checks that __FAST_RELAXED_MATH__ is defined
 */
@@ -72,6 +63,15 @@ class TEST_NAME : public util::test_base {
 #endif
   }
 };
+
+TEST_CASE("The implementation defines the correct SYCL_LANGUAGE_VERSION macro") {
+#ifndef SYCL_LANGUAGE_VERSION
+    FAIL("SYCL_LANGUAGE_VERSION is not defined");
+#else
+    STATIC_REQUIRE(std::is_same_v<decltype(SYCL_LANGUAGE_VERSION), long>);
+    STATIC_REQUIRE(SYCL_LANGUAGE_VERSION == 202012L);
+#endif
+}
 
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
