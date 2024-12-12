@@ -57,7 +57,7 @@ jobs:
         include:
           - sycl-impl: dpcpp
             version: 6456fe89646deb8bf30c0eb32827a62ff6e58ffb
-          - sycl-impl: hipsycl
+          - sycl-impl: adaptivecpp
             version: 3d8b1cd
     steps:
       - name: Checkout
@@ -115,7 +115,7 @@ jobs:
         include:
           - sycl-impl: dpcpp
             version: 6456fe89646deb8bf30c0eb32827a62ff6e58ffb
-          - sycl-impl: hipsycl
+          - sycl-impl: adaptivecpp
             version: 3d8b1cd
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}

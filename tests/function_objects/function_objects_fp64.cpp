@@ -23,12 +23,12 @@
 #include "../common/disabled_for_test_case.h"
 #include "../common/type_coverage.h"
 
-// fixme: re-enable when sycl::marray is implemented in hipSYCL
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// fixme: re-enable when sycl::marray is implemented in AdaptiveCpp
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "function_objects.h"
 #endif
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("function objects void specializations scalar fp64",
  "[function_objects][fp64]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
@@ -50,7 +50,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       get_op_types(), types_only_double, types_only_double);
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("function objects void specializations vector fp64",
  "[function_objects][fp64]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
