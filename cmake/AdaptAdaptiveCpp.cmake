@@ -1,5 +1,5 @@
 add_library(SYCL::SYCL INTERFACE IMPORTED GLOBAL)
-target_link_libraries(SYCL::SYCL INTERFACE AdaptiveCpp::AdaptiveCpp-rt)
+target_link_libraries(SYCL::SYCL INTERFACE AdaptiveCpp::acpp-rt)
 # add_sycl_executable_implementation function
 # Builds a SYCL program, compiling multiple SYCL test case source files into a
 # test executable, invoking a single-source/device compiler
