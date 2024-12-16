@@ -25,7 +25,7 @@
 
 // TODO: Remove when all implementations support the sycl::exception API
 // entirely
-#if SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE 1
 #define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY 0

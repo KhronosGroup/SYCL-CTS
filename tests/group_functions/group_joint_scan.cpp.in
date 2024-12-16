@@ -25,27 +25,27 @@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
 // clang-format on
 
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "group_scan.h"
 
 using TestType = unnamed_type_pack<CTS_TYPE>;
 using ScanTypes = Types;
 
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
-// FIXME: known_identity is not impemented yet for hipSYCL.
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// FIXME: known_identity is not impemented yet for AdaptiveCpp.
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 (CTS_TYPE_NAME + " group and sub-group joint scan functions",
  "[group_func][type_list][dim]")({
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
+#if defined(SYCL_CTS_COMPILING_WITH_ADAPTIVECPP)
   WARN(
-      "hipSYCL cannot handle cases of different types for InPtr and OutPtr. "
+      "AdaptiveCpp cannot handle cases of different types for InPtr and OutPtr. "
       "Skipping such test cases.");
   WARN(
-      "hipSYCL joint_exclusive_scan and joint_inclusive_scan cannot process "
+      "AdaptiveCpp joint_exclusive_scan and joint_inclusive_scan cannot process "
       "over several sub-groups simultaneously. Using one sub-group only.");
-  WARN("hipSYCL does not support sycl::known_identity_v yet.");
+  WARN("AdaptiveCpp does not support sycl::known_identity_v yet.");
 #endif
 
   auto queue = once_per_unit::get_queue();
@@ -61,8 +61,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
           "operations.");
   }
 
-  // FIXME: hipSYCL cannot handle cases of different types
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
+  // FIXME: AdaptiveCpp cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_ADAPTIVECPP)
   for_all_combinations<invoke_joint_scan_group_same_type>(Dims, TestType{},
                                                           queue);
 #else
@@ -71,16 +71,16 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #endif
 });
 
-// FIXME: known_identity is not impemented yet for hipSYCL.
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// FIXME: known_identity is not impemented yet for AdaptiveCpp.
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 (CTS_TYPE_NAME + " group and sub-group joint scan functions with init",
  "[group_func][type_list][dim]")({
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
+#if defined(SYCL_CTS_COMPILING_WITH_ADAPTIVECPP)
   WARN(
-      "hipSYCL cannot handle cases of different types for T, *InPtr and "
+      "AdaptiveCpp cannot handle cases of different types for T, *InPtr and "
       "*OutPtr. Skipping such test cases.");
   WARN(
-      "hipSYCL joint_exclusive_scan and joint_inclusive_scan with init values "
+      "AdaptiveCpp joint_exclusive_scan and joint_inclusive_scan with init values "
       "cannot process over several sub-groups simultaneously. Using one "
       "sub-group only.");
 #endif
@@ -98,8 +98,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
           "operations.");
   }
 
-  // FIXME: hipSYCL cannot handle cases of different types
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
+  // FIXME: AdaptiveCpp cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_ADAPTIVECPP)
   for_all_combinations<invoke_init_joint_scan_group_same_type>(Dims, TestType{},
                                                                queue);
 #else

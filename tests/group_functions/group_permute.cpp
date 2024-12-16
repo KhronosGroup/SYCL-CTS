@@ -20,7 +20,7 @@
 
 #include "group_permute.h"
 
-// hipSYCL does not permute right 8-bit types inside groups
+// AdaptiveCpp does not permute right 8-bit types inside groups
 TEMPLATE_LIST_TEST_CASE("Group and sub-group permute",
                         "[group_func][type_list][dim]", CustomTypes) {
   auto queue = once_per_unit::get_queue();

@@ -23,7 +23,7 @@
 #include "../common/semantics_reference.h"
 #include "default_image.h"
 
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 template <int Dimensions>
 struct storage_sampled {
@@ -63,7 +63,7 @@ struct storage_unsampled {
 };
 
 #endif
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sampled_image common reference semantics", "[sampled_image]")({
   auto sampled_image_0 = default_sampled_image::get();
   auto sampled_image_1 = default_sampled_image::get();
@@ -75,7 +75,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 // sampled_image common reference semantics, mutation
 // Cannot be tested, since sampled_image is read-only.
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("unsampled_image common reference semantics", "[unsampled_image]")({
   auto unsampled_image_0 = default_unsampled_image::get();
   auto unsampled_image_1 = default_unsampled_image::get();
@@ -84,7 +84,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       unsampled_image_0, unsampled_image_1, "unsampled_image");
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("unsampled_image common reference semantics, mutation", "[unsampled_image]")({
   using data_type = default_unsampled_image::data_type;
   constexpr data_type val{1};

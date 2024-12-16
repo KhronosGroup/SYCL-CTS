@@ -26,7 +26,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 
 /*
- * FIXME: hipSYCL does not implement size member function of sycl::vec
+ * FIXME: AdaptiveCpp does not implement size member function of sycl::vec
  * As a result the following implementation is not working
  * Workaround is presented below
 
@@ -59,9 +59,9 @@ bool equal_impl(const sycl::vec<T, N>& a, const U& b) {
   return res;
 }
 
-// FIXME: hipSYCL has not implemented sycl::marray type yet
+// FIXME: AdaptiveCpp has not implemented sycl::marray type yet
 //        The warning is printed from group_shift.cpp and group_permute.cpp
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 bool equal_impl(const sycl::marray<T, N>& a, const sycl::marray<T, N>& b) {
   bool res = true;
@@ -87,7 +87,7 @@ bool equal(const T& a, const U& b) {
 }
 
 /*
- * FIXME: hipSYCL cannot construct vector from 1 value
+ * FIXME: AdaptiveCpp cannot construct vector from 1 value
  * As a result the helper below is needed
  */
 template <typename T, typename U>
@@ -227,9 +227,9 @@ using Types = unnamed_type_pack<float, char, int, unsigned long long int>;
 
 #endif
 
-// FIXME: hipSYCL has not implemented sycl::marray type yet
+// FIXME: AdaptiveCpp has not implemented sycl::marray type yet
 //        The warning is printed from group_shift.cpp and group_permute.cpp
-#ifdef SYCL_CTS_COMPILING_WITH_HIPSYCL
+#ifdef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 using ExtendedTypes =
     concatenation<FundamentalTypes,
                   std::tuple<bool, sycl::vec<unsigned int, 4>,

@@ -84,8 +84,8 @@ class check_vec_deduction {
   }
 };
 
-// FIXME: re-enable when vec deduction is implemented in hipSYCL
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// FIXME: re-enable when vec deduction is implemented in AdaptiveCpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("vec deduction guides", "[vec_deduction]")({
   for_all_types<check_vec_deduction>(deduction::vector_types);
 });

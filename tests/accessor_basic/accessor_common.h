@@ -30,8 +30,8 @@
 #include "../common/type_list.h"
 #include "../common/value_operations.h"
 
-// FIXME: re-enable when marrray is implemented in hipsycl
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: re-enable when marrray is implemented in adaptivecpp
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "../common/type_coverage.h"
 #endif
 
@@ -140,9 +140,9 @@ inline std::string get_section_name(const std::string& type_name,
       .create();
 }
 
-// FIXME: re-enable when marrray is implemented in hipsycl and type_coverage is
-// enabled
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: re-enable when marrray is implemented in adaptivecpp and type_coverage
+// is enabled
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Factory function for getting type_pack with fp16 type
  */
@@ -379,7 +379,7 @@ inline auto add_vectors_to_type_pack(StrNameType type_name) {
                                   "vec<" + type_name + ", 8>",
                                   "vec<" + type_name + ", 16>");
 }
-#endif  // SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 template <accessor_type AccType>
 struct tag_factory {
@@ -476,8 +476,8 @@ void check_empty_accessor_constructor_post_conditions(
 }
 
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
-// hipsycl and computcpp
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// adaptivecpp and computcpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 /**
  * @brief Common function that constructs accessor with default constructor
@@ -619,7 +619,7 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
     CHECK(conditions_check[i]);
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 namespace detail {
 /**
@@ -668,8 +668,8 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
   }
 }
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
-// hipsycl
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 /**
  * @brief Function helps to check zero dimension constructor of accessor
@@ -756,7 +756,7 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
     }
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 /**
  * @brief Function that tries to read or/and write depending on AccessMode
@@ -785,8 +785,8 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
 }
 
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
-// hipsycl
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 /**
  * @brief Function helps to check common constructor of accessor
@@ -890,7 +890,7 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
     }
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 /**
  * @brief Function mainly for testing no_init property. The function tries to
@@ -920,7 +920,7 @@ void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
   }
 }
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 template <accessor_type AccType, typename DataT, int Dimension,
           sycl::access_mode AccessMode, sycl::target Target>
@@ -1007,7 +1007,7 @@ void check_no_init_prop_exception(GetAccFunctorT construct_acc) {
     }
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Function tests AccT::get_pointer() method
 
@@ -1024,8 +1024,8 @@ void test_accessor_ptr(AccT& accessor, T expected_data) {
 }
 
 // FIXME: re-enable when sycl::access::decorated enumeration is implemented in
-// hipsycl
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, typename AccT, typename AccRes>
 void test_accessor_ptr_device(AccT& accessor, T& expected_data, AccRes& res_acc,
                               size_t& res_i) {
@@ -1051,7 +1051,7 @@ void test_accessor_ptr_device(AccT& accessor, T& expected_data, AccRes& res_acc,
                      sycl::global_ptr<typename AccT::value_type>>;
   res_acc[res_i++] = value_operations::are_equal(*acc_pointer, expected_data);
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Function checks common buffer and local accessor member functions
  */
@@ -1205,8 +1205,8 @@ void check_get_property_member_func(GetAccFunctorT construct_acc) {
 }
 
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
-// hipsycl
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Function invokes \c get_property() member function without \c PropT
  * property and verifies that false returns
@@ -1241,7 +1241,7 @@ void check_get_property_member_without_no_init(GetAccFunctorT construct_acc) {
                          sycl_cts::util::equals_exception(sycl::errc::invalid));
   }
 }
-#endif  // SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Function checks common buffer and local accessor member types
  */
@@ -1283,8 +1283,8 @@ sycl::id<dims> next_id_linearly(sycl::id<dims> id, size_t size) {
   return id;
 }
 
-// FIXME: re-enable when handler.host_task is implemented in hipsycl
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: re-enable when handler.host_task is implemented in adaptivecpp
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 template <accessor_type AccType, typename T, int dims,
           sycl::access_mode AccessMode, sycl::target Target>

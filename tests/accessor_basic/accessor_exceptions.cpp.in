@@ -18,7 +18,7 @@
 // clang-format on
 
 // FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #include "accessor_exceptions.h"
 
@@ -29,7 +29,7 @@ using namespace accessor_tests_common;
 namespace accessor_exceptions_test_core {
 using namespace sycl_cts;
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 (CTS_TYPE_NAME + " Generic sycl::accessor constructor exceptions test.",
  "[accessor]", test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
@@ -56,7 +56,7 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 (CTS_TYPE_NAME + " sycl::local_accessor constructor exceptions test.",
  "[accessor]", test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
@@ -83,7 +83,7 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 (CTS_TYPE_NAME + " sycl::host_accessor constructor exceptions test.",
  "[accessor]", test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();

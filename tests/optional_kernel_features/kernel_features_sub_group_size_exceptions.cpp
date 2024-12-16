@@ -40,7 +40,7 @@ class functor_with_attribute {
 template <size_t N>
 class kernel_reqd_sg_size;
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("Runtime exception if device doesn't support required sub-group size",
  "[kernel_features]", ((size_t N), N), 16, 4099)({
   using kname = kernel_reqd_sg_size<N>;
