@@ -51,7 +51,7 @@ static bool checkInitialValue(const T (&value)[N], Args&&... args) {
 
 template <typename F, size_t LocalSize = 10, size_t GlobalSize = 10 * LocalSize>
 static void runTestKernel(const F& kernel) {
-  sycl::queue q;
+  sycl::queue q = sycl_cts::util::get_cts_object::queue();
   bool* passed = sycl::malloc_shared<bool>(GlobalSize, q);
   q.parallel_for(sycl::nd_range<1>(GlobalSize, LocalSize),
                  [=](sycl::nd_item<1> item) { kernel(item, passed); })
@@ -147,13 +147,18 @@ TEST_CASE("Test case for \"Local Memory\" extension", "[oneapi_local_memory") {
 #ifndef SYCL_EXT_ONEAPI_LOCAL_MEMORY
   SKIP("SYCL_EXT_ONEAPI_LOCAL_MEMORY is not defined");
 #else
+  const bool supportsFP64 = ([] {
+    sycl::queue q = sycl_cts::util::get_cts_object::queue();
+    return q.get_device().has(sycl::aspect::fp64);
+  })();
+
   testInitialValue<int>(2);
   testInitialValue<float>(1.5f);
   testInitialValue<Point3D>(5);
   testInitialValue<Point3D>(5, 7);
   testInitialValue<Point3D>(5, 7, 13);
   testInitialValue<int[5]>(1, -2, 3, -4, 5);
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   testInitialValue<bool>(true);
   testInitialValue<char>('A');
   testInitialValue<signed char>('A');
@@ -165,14 +170,14 @@ TEST_CASE("Test case for \"Local Memory\" extension", "[oneapi_local_memory") {
   testInitialValue<unsigned long>(31);
   testInitialValue<long long>(37);
   testInitialValue<unsigned long long>(43);
-  testInitialValue<double>(3.14);
+  if (supportsFP64) testInitialValue<double>(3.14);
 #endif
 
   testInitialValueForOverwrite<int>();
   testInitialValueForOverwrite<float>();
   testInitialValueForOverwrite<Point3D>();
   testInitialValueForOverwrite<int[5]>();
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   testInitialValueForOverwrite<bool>();
   testInitialValueForOverwrite<char>();
   testInitialValueForOverwrite<signed char>();
@@ -184,7 +189,7 @@ TEST_CASE("Test case for \"Local Memory\" extension", "[oneapi_local_memory") {
   testInitialValueForOverwrite<unsigned long>();
   testInitialValueForOverwrite<long long>();
   testInitialValueForOverwrite<unsigned long long>();
-  testInitialValueForOverwrite<double>();
+  if (supportsFP64) testInitialValueForOverwrite<double>();
 #endif
 
   testDifferentInitialValues<int>(2);
@@ -193,7 +198,7 @@ TEST_CASE("Test case for \"Local Memory\" extension", "[oneapi_local_memory") {
   testDifferentInitialValues<Point3D>(5, 7);
   testDifferentInitialValues<Point3D>(5, 7, 13);
   testDifferentInitialValues<int[5]>(1, -2, 3, -4, 5);
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   testDifferentInitialValues<bool>(true);
   testDifferentInitialValues<char>('A');
   testDifferentInitialValues<signed char>('A');
@@ -205,13 +210,13 @@ TEST_CASE("Test case for \"Local Memory\" extension", "[oneapi_local_memory") {
   testDifferentInitialValues<unsigned long>(31);
   testDifferentInitialValues<long long>(37);
   testDifferentInitialValues<unsigned long long>(43);
-  testDifferentInitialValues<double>(3.14);
+  if (supportsFP64) testDifferentInitialValues<double>(3.14);
 #endif
 
   testLocalMemoryAvailability<int>();
   testLocalMemoryAvailability<float>();
   testLocalMemoryAvailability<Point3D>();
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   testLocalMemoryAvailability<bool>();
   testLocalMemoryAvailability<char>();
   testLocalMemoryAvailability<signed char>();
@@ -223,13 +228,13 @@ TEST_CASE("Test case for \"Local Memory\" extension", "[oneapi_local_memory") {
   testLocalMemoryAvailability<unsigned long>();
   testLocalMemoryAvailability<long long>();
   testLocalMemoryAvailability<unsigned long long>();
-  testLocalMemoryAvailability<double>();
+  if (supportsFP64) testLocalMemoryAvailability<double>();
 #endif
 
   testLocalMemoryForOverwriteAvailability<int>();
   testLocalMemoryForOverwriteAvailability<float>();
   testLocalMemoryForOverwriteAvailability<Point3D>();
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   testLocalMemoryForOverwriteAvailability<bool>();
   testLocalMemoryForOverwriteAvailability<char>();
   testLocalMemoryForOverwriteAvailability<signed char>();
@@ -241,7 +246,7 @@ TEST_CASE("Test case for \"Local Memory\" extension", "[oneapi_local_memory") {
   testLocalMemoryForOverwriteAvailability<unsigned long>();
   testLocalMemoryForOverwriteAvailability<long long>();
   testLocalMemoryForOverwriteAvailability<unsigned long long>();
-  testLocalMemoryForOverwriteAvailability<double>();
+  if (supportsFP64) testLocalMemoryForOverwriteAvailability<double>();
 #endif
 
   testArrayInitializationWithFewArguments<int, 5>(1, -2, 3, -4);
