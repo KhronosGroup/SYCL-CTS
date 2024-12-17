@@ -63,21 +63,20 @@ class buffer_storage_test {
 
     // Case 3 - Weak pointer
     std::shared_ptr<T[]> data_shared_ptr(new T[size]);
-    std::weak_ptr<T[]> data_final3 = data_shared_ptr;
+    // construct an aliasing shared_ptr to get rid of the []
+    std::shared_ptr<T> data_shared_ptr_alias(data_shared_ptr,
+                                             data_shared_ptr.get());
+    std::weak_ptr<T> data_final3 = data_shared_ptr_alias;
 
-    // Case 4 - Shared pointer
-    std::shared_ptr<T[]> data_final4(new T[size]);
-
-    // Case 5 - Vector data
+    // Case 4 - Vector iterator
     std::vector<T> data_vector;
     data_vector.resize(size);
-    auto data_final5 = data_vector.begin();
+    auto data_final4 = data_vector.begin();
 
     check_write_back(log, r, data_final1.get());
     check_write_back(log, r, data_final2, true /*is_nullptr*/);
     check_write_back(log, r, data_final3);
     check_write_back(log, r, data_final4);
-    check_write_back(log, r, data_final5);
   }
 
 private:
@@ -99,12 +98,11 @@ private:
     }
   }
 
-  template <template <typename T1> class C>
-  void check_write_back(util::logger &log, sycl::range<dims> r,
-                        C<T[]> final_data) {
+  void check_write_back(util::logger& log, sycl::range<dims> r,
+                        std::weak_ptr<T> final_data) {
     use_buffer(final_data, r);
 
-    std::shared_ptr<T[]> ptr_shrd(final_data);
+    auto ptr_shrd = final_data.lock();
     T *ptr = ptr_shrd.get();
     for (size_t i = 0; i < size; ++i) {
       check_equal_values(ptr[i], (T)0xFF);
