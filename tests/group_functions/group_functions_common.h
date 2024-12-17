@@ -259,7 +259,7 @@ template <typename T>
 inline auto get_op_types() {
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   static const auto types = []() {
-    if constexpr (is_sycl_floating_point_v<T>) {
+    if constexpr (is_sycl_scalar_floating_point_v<T>) {
       // Bitwise operations are not defined for floating point types.
       return named_type_pack<sycl::plus<T>, sycl::multiplies<T>,
                              sycl::logical_and<T>, sycl::logical_or<T>,

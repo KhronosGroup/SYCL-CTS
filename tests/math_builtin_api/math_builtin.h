@@ -100,9 +100,9 @@ bool verify(sycl_cts::util::logger& log, T a, T b, float accuracy,
             AccuracyMode accuracy_mode, const std::string& comment);
 
 template <typename T>
-std::enable_if_t<is_sycl_floating_point_v<T>, bool>
-verify(sycl_cts::util::logger& log, T value, sycl_cts::resultRef<T> r,
-       float accuracy, AccuracyMode accuracy_mode, const std::string& comment) {
+std::enable_if_t<is_sycl_scalar_floating_point_v<T>, bool> verify(
+    sycl_cts::util::logger& log, T value, sycl_cts::resultRef<T> r,
+    float accuracy, AccuracyMode accuracy_mode, const std::string& comment) {
   const T reference = r.res;
 
   if (!r.undefined.empty())

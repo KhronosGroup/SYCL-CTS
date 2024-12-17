@@ -107,11 +107,11 @@ AccumulatorT get_identity() {
 }
 
 /** minimum (floating point) */
-template <typename AccumulatorT, typename OperatorT,
-          std::enable_if_t<
-              std::is_same_v<OperatorT, sycl::minimum<AccumulatorT>> &&
-                  is_sycl_floating_point_v<AccumulatorT>,
-              bool> = true>
+template <
+    typename AccumulatorT, typename OperatorT,
+    std::enable_if_t<std::is_same_v<OperatorT, sycl::minimum<AccumulatorT>> &&
+                         is_sycl_scalar_floating_point_v<AccumulatorT>,
+                     bool> = true>
 AccumulatorT get_identity() {
   return std::numeric_limits<AccumulatorT>::infinity();
 }
