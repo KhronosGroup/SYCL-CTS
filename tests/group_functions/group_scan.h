@@ -546,7 +546,7 @@ class invoke_scan_over_group {
 template <int D, typename T, typename U>
 class init_scan_over_group_kernel;
 
-// many errors with short types for hipSYCL
+// many errors with short types for AdaptiveCpp
 // it means conversion and calculation patterns are not OK
 /**
  * @brief Provides test for scans over group with an init value

@@ -22,7 +22,7 @@
 
 namespace non_uniform_groups::tests {
 
-// hipSYCL does not permute right 8-bit types inside groups
+// AdaptiveCpp does not permute right 8-bit types inside groups
 TEMPLATE_LIST_TEST_CASE("Non-uniform-group permute",
                         "[oneapi_non_uniform_groups][group_func][type_list]",
                         GroupPackTypes) {

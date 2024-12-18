@@ -5,6 +5,6 @@
 # the corresponding owner only.
 /cmake/FindDPCPP.cmake @bader
 /cmake/AdaptDPCPP.cmake @bader
-/cmake/FindhipSYCL.cmake @illuhad
+/cmake/FindAdaptiveCpp.cmake @illuhad
 
 /test_plans @gmlueck @KhronosGroup/sycl-cts-reviewers

@@ -8,15 +8,15 @@
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
-// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: re-enable when sycl::reduction is implemented in AdaptiveCpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "reduction_with_several_reductions_in_kernel.h"
 #endif
 
 namespace reduction_with_several_reductions_in_kernel {
 
-// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// FIXME: re-enable when sycl::reduction is implemented in AdaptiveCpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("reduction_with_several_reductions_in_kernel", "[reduction]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   reduction_with_several_reductions_in_kernel_h::run_all_tests(queue);

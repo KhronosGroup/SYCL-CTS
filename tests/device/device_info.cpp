@@ -82,7 +82,7 @@ TEST_CASE("device info", "[device]") {
   /** check get_info parameters
    */
   // FIXME: Reenable when struct information descriptors are implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
   {
     auto dev = sycl_cts::util::get_cts_object::device(cts_selector);
     check_get_info_param<sycl::info::device::device_type,
@@ -232,6 +232,8 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::printf_buffer_size, size_t>(dev);
     check_get_info_param<sycl::info::device::preferred_interop_user_sync, bool>(
         dev);
+
+#if !SYCL_CTS_COMPILING_WITH_SIMSYCL
     auto SupportedProperties =
         dev.get_info<sycl::info::device::partition_properties>();
     if (std::find(SupportedProperties.begin(), SupportedProperties.end(),
@@ -243,6 +245,10 @@ TEST_CASE("device info", "[device]") {
       check_get_info_param<sycl::info::device::parent_device, sycl::device>(
           sub_device_partition_equal[0]);
     }
+#else
+    FAIL_CHECK("SimSYCL does not implement sub-devices yet");
+#endif
+
     check_get_info_param<sycl::info::device::partition_max_sub_devices,
                          uint32_t>(dev);
     check_get_info_param<sycl::info::device::partition_properties,

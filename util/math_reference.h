@@ -28,8 +28,8 @@
 #include "./math_helper.h"
 #include <cmath>
 
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #define MAKE_VEC_AND_MARRAY_VERSIONS(func)              \
   template <typename T, int N>                          \
@@ -81,7 +81,7 @@
         [](T x, T y) { return func(x, y); }, a, b);     \
   }
 
-#else  // definitions without marray for hipSYCL
+#else  // definitions without marray for AdaptiveCpp
 
 #define MAKE_VEC_AND_MARRAY_VERSIONS(func)              \
   template <typename T, int N>                          \
@@ -212,8 +212,8 @@ int any(sycl::vec<T, N> a) {
   }
   return false;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 bool any(sycl::marray<T, N> a) {
   for (size_t i = 0; i < N; i++) {
@@ -234,8 +234,8 @@ int all(sycl::vec<T, N> a) {
   }
   return true;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 bool all(sycl::marray<T, N> a) {
   for (size_t i = 0; i < N; i++) {
@@ -249,9 +249,7 @@ template <typename T>
 T bitselect(T a, T b, T c) {
   return (c & b) | (~c & a);
 }
-sycl::half bitselect(sycl::half a, sycl::half b, sycl::half c);
 float bitselect(float a, float b, float c);
-double bitselect(double a, double b, double c);
 MAKE_VEC_AND_MARRAY_VERSIONS_3ARGS(bitselect)
 
 template <typename T>
@@ -270,8 +268,8 @@ sycl::vec<T, N> select(sycl::vec<T, N> a, sycl::vec<T, N> b,
   }
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> select(sycl::marray<T, N> a, sycl::marray<T, N> b,
                           sycl::marray<bool, N> c) {
@@ -295,7 +293,7 @@ sycl_cts::resultRef<sycl::vec<T, N>> abs(sycl::vec<T, N> a) {
   return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
       [](T x) { return abs(x); }, a);
 }
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> abs(sycl::marray<T, N> a) {
   return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
@@ -323,8 +321,8 @@ sycl_cts::resultRef<sycl::vec<T, N>> abs_diff(sycl::vec<T, N> a,
   return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
       [](T x, T y) { return abs_diff(x, y); }, a, b);
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> abs_diff(sycl::marray<T, N> a,
                                                  sycl::marray<T, N> b) {
@@ -393,8 +391,8 @@ sycl_cts::resultRef<sycl::vec<T, N>> clamp(sycl::vec<T, N> a, T b, T c) {
   }
   return sycl_cts::resultRef<sycl::vec<T, N>>(res, undefined);
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> clamp(sycl::marray<T, N> a,
                                               sycl::marray<T, N> b,
@@ -482,8 +480,8 @@ sycl_cts::resultRef<sycl::vec<T, N>> max(sycl::vec<T, N> a, T b) {
   return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
       [](T x, T y) { return max(x, y); }, a, b);
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> max(sycl::marray<T, N> a,
                                             sycl::marray<T, N> b) {
@@ -516,8 +514,8 @@ sycl_cts::resultRef<sycl::vec<T, N>> min(sycl::vec<T, N> a, T b) {
   return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
       [](T x, T y) { return min(x, y); }, a, b);
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> min(sycl::marray<T, N> a,
                                             sycl::marray<T, N> b) {
@@ -643,8 +641,8 @@ sycl::vec<typename upsample_t<T>::type, N> upsample(
   return sycl_cts::math::run_func_on_vector<typename upsample_t<T>::type, T, N>(
       [](T x, T y) { return upsample(x, y); }, a, b);
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<typename upsample_t<T>::type, N> upsample(
     sycl::marray<T, N> a,
@@ -674,8 +672,8 @@ sycl_cts::resultRef<sycl::vec<T, N>> mad24(sycl::vec<T, N> a, sycl::vec<T, N> b,
   return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
       [](T x, T y, T z) { return mad24(x, y, z); }, a, b, c);
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> mad24(sycl::marray<T, N> a,
                                               sycl::marray<T, N> b,
@@ -695,8 +693,8 @@ sycl_cts::resultRef<sycl::vec<T, N>> mul24(sycl::vec<T, N> a,
   return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
       [](T x, T y) { return mul24(x, y); }, a, b);
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> mul24(sycl::marray<T, N> a,
                                               sycl::marray<T, N> b) {
@@ -710,18 +708,13 @@ sycl_cts::resultRef<sycl::marray<T, N>> mul24(sycl::marray<T, N> a,
 // clamp is in Integer functions
 
 /* degrees */
-sycl::half degrees(sycl::half);
 float degrees(float a);
-double degrees(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(degrees)
 
 // max and min are in Integer functions
 
 /* mix */
-sycl_cts::resultRef<sycl::half> mix(const sycl::half a, const sycl::half b,
-                                    const sycl::half c);
 sycl_cts::resultRef<float> mix(const float a, const float b, const float c);
-sycl_cts::resultRef<double> mix(const double a, const double b, const double c);
 
 template <typename T, int N>
 sycl_cts::resultRef<sycl::vec<T, N>> mix(sycl::vec<T, N> a, sycl::vec<T, N> b,
@@ -743,8 +736,8 @@ sycl_cts::resultRef<sycl::vec<T, N>> mix(sycl::vec<T, N> a, sycl::vec<T, N> b,
   }
   return sycl_cts::resultRef<sycl::vec<T, N>>(res, undefined);
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> mix(sycl::marray<T, N> a,
                                             sycl::marray<T, N> b,
@@ -769,15 +762,11 @@ sycl_cts::resultRef<sycl::marray<T, N>> mix(sycl::marray<T, N> a,
 #endif
 
 /* radians */
-sycl::half radians(sycl::half);
 float radians(float a);
-double radians(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(radians)
 
 /* step */
-sycl::half step(sycl::half a, sycl::half b);
 float step(float a, float b);
-double step(double a, double b);
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(step)
 
 template <typename T, int N>
@@ -788,8 +777,8 @@ sycl::vec<T, N> step(T a, sycl::vec<T, N> b) {
   }
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> step(T a, sycl::marray<T, N> b) {
   sycl::marray<T, N> res;
@@ -801,10 +790,7 @@ sycl::marray<T, N> step(T a, sycl::marray<T, N> b) {
 #endif
 
 /* smoothstep */
-sycl_cts::resultRef<sycl::half> smoothstep(sycl::half a, sycl::half b,
-                                           sycl::half c);
 sycl_cts::resultRef<float> smoothstep(float a, float b, float c);
-sycl_cts::resultRef<double> smoothstep(double a, double b, double c);
 
 template <typename T, int N>
 sycl_cts::resultRef<sycl::vec<T, N>> smoothstep(sycl::vec<T, N> a,
@@ -826,8 +812,8 @@ sycl_cts::resultRef<sycl::vec<T, N>> smoothstep(T a, T b, sycl::vec<T, N> c) {
   }
   return sycl_cts::resultRef<sycl::vec<T, N>>(res, undefined);
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> smoothstep(sycl::marray<T, N> a,
                                                    sycl::marray<T, N> b,
@@ -852,9 +838,7 @@ sycl_cts::resultRef<sycl::marray<T, N>> smoothstep(T a, T b,
 #endif
 
 /* sign */
-sycl::half sign(sycl::half a);
 float sign(float a);
-double sign(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(sign)
 
 // Math Functions
@@ -863,24 +847,16 @@ template <typename T>
 struct higher_accuracy;
 
 template <>
-struct higher_accuracy<sycl::half> {
-  using type = float;
-};
-template <>
 struct higher_accuracy<float> {
   using type = double;
-};
-template <>
-struct higher_accuracy<double> {
-  using type = long double;
 };
 
 template <typename T, int N>
 struct higher_accuracy<sycl::vec<T, N>> {
   using type = sycl::vec<typename higher_accuracy<T>::type, N>;
 };
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 struct higher_accuracy<sycl::marray<T, N>> {
   using type = sycl::marray<typename higher_accuracy<T>::type, N>;
@@ -899,9 +875,7 @@ T acosh(T a) {
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(acosh)
 
-sycl::half acospi(sycl::half a);
 float acospi(float a);
-double acospi(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(acospi)
 
 template <typename T>
@@ -916,9 +890,7 @@ T asinh(T a) {
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(asinh)
 
-sycl::half asinpi(sycl::half a);
 float asinpi(float a);
-double asinpi(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(asinpi)
 
 template <typename T>
@@ -939,14 +911,10 @@ T atanh(T a) {
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(atanh)
 
-sycl::half atanpi(sycl::half a);
 float atanpi(float a);
-double atanpi(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(atanpi)
 
-sycl::half atan2pi(sycl::half a, sycl::half b);
 float atan2pi(float a, float b);
-double atan2pi(double a, double b);
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(atan2pi)
 
 template <typename T>
@@ -973,9 +941,7 @@ T cosh(T a) {
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(cosh)
 
-sycl::half cospi(sycl::half a);
 float cospi(float a);
-double cospi(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(cospi)
 
 template <typename T>
@@ -1019,16 +985,12 @@ using std::fabs;
 MAKE_VEC_AND_MARRAY_VERSIONS(fabs)
 
 using std::fdim;
-sycl::half fdim(sycl::half a, sycl::half b);
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(fdim)
 
 using std::floor;
 MAKE_VEC_AND_MARRAY_VERSIONS(floor)
 
-sycl::half fma(sycl::half a, sycl::half b, sycl::half c);
 float fma(float a, float b, float c);
-double fma(double a, double b, double c);
-
 MAKE_VEC_AND_MARRAY_VERSIONS_3ARGS(fma)
 
 using std::fmax;
@@ -1042,9 +1004,7 @@ MAKE_VEC_AND_MARRAY_VERSIONS_WITH_SCALAR(fmin)
 using std::fmod;
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(fmod)
 
-sycl::half fract(sycl::half a, sycl::half *b);
 float fract(float a, float *b);
-double fract(double a, double *b);
 
 template <typename T, int N>
 sycl::vec<T, N> fract(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
@@ -1058,8 +1018,8 @@ sycl::vec<T, N> fract(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
   *b = resPtr;
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> fract(sycl::marray<T, N> a, sycl::marray<T, N> *b) {
   sycl::marray<T, N> res;
@@ -1087,8 +1047,8 @@ sycl::vec<T, N> frexp(sycl::vec<T, N> a, sycl::vec<int, N> *b) {
   *b = resPtr;
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> frexp(sycl::marray<T, N> a, sycl::marray<int, N> *b) {
   sycl::marray<T, N> res;
@@ -1119,8 +1079,8 @@ sycl::vec<int, N> ilogb(sycl::vec<T, N> a) {
   }
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<int, N> ilogb(sycl::marray<T, N> a) {
   sycl::marray<int, N> res;
@@ -1140,8 +1100,8 @@ sycl::vec<T, N> ldexp(sycl::vec<T, N> a, sycl::vec<int, N> b) {
   }
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> ldexp(sycl::marray<T, N> a, sycl::marray<int, N> b) {
   sycl::marray<T, N> res;
@@ -1159,8 +1119,8 @@ sycl::vec<T, N> ldexp(sycl::vec<T, N> a, int b) {
   }
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> ldexp(sycl::marray<T, N> a, int b) {
   sycl::marray<T, N> res;
@@ -1191,8 +1151,8 @@ sycl::vec<T, N> lgamma_r(sycl::vec<T, N> a, sycl::vec<int, N> *b) {
   *b = resPtr;
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> lgamma_r(sycl::marray<T, N> a, sycl::marray<int, N> *b) {
   sycl::marray<T, N> res;
@@ -1261,7 +1221,6 @@ T minmag(T a, T b) {
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(minmag)
 
 using std::modf;
-sycl::half modf(sycl::half a, sycl::half *b);
 template <typename T, int N>
 sycl::vec<T, N> modf(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
   sycl::vec<T, N> res;
@@ -1274,8 +1233,8 @@ sycl::vec<T, N> modf(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
   *b = resPtr;
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> modf(sycl::marray<T, N> a, sycl::marray<T, N> *b) {
   sycl::marray<T, N> res;
@@ -1290,52 +1249,22 @@ sycl::marray<T, N> modf(sycl::marray<T, N> a, sycl::marray<T, N> *b) {
 }
 #endif
 
-sycl::half nan(unsigned short a);
 float nan(unsigned int a);
-double nan(unsigned long a);
-double nan(unsigned long long a);
-template <int N>
-sycl::vec<sycl::half, N> nan(sycl::vec<unsigned short, N> a) {
-  return sycl_cts::math::run_func_on_vector<sycl::half, unsigned short, N>(
-      [](unsigned short x) { return nan(x); }, a);
-}
 template <int N>
 sycl::vec<float, N> nan(sycl::vec<unsigned int, N> a) {
   return sycl_cts::math::run_func_on_vector<float, unsigned int, N>(
       [](unsigned int x) { return nan(x); }, a);
 }
-template <typename T, int N>
-std::enable_if_t<std::is_same_v<unsigned long, T> ||
-                     std::is_same_v<unsigned long long, T>,
-                 sycl::vec<double, N>>
-nan(sycl::vec<T, N> a) {
-  return sycl_cts::math::run_func_on_vector<double, T, N>(
-      [](T x) { return nan(x); }, a);
-}
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <size_t N>
-sycl::marray<sycl::half, N> nan(sycl::marray<unsigned short, N> a) {
-  return sycl_cts::math::run_func_on_marray<sycl::half, unsigned short, N>(
-      [](unsigned short x) { return nan(x); }, a);
-}
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <size_t N>
 sycl::marray<float, N> nan(sycl::marray<unsigned int, N> a) {
   return sycl_cts::math::run_func_on_marray<float, unsigned int, N>(
       [](unsigned int x) { return nan(x); }, a);
 }
-template <typename T, size_t N>
-std::enable_if_t<std::is_same_v<unsigned long, T> ||
-                     std::is_same_v<unsigned long long, T>,
-                 sycl::marray<double, N>>
-nan(sycl::marray<T, N> a) {
-  return sycl_cts::math::run_func_on_marray<double, T, N>(
-      [](T x) { return nan(x); }, a);
-}
 #endif
 
 using std::nextafter;
-sycl::half nextafter(sycl::half a, sycl::half b);
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(nextafter)
 
 template <typename T>
@@ -1358,8 +1287,8 @@ sycl::vec<T, N> pown(sycl::vec<T, N> a, sycl::vec<int, N> b) {
   }
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> pown(sycl::marray<T, N> a, sycl::marray<int, N> b) {
   sycl::marray<T, N> res;
@@ -1382,8 +1311,8 @@ sycl_cts::resultRef<sycl::vec<T, N>> powr(sycl::vec<T, N> a,
   return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
       [](T x, T y) { return powr(x, y); }, a, b);
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> powr(sycl::marray<T, N> a,
                                              sycl::marray<T, N> b) {
@@ -1413,8 +1342,8 @@ sycl::vec<T, N> remquo(sycl::vec<T, N> a, sycl::vec<T, N> b,
   *c = resPtr;
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> remquo(sycl::marray<T, N> a, sycl::marray<T, N> b,
                           sycl::marray<int, N> *c) {
@@ -1446,8 +1375,8 @@ sycl::vec<T, N> rootn(sycl::vec<T, N> a, sycl::vec<int, N> b) {
   }
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> rootn(sycl::marray<T, N> a, sycl::marray<int, N> b) {
   sycl::marray<T, N> res;
@@ -1484,8 +1413,8 @@ sycl::vec<T, N> sincos(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
   *b = resPtr;
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> sincos(sycl::marray<T, N> a, sycl::marray<T, N> *b) {
   sycl::marray<T, N> res;
@@ -1512,9 +1441,7 @@ T sinh(T a) {
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(sinh)
 
-sycl::half sinpi(sycl::half a);
 float sinpi(float a);
-double sinpi(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(sinpi)
 
 template <typename T>
@@ -1535,9 +1462,7 @@ T tanh(T a) {
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(tanh)
 
-sycl::half tanpi(sycl::half a);
 float tanpi(float a);
-double tanpi(double a);
 MAKE_VEC_AND_MARRAY_VERSIONS(tanpi)
 
 template <typename T>
@@ -1565,15 +1490,11 @@ MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(divide)
 
 sycl::float4 cross(sycl::float4 p0, sycl::float4 p1);
 sycl::float3 cross(sycl::float3 p0, sycl::float3 p1);
-sycl::double4 cross(sycl::double4 p0, sycl::double4 p1);
-sycl::double3 cross(sycl::double3 p0, sycl::double3 p1);
 
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 sycl::mfloat4 cross(sycl::mfloat4 p0, sycl::mfloat4 p1);
 sycl::mfloat3 cross(sycl::mfloat3 p0, sycl::mfloat3 p1);
-sycl::mdouble4 cross(sycl::mdouble4 p0, sycl::mdouble4 p1);
-sycl::mdouble3 cross(sycl::mdouble3 p0, sycl::mdouble3 p1);
 #endif
 
 template <typename T>
@@ -1586,8 +1507,8 @@ T dot(sycl::vec<T, N> a, sycl::vec<T, N> b) {
   for (int i = 0; i < N; i++) res += a[i] * b[i];
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 T dot(sycl::marray<T, N> a, sycl::marray<T, N> b) {
   T res = 0;
@@ -1619,8 +1540,8 @@ sycl::vec<T, N> normalize(sycl::vec<T, N> a) {
   for (int i = 0; i < N; i++) res[i] = a[i] / len_a;
   return res;
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> normalize(sycl::marray<T, N> a) {
   sycl::marray<T, N> res;
@@ -1629,17 +1550,6 @@ sycl::marray<T, N> normalize(sycl::marray<T, N> a) {
   for (size_t i = 0; i < N; i++) res[i] = a[i] / len_a;
   return res;
 }
-#endif
-
-sycl::half fast_dot(float p0);
-sycl::half fast_dot(sycl::float2 p0);
-sycl::half fast_dot(sycl::float3 p0);
-sycl::half fast_dot(sycl::float4 p0);
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-sycl::half fast_dot(sycl::mfloat2 p0);
-sycl::half fast_dot(sycl::mfloat3 p0);
-sycl::half fast_dot(sycl::mfloat4 p0);
 #endif
 
 template <typename T>
@@ -1656,6 +1566,128 @@ template <typename T>
 T fast_normalize(T p0) {
   return p0 * rsqrt(fast_dot(p0));
 }
+
+
+#if SYCL_CTS_ENABLE_HALF_TESTS
+
+template <>
+struct higher_accuracy<sycl::half> {
+  using type = float;
+};
+
+sycl::half bitselect(sycl::half a, sycl::half b, sycl::half c);
+sycl::half degrees(sycl::half);
+sycl_cts::resultRef<sycl::half> mix(const sycl::half a, const sycl::half b,
+                                    const sycl::half c);
+sycl::half radians(sycl::half);
+sycl::half step(sycl::half a, sycl::half b);
+sycl_cts::resultRef<sycl::half> smoothstep(sycl::half a, sycl::half b,
+                                           sycl::half c);
+sycl::half sign(sycl::half a);
+sycl::half acospi(sycl::half a);
+sycl::half asinpi(sycl::half a);
+sycl::half atanpi(sycl::half a);
+sycl::half atan2pi(sycl::half a, sycl::half b);
+sycl::half cospi(sycl::half a);
+sycl::half fdim(sycl::half a, sycl::half b);
+sycl::half fma(sycl::half a, sycl::half b, sycl::half c);
+sycl::half fract(sycl::half a, sycl::half *b);
+sycl::half modf(sycl::half a, sycl::half *b);
+sycl::half nan(unsigned short a);
+
+template <int N>
+sycl::vec<sycl::half, N> nan(sycl::vec<unsigned short, N> a) {
+  return sycl_cts::math::run_func_on_vector<sycl::half, unsigned short, N>(
+      [](unsigned short x) { return nan(x); }, a);
+}
+
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+template <size_t N>
+sycl::marray<sycl::half, N> nan(sycl::marray<unsigned short, N> a) {
+  return sycl_cts::math::run_func_on_marray<sycl::half, unsigned short, N>(
+      [](unsigned short x) { return nan(x); }, a);
+}
+#endif
+
+sycl::half nextafter(sycl::half a, sycl::half b);
+sycl::half sinpi(sycl::half a);
+sycl::half tanpi(sycl::half a);
+
+sycl::half fast_dot(float p0);
+sycl::half fast_dot(sycl::float2 p0);
+sycl::half fast_dot(sycl::float3 p0);
+sycl::half fast_dot(sycl::float4 p0);
+
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+sycl::half fast_dot(sycl::mfloat2 p0);
+sycl::half fast_dot(sycl::mfloat3 p0);
+sycl::half fast_dot(sycl::mfloat4 p0);
+#endif
+
+#endif // SYCL_CTS_ENABLE_HALF_TESTS
+
+#if SYCL_CTS_ENABLE_DOUBLE_TESTS
+
+template <>
+struct higher_accuracy<double> {
+  using type = long double;
+};
+
+double bitselect(double a, double b, double c);
+double degrees(double a);
+sycl_cts::resultRef<double> mix(const double a, const double b, const double c);
+double radians(double a);
+double step(double a, double b);
+sycl_cts::resultRef<double> smoothstep(double a, double b, double c);
+double sign(double a);
+
+double acospi(double a);
+double asinpi(double a);
+double atanpi(double a);
+double atan2pi(double a, double b);
+double cospi(double a);
+double fma(double a, double b, double c);
+double fract(double a, double *b);
+double nan(unsigned long a);
+double nan(unsigned long long a);
+
+template <typename T, int N>
+std::enable_if_t<std::is_same_v<unsigned long, T> ||
+                     std::is_same_v<unsigned long long, T>,
+                 sycl::vec<double, N>>
+nan(sycl::vec<T, N> a) {
+  return sycl_cts::math::run_func_on_vector<double, T, N>(
+      [](T x) { return nan(x); }, a);
+}
+
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+template <typename T, size_t N>
+std::enable_if_t<std::is_same_v<unsigned long, T> ||
+                     std::is_same_v<unsigned long long, T>,
+                 sycl::marray<double, N>>
+nan(sycl::marray<T, N> a) {
+  return sycl_cts::math::run_func_on_marray<double, T, N>(
+      [](T x) { return nan(x); }, a);
+}
+#endif
+
+double sinpi(double a);
+double tanpi(double a);
+
+sycl::double4 cross(sycl::double4 p0, sycl::double4 p1);
+sycl::double3 cross(sycl::double3 p0, sycl::double3 p1);
+
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+sycl::mdouble4 cross(sycl::mdouble4 p0, sycl::mdouble4 p1);
+sycl::mdouble3 cross(sycl::mdouble3 p0, sycl::mdouble3 p1);
+#endif
+
+
+#endif // SYCL_CTS_ENABLE_DOUBLE_TESTS
 
 }  // namespace reference
 

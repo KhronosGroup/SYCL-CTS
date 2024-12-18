@@ -192,7 +192,7 @@ void run_tests_for_type() {
   run_tests_for_size<T, 16>();
 }
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("Behavior of kernel attribute vec_type_hint", "[kernel]")({
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   run_tests_for_type<int>();

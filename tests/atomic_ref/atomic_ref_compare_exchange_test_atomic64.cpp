@@ -23,19 +23,19 @@
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #include "atomic_ref_compare_exchange_test.h"
 
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 namespace atomic_ref::tests::api::core::atomic64 {
 
-// FIXME: re-enable for hipsycl
+// FIXME: re-enable for adaptivecpp
 // when sycl::info::device::atomic_memory_order_capabilities and
 // sycl::info::device::atomic_memory_scope_capabilities are implemented in
-// hipsycl
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// adaptivecpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_ref compare_exchange_strong()/compare_exchange_weak() test. "
  "atomic64 types",
  "[atomic_ref]")({
@@ -49,7 +49,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   for_all_types<atomic_ref::tests::api::run_compare_exchange_test>(type_pack);
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_ref compare_exchange_strong()/compare_exchange_weak() test. "
  "double type",
  "[atomic_ref]")({

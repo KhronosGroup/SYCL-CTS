@@ -123,6 +123,7 @@ class TEST_NAME : public util::test_base {
                                 "device::has(sycl::aspect)");
       }
 
+#if !SYCL_CTS_COMPILING_WITH_SIMSYCL
       /** check
        * create_sub_devices<info::partition_property::partition_equally>(size_t)
        * member function
@@ -180,6 +181,9 @@ class TEST_NAME : public util::test_base {
           }
         }
       }
+#else
+      FAIL_CHECK("SimSYCL does not implement sub-devices yet");
+#endif
 
       /** check get_devices() static member function
        */
