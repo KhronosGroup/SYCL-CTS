@@ -1012,7 +1012,7 @@ sycl::vec<T, N> fract(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
   sycl::vec<T, N> resPtr;
   for (int i = 0; i < N; i++) {
     T value;
-    res[i] = fract(a[i], &value);
+    res[i] = reference::fract(a[i], &value);
     resPtr[i] = value;
   }
   *b = resPtr;
@@ -1026,7 +1026,7 @@ sycl::marray<T, N> fract(sycl::marray<T, N> a, sycl::marray<T, N> *b) {
   sycl::marray<T, N> resPtr;
   for (size_t i = 0; i < N; i++) {
     T value;
-    res[i] = fract(a[i], &value);
+    res[i] = reference::fract(a[i], &value);
     resPtr[i] = value;
   }
   *b = resPtr;
@@ -1041,7 +1041,7 @@ sycl::vec<T, N> frexp(sycl::vec<T, N> a, sycl::vec<int, N> *b) {
   sycl::vec<int, N> resPtr;
   for (int i = 0; i < N; i++) {
     int value;
-    res[i] = frexp(a[i], &value);
+    res[i] = reference::frexp(a[i], &value);
     resPtr[i] = value;
   }
   *b = resPtr;
@@ -1055,8 +1055,7 @@ sycl::marray<T, N> frexp(sycl::marray<T, N> a, sycl::marray<int, N> *b) {
   sycl::marray<int, N> resPtr;
   for (size_t i = 0; i < N; i++) {
     int value;
-    res[i] = frexp(a[i], &value);
-    ;
+    res[i] = reference::frexp(a[i], &value);
     resPtr[i] = value;
   }
   *b = resPtr;
@@ -1075,7 +1074,7 @@ template <typename T, int N>
 sycl::vec<int, N> ilogb(sycl::vec<T, N> a) {
   sycl::vec<int, N> res;
   for (int i = 0; i < N; i++) {
-    res[i] = ilogb(a[i]);
+    res[i] = reference::ilogb(a[i]);
   }
   return res;
 }
@@ -1085,7 +1084,7 @@ template <typename T, size_t N>
 sycl::marray<int, N> ilogb(sycl::marray<T, N> a) {
   sycl::marray<int, N> res;
   for (size_t i = 0; i < N; i++) {
-    res[i] = ilogb(a[i]);
+    res[i] = reference::ilogb(a[i]);
   }
   return res;
 }
@@ -1096,7 +1095,7 @@ template <typename T, int N>
 sycl::vec<T, N> ldexp(sycl::vec<T, N> a, sycl::vec<int, N> b) {
   sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
-    res[i] = ldexp(a[i], b[i]);
+    res[i] = reference::ldexp(a[i], b[i]);
   }
   return res;
 }
@@ -1106,7 +1105,7 @@ template <typename T, size_t N>
 sycl::marray<T, N> ldexp(sycl::marray<T, N> a, sycl::marray<int, N> b) {
   sycl::marray<T, N> res;
   for (size_t i = 0; i < N; i++) {
-    res[i] = ldexp(a[i], b[i]);
+    res[i] = reference::ldexp(a[i], b[i]);
   }
   return res;
 }
@@ -1115,7 +1114,7 @@ template <typename T, int N>
 sycl::vec<T, N> ldexp(sycl::vec<T, N> a, int b) {
   sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
-    res[i] = ldexp(a[i], b);
+    res[i] = reference::ldexp(a[i], b);
   }
   return res;
 }
@@ -1125,7 +1124,7 @@ template <typename T, size_t N>
 sycl::marray<T, N> ldexp(sycl::marray<T, N> a, int b) {
   sycl::marray<T, N> res;
   for (size_t i = 0; i < N; i++) {
-    res[i] = ldexp(a[i], b);
+    res[i] = reference::ldexp(a[i], b);
   }
   return res;
 }
@@ -1145,7 +1144,7 @@ sycl::vec<T, N> lgamma_r(sycl::vec<T, N> a, sycl::vec<int, N> *b) {
   sycl::vec<int, N> resPtr;
   for (int i = 0; i < N; i++) {
     int value;
-    res[i] = lgamma_r(a[i], &value);
+    res[i] = reference::lgamma_r(a[i], &value);
     resPtr[i] = value;
   }
   *b = resPtr;
@@ -1159,7 +1158,7 @@ sycl::marray<T, N> lgamma_r(sycl::marray<T, N> a, sycl::marray<int, N> *b) {
   sycl::marray<int, N> resPtr;
   for (size_t i = 0; i < N; i++) {
     int value;
-    res[i] = lgamma_r(a[i], &value);
+    res[i] = reference::lgamma_r(a[i], &value);
     resPtr[i] = value;
   }
   *b = resPtr;
@@ -1227,7 +1226,7 @@ sycl::vec<T, N> modf(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
   sycl::vec<T, N> resPtr;
   for (int i = 0; i < N; i++) {
     T value;
-    res[i] = modf(a[i], &value);
+    res[i] = reference::modf(a[i], &value);
     resPtr[i] = value;
   }
   *b = resPtr;
@@ -1241,7 +1240,7 @@ sycl::marray<T, N> modf(sycl::marray<T, N> a, sycl::marray<T, N> *b) {
   sycl::marray<T, N> resPtr;
   for (int i = 0; i < N; i++) {
     T value;
-    res[i] = modf(a[i], &value);
+    res[i] = reference::modf(a[i], &value);
     resPtr[i] = value;
   }
   *b = resPtr;
@@ -1283,7 +1282,7 @@ template <typename T, int N>
 sycl::vec<T, N> pown(sycl::vec<T, N> a, sycl::vec<int, N> b) {
   sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
-    res[i] = pown(a[i], b[i]);
+    res[i] = reference::pown(a[i], b[i]);
   }
   return res;
 }
@@ -1293,7 +1292,7 @@ template <typename T, size_t N>
 sycl::marray<T, N> pown(sycl::marray<T, N> a, sycl::marray<int, N> b) {
   sycl::marray<T, N> res;
   for (size_t i = 0; i < N; i++) {
-    res[i] = pown(a[i], b[i]);
+    res[i] = reference::pown(a[i], b[i]);
   }
   return res;
 }
@@ -1309,7 +1308,7 @@ template <typename T, int N>
 sycl_cts::resultRef<sycl::vec<T, N>> powr(sycl::vec<T, N> a,
                                           sycl::vec<T, N> b) {
   return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
-      [](T x, T y) { return powr(x, y); }, a, b);
+      [](T x, T y) { return reference::powr(x, y); }, a, b);
 }
 // FIXME: AdaptiveCpp does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
@@ -1317,7 +1316,7 @@ template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> powr(sycl::marray<T, N> a,
                                              sycl::marray<T, N> b) {
   return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
-      [](T x, T y) { return powr(x, y); }, a, b);
+      [](T x, T y) { return reference::powr(x, y); }, a, b);
 }
 #endif
 
@@ -1336,7 +1335,7 @@ sycl::vec<T, N> remquo(sycl::vec<T, N> a, sycl::vec<T, N> b,
   sycl::vec<int, N> resPtr;
   for (int i = 0; i < N; i++) {
     int value;
-    res[i] = remquo(a[i], b[i], &value);
+    res[i] = reference::remquo(a[i], b[i], &value);
     resPtr[i] = value;
   }
   *c = resPtr;
@@ -1351,7 +1350,7 @@ sycl::marray<T, N> remquo(sycl::marray<T, N> a, sycl::marray<T, N> b,
   sycl::marray<int, N> resPtr;
   for (size_t i = 0; i < N; i++) {
     int value;
-    res[i] = remquo(a[i], b[i], &value);
+    res[i] = reference::remquo(a[i], b[i], &value);
     resPtr[i] = value;
   }
   *c = resPtr;
@@ -1371,7 +1370,7 @@ template <typename T, int N>
 sycl::vec<T, N> rootn(sycl::vec<T, N> a, sycl::vec<int, N> b) {
   sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
-    res[i] = rootn(a[i], b[i]);
+    res[i] = reference::rootn(a[i], b[i]);
   }
   return res;
 }
@@ -1381,7 +1380,7 @@ template <typename T, size_t N>
 sycl::marray<T, N> rootn(sycl::marray<T, N> a, sycl::marray<int, N> b) {
   sycl::marray<T, N> res;
   for (size_t i = 0; i < N; i++) {
-    res[i] = rootn(a[i], b[i]);
+    res[i] = reference::rootn(a[i], b[i]);
   }
   return res;
 }
@@ -1407,7 +1406,7 @@ sycl::vec<T, N> sincos(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
   sycl::vec<T, N> resPtr;
   for (int i = 0; i < N; i++) {
     T value;
-    res[i] = sincos(a[i], &value);
+    res[i] = reference::sincos(a[i], &value);
     resPtr[i] = value;
   }
   *b = resPtr;
@@ -1421,7 +1420,7 @@ sycl::marray<T, N> sincos(sycl::marray<T, N> a, sycl::marray<T, N> *b) {
   sycl::marray<T, N> resPtr;
   for (size_t i = 0; i < N; i++) {
     T value;
-    res[i] = sincos(a[i], &value);
+    res[i] = reference::sincos(a[i], &value);
     resPtr[i] = value;
   }
   *b = resPtr;
