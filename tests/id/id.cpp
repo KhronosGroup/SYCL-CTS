@@ -285,7 +285,7 @@ TEMPLATE_TEST_CASE_SIG("id supports get() and operator[]", "[id]", ((int D), D),
   }
 }
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("id provides static constexpr member 'dimensions'", "[id]")({
   // Dimension arguments in this test case are expanded to avoid conflicting
   // kernel names for different instantiations of sycl::id.
@@ -356,7 +356,7 @@ TEMPLATE_TEST_CASE_SIG(
   KCHECK(EVAL_D(a >= b) == idh<D>::get(1, 1, 1));
 }
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("id supports various binary operators of the form `id OP size_t` and "
  "`size_t OP id`",
  "[id]", ((int D), D), 1, 2, 3)({
@@ -495,7 +495,7 @@ TEMPLATE_TEST_CASE_SIG(
 
 #undef COMPOUND_OP
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("id supports unary +/- operators", "[id]", ((int D), D), 1, 2, 3)({
   const auto a = idh<D>::get(5, 8, 3);
   const auto b = idh<D>::get(-5, -8, -3);
@@ -513,7 +513,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
 #define INC_DEC_OP(operand_value, expr) \
   ([=](auto x) { return std::pair{expr, x}; })(operand_value)
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("id supports pre- and postfix increment/decrement operators", "[id]",
  ((int D), D), 1, 2, 3)({
   const auto a = idh<D>::get(5, 8, 3);

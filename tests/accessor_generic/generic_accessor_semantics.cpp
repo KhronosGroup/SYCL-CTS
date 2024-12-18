@@ -20,7 +20,7 @@
 
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "../common/semantics_reference.h"
 #endif
 
@@ -57,7 +57,7 @@ struct storage {
   }
 };
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("generic accessor common reference semantics (host)", "[accessor]")({
   {  // target::host_task
     int val_0;
@@ -93,7 +93,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 }
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("generic accessor common reference semantics, mutation (host)", "[accessor]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   int result = 0;
@@ -171,7 +171,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   }
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("generic accessor common reference semantics (kernel)", "[accessor]")({
   sycl::buffer<int> buffer{sycl::range<1>{1}};
   using type =
@@ -189,7 +189,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 template <int TestCase>
 class kernel_name_generic;
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("generic accessor common reference semantics, mutation (kernel)",
  "[accessor]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();

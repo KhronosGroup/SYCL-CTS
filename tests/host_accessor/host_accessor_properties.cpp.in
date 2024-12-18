@@ -14,7 +14,7 @@
 // clang-format on
 
 // FIXME: re-enable when sycl::host_accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "../accessor_basic/accessor_common.h"
 #include "host_accessor_properties.h"
 
@@ -26,7 +26,7 @@ using namespace host_accessor_properties;
 
 namespace host_accessor_properties_core {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 (CTS_TYPE_NAME + " sycl::host_accessor properties.", "[accessor]", test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {

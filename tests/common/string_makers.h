@@ -62,7 +62,7 @@ struct StringMaker<sycl::target> {
       case type::device:
         return "target::device";
 // FIXME: re-enable when target::host_task is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
       case type::host_task:
         return "target::host_task";
 #endif
@@ -190,8 +190,8 @@ struct StringMaker<sycl::access::address_space> {
   }
 };
 
-// FIXME: re-enable when sycl::access::decorated is implemented in hipsycl
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: re-enable when sycl::access::decorated is implemented in adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <>
 struct StringMaker<sycl::access::decorated> {
   using type = sycl::access::decorated;

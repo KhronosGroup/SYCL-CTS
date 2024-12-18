@@ -36,13 +36,16 @@ using AtomicRefT =
 template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
 class kernel_use_feature;
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("Kernel that uses the tested feature but does not have any attribute "
  "[[sycl::device_has()]]",
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
   using kname = kernel_use_feature<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
@@ -78,13 +81,16 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
 template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
 class kernel_use_feature_function_non_decorated;
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("Kernel that calls a function that uses the tested feature. Neither the "
  "kernel nor the function have an attribute ",
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
   using kname =
       kernel_use_feature_function_non_decorated<FeatureTypeT, FeatureAspectT>;
@@ -125,7 +131,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
 template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
 class kernel_use_feature_function_external_decorated;
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("Kernel does not have the attribute [[sycl::device_has()]] but it "
  "calls a SYCL_EXTERNAL function which uses the tested feature. The "
  "SYCL_EXTERNAL function is defined in another translation unit. The "
@@ -134,7 +140,10 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
   using kname = kernel_use_feature_function_external_decorated<FeatureTypeT,
                                                                FeatureAspectT>;
@@ -176,13 +185,16 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
 template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
 class kernel_dummy_function_non_decorated;
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("Kernel does not use the tested feature but is decorated with the "
  "corresponding attribute [[sycl::device_has()]].",
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
   using kname =
       kernel_dummy_function_non_decorated<FeatureTypeT, FeatureAspectT>;
@@ -220,14 +232,17 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
 template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
 class kernel_dummy_function_decorated;
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("Kernel that calls a function which is decorated with the feature's "
  "corresponding attribute [[sycl::device_has()]]. Neither the kernel "
  "nor the function use the feature.",
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
   using kname = kernel_dummy_function_decorated<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
@@ -264,14 +279,17 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
 template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
 class kernel_use_feature_function_decorated;
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("Kernel that calls a function which is decorated with the feature's "
  "corresponding attribute [[sycl::device_has()]]. Function uses the "
  "feature and kernel doesn't.",
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
   using kname =
       kernel_use_feature_function_decorated<FeatureTypeT, FeatureAspectT>;
@@ -310,13 +328,16 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
 template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
 class kernel_use_another_feature;
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("Kernel with tested feature but with attribute [[sycl::device_has()]] "
  "for another feature.",
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
   using kname = kernel_use_another_feature<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
@@ -359,7 +380,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
 template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
 class kernel_use_feature_function_external_decorated_with_attr;
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("Kernel with attribute [[sycl::device_has()]] for not currently tested "
  "feature but with SYCL_EXTERNAL function with tested feature and "
  "attribute [[sycl::device_has()]] with tested feature that is defined in "
@@ -367,7 +388,10 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
  "[kernel_features]",
  ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
   FeatureAspectT),
- (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
+#if SYCL_CTS_ENABLE_HALF_TESTS
+ (sycl::half, sycl::aspect::fp16),
+#endif
+ (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
   using kname =
       kernel_use_feature_function_external_decorated_with_attr<FeatureTypeT,

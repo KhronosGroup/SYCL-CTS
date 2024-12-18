@@ -1,5 +1,5 @@
 add_library(SYCL::SYCL INTERFACE IMPORTED GLOBAL)
-target_link_libraries(SYCL::SYCL INTERFACE hipSYCL::hipSYCL-rt)
+target_link_libraries(SYCL::SYCL INTERFACE AdaptiveCpp::acpp-rt)
 # add_sycl_executable_implementation function
 # Builds a SYCL program, compiling multiple SYCL test case source files into a
 # test executable, invoking a single-source/device compiler
@@ -17,7 +17,7 @@ function(add_sycl_executable_implementation)
     add_library(${object_lib_name} OBJECT ${test_cases_list})
     add_executable(${exe_name} $<TARGET_OBJECTS:${object_lib_name}>)
 
-    # hipSYCL needs the macro to be called on both the object library (to
+    # AdaptiveCpp needs the macro to be called on both the object library (to
     # override the compiler) and the executable (to override the linker).
     add_sycl_to_target(TARGET ${object_lib_name} SOURCES ${test_cases_list})
     add_sycl_to_target(TARGET ${exe_name})

@@ -151,8 +151,8 @@ void joint_reduce_group(sycl::queue& queue, const std::string& op_name) {
                   "Return type of joint_reduce(sub_group g, Ptr first, Ptr "
                   "last, BinaryOperation binary_op) is wrong\n");
 
-          // FIXME: hipSYCL has no implementation over sub-groups
-#ifdef SYCL_CTS_COMPILING_WITH_HIPSYCL
+          // FIXME: AdaptiveCpp has no implementation over sub-groups
+#ifdef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
               res_acc[1] = true;
 #else
               res_acc[1] = (reduced == sycl::joint_reduce(sub_group, v_begin, v_end, OpT()))
@@ -260,8 +260,8 @@ void init_joint_reduce_group(sycl::queue& queue, const std::string& op_name) {
                   "Return type of joint_reduce(sub_group g, Ptr first, Ptr "
                   "last, T init, BinaryOperation binary_op) is wrong\n");
 
-          // FIXME: hipSYCL has no implementation over sub-groups
-#ifdef SYCL_CTS_COMPILING_WITH_HIPSYCL
+          // FIXME: AdaptiveCpp has no implementation over sub-groups
+#ifdef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
               res_acc[1] = true;
 #else
               res_acc[1] = (reduced == sycl::joint_reduce(sub_group, v_begin, v_end, T(init), OpT()))

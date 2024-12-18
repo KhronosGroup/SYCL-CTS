@@ -240,8 +240,8 @@ inline auto get_address_spaces() {
 
 // FIXME: re-enable when sycl::info::device::atomic_memory_order_capabilities
 // and sycl::info::device::atomic_memory_scope_capabilities are implemented in
-// hipsycl
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 inline bool memory_order_is_supported(sycl::queue& q,
                                       sycl::memory_order order) {
@@ -276,7 +276,7 @@ inline bool memory_order_and_scope_are_not_supported(sycl::queue& q,
   return !memory_order_and_scope_are_supported(q, order, scope);
 }
 
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Function to compare two floating point values
  */

@@ -21,12 +21,13 @@
 #include "../common/common.h"
 #include "../common/get_group_range.h"
 #include "../common/once_per_unit.h"
+#include "../../util/type_traits.h"
 #include "type_coverage.h"
 
 #include <catch2/catch_template_test_macros.hpp>
 
 /*
- * FIXME: hipSYCL does not implement size member function of sycl::vec
+ * FIXME: AdaptiveCpp does not implement size member function of sycl::vec
  * As a result the following implementation is not working
  * Workaround is presented below
 
@@ -59,9 +60,9 @@ bool equal_impl(const sycl::vec<T, N>& a, const U& b) {
   return res;
 }
 
-// FIXME: hipSYCL has not implemented sycl::marray type yet
+// FIXME: AdaptiveCpp has not implemented sycl::marray type yet
 //        The warning is printed from group_shift.cpp and group_permute.cpp
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 bool equal_impl(const sycl::marray<T, N>& a, const sycl::marray<T, N>& b) {
   bool res = true;
@@ -87,7 +88,7 @@ bool equal(const T& a, const U& b) {
 }
 
 /*
- * FIXME: hipSYCL cannot construct vector from 1 value
+ * FIXME: AdaptiveCpp cannot construct vector from 1 value
  * As a result the helper below is needed
  */
 template <typename T, typename U>
@@ -133,8 +134,10 @@ struct custom_type {
 template <typename T>
 inline constexpr uint64_t exact_max = std::numeric_limits<T>::max();
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 template <>
 inline constexpr uint64_t exact_max<sycl::half> = 1ull << 11;
+#endif
 template <>
 inline constexpr uint64_t exact_max<float> = 1ull << 24;
 template <>
@@ -227,9 +230,9 @@ using Types = unnamed_type_pack<float, char, int, unsigned long long int>;
 
 #endif
 
-// FIXME: hipSYCL has not implemented sycl::marray type yet
+// FIXME: AdaptiveCpp has not implemented sycl::marray type yet
 //        The warning is printed from group_shift.cpp and group_permute.cpp
-#ifdef SYCL_CTS_COMPILING_WITH_HIPSYCL
+#ifdef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 using ExtendedTypes =
     concatenation<FundamentalTypes,
                   std::tuple<bool, sycl::vec<unsigned int, 4>,
@@ -256,8 +259,7 @@ template <typename T>
 inline auto get_op_types() {
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   static const auto types = []() {
-    if constexpr (std::is_floating_point_v<T> ||
-                  std::is_same_v<std::remove_cv_t<T>, sycl::half>) {
+    if constexpr (is_sycl_scalar_floating_point_v<T>) {
       // Bitwise operations are not defined for floating point types.
       return named_type_pack<sycl::plus<T>, sycl::multiplies<T>,
                              sycl::logical_and<T>, sycl::logical_or<T>,
