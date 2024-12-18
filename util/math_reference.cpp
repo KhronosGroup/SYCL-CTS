@@ -35,11 +35,11 @@
 namespace {
 
 template <typename A, typename B>
-void type_punn(const A &from, B &to) {
+void type_punn(const A& from, B& to) {
   static_assert(sizeof(A) == sizeof(B),
                 "type punning of incompatible sized types");
-  std::memcpy(reinterpret_cast<void *>(&to),
-              reinterpret_cast<const void *>(&from), sizeof(A));
+  std::memcpy(reinterpret_cast<void*>(&to),
+              reinterpret_cast<const void*>(&from), sizeof(A));
 }
 
 #define MAX(_a, _b) ((_a) > (_b) ? (_a) : (_b))
@@ -68,14 +68,6 @@ T bitselect_f_t(T x, T y, T z) {
 float bitselect(float a, float b, float c) {
   return bitselect_f_t<int32_t>(a, b, c);
 }
-double bitselect(double a, double b, double c) {
-  return bitselect_f_t<int64_t>(a, b, c);
-}
-#if SYCL_CTS_ENABLE_HALF_TESTS
-sycl::half bitselect(sycl::half a, sycl::half b, sycl::half c) {
-  return bitselect_f_t<int16_t>(a, b, c);
-}
-#endif
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- DEGREES
  *
@@ -86,13 +78,7 @@ T degrees_t(T a) {
   return a * (180.0 / M_PI);
 }
 
-#if SYCL_CTS_ENABLE_HALF_TESTS
-sycl::half degrees(sycl::half a) { return degrees_t(a); }
-#endif
-
 float degrees(float a) { return degrees_t(a); }
-
-double degrees(double a) { return degrees_t(a); }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- RADIANS
  *
@@ -103,13 +89,8 @@ T radians_t(T a) {
   return a * (M_PI / 180.0);
 }
 
-#if SYCL_CTS_ENABLE_HALF_TESTS
-sycl::half radians(sycl::half a) { return radians_t(a); }
-#endif
-
 float radians(float a) { return radians_t(a); }
 
-double radians(double a) { return radians_t(a); }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- STEP
  *
  */
@@ -120,13 +101,7 @@ T step_t(T a, T b) {
   return 1.0;
 }
 
-#if SYCL_CTS_ENABLE_HALF_TESTS
-sycl::half step(sycl::half a, sycl::half b) { return step_t(a, b); }
-#endif
-
 float step(float a, float b) { return step_t(a, b); }
-
-double step(double a, double b) { return step_t(a, b); }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- SMOOTHSTEP
  *
@@ -139,16 +114,7 @@ sycl_cts::resultRef<T> smoothstep_t(T a, T b, T c) {
   return t * t * (3 - 2 * t);
 }
 
-#if SYCL_CTS_ENABLE_HALF_TESTS
-sycl_cts::resultRef<sycl::half> smoothstep(sycl::half a, sycl::half b,
-                                           sycl::half c) {
-  return smoothstep_t(a, b, c);
-}
-#endif
 sycl_cts::resultRef<float> smoothstep(float a, float b, float c) {
-  return smoothstep_t(a, b, c);
-}
-sycl_cts::resultRef<double> smoothstep(double a, double b, double c) {
   return smoothstep_t(a, b, c);
 }
 
@@ -165,13 +131,7 @@ T sign_t(T a) {
   return +0.0;
 }
 
-#if SYCL_CTS_ENABLE_HALF_TESTS
-sycl::half sign(sycl::half a) { return sign_t(a); }
-#endif
-
 float sign(float a) { return sign_t(a); }
-
-double sign(double a) { return sign_t(a); }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MAD_SAT
  *
@@ -270,19 +230,7 @@ sycl_cts::resultRef<T> mix_t(T x, T y, T a) {
   return sycl_cts::resultRef<T>(T(), true);
 }
 
-#if SYCL_CTS_ENABLE_HALF_TESTS
-sycl_cts::resultRef<sycl::half> mix(const sycl::half a, const sycl::half b,
-                                    const sycl::half c) {
-  return mix_t(a, b, c);
-}
-#endif
-
 sycl_cts::resultRef<float> mix(const float a, const float b, const float c) {
-  return mix_t(a, b, c);
-}
-
-sycl_cts::resultRef<double> mix(const double a, const double b,
-                                const double c) {
   return mix_t(a, b, c);
 }
 
@@ -472,49 +420,105 @@ sycl_cts::resultRef<uint32_t> mul24(uint32_t x, uint32_t y) {
  *
  */
 
-#if SYCL_CTS_ENABLE_HALF_TESTS
-sycl::half acospi(sycl::half a) { return reference_acospi(a); }
-#endif
 float acospi(float a) { return reference_acospi(a); }
-double acospi(double a) { return reference_acospil(a); }
-
-#if SYCL_CTS_ENABLE_HALF_TESTS
-sycl::half asinpi(sycl::half a) { return reference_asinpi(a); }
-#endif
 float asinpi(float a) { return reference_asinpi(a); }
-double asinpi(double a) { return reference_asinpil(a); }
-
-#if SYCL_CTS_ENABLE_HALF_TESTS
-sycl::half atanpi(sycl::half a) { return reference_atanpi(a); }
-#endif
 float atanpi(float a) { return reference_atanpi(a); }
-double atanpi(double a) { return reference_atanpil(a); }
+float atan2pi(float a, float b) { return reference_atan2pi(a, b); }
+float cospi(float a) { return reference_cospi(a); }
+float fma(float a, float b, float c) { return reference_fma(a, b, c, 0); }
+
+float fract(float a, float* b) {
+  *b = std::floor(a);
+  return std::fmin(a - *b, nextafter(1.0f, 0.0f));
+}
+
+float nan(unsigned int a) { return std::nanf(std::to_string(a).c_str()); }
+float sinpi(float a) { return reference_sinpi(a); }
+float tanpi(float a) { return reference_tanpi(a); }
+
+// Geometric functions
+
+template <typename T, int N>
+sycl::vec<T, N> cross_t(sycl::vec<T, N> a, sycl::vec<T, N> b) {
+  sycl::vec<T, N> res;
+  std::vector<T> temp_res(4);
+  std::vector<T> av({a.x(), a.y(), a.z()});
+  std::vector<T> bv({b.x(), b.y(), b.z()});
+  temp_res[0] = av[1] * bv[2] - av[2] * bv[1];
+  temp_res[1] = av[2] * bv[0] - av[0] * bv[2];
+  temp_res[2] = av[0] * bv[1] - av[1] * bv[0];
+  temp_res[3] = 0.0;
+  for (int i = 0; i < N; i++) res[i] = temp_res[i];
+
+  return res;
+}
+
+sycl::float4 cross(sycl::float4 p0, sycl::float4 p1) { return cross_t(p0, p1); }
+sycl::float3 cross(sycl::float3 p0, sycl::float3 p1) { return cross_t(p0, p1); }
+
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+template <typename T, size_t N>
+sycl::marray<T, N> cross_t(sycl::marray<T, N> a, sycl::marray<T, N> b) {
+  sycl::marray<T, N> res;
+  std::vector<T> temp_res(4);
+  std::vector<T> av({a[0], a[1], a[2]});
+  std::vector<T> bv({b[0], b[1], b[2]});
+  temp_res[0] = av[1] * bv[2] - av[2] * bv[1];
+  temp_res[1] = av[2] * bv[0] - av[0] * bv[2];
+  temp_res[2] = av[0] * bv[1] - av[1] * bv[0];
+  temp_res[3] = 0.0;
+  for (size_t i = 0; i < N; i++) res[i] = temp_res[i];
+  return res;
+}
+
+sycl::mfloat4 cross(sycl::mfloat4 p0, sycl::mfloat4 p1) {
+  return cross_t(p0, p1);
+}
+sycl::mfloat3 cross(sycl::mfloat3 p0, sycl::mfloat3 p1) {
+  return cross_t(p0, p1);
+}
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #if SYCL_CTS_ENABLE_HALF_TESTS
+
+sycl::half bitselect(sycl::half a, sycl::half b, sycl::half c) {
+  return bitselect_f_t<int16_t>(a, b, c);
+}
+
+sycl::half degrees(sycl::half a) { return degrees_t(a); }
+sycl::half radians(sycl::half a) { return radians_t(a); }
+sycl::half step(sycl::half a, sycl::half b) { return step_t(a, b); }
+
+sycl_cts::resultRef<sycl::half> smoothstep(sycl::half a, sycl::half b,
+                                           sycl::half c) {
+  return smoothstep_t(a, b, c);
+}
+
+sycl::half sign(sycl::half a) { return sign_t(a); }
+
+sycl_cts::resultRef<sycl::half> mix(const sycl::half a, const sycl::half b,
+                                    const sycl::half c) {
+  return mix_t(a, b, c);
+}
+
+sycl::half acospi(sycl::half a) { return reference_acospi(a); }
+sycl::half asinpi(sycl::half a) { return reference_asinpi(a); }
+sycl::half atanpi(sycl::half a) { return reference_atanpi(a); }
+
 sycl::half atan2pi(sycl::half a, sycl::half b) {
   return reference_atan2pi(a, b);
 }
-#endif
-float atan2pi(float a, float b) { return reference_atan2pi(a, b); }
-double atan2pi(double a, double b) { return reference_atan2pil(a, b); }
 
-#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half cospi(sycl::half a) { return reference_cospi(a); }
-#endif
-float cospi(float a) { return reference_cospi(a); }
-double cospi(double a) { return reference_cospil(a); }
 
-#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half fma(sycl::half a, sycl::half b, sycl::half c) {
   return reference_fma(a, b, c, 0);
 }
-#endif
-float fma(float a, float b, float c) { return reference_fma(a, b, c, 0); }
-double fma(double a, double b, double c) { return reference_fmal(a, b, c); }
 
 // AdaptiveCpp does not yet support sycl::bit_cast, which is used in
 // `nextafter`.
-#if SYCL_CTS_ENABLE_HALF_TESTS && !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 sycl::half fdim(sycl::half a, sycl::half b) {
   if (a > b) {
     // to get rounding to nearest even
@@ -533,39 +537,22 @@ sycl::half fdim(sycl::half a, sycl::half b) {
 }
 #endif
 
-#if SYCL_CTS_ENABLE_HALF_TESTS
-sycl::half fract(sycl::half a, sycl::half *b) {
+sycl::half fract(sycl::half a, sycl::half* b) {
   *b = std::floor(a);
   return std::fmin(a - *b, nextafter(sycl::half(1.0), sycl::half(0.0)));
 }
-#endif
-float fract(float a, float *b) {
-  *b = std::floor(a);
-  return std::fmin(a - *b, nextafter(1.0f, 0.0f));
-}
-double fract(double a, double *b) {
-  *b = std::floor(a);
-  return std::fmin(a - *b, nextafter(1.0, 0.0));
-}
 
-float nan(unsigned int a) { return std::nanf(std::to_string(a).c_str()); }
-double nan(unsigned long a) { return std::nan(std::to_string(a).c_str()); }
-double nan(unsigned long long a) { return std::nan(std::to_string(a).c_str()); }
-#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half nan(unsigned short a) { return nan(unsigned(a)); }
-#endif
 
-#if SYCL_CTS_ENABLE_HALF_TESTS
-sycl::half modf(sycl::half a, sycl::half *b) {
+sycl::half modf(sycl::half a, sycl::half* b) {
   float resPtr;
   float res = modf(static_cast<float>(a), &resPtr);
   *b = static_cast<sycl::half>(resPtr);
   return res;
 }
-#endif
 
 // AdaptiveCpp does not yet support sycl::bit_cast
-#if SYCL_CTS_ENABLE_HALF_TESTS && !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 sycl::half nextafter(sycl::half x, sycl::half y) {
   if (std::isnan(x)) return x;
 
@@ -593,75 +580,9 @@ sycl::half nextafter(sycl::half x, sycl::half y) {
 }
 #endif
 
-#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half sinpi(sycl::half a) { return reference_sinpi(a); }
-#endif
-float sinpi(float a) { return reference_sinpi(a); }
-double sinpi(double a) { return reference_sinpil(a); }
-
-#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half tanpi(sycl::half a) { return reference_tanpi(a); }
-#endif
-float tanpi(float a) { return reference_tanpi(a); }
-double tanpi(double a) { return reference_tanpil(a); }
 
-// Geometric functions
-
-template <typename T, int N>
-sycl::vec<T, N> cross_t(sycl::vec<T, N> a, sycl::vec<T, N> b) {
-  sycl::vec<T, N> res;
-  std::vector<T> temp_res(4);
-  std::vector<T> av({a.x(), a.y(), a.z()});
-  std::vector<T> bv({b.x(), b.y(), b.z()});
-  temp_res[0] = av[1] * bv[2] - av[2] * bv[1];
-  temp_res[1] = av[2] * bv[0] - av[0] * bv[2];
-  temp_res[2] = av[0] * bv[1] - av[1] * bv[0];
-  temp_res[3] = 0.0;
-  for (int i = 0; i < N; i++) res[i] = temp_res[i];
-
-  return res;
-}
-
-sycl::float4 cross(sycl::float4 p0, sycl::float4 p1) { return cross_t(p0, p1); }
-sycl::float3 cross(sycl::float3 p0, sycl::float3 p1) { return cross_t(p0, p1); }
-sycl::double4 cross(sycl::double4 p0, sycl::double4 p1) {
-  return cross_t(p0, p1);
-}
-sycl::double3 cross(sycl::double3 p0, sycl::double3 p1) {
-  return cross_t(p0, p1);
-}
-
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
-template <typename T, size_t N>
-sycl::marray<T, N> cross_t(sycl::marray<T, N> a, sycl::marray<T, N> b) {
-  sycl::marray<T, N> res;
-  std::vector<T> temp_res(4);
-  std::vector<T> av({a[0], a[1], a[2]});
-  std::vector<T> bv({b[0], b[1], b[2]});
-  temp_res[0] = av[1] * bv[2] - av[2] * bv[1];
-  temp_res[1] = av[2] * bv[0] - av[0] * bv[2];
-  temp_res[2] = av[0] * bv[1] - av[1] * bv[0];
-  temp_res[3] = 0.0;
-  for (size_t i = 0; i < N; i++) res[i] = temp_res[i];
-  return res;
-}
-
-sycl::mfloat4 cross(sycl::mfloat4 p0, sycl::mfloat4 p1) {
-  return cross_t(p0, p1);
-}
-sycl::mfloat3 cross(sycl::mfloat3 p0, sycl::mfloat3 p1) {
-  return cross_t(p0, p1);
-}
-sycl::mdouble4 cross(sycl::mdouble4 p0, sycl::mdouble4 p1) {
-  return cross_t(p0, p1);
-}
-sycl::mdouble3 cross(sycl::mdouble3 p0, sycl::mdouble3 p1) {
-  return cross_t(p0, p1);
-}
-#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
-
-#if SYCL_CTS_ENABLE_HALF_TESTS
 sycl::half fast_dot(float p0) { return std::pow(p0, 2); }
 sycl::half fast_dot(sycl::float2 p0) {
   return std::pow(p0.x(), 2) + std::pow(p0.y(), 2);
@@ -686,6 +607,64 @@ sycl::half fast_dot(sycl::mfloat4 p0) {
          std::pow(p0[3], 2);
 }
 #endif
+
+#endif  // SYCL_CTS_ENABLE_HALF_TESTS
+
+#if SYCL_CTS_ENABLE_DOUBLE_TESTS
+
+double bitselect(double a, double b, double c) {
+  return bitselect_f_t<int64_t>(a, b, c);
+}
+
+double degrees(double a) { return degrees_t(a); }
+double radians(double a) { return radians_t(a); }
+double step(double a, double b) { return step_t(a, b); }
+
+sycl_cts::resultRef<double> smoothstep(double a, double b, double c) {
+  return smoothstep_t(a, b, c);
+}
+
+double sign(double a) { return sign_t(a); }
+
+sycl_cts::resultRef<double> mix(const double a, const double b,
+                                const double c) {
+  return mix_t(a, b, c);
+}
+
+double acospi(double a) { return reference_acospil(a); }
+double asinpi(double a) { return reference_asinpil(a); }
+double atanpi(double a) { return reference_atanpil(a); }
+double atan2pi(double a, double b) { return reference_atan2pil(a, b); }
+double cospi(double a) { return reference_cospil(a); }
+double fma(double a, double b, double c) { return reference_fmal(a, b, c); }
+
+double fract(double a, double* b) {
+  *b = std::floor(a);
+  return std::fmin(a - *b, nextafter(1.0, 0.0));
+}
+
+double nan(unsigned long a) { return std::nan(std::to_string(a).c_str()); }
+double nan(unsigned long long a) { return std::nan(std::to_string(a).c_str()); }
+
+double sinpi(double a) { return reference_sinpil(a); }
+double tanpi(double a) { return reference_tanpil(a); }
+
+sycl::double4 cross(sycl::double4 p0, sycl::double4 p1) {
+  return cross_t(p0, p1);
+}
+sycl::double3 cross(sycl::double3 p0, sycl::double3 p1) {
+  return cross_t(p0, p1);
+}
+
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+sycl::mdouble4 cross(sycl::mdouble4 p0, sycl::mdouble4 p1) {
+  return cross_t(p0, p1);
+}
+sycl::mdouble3 cross(sycl::mdouble3 p0, sycl::mdouble3 p1) {
+  return cross_t(p0, p1);
+}
 #endif
+
+#endif  // SYCL_CTS_ENABLE_DOUBLE_TESTS
 
 } /* namespace reference */
