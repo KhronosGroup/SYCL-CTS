@@ -6,6 +6,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
     apt install -y --no-install-recommends \
       build-essential \
+      wget \
       python3 \
       git \
       ca-certificates \

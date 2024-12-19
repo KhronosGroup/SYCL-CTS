@@ -4,6 +4,9 @@ ARG IMPL_VERSION
 
 FROM ghcr.io/intel/llvm/sycl_ubuntu2204_nightly:no-drivers-$IMPL_VERSION
 
+# Make sure that apt is executed with root previlegies
+USER root
+
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
     apt install -y --no-install-recommends \
