@@ -30,9 +30,9 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
                        2, 3) {
   auto queue = once_per_unit::get_queue();
 
-  // FIXME: hipSYCL has not implemented
+  // FIXME: AdaptiveCpp has not implemented
   //  atomic_fence_scope_capabilities query
-#if !defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
+#if !defined(SYCL_CTS_COMPILING_WITH_ADAPTIVECPP)
   std::vector<sycl::memory_scope> supported_barriers =
       queue.get_context()
           .get_info<sycl::info::context::atomic_fence_scope_capabilities>();
@@ -42,7 +42,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
       sycl::memory_scope::sub_group, sycl::memory_scope::work_group,
       sycl::memory_scope::device, sycl::memory_scope::system};
   WARN(
-      "hipSYCL has no implementation of "
+      "AdaptiveCpp has no implementation of "
       "atomic_fence_scope_capabilities query, suppose all barrier types as "
       "valid.");
 #endif

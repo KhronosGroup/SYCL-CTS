@@ -75,7 +75,7 @@ class TEST_NAME : public util::test_base {
               [=](sycl::nd_item<1> ndItem) {
 // FIXME: re-enable when sycl::access::decorated and get_multi_ptr is
 // implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
                 // Run asynchronous copy for full buffer
                 sycl::device_event deviceEvent = ndItem.async_work_group_copy(
                     localAcc

@@ -63,7 +63,7 @@ static size_t get_idx(size_t id, member_function member_func) {
  * work-group may have such that it is a power of two and
  * smaller or equal to 1024. */
 static std::vector<size_t> get_3d_work_group_sizes(const sycl::device& device) {
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
   const sycl::id<3> max_work_item_sizes =
       device.get_info<sycl::info::device::max_work_item_sizes<3>>();
 #else

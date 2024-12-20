@@ -26,8 +26,8 @@
 #include "../common/common.h"
 #include "catch2/matchers/catch_matchers.hpp"
 namespace kernel_features_common {
-// FIXME: re-enable compilation with hipSYCL when `sycl::errc` is supported
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: re-enable compilation with AdaptiveCpp when `sycl::errc` is supported
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 enum class call_attribute_type {
   external_decorated,
@@ -992,7 +992,7 @@ class kernel_submission_call;
                                       parallel_for_wg_action);                \
   }
 
-#endif  // #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // #if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 }  // namespace kernel_features_common
 
 #endif  // SYCL_CTS_TEST_KERNEL_FEATURES_COMMON_H
