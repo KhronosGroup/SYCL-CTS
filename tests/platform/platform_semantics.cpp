@@ -20,7 +20,7 @@
 
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "../common/semantics_reference.h"
 #endif
 
@@ -52,7 +52,7 @@ struct storage {
   }
 };
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("platform common reference semantics", "[platform]")({
   sycl::platform platform = sycl_cts::util::get_cts_object::platform();
   const std::vector<sycl::platform> platforms = sycl::platform::get_platforms();

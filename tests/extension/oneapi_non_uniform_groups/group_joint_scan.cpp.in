@@ -23,14 +23,14 @@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
 // clang-format on
 
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "group_scan.h"
 
 namespace non_uniform_groups::tests {
 
 using CurrentType = unnamed_type_pack<CTS_TYPE>;
 using ScanTypes = Types;
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 TEMPLATE_LIST_TEST_CASE(
           CTS_TYPE_NAME + " non-uniform group joint scan functions",

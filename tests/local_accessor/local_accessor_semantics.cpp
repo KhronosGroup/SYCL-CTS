@@ -20,7 +20,7 @@
 
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "../common/semantics_reference.h"
 #endif
 
@@ -47,7 +47,7 @@ struct storage {
   }
 };
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("local_accessor common reference semantics (host)", "[local_accessor]")({
   sycl_cts::util::get_cts_object::queue().submit([&](sycl::handler& cgh) {
     sycl::local_accessor<int, 0> local_accessor_0{cgh};
@@ -57,7 +57,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   });
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("local_accessor common reference semantics (kernel)", "[local_accessor]")({
   using type = sycl::local_accessor<int, 0>;
   common_reference_semantics::check_kernel<storage<0>, type>(
@@ -68,7 +68,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 template <int TestCase>
 struct kernel_name_local;
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("local_accessor common reference semantics, mutation (kernel)",
  "[local_accessor]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();

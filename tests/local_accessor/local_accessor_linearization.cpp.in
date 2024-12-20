@@ -28,7 +28,7 @@
 // clang-format on
 
 // FIXME: re-enable when sycl::local_accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #include "../accessor_basic/accessor_common.h"
 #include "local_accessor_linearization.h"
@@ -38,7 +38,7 @@ using namespace local_accessor_linearization;
 
 namespace local_accessor_liniarization_core {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 (CTS_TYPE_NAME + " sycl::local_accessor linearization.", "[accessor]",
  test_combinations)({
   auto queue = sycl_cts::util::get_cts_object::queue();
