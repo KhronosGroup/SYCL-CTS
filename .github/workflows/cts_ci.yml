@@ -58,7 +58,7 @@ jobs:
           - sycl-impl: dpcpp
             version: ca955e538171cb7b7eb07734dd5c2b958c84901c
           - sycl-impl: hipsycl
-            version: ba3fb96
+            version: 3d8b1cd
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -116,7 +116,7 @@ jobs:
           - sycl-impl: dpcpp
             version: ca955e538171cb7b7eb07734dd5c2b958c84901c
           - sycl-impl: hipsycl
-            version: ba3fb96
+            version: 3d8b1cd
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
       parallel-build-jobs: 2

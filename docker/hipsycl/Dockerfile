@@ -6,19 +6,6 @@ FROM khronosgroup/sycl-cts-ci:common
 ARG IMPL_VERSION
 RUN test -n "$IMPL_VERSION" || ( echo "Error: IMPL_VERSION is not set"; exit 1 )
 
-RUN apt update && \
-    apt install -y --no-install-recommends \
-    lsb-release \
-    software-properties-common \
-    gnupg
-
-RUN wget https://apt.llvm.org/llvm.sh && \
-    chmod +x llvm.sh && \
-    ./llvm.sh 18 && \
-    apt update && \
-    apt install -y --no-install-recommends \
-    libclang-18-dev clang-tools-18 libomp-18-dev
-
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
     apt install -y --no-install-recommends \
