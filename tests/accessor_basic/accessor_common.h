@@ -143,6 +143,8 @@ inline std::string get_section_name(const std::string& type_name,
 // FIXME: re-enable when marrray is implemented in adaptivecpp and type_coverage
 // is enabled
 #ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+
+#if SYCL_CTS_ENABLE_HALF_TESTS
 /**
  * @brief Factory function for getting type_pack with fp16 type
  */
@@ -150,6 +152,7 @@ inline auto get_fp16_type() {
   static const auto types = named_type_pack<sycl::half>::generate("sycl::half");
   return types;
 }
+#endif
 
 /**
  * @brief Factory function for getting type_pack with fp64 type
