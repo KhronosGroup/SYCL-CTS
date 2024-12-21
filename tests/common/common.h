@@ -160,6 +160,25 @@ void check_get_info_param(const ObjectT& object) {
 }
 
 /**
+ * @brief Helper function to check an info parameter for specific backend.
+ */
+template <typename InfoDesc, typename ReturnT, sycl::backend Backend,
+          typename ObjectT>
+void check_get_info_param_backend_specific(const ObjectT& object) {
+  try {
+    check_get_info_param<InfoDesc, ReturnT>(object);
+    CHECK(object.get_backend() == Backend);
+  } catch (const sycl::exception& e) {
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+    CHECK(e.code() == sycl::make_error_code(sycl::errc::invalid));
+#endif
+    CHECK(object.get_backend() != Backend);
+  } catch (...) {
+    FAIL("Unexpected exception");
+  }
+}
+
+/**
  * @deprecated Use overload without logger.
  */
 template <typename InfoDesc, typename ReturnT, typename ObjectT>

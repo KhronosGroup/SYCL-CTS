@@ -220,7 +220,9 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::name, std::string>(dev);
     check_get_info_param<sycl::info::device::vendor, std::string>(dev);
     check_get_info_param<sycl::info::device::driver_version, std::string>(dev);
-    check_get_info_param<sycl::info::device::profile, std::string>(dev);
+    check_get_info_param_backend_specific<sycl::info::device::profile,
+                                          std::string, sycl::backend::opencl>(
+        dev);
     check_get_info_param<sycl::info::device::version, std::string>(dev);
     check_get_info_param<sycl::info::device::backend_version, std::string>(dev);
 
@@ -230,8 +232,9 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::extensions,
                          std::vector<std::string>>(dev);
     check_get_info_param<sycl::info::device::printf_buffer_size, size_t>(dev);
-    check_get_info_param<sycl::info::device::preferred_interop_user_sync, bool>(
-        dev);
+    check_get_info_param_backend_specific<
+        sycl::info::device::preferred_interop_user_sync, bool,
+        sycl::backend::opencl>(dev);
     auto SupportedProperties =
         dev.get_info<sycl::info::device::partition_properties>();
     if (std::find(SupportedProperties.begin(), SupportedProperties.end(),
