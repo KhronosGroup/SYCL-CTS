@@ -23,16 +23,16 @@
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
-// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: re-enable when sycl::reduction is implemented in AdaptiveCpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "reduction_without_identity_param_common.h"
 #endif
 
 namespace reduction_without_identity_param_fp64 {
 
 // FIXME: re-enable when compilation failure for reduction with custom type is
-// fixed and sycl::reduction is implemented in hipSYCL
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// fixed and sycl::reduction is implemented in AdaptiveCpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("reduction_without_identity_param_fp64", "[reduction]")({
   using namespace reduction_without_identity_param_common;
 
@@ -53,8 +53,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 });
 
 // FIXME: re-enable when compilation failure for reduction with custom type is
-// fixed and sycl::reduction is implemented in hipSYCL
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// fixed and sycl::reduction is implemented in AdaptiveCpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("reduction_without_identity_param_item_twice_fp64", "[reduction]")({
   using namespace reduction_without_identity_param_common;
 
@@ -75,8 +75,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 });
 
 // FIXME: re-enable when compilation failure for reduction with custom type is
-// fixed and sycl::reduction is implemented in hipSYCL
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// fixed and sycl::reduction is implemented in AdaptiveCpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("reduction_without_identity_param_even_item_fp64", "[reduction]")({
   using namespace reduction_without_identity_param_common;
 
@@ -97,8 +97,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 });
 
 // FIXME: re-enable when compilation failure for reduction with custom type is
-// fixed and sycl::reduction is implemented in hipSYCL
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// fixed and sycl::reduction is implemented in AdaptiveCpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("reduction_without_identity_param_no_one_item_fp64", "[reduction]")({
   using namespace reduction_without_identity_param_common;
 

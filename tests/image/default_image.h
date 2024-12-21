@@ -21,7 +21,7 @@
 #ifndef SYCL_CTS_IMAGE_DEFAULT_IMAGE_H
 #define SYCL_CTS_IMAGE_DEFAULT_IMAGE_H
 
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 /**
  * Provides functionality to construct a default sampled_image and associated

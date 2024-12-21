@@ -19,18 +19,18 @@
 *******************************************************************************/
 
 #include "../common/disabled_for_test_case.h"
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "atomic_ref_stress_common.h"
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include <catch2/catch_test_macros.hpp>
 
 namespace atomic_ref_stress_test_atomic64 {
 
-// FIXME: re-enable for hipsycl
+// FIXME: re-enable for adaptivecpp
 // when sycl::info::device::atomic_memory_order_capabilities and
 // sycl::info::device::atomic_memory_scope_capabilities are implemented in
-// hipsycl
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// adaptivecpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_ref atomicity for device scope test. long long type",
  "[atomic_ref_stress]")({
   auto queue = once_per_unit::get_queue();
@@ -42,7 +42,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   atomic_ref_stress_test::run_atomicity_device_scope<long long>{}("long long");
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_ref atomicity for device scope test. double type",
  "[atomic_ref_stress]")({
   auto queue = once_per_unit::get_queue();
@@ -58,7 +58,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   atomic_ref_stress_test::run_atomicity_device_scope<double>{}("double");
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_ref atomicity for work_group scope test. long long type",
  "[atomic_ref_stress]")({
   auto queue = once_per_unit::get_queue();
@@ -71,7 +71,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       "long long");
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_ref atomicity for work_group scope test. double type",
  "[atomic_ref_stress]")({
   auto queue = once_per_unit::get_queue();
@@ -87,7 +87,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   atomic_ref_stress_test::run_atomicity_work_group_scope<double>{}("double");
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_ref aquire and release. long long type", "[atomic_ref_stress]")({
   auto queue = once_per_unit::get_queue();
   if (!queue.get_device().has(sycl::aspect::atomic64))
@@ -98,7 +98,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   atomic_ref_stress_test::run_aquire_release<long long>{}("long long");
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_ref aquire and release. double types", "[atomic_ref_stress]")({
   auto queue = once_per_unit::get_queue();
   if (!queue.get_device().has(sycl::aspect::atomic64))
@@ -113,7 +113,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   atomic_ref_stress_test::run_aquire_release<double>{}("double");
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_ref ordering. long long type", "[atomic_ref_stress]")({
   auto queue = once_per_unit::get_queue();
   if (!queue.get_device().has(sycl::aspect::atomic64))
@@ -124,7 +124,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   atomic_ref_stress_test::run_ordering<long long>{}("long long");
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_ref ordering. double type", "[atomic_ref_stress]")({
   auto queue = once_per_unit::get_queue();
   if (!queue.get_device().has(sycl::aspect::atomic64))
@@ -139,7 +139,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   atomic_ref_stress_test::run_ordering<double>{}("double");
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_ref atomicity with respect to atomic operations in host code. "
  "long long type",
  "[atomic_ref_stress]")({
@@ -161,7 +161,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #endif
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_ref atomicity with respect to atomic operations in host code. "
  "double type",
  "[atomic_ref_stress]")({

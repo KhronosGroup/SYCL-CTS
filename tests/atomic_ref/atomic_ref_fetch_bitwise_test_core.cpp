@@ -23,19 +23,19 @@
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #include "atomic_ref_fetch_bitwise_test.h"
 
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 namespace atomic_ref::tests::api::core {
 
-// FIXME: re-enable for hipsycl
+// FIXME: re-enable for adaptivecpp
 // when sycl::info::device::atomic_memory_order_capabilities and
 // sycl::info::device::atomic_memory_scope_capabilities are implemented in
-// hipsycl
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// adaptivecpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("sycl::atomic_ref fetch_xor()/fetch_or()/fetch_and() test. core types",
  "[atomic_ref]")({
   const auto type_pack = atomic_ref::tests::common::get_conformance_type_pack();
