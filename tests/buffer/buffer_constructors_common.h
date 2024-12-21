@@ -235,6 +235,7 @@ class buffer_ctors {
       CHECK(check_buffer_constructor(buf_iter1, r_exp, data_verify));
     }
 
+#if !SYCL_CTS_COMPILING_WITH_SIMSYCL
     {
       INFO("Check subBuffer (buffer, id, range) constructor");
       auto r_sub = r;
@@ -244,6 +245,10 @@ class buffer_ctors {
       CHECK(buf_sub.is_sub_buffer());
       CHECK(check_buffer_constructor(buf_sub, r_sub));
     }
+#else
+    FAIL_CHECK("SimSYCL does not implement sub-buffers yet");
+#endif
+
     /* Check range constructor */
     {
       sycl::buffer<T, dims, std::allocator<T>> buf(r, propList);
@@ -312,6 +317,7 @@ class buffer_ctors {
       CHECK(check_buffer_constructor(buf_iter1, r_exp, data_verify));
     }
 
+#if !SYCL_CTS_COMPILING_WITH_SIMSYCL
     {
       INFO(
           "Check subBuffer (buffer, id, range) constructor with allocator "
@@ -323,6 +329,9 @@ class buffer_ctors {
       CHECK(buf_sub.is_sub_buffer());
       CHECK(check_buffer_constructor(buf_sub, r_sub));
     }
+#else
+    FAIL_CHECK("SimSYCL does not implement sub-buffers yet");
+#endif
 
     {
       INFO("Check (range, allocator) constructor");

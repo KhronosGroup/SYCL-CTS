@@ -237,6 +237,7 @@ bool check_type_sign(bool expected_sign) {
   return (std::is_signed<T>::value == expected_sign);
 }
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 /**
  * @brief Helper function to see if sycl::half is of the wrong sign
  */
@@ -245,6 +246,7 @@ inline bool check_type_sign<sycl::half>(bool expected_sign) {
   bool is_signed = sycl::half(1) > sycl::half(-1);
   return is_signed == expected_sign;
 }
+#endif
 
 /**
  * @brief Helper function to log a failure if a type is of the wrong size or
@@ -284,7 +286,7 @@ bool check_equal_values(const T& lhs, const T& rhs) {
 }
 
 /**
- * @brief Instantiation for vectors with the same API as for scalar values. 
+ * @brief Instantiation for vectors with the same API as for scalar values.
  * Deprecated. Use \c value_operations::are_equal instead
  */
 template <typename T, int numElements>
@@ -414,8 +416,8 @@ namespace pixel_tag {
   struct upper: generic {};
 };
 
-// AdaptiveCpp does not yet support images
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+// AdaptiveCpp and SimSYCL do not yet support images
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_SIMSYCL
 
 /**
  * @brief Helps with retrieving the right access type for reading/writing
