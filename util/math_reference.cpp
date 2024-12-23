@@ -486,8 +486,9 @@ sycl::half fma(sycl::half a, sycl::half b, sycl::half c) {
 float fma(float a, float b, float c) { return reference_fma(a, b, c, 0); }
 double fma(double a, double b, double c) { return reference_fmal(a, b, c); }
 
-// hipSYCL does not yet support sycl::bit_cast, which is used in `nextafter`.
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// AdaptiveCpp does not yet support sycl::bit_cast, which is used in
+// `nextafter`.
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 sycl::half fdim(sycl::half a, sycl::half b) {
   if (a > b) {
     // to get rounding to nearest even
@@ -531,8 +532,8 @@ sycl::half modf(sycl::half a, sycl::half *b) {
   return res;
 }
 
-// hipSYCL does not yet support sycl::bit_cast
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// AdaptiveCpp does not yet support sycl::bit_cast
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 sycl::half nextafter(sycl::half x, sycl::half y) {
   if (std::isnan(x)) return x;
 
@@ -594,8 +595,8 @@ sycl::double3 cross(sycl::double3 p0, sycl::double3 p1) {
   return cross_t(p0, p1);
 }
 
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> cross_t(sycl::marray<T, N> a, sycl::marray<T, N> b) {
   sycl::marray<T, N> res;
@@ -622,7 +623,7 @@ sycl::mdouble4 cross(sycl::mdouble4 p0, sycl::mdouble4 p1) {
 sycl::mdouble3 cross(sycl::mdouble3 p0, sycl::mdouble3 p1) {
   return cross_t(p0, p1);
 }
-#endif  // SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 sycl::half fast_dot(float p0) { return std::pow(p0, 2); }
 sycl::half fast_dot(sycl::float2 p0) {
@@ -635,8 +636,8 @@ sycl::half fast_dot(sycl::float4 p0) {
   return std::pow(p0.x(), 2) + std::pow(p0.y(), 2) + std::pow(p0.z(), 2) +
          std::pow(p0.w(), 2);
 }
-// FIXME: hipSYCL does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: AdaptiveCpp does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 sycl::half fast_dot(sycl::mfloat2 p0) {
   return std::pow(p0[0], 2) + std::pow(p0[1], 2);
 }

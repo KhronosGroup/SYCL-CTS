@@ -175,7 +175,7 @@ struct vec_marray_element_type<sycl::vec<T, N>> {
   using type = T;
 };
 
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, int N>
 struct vec_marray_element_type<sycl::marray<T, N>> {
   using type = T;

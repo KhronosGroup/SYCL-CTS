@@ -62,8 +62,8 @@ void check(ActionT action) {
   for (int i = 0; i < N; i++) CHECK(arr[i] == i);
 }
 
-// FIXME: re-enable when parallel_for simplifications implemented in hipSYCL
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// FIXME: re-enable when parallel_for simplifications implemented in AdaptiveCpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("Check parallel_for(N, some_kernel)", "[parallel_for_simplifications]")({
   constexpr int N = 2;
   auto action = [=](auto& cgh, auto& acc) {
@@ -72,8 +72,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   check<N>(action);
 });
 
-// FIXME: re-enable when parallel_for simplifications implemented in hipSYCL
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// FIXME: re-enable when parallel_for simplifications implemented in AdaptiveCpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("Check parallel_for({N}, some_kernel)", "[parallel_for_simplifications]")({
   constexpr int N = 2;
   auto action = [=](auto& cgh, auto& acc) {
@@ -82,8 +82,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   check<N>(action);
 });
 
-// FIXME: re-enable when parallel_for simplifications implemented in hipSYCL
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// FIXME: re-enable when parallel_for simplifications implemented in AdaptiveCpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("Check parallel_for({N1, N2}, some_kernel)",
  "[parallel_for_simplifications]")({
   constexpr int N1 = 2;
@@ -95,8 +95,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   check<N>(action);
 });
 
-// FIXME: re-enable when parallel_for simplifications implemented in hipSYCL
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// FIXME: re-enable when parallel_for simplifications implemented in AdaptiveCpp
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("Check parallel_for({N1, N2, N3}, some_kernel)",
  "[parallel_for_simplifications]")({
   constexpr int N1 = 2;

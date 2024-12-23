@@ -43,6 +43,9 @@ add_cts_option(SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS
     "Enable all extension oneAPI tests" OFF)
 
+add_cts_option(SYCL_CTS_ENABLE_KHR_TESTS
+    "Enable all extension Khronos tests" OFF)
+
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS
     "Enable extension oneAPI compile-time property list tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
@@ -102,6 +105,14 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_ROOT_GROUP_TESTS
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_ENQUEUE_FUNCTIONS_TESTS
     "Enable extension oneAPI enqueue_functions tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
+
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_LOCAL_MEMORY_TESTS
+    "Enable extension oneAPI local_memory tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
+
+add_cts_option(SYCL_CTS_ENABLE_KHR_DEFAULT_CONTEXT_TESTS
+    "Enable extension Khronos default_context tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
 # TODO: Deprecated - remove
 add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG

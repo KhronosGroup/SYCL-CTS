@@ -23,12 +23,12 @@
  * currently does not compile for a given implementation, while other test cases
  * in the same translation unit would otherwise compile.
  *
- * The following implementations can be specified: DPCPP, hipSYCL.
+ * The following implementations can be specified: DPCPP, AdaptiveCpp.
  * A disabled test case will fail automatically at runtime.
  *
  * Usage example:
  * ```
- * DISABLED_FOR_TEST_CASE(hipSYCL)("my test case", "[my-tag]")({
+ * DISABLED_FOR_TEST_CASE(AdaptiveCpp)("my test case", "[my-tag]")({
  *  // ...
  * });
  * ```
@@ -51,8 +51,8 @@
 
 #if SYCL_CTS_COMPILING_WITH_DPCPP
 #define INTERNAL_CTS_SYCL_IMPL_DPCPP ()
-#elif SYCL_CTS_COMPILING_WITH_HIPSYCL
-#define INTERNAL_CTS_SYCL_IMPL_hipSYCL ()
+#elif SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+#define INTERNAL_CTS_SYCL_IMPL_AdaptiveCpp ()
 #else
 #error Unknown SYCL implementation
 #endif

@@ -150,7 +150,7 @@ TEST_CASE(
   }
 }
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("Requirements on overlapping sub-buffers", "[invoke]")({
   auto device = sycl_cts::util::get_cts_object::device();
   auto queue = sycl_cts::util::get_cts_object::queue();

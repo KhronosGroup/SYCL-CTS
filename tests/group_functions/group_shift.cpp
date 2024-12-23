@@ -20,7 +20,7 @@
 
 #include "group_shift.h"
 
-// errors in hipSYCL with bool and 8-bit types - only in group shifts
+// errors in AdaptiveCpp with bool and 8-bit types - only in group shifts
 TEMPLATE_LIST_TEST_CASE("Group and sub-group shift",
                         "[group_func][type_list][dim]", CustomTypes) {
   auto queue = once_per_unit::get_queue();
