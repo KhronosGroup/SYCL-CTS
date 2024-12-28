@@ -86,8 +86,8 @@ class legacy_input_iterator_requirement {
     }
 
     if constexpr (can_pre_increment && has_not_equal_operator) {
-      It j{};
-      It i{};
+      It j = valid_iterator;
+      It i = valid_iterator;
       // As "Legacy Iterator" implements increment operator we can get two not
       // equal iterators
       ++i;
