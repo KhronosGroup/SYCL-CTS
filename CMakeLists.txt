@@ -175,6 +175,17 @@ if(SYCL_CTS_MEASURE_BUILD_TIMES)
 endif()
 # ------------------
 
+# ------------------
+# Math builtin fragment size option
+set(SYCL_CTS_MATH_BUILTIN_FRAGMENT_SIZE "230" CACHE STRING
+"Control the size of the fragment files generated for the math builtin tests.\
+ Decreasing this may help increase the parallelizability of the compilation of\
+ the math builtin, but may also increase the overall compilation time.")
+if(NOT "${SYCL_CTS_MATH_BUILTIN_FRAGMENT_SIZE}" MATCHES "^[1-9][0-9]*$")
+    message(FATAL_ERROR "SYCL_CTS_MATH_BUILTIN_FRAGMENT_SIZE (${SYCL_CTS_MATH_BUILTIN_FRAGMENT_SIZE}) must be an integer greater than 0.")
+endif()
+# ------------------
+
 enable_testing()
 
 add_subdirectory(util)
