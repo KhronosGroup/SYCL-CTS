@@ -327,12 +327,12 @@ Their usage is best explained in an example:
 
 [source,c++]
 ----
-DISABLED_FOR_TEST_CASE(hipSYCL)("some feature works as expected", "[some-feature]")({
-    CHECK(sycl::something_that_hipsycl_does_not_yet_support() == 123);
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)("some feature works as expected", "[some-feature]")({
+    CHECK(sycl::something_that_adaptivecpp_does_not_yet_support() == 123);
 });
 ----
 
-While for other SYCL implementations the test case will compile as if it were a normal `TEST_CASE`, for hipSYCL it will instead compile to a test case that fails at runtime with the message `"This test case has been compile-time disabled."`.
+While for other SYCL implementations the test case will compile as if it were a normal `TEST_CASE`, for AdaptiveCpp it will instead compile to a test case that fails at runtime with the message `"This test case has been compile-time disabled."`.
 
 Note that unlike the normal `TEST_CASE` macro, `DISABLED_FOR_TEST_CASE` requires that the body of the test is wrapped in parentheses and followed by a semicolon.
 
@@ -341,7 +341,7 @@ The CTS currently provides the following macros for compile-time disabling test 
 * `DISABLED_FOR_TEST_CASE(<impls...>)(<description>, <tags>)(<body>)`
 * `DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(<impls...>)(<description>, <tags>, <signature>, <types...>)(<body>)`
 
-where `<impls...>` is a comma-separated list of `hipSYCL` and/or `DPCPP`.
+where `<impls...>` is a comma-separated list of `AdaptiveCpp` and/or `DPCPP`.
 
 NOTE: #**TODO:** Custom matchers.#
 

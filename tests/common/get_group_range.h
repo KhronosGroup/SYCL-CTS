@@ -61,9 +61,9 @@ sycl::range<Dimensions> work_group_range(
   // query device for work-group sizes
   size_t max_work_item_sizes[Dimensions];
   {
-    // FIXME: hipSYCL does not implement
+    // FIXME: AdaptiveCpp does not implement
     //        sycl::info::device::max_work_item_sizes<3> property
-#if SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
     sycl::id<3> sizes =
         queue.get_device().get_info<sycl::info::device::max_work_item_sizes>();
 #else

@@ -306,8 +306,8 @@ bool check_contains(const std::vector<T>& vec, const T& elem) {
   return std::find(vec.begin(), vec.end(), elem) != vec.end();
 }
 
-// hipSYCL does not yet support sycl::marray
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// AdaptiveCpp does not yet support sycl::marray
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Instantiation for marray with the same API as for scalar values
  * Deprecated. Use \c value_operations::are_equal instead
@@ -414,8 +414,8 @@ namespace pixel_tag {
   struct upper: generic {};
 };
 
-// hipSYCL does not yet support images
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// AdaptiveCpp does not yet support images
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 /**
  * @brief Helps with retrieving the right access type for reading/writing
@@ -626,8 +626,8 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
     return false;
   }
 
-// hipSYCL does not yet support sycl::get_kernel_bundle
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// AdaptiveCpp does not yet support sycl::get_kernel_bundle
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
   auto kb =
       sycl::get_kernel_bundle<kernelT, sycl::bundle_state::executable>(context);
   auto kernel = kb.get_kernel(sycl::get_kernel_id<kernelT>());

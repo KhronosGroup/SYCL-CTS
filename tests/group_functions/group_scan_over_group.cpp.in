@@ -25,17 +25,17 @@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
 // clang-format on
 
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "group_scan.h"
 
 using TestType = unnamed_type_pack<CTS_TYPE>;
 using ScanTypes = Types;
 
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
-#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
-// FIXME: known_identity is not impemented yet for hipSYCL.
-DISABLED_FOR_TEST_CASE(hipSYCL)
+// FIXME: known_identity is not impemented yet for AdaptiveCpp.
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 (CTS_TYPE_NAME + " group and sub-group scan functions",
  "[group_func][type_list][dim]")({
   auto queue = once_per_unit::get_queue();
@@ -53,9 +53,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   for_all_combinations<invoke_scan_over_group>(Dims, TestType{}, queue);
 });
 
-// FIXME: hipSYCL has wrong arguments order for inclusive_scan_over_group: init
+// FIXME: AdaptiveCpp has wrong arguments order for inclusive_scan_over_group: init
 // and op are interchanged. known_identity is not implemented yet.
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 (CTS_TYPE_NAME + " group and sub-group scan functions with init",
  "[group_func][type_list][dim]")({
   auto queue = once_per_unit::get_queue();

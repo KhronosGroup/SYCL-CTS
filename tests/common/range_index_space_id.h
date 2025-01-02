@@ -19,7 +19,7 @@
 //
 *******************************************************************************/
 
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "../common/type_coverage.h"
 #endif
 
