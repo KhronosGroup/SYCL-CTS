@@ -192,10 +192,12 @@ sycl_cts::resultRef<sycl::marray<T, N>> run_func_on_marray_result_ref(
 
 template <typename T>
 struct rel_funcs_return;
+#if SYCL_CTS_ENABLE_HALF_TESTS
 template <>
 struct rel_funcs_return<sycl::half> {
   using type = int16_t;
 };
+#endif
 template <>
 struct rel_funcs_return<float> {
   using type = int32_t;
