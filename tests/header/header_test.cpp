@@ -38,7 +38,7 @@ class TEST_NAME : public util::test_base {
 
   /** execute this test
   */
-  void run(util::logger &log) override {
+  void run(util::logger& log) override {
 /** checks that __FAST_RELAXED_MATH__ is defined
 */
 #if defined(__FAST_RELAXED_MATH__)
