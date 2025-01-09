@@ -39,7 +39,6 @@ class TEST_NAME : public util::test_base {
   /** execute this test
   */
   void run(util::logger &log) override {
-
 /** checks that __FAST_RELAXED_MATH__ is defined
 */
 #if defined(__FAST_RELAXED_MATH__)
@@ -64,12 +63,13 @@ class TEST_NAME : public util::test_base {
   }
 };
 
-TEST_CASE("The implementation defines the correct SYCL_LANGUAGE_VERSION macro") {
+TEST_CASE(
+    "The implementation defines the correct SYCL_LANGUAGE_VERSION macro") {
 #ifndef SYCL_LANGUAGE_VERSION
-    FAIL("SYCL_LANGUAGE_VERSION is not defined");
+  FAIL("SYCL_LANGUAGE_VERSION is not defined");
 #else
-    STATIC_REQUIRE(std::is_same_v<decltype(SYCL_LANGUAGE_VERSION), long>);
-    STATIC_REQUIRE(SYCL_LANGUAGE_VERSION == 202012L);
+  STATIC_REQUIRE(std::is_same_v<decltype(SYCL_LANGUAGE_VERSION), long>);
+  STATIC_REQUIRE(SYCL_LANGUAGE_VERSION == 202012L);
 #endif
 }
 
