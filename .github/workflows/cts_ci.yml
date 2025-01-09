@@ -163,7 +163,7 @@ jobs:
           sort --numeric-sort --reverse --output=build_times.log build_times.log
           echo "Total time: $( date --date=@$ELAPSED --utc '+%-Hh %-Mm %-Ss' )" >> build_times.log
       - name: Upload build times artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-times-${{ matrix.sycl-impl }}
           path: ${{ env.container-workspace }}/build/build_times.log
