@@ -57,8 +57,7 @@ bool check_vector_size(sycl::vec<vecType, numOfElems> vector) {
  * @brief Helper function to check vector values are correct.
  */
 template <typename vecType, int numOfElems>
-bool check_vector_values(sycl::vec<vecType, numOfElems> vector,
-                         vecType* vals) {
+bool check_vector_values(sycl::vec<vecType, numOfElems> vector, vecType* vals) {
   for (int i = 0; i < numOfElems; i++) {
     if ((vals[i] != vector[i])) {
       return false;
@@ -72,14 +71,12 @@ bool check_vector_values(sycl::vec<vecType, numOfElems> vector,
  *        for division result are accurate enough
  */
 template <typename vecType, int numOfElems>
-typename std::enable_if<is_sycl_floating_point<vecType>::value, bool>::type
-check_vector_values_div(sycl::vec<vecType, numOfElems> vector,
-                        vecType *vals) {
+typename std::enable_if_t<is_sycl_scalar_floating_point_v<vecType>, bool>
+check_vector_values_div(sycl::vec<vecType, numOfElems> vector, vecType* vals) {
   for (int i = 0; i < numOfElems; i++) {
     vecType vectorValue = vector[i];
-    if (vals[i] == vectorValue)
-      continue;
-    const vecType ulpsExpected = 2.5; // Min Accuracy for x / y
+    if (vals[i] == vectorValue) continue;
+    const vecType ulpsExpected = 2.5;  // Min Accuracy for x / y
     const vecType difference = sycl::fabs(vectorValue - vals[i]);
     // using sycl functions to get ulp because it used in kernel
     const vecType differenceExpected = ulpsExpected * get_ulp_sycl(vals[i]);
@@ -95,9 +92,8 @@ check_vector_values_div(sycl::vec<vecType, numOfElems> vector,
  * @brief Helper function to check that vector values for division are correct
  */
 template <typename vecType, int numOfElems>
-typename std::enable_if<!is_sycl_floating_point<vecType>::value, bool>::type
-check_vector_values_div(sycl::vec<vecType, numOfElems> vector,
-                        vecType *vals) {
+typename std::enable_if_t<!is_sycl_scalar_floating_point_v<vecType>, bool>
+check_vector_values_div(sycl::vec<vecType, numOfElems> vector, vecType* vals) {
   return check_vector_values(vector, vals);
 }
 
@@ -123,7 +119,8 @@ bool check_single_vector_op(vectorType vector1, lambdaFunc lambda) {
 
 template <typename sourceType, typename targetType>
 static constexpr bool if_FP_to_non_FP_conv_v =
-    is_sycl_floating_point<sourceType>::value && !is_sycl_floating_point<targetType>::value;
+    is_sycl_scalar_floating_point_v<sourceType> &&
+    !is_sycl_scalar_floating_point_v<targetType>;
 
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> convert_vec(sycl::vec<vecType, N> inputVec) {
@@ -196,7 +193,7 @@ sycl::vec<convertType, N> rtn(sycl::vec<vecType, N> inputVec) {
 // values instead.
 template <typename vecType, int N, typename convertType>
 void handleFPToUnsignedConv(sycl::vec<vecType, N>& inputVec) {
-  if constexpr (is_sycl_floating_point<vecType>::value &&
+  if constexpr (is_sycl_scalar_floating_point_v<vecType> &&
                 std::is_unsigned_v<convertType>) {
     for (size_t i = 0; i < N; ++i) {
       vecType elem = inputVec[i];
@@ -247,7 +244,7 @@ bool check_vector_convert_result_impl(sycl::vec<vecType, N> inputVec,
   sycl::vec<convertType, N> expectedVec;
   switch (mode) {
     case sycl::rounding_mode::automatic:
-      if constexpr (is_sycl_floating_point<vecType>::value) {
+      if constexpr (is_sycl_scalar_floating_point_v<vecType>) {
         expectedVec = rte<vecType, N, convertType>(inputVec);
       } else {
         expectedVec = rtz<vecType, N, convertType>(inputVec);
@@ -291,9 +288,8 @@ bool check_vector_convert_result(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 bool check_vector_convert_modes(sycl::vec<vecType, N> inputVec) {
   bool flag = true;
-  flag &=
-      check_vector_convert_result<vecType, N, convertType,
-                                  sycl::rounding_mode::automatic>(inputVec);
+  flag &= check_vector_convert_result<vecType, N, convertType,
+                                      sycl::rounding_mode::automatic>(inputVec);
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   flag &= check_vector_convert_result<vecType, N, convertType,
                                       sycl::rounding_mode::rte>(inputVec);

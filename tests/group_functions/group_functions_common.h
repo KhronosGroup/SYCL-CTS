@@ -18,6 +18,7 @@
 //
 *******************************************************************************/
 
+#include "../../util/type_traits.h"
 #include "../common/common.h"
 #include "../common/get_group_range.h"
 #include "../common/once_per_unit.h"
@@ -133,8 +134,10 @@ struct custom_type {
 template <typename T>
 inline constexpr uint64_t exact_max = std::numeric_limits<T>::max();
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 template <>
 inline constexpr uint64_t exact_max<sycl::half> = 1ull << 11;
+#endif
 template <>
 inline constexpr uint64_t exact_max<float> = 1ull << 24;
 template <>
@@ -256,8 +259,7 @@ template <typename T>
 inline auto get_op_types() {
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   static const auto types = []() {
-    if constexpr (std::is_floating_point_v<T> ||
-                  std::is_same_v<std::remove_cv_t<T>, sycl::half>) {
+    if constexpr (is_sycl_scalar_floating_point_v<T>) {
       // Bitwise operations are not defined for floating point types.
       return named_type_pack<sycl::plus<T>, sycl::multiplies<T>,
                              sycl::logical_and<T>, sycl::logical_or<T>,

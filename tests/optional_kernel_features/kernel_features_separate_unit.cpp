@@ -15,6 +15,7 @@ template <typename T, sycl::aspect aspect>
 [[sycl::device_has(aspect)]] SYCL_EXTERNAL void
 use_feature_function_external_decorated(const sycl::accessor<bool, 1>& acc);
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
 template <>
 SYCL_EXTERNAL void
 use_feature_function_external_decorated<sycl::half, sycl::aspect::fp16>(
@@ -25,6 +26,7 @@ use_feature_function_external_decorated<sycl::half, sycl::aspect::fp16>(
   feature1 += 42;
   acc[0] = (feature1 == feature2);
 }
+#endif
 
 template <>
 SYCL_EXTERNAL void

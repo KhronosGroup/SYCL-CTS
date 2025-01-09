@@ -102,10 +102,12 @@ TEST_CASE("Check is_compatible for kernels with no kernel attributes",
     CHECK(sycl::is_compatible(builtinKernelIds, device));
   }
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
   SECTION("for a kernel that uses `sycl::half`") {
     check_with_optional_features<kernels::kernel_fp16_no_attr_descriptor>(
         device, queue, device.has(sycl::aspect::fp16));
   }
+#endif
 
   SECTION("for a kernel that uses `double`") {
     check_with_optional_features<kernels::kernel_fp64_no_attr_descriptor>(
@@ -204,10 +206,12 @@ TEST_CASE(
   const sycl::device device = sycl_cts::util::get_cts_object::device();
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
   SECTION("for a kernel that uses `sycl::half`") {
     check_with_optional_features<kernels::kernel_fp16_descriptor>(
         device, queue, device.has(sycl::aspect::fp16));
   }
+#endif
 
   SECTION("for a kernel that uses `double`") {
     check_with_optional_features<kernels::kernel_fp64_descriptor>(

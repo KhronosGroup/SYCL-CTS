@@ -83,7 +83,9 @@ class TEST_NAME : public util::test_base {
                                            "size_t");
 
       // SYCL Floating Point Data Types
+#if SYCL_CTS_ENABLE_HALF_TESTS
       check_type_min_size_sign_log<sycl::half>(log, 2, true, "sycl::half");
+#endif
       check_type_min_size_sign_log<float>(log, 4, true, "float");
       check_type_min_size_sign_log<double>(log, 8, true, "double");
 
@@ -140,6 +142,7 @@ class TEST_NAME : public util::test_base {
           });
         });
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
         if (device_supports_fp16) {
           myQueue.submit([&](sycl::handler &cgh) {
             auto accSignResult =
@@ -157,6 +160,7 @@ class TEST_NAME : public util::test_base {
             });
           });
         }
+#endif
 
         if (device_supports_fp64) {
           myQueue
@@ -220,9 +224,11 @@ class TEST_NAME : public util::test_base {
         FAIL(log, errorStr + "sign: sycl::byte");
       }
 #endif
+#if SYCL_CTS_ENABLE_HALF_TESTS
       if (!signResults[12] && device_supports_fp16) {
         FAIL(log, errorStr + "sign: sycl::half");
       }
+#endif
       if (!signResults[13]) {
         FAIL(log, errorStr + "sign: float");
       }
@@ -272,9 +278,11 @@ class TEST_NAME : public util::test_base {
         FAIL(log, errorStr + "size: sycl::byte");
       }
 #endif
+#if SYCL_CTS_ENABLE_HALF_TESTS
       if (!sizeResults[13] && device_supports_fp16) {
         FAIL(log, errorStr + "size: sycl::half");
       }
+#endif
       if (!sizeResults[14]) {
         FAIL(log, errorStr + "size: float");
       }
@@ -285,11 +293,13 @@ class TEST_NAME : public util::test_base {
       myQueue.wait_and_throw();
     }
 
+#if SYCL_CTS_ENABLE_HALF_TESTS
     // Check sycl::half limits specialization
     {
       INFO("Check that std::numeric_limits is specialized for sycl::half type");
       CHECK(std::numeric_limits<sycl::half>::is_specialized);
     }
+#endif
   }
 };
 
