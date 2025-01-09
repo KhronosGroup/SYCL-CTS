@@ -56,7 +56,7 @@ jobs:
       matrix:
         include:
           - sycl-impl: dpcpp
-            version: ca955e538171cb7b7eb07734dd5c2b958c84901c
+            version: df00dcb50e4ce07dc475dd0bf176acc323e0a240
           - sycl-impl: adaptivecpp
             version: 061e2d6ffe1084021d99f22ac1f16e28c6dab899
     steps:
@@ -114,7 +114,7 @@ jobs:
       matrix:
         include:
           - sycl-impl: dpcpp
-            version: ca955e538171cb7b7eb07734dd5c2b958c84901c
+            version: df00dcb50e4ce07dc475dd0bf176acc323e0a240
           - sycl-impl: adaptivecpp
             version: 061e2d6ffe1084021d99f22ac1f16e28c6dab899
     env:
