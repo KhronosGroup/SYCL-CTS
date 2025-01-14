@@ -72,7 +72,7 @@
         </head>
         <body>
             <center>
-                <img src="https://upload.wikimedia.org/wikipedia/en/1/19/Khronos_Group_SYCL_logo.svg" width="500px"/>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/SYCL_logo.svg" width="500px"/>
                 <h1>SYCL 2020 Conformance Report</h1>
                 <xsl:apply-templates select="Site"/>
                 <h2>Test Results</h2>
