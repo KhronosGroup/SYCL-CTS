@@ -209,8 +209,10 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::is_available, bool>(dev);
     check_get_info_param<sycl::info::device::is_compiler_available, bool>(dev);
     check_get_info_param<sycl::info::device::is_linker_available, bool>(dev);
-    check_get_info_param_backend_specific<sycl::info::device::execution_capabilities,
-                         std::vector<sycl::info::execution_capability>, sycl::backend::opencl>(dev);
+    check_get_info_param_backend_specific<
+        sycl::info::device::execution_capabilities,
+        std::vector<sycl::info::execution_capability>, sycl::backend::opencl>(
+        dev);
     check_get_info_param<sycl::info::device::queue_profiling, bool>(dev);
     check_get_info_param<sycl::info::device::built_in_kernel_ids,
                          std::vector<sycl::kernel_id>>(dev);
