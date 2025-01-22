@@ -1,0 +1,103 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for SYCL extension KHR group interface
+
+This is a test plan for an extension that defines a new interface for groups
+described in
+https://github.com/KhronosGroup/SYCL-Docs/blob/b05db85e72f489ea10d8b87f111624719425614d/adoc/extensions/sycl_khr_group_interface.adoc[sycl_khr_group_interface].
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+The tests should statically check that the `SYCL_KHR_GROUP_INTERFACE` macro is
+defined.
+
+== Tests
+
+The test cases should test the interface of each of the following classes
+defined in the extension:
+
+* `sycl::khr::work_group<Dimensions>`
+* `sycl::khr::sub_group`
+* `sycl::khr::work_item<sycl::khr::work_group<Dimensions>>`
+* `sycl::khr::work_item<sycl::khr::sub_group>`
+
+These test cases should run ND-range kernels with `Dimensions` equal to 1, 2,
+and 3.
+
+=== Test description
+
+==== `work_group<Dimensions>` class
+
+In the kernel scope, do the following:
+
+* Define a `sycl::khr::work_group<Dimensions>` named `work_group` using `it.get_group()`.
+* Define a `sycl::group<Dimensions>` named `group` using `it.get_group()`.
+* Check that `work_group.id()` returns a `work_group<Dimensions>::id_type`.
+* Check that `work_group.id() == group.get_group_id()`.
+* Check that `work_group.linear_id()` returns a `work_group<Dimensions>::linear_id_type`.
+* Check that `work_group.linear_id() == group.get_group_linear_id()`.
+* Check that `work_group.range()` returns a `work_group<Dimensions>::range_type`.
+* Check that `work_group.range() == group.get_group_range()`.
+* Check that `work_group.size()` returns a `work_group<Dimensions>::size_type`.
+* Check that `work_group.size() == group.get_local_linear_range()`.
+* Check that `sycl::khr::leader_of(work_group)` returns a `bool`.
+* Check that `sycl::khr::leader_of(work_group) == group.leader()`.
+
+==== `sub_group` class
+
+In the kernel scope, do the following:
+
+* Define a `sycl::khr::sub_group` name `sub_group` using `it.get_sub_group()`.
+* Define a `sycl::sub_group` name `group` using `it.get_sub_group()`.
+* Check that `sub_group.id()` returns a `sub_group::id_type`.
+* Check that `sub_group.id() == group.get_group_id()`.
+* Check that `sub_group.linear_id()` returns a `sub_group::linear_id_type`.
+* Check that `sub_group.linear_id() == group.get_group_linear_id()`.
+* Check that `sub_group.range()` returns a `sub_group::range_type`.
+* Check that `sub_group.range() == group.get_group_range()`.
+* Check that `sub_group.size()` returns a `sub_group::size_type`.
+* Check that `sub_group.size() == group.get_local_range()[0]`.
+* Check that `sub_group.max_size()` returns a `sub_group::size_type`.
+* Check that `sub_group.max_size() == group.get_max_local_range()[0]`.
+* Check that `sycl::khr::leader_of(sub_group)` returns a `bool`.
+* Check that `sycl::khr::leader_of(sub_group) == group.leader()`.
+
+==== `work_item<work_group<Dimensions>>` class
+
+In the kernel scope, do the following:
+
+* Define a `sycl::group<Dimensions>` named `group` using `it.get_group()`.
+* Define a `sycl::khr::work_group<Dimensions>` named `work_group` using `it.get_group()`.
+* Define a `sycl::khr::work_item<sycl::khr::work_group<Dimensions>>` named `item` using `sycl::khr::get_item(work_group)`.
+* Check that `item.id()` returns a `work_item<>::id_type`.
+* Check that `item.id() == group.get_local_id()`.
+* Check that `item.linear_id()` returns a `work_item<>::linear_id_type`.
+* Check that `item.linear_id() == group.get_local_linear_id()`.
+* Check that `item.range()` returns a `work_item<>::range_type`.
+* Check that `item.range() == group.get_local_range()`.
+* Check that `item.size()` returns a `work_item<>::size_type`.
+* Check that `item.size() == 1`.
+
+==== `work_item<sub_group>` class
+
+In the kernel scope, do the following:
+
+* Define a `sycl::sub_group` named `group` using `it.get_sub_group()`.
+* Define a `sycl::khr::sub_group` named `sub_group` using `it.get_sub_group()`.
+* Define a `sycl::khr::work_item<sycl::khr::sub_group>` named `item` using `sycl::khr::get_item(sub_group)`.
+* Check that `item.id()` returns a `work_item<>::id_type`.
+* Check that `item.id() == group.get_local_id()`.
+* Check that `item.linear_id()` returns a `work_item<>::linear_id_type`.
+* Check that `item.linear_id() == group.get_local_linear_id()`.
+* Check that `item.range()` returns a `work_item<>::range_type`.
+* Check that `item.range() == group.get_local_range()`.
+* Check that `item.size()` returns a `work_item<>::size_type`.
+* Check that `item.size() == 1`.
