@@ -39,7 +39,6 @@ class run_linearization_tests {
  public:
   void operator()(const std::string &type_name) {
     auto queue = once_per_unit::get_queue();
-    auto r = util::get_cts_object::range<dims>::get(1, 1, 1);
 
     SECTION(get_section_name<dims>(type_name, "")) {
       constexpr size_t local_range_size = 2;

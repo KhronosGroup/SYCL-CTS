@@ -110,7 +110,7 @@ void check_props(sycl::queue& queue) {
 
 void check_in_order_throws(sycl::queue& queue) {
   auto action = [&] {
-    auto get_prop =
+    (void)
         queue.template get_property<sycl::property::queue::enable_profiling>();
   };
   CHECK_THROWS_MATCHES(action(), sycl::exception,
@@ -119,8 +119,7 @@ void check_in_order_throws(sycl::queue& queue) {
 
 void check_enable_profiling_throws(sycl::queue& queue) {
   auto action = [&] {
-    auto get_prop =
-        queue.template get_property<sycl::property::queue::in_order>();
+    (void)queue.template get_property<sycl::property::queue::in_order>();
   };
   CHECK_THROWS_MATCHES(action(), sycl::exception,
                        sycl_cts::util::equals_exception(sycl::errc::invalid));

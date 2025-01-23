@@ -37,7 +37,6 @@ void test_placeholder_buffer_constructor(const std::string& type_name,
                                          const std::string& access_mode_name,
                                          const std::string& target_name) {
   constexpr int buf_dims = (0 == Dimension) ? 1 : Dimension;
-  auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
 
   auto section_name =
       get_section_name<Dimension>(type_name, access_mode_name, target_name,
