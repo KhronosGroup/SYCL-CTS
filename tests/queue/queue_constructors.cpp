@@ -263,6 +263,7 @@ TEST_CASE("Check that queue constructors use the correct context", "[queue]") {
   sycl::context defaultContext = sycl::queue{}.get_context();
 
   // Check that a default-constructed context is not the default context.
+  // recall, explicitly created contexts should not equal the default one.
   CHECK(syclContext != defaultContext);
 
   // Default context constructors
