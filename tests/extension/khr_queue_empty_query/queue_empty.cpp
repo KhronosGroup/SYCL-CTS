@@ -19,9 +19,7 @@
 *******************************************************************************/
 
 #include "../../common/common.h"
-#include <atomic>
 #include <future>
-#include <iostream>
 
 namespace queue_empty_query::tests {
 
