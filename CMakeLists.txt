@@ -114,6 +114,10 @@ add_cts_option(SYCL_CTS_ENABLE_KHR_DEFAULT_CONTEXT_TESTS
     "Enable extension Khronos default_context tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_KHR_FREE_FUNCTION_COMMANDS
+    "Enable extension Khronos free_function_commands tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+
 # TODO: Deprecated - remove
 add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG
     "Enable debug-level logs (deprecated)" OFF)
