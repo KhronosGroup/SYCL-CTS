@@ -25,15 +25,15 @@
 namespace default_context::tests {
 
 TEST_CASE(
-    "the default context extension defines the SYCL_KHR_QUEUE_EMPTY_QUERY macro",
+    "the default context extension defines the SYCL_KHR_QUEUE_EMPTY_QUERY "
+    "macro",
     "[khr_queue_empty_query]") {
 #ifndef SYCL_KHR_QUEUE_EMPTY_QUERY
   static_assert(false, "SYCL_KHR_QUEUE_EMPTY_QUERY is not defined");
 #endif
 }
 
-TEST_CASE("queue are empty by default",
-          "[khr_queue_empty_query]") {
+TEST_CASE("queue are empty by default", "[khr_queue_empty_query]") {
   sycl::queue q{};
   CHECK(q.khr_empty());
 }
@@ -43,7 +43,7 @@ TEST_CASE("queue are not empty when a command have been enqueed",
   sycl::queue q{};
   std::atomic_bool start = false;
 
-  auto e1 = q.submit([&](sycl::handler &cgh) {
+  auto e1 = q.submit([&](sycl::handler& cgh) {
     cgh.host_task([&]() {
       // To avoid the loop being optimized away
       int iter = 0;
