@@ -45,9 +45,7 @@ TEST_CASE("queue are not empty when a command have been enqueed",
   std::promise<void> promise;
 
   auto e1 = q.submit([&](sycl::handler& cgh) {
-    cgh.host_task([&]() {
-      promise.get_future().wait();
-    });
+    cgh.host_task([&]() { promise.get_future().wait(); });
   });
   CHECK(!q.khr_empty());
   auto e2 = q.single_task(e1, [=] {});
