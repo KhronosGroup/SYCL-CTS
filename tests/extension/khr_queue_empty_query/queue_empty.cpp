@@ -46,7 +46,7 @@ TEST_CASE("queue are not empty when a command have been enqueed",
   auto e1 = q.submit([&](sycl::handler& cgh) {
     cgh.host_task([&]() {
       // To avoid the loop being optimized away
-      int iter = 0;
+      unsigned int iter = 0;
       while (start != true) {
         iter++;
       }
