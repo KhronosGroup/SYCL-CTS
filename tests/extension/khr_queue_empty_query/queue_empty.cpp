@@ -22,7 +22,7 @@
 #include <atomic>
 #include <iostream>
 
-namespace default_context::tests {
+namespace queue_empty_query::tests {
 
 TEST_CASE(
     "the default context extension defines the SYCL_KHR_QUEUE_EMPTY_QUERY "
