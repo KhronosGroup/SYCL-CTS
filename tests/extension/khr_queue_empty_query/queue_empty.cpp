@@ -61,4 +61,4 @@ TEST_CASE("queue are not empty when a command have been enqueed",
   CHECK(q.khr_empty());
 }
 
-}  // namespace default_context::tests
+}  // namespace queue_empty_query::tests
