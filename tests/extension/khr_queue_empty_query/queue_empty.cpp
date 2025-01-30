@@ -20,6 +20,7 @@
 
 #include "../../common/common.h"
 #include <atomic>
+#include <future>
 #include <iostream>
 
 namespace queue_empty_query::tests {
@@ -41,22 +42,17 @@ TEST_CASE("queue are empty by default", "[khr_queue_empty_query]") {
 TEST_CASE("queue are not empty when a command have been enqueed",
           "[khr_queue_empty_query]") {
   sycl::queue q{};
-  std::atomic_bool start = false;
+  std::promise<void> promise;
 
   auto e1 = q.submit([&](sycl::handler& cgh) {
     cgh.host_task([&]() {
-      // To avoid the loop being optimized away
-      int iter = 0;
-      while (start != true) {
-        iter++;
-      }
-      std::cout << iter << std::endl;
+      promise.get_future().wait();
     });
   });
   CHECK(!q.khr_empty());
   auto e2 = q.single_task(e1, [=] {});
   CHECK(!q.khr_empty());
-  start = true;
+  promise.set_value();
   e2.wait();
   CHECK(q.khr_empty());
 }
