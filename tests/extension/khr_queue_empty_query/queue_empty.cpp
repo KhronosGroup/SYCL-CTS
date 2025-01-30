@@ -25,8 +25,8 @@
 namespace queue_empty_query::tests {
 
 TEST_CASE(
-    "the default context extension defines the SYCL_KHR_QUEUE_EMPTY_QUERY "
-    "macro",
+    "the queue empty query extension defines the "
+    "SYCL_KHR_QUEUE_EMPTY_QUERY macro",
     "[khr_queue_empty_query]") {
 #ifndef SYCL_KHR_QUEUE_EMPTY_QUERY
   static_assert(false, "SYCL_KHR_QUEUE_EMPTY_QUERY is not defined");
