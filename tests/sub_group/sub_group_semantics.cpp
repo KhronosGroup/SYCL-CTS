@@ -120,8 +120,8 @@ TEST_CASE("sub_group by-value semantics", "[sub_group]") {
 TEST_CASE("Check sycl::sub_group equality", "[sub_group]") {
   size_t code_count =
       to_integral(common_by_value_semantics::current_check::size);
-  bool result[code_count];
-  std::fill(result, result + code_count, false);
+  // Avoid the std::vector<bool>
+  std::vector<char> result(code_count, false);
   {
     sycl::buffer<bool, 1> res_buf(result, sycl::range(code_count));
     auto queue = once_per_unit::get_queue();
