@@ -123,7 +123,7 @@ TEST_CASE("Check sycl::sub_group equality", "[sub_group]") {
   // Avoid the std::vector<bool>
   std::vector<char> result(code_count, false);
   {
-    sycl::buffer<bool, 1> res_buf(result, sycl::range(code_count));
+    sycl::buffer<char, 1> res_buf(result, sycl::range(code_count));
     auto queue = once_per_unit::get_queue();
     queue
         .submit([&](sycl::handler& cgh) {
