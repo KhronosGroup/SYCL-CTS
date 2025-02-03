@@ -16,7 +16,7 @@ is selected on the CTS command line.
 
 === Feature test macro
 
-All of the tests should use `#ifdef SYCL_EXT_KHR_FREE_FUNCTION_COMMANDS` so they can be skipped
+All of the tests should use `#ifdef SYCL_KHR_FREE_FUNCTION_COMMANDS` so they can be skipped
 if feature is not supported.
 
 == Tests
@@ -385,8 +385,7 @@ void mem_advise(sycl::queue q, void* ptr, size_t numBytes, int advice);
 
 === Command and event barriers
 
-These tests should use `#ifdef SYCL_EXT_ONEAPI_ENQUEUE_BARRIER` so they can be skipped
-if feature is not supported. For each barrier function, enqueue some commands before and after enqueuing the barrier. Assert that the commands enqueued after the barrier do not execute until those enqueued before the barrier have completed. The barrier functions are the following:
+For each barrier function, enqueue some commands before and after enqueuing the barrier. Assert that the commands enqueued after the barrier do not execute until those enqueued before the barrier have completed. The barrier functions are the following:
 
 ==== command_barrier
 
