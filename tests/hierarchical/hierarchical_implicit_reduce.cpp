@@ -95,7 +95,7 @@ T reduce(T input[inputSize], DeviceSelector* selector) {
           });
 
           /* Sum items in each work group */
-          int groupId = group.get_linear_id();
+          int groupId = group.get_group_linear_id();
           groupSumsPtr[groupId] = T{};
           for (int i = 0; i < localItemsTotal; i++) {
             groupSumsPtr[groupId].increment(localSums[i]);

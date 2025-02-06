@@ -53,10 +53,10 @@ class legacy_input_iterator_requirement {
       m_test_error_codes.add_errors(legacy_iterator_res.second);
     }
 
-    auto equal_comparable_res =
+    auto equality_comparable_res =
         equality_comparable_requirement{}.is_satisfied_for<It>(valid_iterator);
-    if (!legacy_iterator_res.first) {
-      m_test_error_codes.add_errors(legacy_iterator_res.second);
+    if (!equality_comparable_res.first) {
+      m_test_error_codes.add_errors(equality_comparable_res.second);
     }
 
     constexpr bool is_dereferenceable = is_dereferenceable_v<It>;
@@ -86,8 +86,8 @@ class legacy_input_iterator_requirement {
     }
 
     if constexpr (can_pre_increment && has_not_equal_operator) {
-      It j{};
-      It i{};
+      It j = valid_iterator;
+      It i = valid_iterator;
       // As "Legacy Iterator" implements increment operator we can get two not
       // equal iterators
       ++i;

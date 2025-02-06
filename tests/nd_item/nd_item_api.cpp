@@ -143,7 +143,7 @@ class kernel_nd_item {
     /* test group ID */
     sycl::group<dimensions> group = myitem.get_group();
     for (int i = 0; i < dimensions; ++i) {
-      group_id_res &= myitem.get_group(i) == group.get_id(i);
+      group_id_res &= myitem.get_group(i) == group.get_group_id(i);
     }
 
     /* test range */
@@ -165,7 +165,7 @@ class kernel_nd_item {
 
     for (int i = 0; i < dimensions; ++i) {
       size_t ratio = global_id.get(i) / localRange.get(i);
-      range_res &= group.get_id(i) == ratio;
+      range_res &= group.get_group_id(i) == ratio;
     }
 
     /* test number of groups */
@@ -207,7 +207,8 @@ class kernel_nd_item {
     size_t glid = myitem.get_global_linear_id();
     size_t llid = myitem.get_local_linear_id();
     size_t grlid = myitem.get_group_linear_id();
-    size_t groupIndex = getIndex(group.get_id(), myitem.get_group_range());
+    size_t groupIndex =
+        getIndex(group.get_group_id(), myitem.get_group_range());
 
     linear_id_res &= glid == globalIndex;
     linear_id_res &= llid == localIndex;

@@ -745,9 +745,9 @@ void run_separate_lambda_with_accessor(const bool is_exception_expected,
         .wait();
   };
 
-  execute_tasks_and_check_exception(is_exception_expected, errc_expected, queue,
-                                    "separate lambda", single_task_action,
-                                    parallel_for_action, parallel_for_action);
+  execute_tasks_and_check_exception(
+      is_exception_expected, errc_expected, queue, "separate lambda",
+      single_task_action, parallel_for_action, parallel_for_wg_action);
 }
 
 template <typename Functor>
@@ -880,9 +880,9 @@ void run_functor_with_accessor(const bool is_exception_expected,
         .wait();
   };
 
-  execute_tasks_and_check_exception(is_exception_expected, errc_expected, queue,
-                                    "functor", single_task_action,
-                                    parallel_for_action, parallel_for_action);
+  execute_tasks_and_check_exception(
+      is_exception_expected, errc_expected, queue, "functor",
+      single_task_action, parallel_for_action, parallel_for_wg_action);
 }
 
 #define NO_ATTRIBUTE   /*no attribute*/
