@@ -30,11 +30,15 @@ if feature is not supported.
 1. Positive case. This test can be performed by seting default device, calling from a host thread the function sycl::ext::oneapi::experimental::this_thread::get_current_device 
 and compare function output with the default device which was set earlier, check thread ID 
 
-2. Negative case. Implement the same as positive but call function from kernel(not host) code. Use XFAIL to detect compilation error
+2. Negative case 1. Implement the same as positive but call function from kernel(not host) code. Use XFAIL to detect compilation error
+
+3. Negative case 2. Create async task and call the function sycl::ext::oneapi::experimental::this_thread::get_current_device from async task, Use XFAIL to detect compilation error.
 
 === Function `set_current_device`
 
 1. Positive case. This test can be performed by checking default device, calling from a host thread the function sycl::ext::oneapi::experimental::this_thread::set_current_device,
 getting default device and compare it with the previous value, check thread ID 
 
-2. Negative case. Implement the same as positive but call function from kernel(not host) code. Use XFAIL to detect compilation error
+2. Negative case 1. Implement the same as positive but call function from kernel(not host) code. Use XFAIL to detect compilation error
+
+3. Negative case 2. Create async task and call the function sycl::ext::oneapi::experimental::this_thread::set_current_device from async task, Use XFAIL to detect compilation error.
