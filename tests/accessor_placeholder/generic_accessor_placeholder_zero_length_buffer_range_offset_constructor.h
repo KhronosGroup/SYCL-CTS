@@ -37,7 +37,6 @@ template <typename DataT, int Dimension, sycl::access_mode AccessMode,
 void test_placeholder_zero_length_buffser_range_offset_constructor(
     const std::string& type_name, const std::string& access_mode_name,
     const std::string& target_name) {
-  auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
   auto offset = util::get_cts_object::id<Dimension>::get(0, 0, 0);
   auto r_zero = util::get_cts_object::range<Dimension>::get(0, 0, 0);
 

@@ -399,9 +399,6 @@ class check_any_device_has_all_devices_have {
     queue.submit(
         [&](sycl::handler& cgh) { cgh.single_task<k_name>([=]() {}); });
 
-    auto exec_device_has_aspect = [=](auto d) {
-      return d.has(aspect) && sycl::is_compatible<k_name>(d);
-    };
     auto devices = sycl::device::get_devices();
     for (auto d : devices) {
       bool compatible = sycl::is_compatible<k_name>(d);

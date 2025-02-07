@@ -43,6 +43,10 @@ TEST_CASE("event common reference semantics", "[event]") {
 }
 
 TEST_CASE("event common reference semantics, mutation", "[event]") {
+#if SYCL_CTS_COMPILING_WITH_SIMSYCL
+  FAIL("SimSYCL does not implement asynchronous execution.");
+#endif
+
   resolvable_host_event dependent_event;
   resolvable_host_event rhe_t0{{dependent_event.get_sycl_event()}};
 

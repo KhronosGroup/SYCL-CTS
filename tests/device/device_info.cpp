@@ -209,10 +209,12 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::is_available, bool>(dev);
     check_get_info_param<sycl::info::device::is_compiler_available, bool>(dev);
     check_get_info_param<sycl::info::device::is_linker_available, bool>(dev);
+#ifdef SYCL_BACKEND_OPENCL
     check_get_info_param_backend_specific<
         sycl::info::device::execution_capabilities,
         std::vector<sycl::info::execution_capability>, sycl::backend::opencl>(
         dev);
+#endif
     check_get_info_param<sycl::info::device::queue_profiling, bool>(dev);
     check_get_info_param<sycl::info::device::built_in_kernel_ids,
                          std::vector<sycl::kernel_id>>(dev);
@@ -222,9 +224,11 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::name, std::string>(dev);
     check_get_info_param<sycl::info::device::vendor, std::string>(dev);
     check_get_info_param<sycl::info::device::driver_version, std::string>(dev);
+#ifdef SYCL_BACKEND_OPENCL
     check_get_info_param_backend_specific<sycl::info::device::profile,
                                           std::string, sycl::backend::opencl>(
         dev);
+#endif
     check_get_info_param<sycl::info::device::version, std::string>(dev);
     check_get_info_param<sycl::info::device::backend_version, std::string>(dev);
 
@@ -234,9 +238,13 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::extensions,
                          std::vector<std::string>>(dev);
     check_get_info_param<sycl::info::device::printf_buffer_size, size_t>(dev);
+#ifdef SYCL_BACKEND_OPENCL
     check_get_info_param_backend_specific<
         sycl::info::device::preferred_interop_user_sync, bool,
         sycl::backend::opencl>(dev);
+#endif
+
+#if !SYCL_CTS_COMPILING_WITH_SIMSYCL
     auto SupportedProperties =
         dev.get_info<sycl::info::device::partition_properties>();
     if (std::find(SupportedProperties.begin(), SupportedProperties.end(),
@@ -248,6 +256,10 @@ TEST_CASE("device info", "[device]") {
       check_get_info_param<sycl::info::device::parent_device, sycl::device>(
           sub_device_partition_equal[0]);
     }
+#else
+    FAIL_CHECK("SimSYCL does not implement sub-devices yet");
+#endif
+
     check_get_info_param<sycl::info::device::partition_max_sub_devices,
                          uint32_t>(dev);
     check_get_info_param<sycl::info::device::partition_properties,
