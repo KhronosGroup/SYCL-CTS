@@ -25,20 +25,11 @@ can be selected on the CTS command line.
 All of the tests should use `#ifdef SYCL_EXT_ONEAPI_CURRENT_DEVICE` so they can be skipped
 if feature is not supported.
 
-=== Function `get_current_device`
+=== Functions `get_current_device` and `set_current_device`
 
-1. Positive case. This test can be performed by seting default device, calling from a host thread the function sycl::ext::oneapi::experimental::this_thread::get_current_device 
-and compare function output with the default device which was set earlier, check thread ID 
-
-2. Negative case 1. Implement the same as positive but call function from kernel(not host) code. Use XFAIL to detect compilation error
-
-3. Negative case 2. Create async task and call the function sycl::ext::oneapi::experimental::this_thread::get_current_device from async task, Use XFAIL to detect compilation error.
-
-=== Function `set_current_device`
-
-1. Positive case. This test can be performed by checking default device, calling from a host thread the function sycl::ext::oneapi::experimental::this_thread::set_current_device,
-getting default device and compare it with the previous value, check thread ID 
-
-2. Negative case 1. Implement the same as positive but call function from kernel(not host) code. Use XFAIL to detect compilation error
-
-3. Negative case 2. Create async task and call the function sycl::ext::oneapi::experimental::this_thread::set_current_device from async task, Use XFAIL to detect compilation error.
+1. Get default device name from environment variable. Call `get_current_device()` but do not call `set_current_device`.
+Compare value stored in env variable and returned by `get_current_device()` device names.
+2. Call `set_current_device(d)` then call `get_current_device()` from the same thread.
+Compare return value of `get_current_device()` with `d`.
+3. Create multiple threads. Each thread calls the following in a loop: `set_current_device(d)` followed by `get_current_device()`. Each thread uses a different device `d` (if the system has more than one device). 
+Make sure the call to get_device returns the same device that was set in `set_current_device(d)`. This tests that each thread is keeping a separate copy of the "current device".
