@@ -61,8 +61,7 @@ class bit_cast_test {
                 FromType from;
                 value_operations::assign(from, expected_val);
                 auto to = sycl::bit_cast<ToType>(from);
-                result_acc[0] =
-                    sycl::detail::memcmp(&to, &from, sizeof(from)) == 0;
+                result_acc[0] = memcmp(&to, &from, sizeof(from)) == 0;
                 if constexpr (!std::is_array_v<FromType>) {
                   from = sycl::bit_cast<FromType>(to);
                   result_acc[1] = value_operations::are_equal(from, expected);
