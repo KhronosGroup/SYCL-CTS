@@ -66,8 +66,8 @@ if(DPCPP_SYCL2020_CONFORMANT_APIS)
 endif()
 
 cmake_dependent_option(DPCPP_ENABLE_PREVIEW_CHANGES
-	"Enable preview changes for DPC++ Compiler" ON
-	"DPCPP_SYCL2020_CONFORMANT_APIS" OFF)
+  "Enable preview changes for DPC++ Compiler" ON
+  "DPCPP_SYCL2020_CONFORMANT_APIS" OFF)
 if(DPCPP_ENABLE_PREVIEW_CHANGES)
     set(CMAKE_CXX_FLAGS "-fpreview-breaking-changes ${CMAKE_CXX_FLAGS}")
 endif()
