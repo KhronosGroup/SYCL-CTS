@@ -18,21 +18,17 @@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
 // clang-format on
 
-// FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #include "accessor_default_values.h"
 
 using namespace accessor_default_values_test;
 using namespace accessor_tests_common;
-#endif
 
 namespace accessor_default_values_test_core {
 using namespace sycl_cts;
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
-(CTS_TYPE_NAME + " Accessors constructor default values test", "[accessor]",
- test_combinations)({
+TEMPLATE_LIST_TEST_CASE(CTS_TYPE_NAME + " Accessors constructor default values test", "[accessor]",
+ test_combinations){
   auto queue = sycl_cts::util::get_cts_object::queue();
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
@@ -54,6 +50,6 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 #else
   run_tests<CTS_TYPE, TestType>{}(CTS_TYPE_NAME);
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
-});
+}
 
 }  // namespace accessor_default_values_test_core

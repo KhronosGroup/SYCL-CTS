@@ -17,21 +17,17 @@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
 // clang-format on
 
-// FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #include "accessor_exceptions.h"
 
 using namespace accessor_exceptions_test;
 using namespace accessor_tests_common;
-#endif
 
 namespace accessor_exceptions_test_core {
 using namespace sycl_cts;
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
-(CTS_TYPE_NAME + " Generic sycl::accessor constructor exceptions test.",
- "[accessor]", test_combinations)({
+TEMPLATE_LIST_TEST_CASE(CTS_TYPE_NAME + " Generic sycl::accessor constructor exceptions test.",
+ "[accessor]", test_combinations){
   auto queue = sycl_cts::util::get_cts_object::queue();
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
@@ -54,11 +50,10 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 #else
   run_tests_with_types<CTS_TYPE, generic_accessor, TestType>{}(CTS_TYPE_NAME);
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
-});
+}
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
-(CTS_TYPE_NAME + " sycl::local_accessor constructor exceptions test.",
- "[accessor]", test_combinations)({
+TEMPLATE_LIST_TEST_CASE(CTS_TYPE_NAME + " sycl::local_accessor constructor exceptions test.",
+ "[accessor]", test_combinations){
   auto queue = sycl_cts::util::get_cts_object::queue();
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
@@ -81,11 +76,10 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 #else
   run_tests_with_types<CTS_TYPE, local_accessor, TestType>{}(CTS_TYPE_NAME);
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
-});
+}
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
-(CTS_TYPE_NAME + " sycl::host_accessor constructor exceptions test.",
- "[accessor]", test_combinations)({
+TEMPLATE_LIST_TEST_CASE(CTS_TYPE_NAME + " sycl::host_accessor constructor exceptions test.",
+ "[accessor]", test_combinations){
   auto queue = sycl_cts::util::get_cts_object::queue();
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
@@ -108,6 +102,6 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 #else
   run_tests_with_types<CTS_TYPE, host_accessor, TestType>{}(CTS_TYPE_NAME);
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
-});
+}
 
 }  // namespace accessor_exceptions_test_core

@@ -126,7 +126,7 @@ class test_exception_for_local_acc {
             .submit([&](sycl::handler& cgh) {
               sycl::accessor dest_acc{dest, cgh, sycl::write_only};
               sycl::local_accessor<DataT, Dimension> local_acc(range, cgh);
-              cgh.single_task<kname>([=](sycl::kernel_handler cgh) {
+              cgh.single_task<kname>([=]() {
                 // Some interactions to avoid device code optimisation.
                 dest_acc[0] = local_acc.empty();
               });

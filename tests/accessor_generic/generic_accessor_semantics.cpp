@@ -20,9 +20,7 @@
 
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "../common/semantics_reference.h"
-#endif
 
 template <int Dimensions>
 struct storage {
@@ -171,8 +169,7 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
   }
 });
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("generic accessor common reference semantics (kernel)", "[accessor]")({
+TEST_CASE("generic accessor common reference semantics (kernel)", "[accessor]"){
   sycl::buffer<int> buffer{sycl::range<1>{1}};
   using type =
       sycl::accessor<int, 1, sycl::access_mode::read_write,
@@ -184,14 +181,13 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
                 cgh);
       },
       "accessor<int, 1, access_mode::read_write, target::device>");
-});
+}
 
 template <int TestCase>
 class kernel_name_generic;
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("generic accessor common reference semantics, mutation (kernel)",
- "[accessor]")({
+TEST_CASE("generic accessor common reference semantics, mutation (kernel)",
+ "[accessor]"){
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   int result = 0;
 
@@ -255,4 +251,4 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
     }
     CHECK(new_val == result);
   }
-});
+};

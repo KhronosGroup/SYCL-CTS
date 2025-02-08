@@ -5,7 +5,6 @@ device_selector
 event
 exceptions
 group
-group_functions
 h_item
 handler
 hierarchical
@@ -16,15 +15,12 @@ kernel
 kernel_args
 kernel_bundle
 marray_basic
-marray_pre_post
 math_builtin_api
 multi_ptr
 nd_item
 optional_kernel_features
 property
-queue
 sampler
-scalars
 spec_constants
 stream
 usm

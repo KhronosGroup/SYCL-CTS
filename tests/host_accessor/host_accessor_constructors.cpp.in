@@ -27,22 +27,18 @@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
 // clang-format on
 
-// FIXME: re-enable when sycl::host_accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "../accessor_basic/accessor_common.h"
 #include "host_accessor_constructors.h"
 
 using namespace host_accessor_constructors;
-#endif
 
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
 namespace host_accessor_constructors_core {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
-(CTS_TYPE_NAME + " sycl::host_accessor constructors.", "[accessor]",
- test_combinations)({
+TEMPLATE_LIST_TEST_CASE(CTS_TYPE_NAME + " sycl::host_accessor constructors.", "[accessor]",
+ test_combinations){
   auto queue = sycl_cts::util::get_cts_object::queue();
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
@@ -65,6 +61,6 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 #else
   run_host_constructors_test<CTS_TYPE, TestType>{}(CTS_TYPE_NAME);
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
-});
+}
 
 }  // namespace host_accessor_constructors_core

@@ -115,10 +115,9 @@ inline auto fill_errors(std::tuple<ConstructAcc, GetIterator> ftuple) {
   return errors;
 }
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("LegacyRandomAccessIterator requirement verification for sycl::accessor "
+TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::accessor "
  "iterator",
- "[accessor]")({
+ "[accessor]"){
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -129,12 +128,11 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
       [](auto& dummy_acc) { return dummy_acc.begin(); });
   auto errors = fill_errors(t);
   print_errors(errors);
-});
+}
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("LegacyRandomAccessIterator requirement verification for sycl::accessor "
+TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::accessor "
  "const iterator",
- "[accessor]")({
+ "[accessor]"){
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -145,12 +143,11 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
       [](auto& dummy_acc) { return dummy_acc.cbegin(); });
   auto errors = fill_errors(t);
   print_errors(errors);
-});
+}
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("LegacyRandomAccessIterator requirement verification for sycl::accessor "
+TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::accessor "
  "reverse iterator",
- "[accessor]")({
+ "[accessor]"){
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -161,12 +158,11 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
       [](auto& dummy_acc) { return dummy_acc.rbegin(); });
   auto errors = fill_errors(t);
   print_errors(errors);
-});
+}
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("LegacyRandomAccessIterator requirement verification for sycl::accessor "
+TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::accessor "
  "const reverse iterator",
- "[accessor]")({
+ "[accessor]"){
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -177,12 +173,11 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
       [](auto& dummy_acc) { return dummy_acc.crbegin(); });
   auto errors = fill_errors(t);
   print_errors(errors);
-});
+}
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
+TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
  "iterator",
- "[accessor]")({
+ "[accessor]"){
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -194,12 +189,11 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
       [](auto& dummy_acc) { return dummy_acc.begin(); });
   auto errors = fill_errors(t);
   print_errors(errors);
-});
+}
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
+TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
  "const iterator",
- "[accessor]")({
+ "[accessor]"){
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -211,12 +205,11 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
       [](auto& dummy_acc) { return dummy_acc.cbegin(); });
   auto errors = fill_errors(t);
   print_errors(errors);
-});
+}
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
+TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
  "reverse iterator",
- "[accessor]")({
+ "[accessor]"){
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -228,12 +221,11 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
       [](auto& dummy_acc) { return dummy_acc.rbegin(); });
   auto errors = fill_errors(t);
   print_errors(errors);
-});
+}
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
+TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
  "const reverse iterator",
- "[accessor]")({
+ "[accessor]"){
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -245,12 +237,11 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
       [](auto& dummy_acc) { return dummy_acc.crbegin(); });
   auto errors = fill_errors(t);
   print_errors(errors);
-});
+}
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
+TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
  "iterator",
- "[accessor]")({
+ "[accessor]"){
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -262,12 +253,11 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
       [](auto& dummy_acc) { return dummy_acc.begin(); });
   auto errors = fill_errors(t);
   print_errors(errors);
-});
+}
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
+TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
  "const iterator",
- "[accessor]")({
+ "[accessor]"){
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -279,12 +269,11 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
       [](auto& dummy_acc) { return dummy_acc.cbegin(); });
   auto errors = fill_errors(t);
   print_errors(errors);
-});
+}
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
+TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
  "reverse iterator",
- "[accessor]")({
+ "[accessor]"){
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -296,12 +285,11 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
       [](auto& dummy_acc) { return dummy_acc.rbegin(); });
   auto errors = fill_errors(t);
   print_errors(errors);
-});
+}
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
+TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
  "const reverse iterator",
- "[accessor]")({
+ "[accessor]"){
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -313,6 +301,6 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
       [](auto& dummy_acc) { return dummy_acc.crbegin(); });
   auto errors = fill_errors(t);
   print_errors(errors);
-});
+}
 
 }  // namespace accessor_iterator_requirement
