@@ -20,9 +20,7 @@
 
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "../common/semantics_reference.h"
-#endif
 
 template <int Dimensions>
 struct storage {
