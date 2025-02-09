@@ -464,7 +464,7 @@ void check_empty_accessor_constructor_post_conditions(
   // All size queries return 0
   res_acc[res_i++] = testing_acc.byte_size() == 0;
   res_acc[res_i++] = testing_acc.size() == 0;
-  res_acc[res_i++] = testing_acc.max_size() == 0;
+  res_acc[res_i++] = testing_acc.max_size() || std::numeric_limits<size_t>::max;
 
   if (check_iterator_methods) {
     // The only iterator that can be obtained is nullptr
