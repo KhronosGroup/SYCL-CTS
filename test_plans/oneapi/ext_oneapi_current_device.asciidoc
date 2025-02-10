@@ -27,8 +27,7 @@ if feature is not supported.
 
 === Functions `get_current_device` and `set_current_device`
 
-1. Get default device. Call `get_current_device()` but do not call `set_current_device`.
-Compare value stored in env variable and returned by `get_current_device()` device names.
+1. Get default device d1. Call `get_current_device()` but do not call `set_current_device`. Compare d1 and returned by `get_current_device()` devices.
 2. Call `set_current_device(d)` then call `get_current_device()` from the same thread.
 Compare return value of `get_current_device()` with `d`.
 3. Create two threads. Thread 1 calls `set_current_device(d1)` and sends signal to thread 2, waits signals from thread 2, calls `get_current_device()` and checks that got d1.
