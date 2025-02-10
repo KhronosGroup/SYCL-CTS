@@ -51,6 +51,19 @@ In the kernel scope, do the following:
 * Check that `sycl::khr::leader_of(work_group)` returns a `bool`.
 * Check that `sycl::khr::leader_of(work_group) == group.leader()`.
 
+Also in the kernel scope, with a `#if __cplusplus >= 202302L` macro guard, do the following:
+
+* Check that `work_group.extents()` returns a `work_group<Dimensions>::extents_type`.
+* Check that `work_group.extents() == std::dextents<std::size_t, Dimensions>(group.get_local_range()[0], ...)`.
+* Check that `work_group.extent(0)` returns a `work_group<Dimensions>::extents_type::index_type`.
+* For each dimension, `d`, check that `work_group.extent(d) == work_group.extents().extent(d)` 
+* Check that `work_group<Dimensions>::rank()` returns a `work_group<Dimensions>::extents_type::rank_type`.
+* Check that `decltype(work_group)::rank() == decltype(work_group.extents())::rank()`
+* Check that `work_group<Dimensions>::rank_dynamic()` returns a `work_group<Dimensions>::extents_type::rank_type`.
+* Check that `decltype(work_group)::rank_dynamic() == decltype(work_group.extents())::rank_dynamic()`
+* Check that `work_group<Dimensions>::static_extent(0)` returns a `std::size_t`.
+* For each dimension, `d`, check that `decltype(work_group)::static_extent(d) == decltype(work_group.extents())::static_extent(d)` 
+
 ==== `sub_group` class
 
 In the kernel scope, do the following:
@@ -70,6 +83,19 @@ In the kernel scope, do the following:
 * Check that `sycl::khr::leader_of(sub_group)` returns a `bool`.
 * Check that `sycl::khr::leader_of(sub_group) == group.leader()`.
 
+Also in the kernel scope, with a `#if __cplusplus >= 202302L` macro guard, do the following:
+
+* Check that `sub_group.extents()` returns a `sub_group::extents_type`.
+* Check that `sub_group.extents() == std::dextents<std::uint32_t, 1>(group.get_local_linear_range())`.
+* Check that `sub_group.extent(0)` returns a `sub_group::extents_type::index_type`.
+* Check that `sub_group.extent(0) == sub_group.extents().extent(0)` 
+* Check that `sub_group::rank()` returns a `sub_group::extents_type::rank_type`.
+* Check that `decltype(sub_group)::rank() == decltype(sub_group.extents())::rank()`
+* Check that `sub_group::rank_dynamic()` returns a `sub_group::extents_type::rank_type`.
+* Check that `decltype(sub_group)::rank_dynamic() == decltype(sub_group.extents())::rank_dynamic()`
+* Check that `sub_group::static_extent(0)` returns a `std::size_t`.
+* check that `decltype(sub_group)::static_extent(0) == decltype(sub_group.extents())::static_extent(0)` 
+
 ==== `work_item<work_group<Dimensions>>` class
 
 In the kernel scope, do the following:
@@ -86,6 +112,19 @@ In the kernel scope, do the following:
 * Check that `item.size()` returns a `work_item<>::size_type`.
 * Check that `item.size() == 1`.
 
+Also in the kernel scope, with a `#if __cplusplus >= 202302L` macro guard, do the following:
+
+* Check that `item.extents()` returns a `work_item<>::extents_type`.
+* Check that `item.extents() == std::extents<std::size_t, 1, ...>()`.
+* Check that `item.extent(0)` returns a `work_item<>::extents_type::index_type`.
+* For each dimension, `d`, check that `item.extent(d) == item.extents().extent(d)` 
+* Check that `work_item<>::rank()` returns a `work_item<>::extents_type::rank_type`.
+* Check that `decltype(item)::rank() == decltype(item.extents())::rank()`
+* Check that `work_item<>::rank_dynamic()` returns a `work_item<>::extents_type::rank_type`.
+* Check that `decltype(item)::rank_dynamic() == decltype(item.extents())::rank_dynamic()`
+* Check that `work_item<>::static_extent(0)` returns a `std::size_t`.
+* For each dimension, `d`, check that `decltype(item)::static_extent(d) == decltype(item.extents())::static_extent(d)` 
+
 ==== `work_item<sub_group>` class
 
 In the kernel scope, do the following:
@@ -101,3 +140,16 @@ In the kernel scope, do the following:
 * Check that `item.range() == group.get_local_range()`.
 * Check that `item.size()` returns a `work_item<>::size_type`.
 * Check that `item.size() == 1`.
+
+Also in the kernel scope, with a `#if __cplusplus >= 202302L` macro guard, do the following:
+
+* Check that `item.extents()` returns a `work_item<>::extents_type`.
+* Check that `item.extents() == std::extents<std::uint32_t, 1>()`.
+* Check that `item.extent(0)` returns a `work_item<>::extents_type::index_type`.
+* Check that `item.extent(0) == item.extents().extent(0)` 
+* Check that `work_item<>::rank()` returns a `work_item<>::extents_type::rank_type`.
+* Check that `decltype(item)::rank() == decltype(item.extents())::rank()`
+* Check that `work_item<>::rank_dynamic()` returns a `work_item<>::extents_type::rank_type`.
+* Check that `decltype(item)::rank_dynamic() == decltype(item.extents())::rank_dynamic()`
+* Check that `work_item<>::static_extent(0)` returns a `std::size_t`.
+* Check that `decltype(item)::static_extent(0) == decltype(item.extents())::static_extent(0)` 
