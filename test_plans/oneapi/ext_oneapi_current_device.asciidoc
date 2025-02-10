@@ -27,9 +27,10 @@ if feature is not supported.
 
 === Functions `get_current_device` and `set_current_device`
 
-1. Get default device name from environment variable. Call `get_current_device()` but do not call `set_current_device`.
+1. Get default device. Call `get_current_device()` but do not call `set_current_device`.
 Compare value stored in env variable and returned by `get_current_device()` device names.
 2. Call `set_current_device(d)` then call `get_current_device()` from the same thread.
 Compare return value of `get_current_device()` with `d`.
-3. Create multiple threads. Each thread calls the following in a loop: `set_current_device(d)` followed by `get_current_device()`. Each thread uses a different device `d` (if the system has more than one device). 
-Make sure the call to get_device returns the same device that was set in `set_current_device(d)`. This tests that each thread is keeping a separate copy of the "current device".
+3. Create two threads. Thread 1 calls `set_current_device(d1)` and sends signal to thread 2, waits signals from thread 2, calls `get_current_device()` and checks that got d1.
+Thread 2 calls `set_current_device(d2)` and sends signal to thread 1, waits signals from thread 1, calls `get_current_device()` and checks that got d2.
+Test checks that every thread has its own default device. Requires 2 devices at available.
