@@ -102,27 +102,28 @@ In the kernel scope, do the following:
 
 * Define a `sycl::group<Dimensions>` named `group` using `it.get_group()`.
 * Define a `sycl::khr::work_group<Dimensions>` named `work_group` using `it.get_group()`.
-* Define a `sycl::khr::work_item<sycl::khr::work_group<Dimensions>>` named `item` using `sycl::khr::get_item(work_group)`.
-* Check that `item.id()` returns a `work_item<>::id_type`.
+* Define a type alias `wg_item` equal to `sycl::khr::work_item<sycl::khr::work_group<Dimensions>>`
+* Define a `wg_item` named `item` using `sycl::khr::get_item(work_group)`.
+* Check that `item.id()` returns a `wg_item::id_type`.
 * Check that `item.id() == group.get_local_id()`.
-* Check that `item.linear_id()` returns a `work_item<>::linear_id_type`.
+* Check that `item.linear_id()` returns a `wg_item::linear_id_type`.
 * Check that `item.linear_id() == group.get_local_linear_id()`.
-* Check that `item.range()` returns a `work_item<>::range_type`.
+* Check that `item.range()` returns a `wg_item::range_type`.
 * Check that `item.range() == group.get_local_range()`.
-* Check that `item.size()` returns a `work_item<>::size_type`.
+* Check that `item.size()` returns a `wg_item::size_type`.
 * Check that `item.size() == 1`.
 
 Also in the kernel scope, with a `#if __cplusplus >= 202302L` macro guard, do the following:
 
-* Check that `item.extents()` returns a `work_item<>::extents_type`.
+* Check that `item.extents()` returns a `wg_item::extents_type`.
 * Check that `item.extents() == std::extents<std::size_t, 1, ...>()`.
-* Check that `item.extent(0)` returns a `work_item<>::extents_type::index_type`.
+* Check that `item.extent(0)` returns a `wg_item::extents_type::index_type`.
 * For each dimension, `d`, check that `item.extent(d) == item.extents().extent(d)` 
-* Check that `work_item<>::rank()` returns a `work_item<>::extents_type::rank_type`.
+* Check that `wg_item::rank()` returns a `wg_item::extents_type::rank_type`.
 * Check that `decltype(item)::rank() == decltype(item.extents())::rank()`
-* Check that `work_item<>::rank_dynamic()` returns a `work_item<>::extents_type::rank_type`.
+* Check that `wg_item::rank_dynamic()` returns a `wg_item::extents_type::rank_type`.
 * Check that `decltype(item)::rank_dynamic() == decltype(item.extents())::rank_dynamic()`
-* Check that `work_item<>::static_extent(0)` returns a `std::size_t`.
+* Check that `wg_item::static_extent(0)` returns a `std::size_t`.
 * For each dimension, `d`, check that `decltype(item)::static_extent(d) == decltype(item.extents())::static_extent(d)` 
 
 ==== `work_item<sub_group>` class
@@ -131,25 +132,26 @@ In the kernel scope, do the following:
 
 * Define a `sycl::sub_group` named `group` using `it.get_sub_group()`.
 * Define a `sycl::khr::sub_group` named `sub_group` using `it.get_sub_group()`.
-* Define a `sycl::khr::work_item<sycl::khr::sub_group>` named `item` using `sycl::khr::get_item(sub_group)`.
-* Check that `item.id()` returns a `work_item<>::id_type`.
+* Define a type alias `wg_item` equal to `sycl::khr::work_item<sycl::khr::sub_group>`
+* Define a `wg_item` named `item` using `sycl::khr::get_item(sub_group)`.
+* Check that `item.id()` returns a `wg_item::id_type`.
 * Check that `item.id() == group.get_local_id()`.
-* Check that `item.linear_id()` returns a `work_item<>::linear_id_type`.
+* Check that `item.linear_id()` returns a `wg_item::linear_id_type`.
 * Check that `item.linear_id() == group.get_local_linear_id()`.
-* Check that `item.range()` returns a `work_item<>::range_type`.
+* Check that `item.range()` returns a `wg_item::range_type`.
 * Check that `item.range() == group.get_local_range()`.
-* Check that `item.size()` returns a `work_item<>::size_type`.
+* Check that `item.size()` returns a `wg_item::size_type`.
 * Check that `item.size() == 1`.
 
 Also in the kernel scope, with a `#if __cplusplus >= 202302L` macro guard, do the following:
 
-* Check that `item.extents()` returns a `work_item<>::extents_type`.
+* Check that `item.extents()` returns a `wg_item::extents_type`.
 * Check that `item.extents() == std::extents<std::uint32_t, 1>()`.
-* Check that `item.extent(0)` returns a `work_item<>::extents_type::index_type`.
+* Check that `item.extent(0)` returns a `wg_item::extents_type::index_type`.
 * Check that `item.extent(0) == item.extents().extent(0)` 
-* Check that `work_item<>::rank()` returns a `work_item<>::extents_type::rank_type`.
+* Check that `wg_item::rank()` returns a `wg_item::extents_type::rank_type`.
 * Check that `decltype(item)::rank() == decltype(item.extents())::rank()`
-* Check that `work_item<>::rank_dynamic()` returns a `work_item<>::extents_type::rank_type`.
+* Check that `wg_item::rank_dynamic()` returns a `wg_item::extents_type::rank_type`.
 * Check that `decltype(item)::rank_dynamic() == decltype(item.extents())::rank_dynamic()`
-* Check that `work_item<>::static_extent(0)` returns a `std::size_t`.
+* Check that `wg_item::static_extent(0)` returns a `std::size_t`.
 * Check that `decltype(item)::static_extent(0) == decltype(item.extents())::static_extent(0)` 
