@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.15)
 project(sycl_cts LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+if(SYCL_IMPLEMENTATION STREQUAL SimSYCL)
+    set(CMAKE_CXX_STANDARD 20)
+else()
+    set(CMAKE_CXX_STANDARD 17)
+endif()
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON) # Required for hex floats in C++11 mode on gcc 6+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
@@ -112,6 +117,10 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_LOCAL_MEMORY_TESTS
 
 add_cts_option(SYCL_CTS_ENABLE_KHR_DEFAULT_CONTEXT_TESTS
     "Enable extension Khronos default_context tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+
+add_cts_option(SYCL_CTS_ENABLE_KHR_QUEUE_EMPTY_QUERY_TESTS
+    "Enable extension Khronos queue_empty_query tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
 # TODO: Deprecated - remove

@@ -571,8 +571,8 @@ class copy_test_context {
   static bool is_within_window(sycl::id<dim> windowOffset,
                                sycl::range<dim> windowRange,
                                sycl::id<dim> idx) {
-    return ((idx >= windowOffset == id_helper<dim>::make(true, true, true)) &&
-            (idx < windowOffset + windowRange ==
+    return (((idx >= windowOffset) == id_helper<dim>::make(true, true, true)) &&
+            ((idx < windowOffset + sycl::id<dim>(windowRange)) ==
              id_helper<dim>::make(true, true, true)));
   }
 
@@ -711,10 +711,10 @@ class copy_test_context {
     assert(srcBufRange.size() == dstBufRange.size());
     assert(srcCopyRange.size() > 0 && dstCopyRange.size() > 0);
     assert(srcCopyRange.size() == dstCopyRange.size());
-    assert((srcCopyOffset + srcCopyRange <=
+    assert((srcCopyOffset + sycl::id<dim_src>(srcCopyRange) <=
             id_helper<dim_src>::cast(srcBufRange)) ==
            id_helper<dim_src>::make(true, true, true));
-    assert((dstCopyOffset + dstCopyRange <=
+    assert((dstCopyOffset + sycl::id<dim_dst>(dstCopyRange) <=
             id_helper<dim_dst>::cast(dstBufRange)) ==
            id_helper<dim_dst>::make(true, true, true));
   }

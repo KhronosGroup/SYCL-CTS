@@ -16,6 +16,10 @@ using namespace sycl_cts;
 
 TEST_CASE("Tests for usm atomics with double-precision floating points",
           "[usm][atomic][atomic64][fp64]") {
+#if SYCL_CTS_COMPILING_WITH_SIMSYCL
+  FAIL("SimSYCL does not implement asynchronous execution.");
+#endif
+
   auto queue{util::get_cts_object::queue()};
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     WARN(
