@@ -341,7 +341,7 @@ The CTS currently provides the following macros for compile-time disabling test 
 * `DISABLED_FOR_TEST_CASE(<impls...>)(<description>, <tags>)(<body>)`
 * `DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(<impls...>)(<description>, <tags>, <signature>, <types...>)(<body>)`
 
-where `<impls...>` is a comma-separated list of `AdaptiveCpp` and/or `DPCPP`.
+where `<impls...>` is a comma-separated list out of `AdaptiveCpp`, `DPCPP`, and `SimSYCL`.
 
 NOTE: #**TODO:** Custom matchers.#
 

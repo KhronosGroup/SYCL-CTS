@@ -62,7 +62,14 @@ endif()
 option(DPCPP_SYCL2020_CONFORMANT_APIS
   "Comply with the SYCL 2020 specification" ON)
 if(DPCPP_SYCL2020_CONFORMANT_APIS)
-    set(CMAKE_CXX_FLAGS "-DSYCL2020_CONFORMANT_APIS -fpreview-breaking-changes ${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "-DSYCL2020_CONFORMANT_APIS ${CMAKE_CXX_FLAGS}")
+endif()
+
+cmake_dependent_option(DPCPP_ENABLE_PREVIEW_CHANGES
+  "Enable preview changes for DPC++ Compiler" ON
+  "DPCPP_SYCL2020_CONFORMANT_APIS" OFF)
+if(DPCPP_ENABLE_PREVIEW_CHANGES)
+    set(CMAKE_CXX_FLAGS "-fpreview-breaking-changes ${CMAKE_CXX_FLAGS}")
 endif()
 
 add_library(DPCPP::Runtime INTERFACE IMPORTED GLOBAL)

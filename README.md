@@ -24,7 +24,7 @@ To compile the CTS, the following dependencies are required:
 - Python 3.7 or higher
 - CMake 3.15 or higher
 - A SYCL implementation
-  - The CTS currently supports DPC++ and AdaptiveCpp
+  - The CTS currently supports DPC++, AdaptiveCpp and SimSYCL
   - See the [AddSYCLExecutable.cmake](cmake/AddSYCLExecutable.cmake) module on
     how to add support for additional SYCL implementations
 
@@ -35,7 +35,7 @@ cloning this repository and its submodules:
 
 Then enter the `SYCL-CTS` folder and configure the build using CMake:
 
-`cmake -S . -B build -DSYCL_IMPLEMENTATION=<DPCPP|AdaptiveCpp>`
+`cmake -S . -B build -DSYCL_IMPLEMENTATION=<DPCPP|AdaptiveCpp|SimSYCL>`
 
 See [CMake Configuration Options](#cmake-configuration-options) for additional
 configuration options that can be passed here.
@@ -52,7 +52,7 @@ placed in the `build/bin` directory.
 The CTS can be configured using the following CMake configuration options:
 
 `SYCL_IMPLEMENTATION` (default: None)
- `DPCPP` or `AdaptiveCpp`.
+ `DPCPP`, `AdaptiveCpp` or `SimSYCL`.
 
 `SYCL_CTS_EXCLUDE_TEST_CATEGORIES` (default: None)
  Optional file specifying a list of test categories to be excluded from the build.

@@ -233,7 +233,6 @@ class run_atomic_fence {
           auto data_acc = get_accessor(cgh, data_buffer);
           cgh.parallel_for(sycl::nd_range<1>(global_range, local_range),
                            [=](sycl::nd_item<1> nditem) {
-                             auto g = nditem.get_group();
                              sycl::atomic_ref<int, sycl::memory_order::relaxed,
                                               sycl::memory_scope::work_group>
                                  sync_flag(sync_flag_acc[0]);
