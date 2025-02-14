@@ -78,7 +78,7 @@ inline void precalculate<3>(sycl::range<3>& rangeIn, sycl::range<3>& rangeOut,
 
 template <typename prop, typename buffer_t>
 void check_throw_matches(buffer_t& buf, const char* prop_name) {
-  auto action = [&] { auto no_prop = buf.template get_property<prop>(); };
+  auto action = [&] { (void)buf.template get_property<prop>(); };
   INFO("Check that get_property() throws errc::invalid " << prop_name);
   CHECK_THROWS_MATCHES(action(), sycl::exception,
                        sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -393,6 +393,7 @@ void test_buffer(util::logger& log, sycl::range<dims>& r, sycl::id<dims>& i) {
       allocator.deallocate(ptr, 1);
     }
 
+#if !SYCL_CTS_COMPILING_WITH_SIMSYCL
     /* check is_sub_buffer() */
     {
       sycl::buffer<T, dims> buf(r);
@@ -405,6 +406,9 @@ void test_buffer(util::logger& log, sycl::range<dims>& r, sycl::id<dims>& i) {
       CHECK(isSubBuffer);
       CHECK_FALSE(isOrigSubBuffer);
     }
+#else
+    FAIL_CHECK("SimSYCL does not implement sub-buffers yet");
+#endif
 
     /* check buffer properties */
     {
@@ -540,10 +544,14 @@ class check_buffer_api_for_type {
     test_buffer<T, size * size, 2, alloc>(log, range2d, id2d);
     test_buffer<T, size * size * size, 3, alloc>(log, range3d, id3d);
 
+#if !SYCL_CTS_COMPILING_WITH_SIMSYCL
     /* check reinterpret() */
     test_type_reinterpret<T, 1>(log);
     test_type_reinterpret<T, 2>(log);
     test_type_reinterpret<T, 3>(log);
+#else
+    FAIL("SimSYCL does not implement buffer::reinterpret() yet")
+#endif
   }
 
  public:

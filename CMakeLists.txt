@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.15)
 project(sycl_cts LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+if(SYCL_IMPLEMENTATION STREQUAL SimSYCL)
+    set(CMAKE_CXX_STANDARD 20)
+else()
+    set(CMAKE_CXX_STANDARD 17)
+endif()
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON) # Required for hex floats in C++11 mode on gcc 6+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
@@ -118,6 +123,10 @@ add_cts_option(SYCL_CTS_ENABLE_KHR_FREE_FUNCTION_COMMANDS
     "Enable extension Khronos free_function_commands tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_KHR_QUEUE_EMPTY_QUERY_TESTS
+    "Enable extension Khronos queue_empty_query tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+
 # TODO: Deprecated - remove
 add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG
     "Enable debug-level logs (deprecated)" OFF)
@@ -176,6 +185,17 @@ if(SYCL_CTS_MEASURE_BUILD_TIMES)
         # Only Makefiles and Ninja support CMake compiler launchers
         message(FATAL_ERROR "Build time measurements are only supported for the 'Unix Makefiles' and 'Ninja' generators.")
     endif()
+endif()
+# ------------------
+
+# ------------------
+# Math builtin fragment size option
+set(SYCL_CTS_MATH_BUILTIN_FRAGMENT_SIZE "230" CACHE STRING
+"Control the size of the fragment files generated for the math builtin tests.\
+ Decreasing this may help increase the parallelizability of the compilation of\
+ the math builtin, but may also increase the overall compilation time.")
+if(NOT "${SYCL_CTS_MATH_BUILTIN_FRAGMENT_SIZE}" MATCHES "^[1-9][0-9]*$")
+    message(FATAL_ERROR "SYCL_CTS_MATH_BUILTIN_FRAGMENT_SIZE (${SYCL_CTS_MATH_BUILTIN_FRAGMENT_SIZE}) must be an integer greater than 0.")
 endif()
 # ------------------
 

@@ -70,7 +70,7 @@ struct invoke_group {
 
     cgh.parallel_for_work_group<kernelT>(
         numWorkGroups, workGroupSize, [=](sycl::group<dim> group) {
-          const size_t index = group.get_linear_id();
+          const size_t index = group.get_group_linear_id();
 
           kernelBody(group, index);
         });

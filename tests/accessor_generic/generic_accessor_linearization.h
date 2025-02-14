@@ -40,7 +40,6 @@ class run_linearization_tests {
                   const std::string &access_mode_name,
                   const std::string &target_name) {
     auto queue = once_per_unit::get_queue();
-    auto r = util::get_cts_object::range<dims>::get(1, 1, 1);
 
     SECTION(
         get_section_name<dims>(type_name, access_mode_name, target_name, "")) {
