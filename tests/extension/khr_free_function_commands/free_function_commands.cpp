@@ -23,28 +23,6 @@
 namespace free_function_commands::tests {
 
 #ifdef SYCL_KHR_FREE_FUNCTION_COMMANDS
-static void test_submit() {
-  sycl::queue q;
-  constexpr int val = 314;
-  int* buf = sycl::malloc_shared<int>(1, q);
-
-  const auto cgf = [&](sycl::handler& h) {
-    h.single_task<>([=] { buf[0] = val; });
-  };
-
-  {
-    sycl::khr::submit(q, cgf);
-    q.wait();
-    CHECK(buf[0] == val);
-    buf[0] = 0;
-  }
-  {
-    sycl::khr::submit_tracked(q, cgf).wait();
-    CHECK(buf[0] == val);
-  }
-
-  sycl::free(buf, q);
-}
 
 template <int Dims>
 constexpr size_t get_N(size_t Size) {
@@ -53,37 +31,58 @@ constexpr size_t get_N(size_t Size) {
   if constexpr (Dims == 3) return Size * Size * Size;
 }
 
+static void test_submit() {
+  sycl::queue q;
+  constexpr int val = 314;
+
+  auto test = [&](auto func) {
+    int data = 0;
+    {
+      sycl::buffer<int, 1> buf{&data, 1};
+      auto cgf = ([&](sycl::handler& h) {
+        sycl::accessor acc{buf, h, sycl::write_only};
+        h.single_task<>([=] { acc[0] = val; });
+      });
+      func(q, cgf);
+    }
+    CHECK(data == val);
+  };
+
+  test([&](sycl::queue q, auto cgf) { sycl::khr::submit(q, cgf); });
+  test([&](sycl::queue q, auto cgf) { sycl::khr::submit_tracked(q, cgf); });
+}
+
 template <size_t Dims>
 static void test_launch_impl() {
   constexpr size_t Size = 4;
   constexpr size_t N = get_N<Dims>(Size);
   sycl::queue q;
-  int* buf = sycl::malloc_shared<int>(N, q);
-
-  const auto k = [=](auto item) {
-    auto lin_idx = item.get_linear_id();
-    buf[lin_idx] = lin_idx + lin_idx * 2;
-  };
-
   sycl::range<Dims> r =
       sycl_cts::util::get_cts_object::range<Dims>::get(Size, Size, Size);
+
+  int data[N] = {0};
   {
-    q.submit([&](sycl::handler& h) { sycl::khr::launch(h, r, k); });
-    q.wait();
-
-    for (int i = 0; i < N; ++i) {
-      CHECK(buf[i] == i + i * 2);
-      buf[i] = 0;
-    }
+    sycl::buffer<int, 1> buf{data, N};
+    q.submit([&](sycl::handler& h) {
+      sycl::accessor acc{buf, h, sycl::write_only};
+      sycl::khr::launch(h, r, [=](auto item) {
+        auto lin_idx = item.get_linear_id();
+        acc[lin_idx] = lin_idx * 2;
+      });
+    });
   }
-  {
-    sycl::khr::launch(q, r, k);
+  for (int i = 0; i < N; ++i) CHECK(data[i] == i * 2);
+
+  if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
+    int* buf = sycl::malloc_shared<int>(N, q);
+    sycl::khr::launch(q, r, [=](auto item) {
+      auto lin_idx = item.get_linear_id();
+      buf[lin_idx] = lin_idx * 2;
+    });
     q.wait();
-
-    for (int i = 0; i < N; ++i) CHECK(buf[i] == i + i * 2);
+    for (int i = 0; i < N; ++i) CHECK(buf[i] == i * 2);
+    sycl::free(buf, q);
   }
-
-  sycl::free(buf, q);
 }
 
 static void test_launch() {
@@ -96,10 +95,8 @@ template <int Dims>
 static void test_launch_reduce_impl() {
   constexpr size_t Size = 4;
   constexpr size_t N = get_N<Dims>(Size);
+  constexpr int expected_res = (N - 1) * N / 2;
   sycl::queue q;
-  int sumResult = 0;
-  int* sumPtr = sycl::malloc_shared<int>(1, q);
-  sumPtr[0] = 0;
 
   const auto task = [=](sycl::item<Dims> item, auto& sum) {
     sum += item.get_linear_id();
@@ -107,7 +104,8 @@ static void test_launch_reduce_impl() {
 
   sycl::range<Dims> r =
       sycl_cts::util::get_cts_object::range<Dims>::get(Size, Size, Size);
-  int expected_res = (N - 1) * N / 2;
+
+  int sumResult = 0;
   {
     sycl::buffer<int> sumBuf{&sumResult, 1};
     q.submit([&](sycl::handler& h) {
@@ -117,14 +115,15 @@ static void test_launch_reduce_impl() {
   }
   CHECK(sumResult == expected_res);
 
-  {
+  if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
+    int* sumPtr = sycl::malloc_shared<int>(1, q);
+    sumPtr[0] = 0;
     sycl::khr::launch_reduce(q, r, task,
                              sycl::reduction(sumPtr, sycl::plus<>()));
     q.wait();
     CHECK(sumPtr[0] == expected_res);
+    sycl::free(sumPtr, q);
   }
-
-  sycl::free(sumPtr, q);
 }
 
 static void test_launch_reduce() {
@@ -138,36 +137,37 @@ static void test_launch_grouped_impl() {
   constexpr size_t Size = 4;
   constexpr size_t N = get_N<Dims>(Size);
   sycl::queue q;
-  int* buf = sycl::malloc_shared<int>(N, q);
-
-  const auto task = [=](sycl::nd_item<Dims> item) {
-    auto idx = item.get_global_linear_id();
-    buf[idx] = idx + idx * 2;
-  };
 
   sycl::range<Dims> r_glob =
       sycl_cts::util::get_cts_object::range<Dims>::get(Size, Size, Size);
   sycl::range<Dims> r_loc = sycl_cts::util::get_cts_object::range<Dims>::get(
       Size / 2, Size / 2, Size / 2);
+
+  int data[N] = {0};
   {
+    sycl::buffer<int, 1> buf{data, N};
     q.submit([&](sycl::handler& h) {
-      sycl::khr::launch_grouped(h, r_glob, r_loc, task);
+      sycl::accessor acc(buf, h, sycl::write_only);
+      sycl::khr::launch_grouped(h, r_glob, r_loc,
+                                [=](sycl::nd_item<Dims> item) {
+                                  auto idx = item.get_global_linear_id();
+                                  acc[idx] = idx * 2;
+                                });
+    });
+  }
+  for (int i = 0; i < N; ++i) CHECK(data[i] == i * 2);
+
+  if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
+    int* buf = sycl::malloc_shared<int>(N, q);
+    sycl::khr::launch_grouped(q, r_glob, r_loc, [=](sycl::nd_item<Dims> item) {
+      auto idx = item.get_global_linear_id();
+      buf[idx] = idx * 2;
     });
     q.wait();
 
-    for (int i = 0; i < N; ++i) {
-      CHECK(buf[i] == i + i * 2);
-      buf[i] = 0;
-    }
+    for (int i = 0; i < N; ++i) CHECK(buf[i] == i * 2);
+    sycl::free(buf, q);
   }
-  {
-    sycl::khr::launch_grouped(q, r_glob, r_loc, task);
-    q.wait();
-
-    for (int i = 0; i < N; ++i) CHECK(buf[i] == i + i * 2);
-  }
-
-  sycl::free(buf, q);
 }
 
 static void test_launch_grouped() {
@@ -180,10 +180,8 @@ template <int Dims>
 static void test_launch_grouped_reduce_impl() {
   constexpr size_t Size = 4;
   constexpr size_t N = get_N<Dims>(Size);
+  constexpr int expected_res = (N - 1) * N / 2;
   sycl::queue q;
-  int sumResult = 0;
-  int* sumPtr = sycl::malloc_shared<int>(1, q);
-  sumPtr[0] = 0;
 
   const auto task = [=](sycl::nd_item<Dims> item, auto& sum) {
     sum += item.get_global_linear_id();
@@ -193,7 +191,8 @@ static void test_launch_grouped_reduce_impl() {
       sycl_cts::util::get_cts_object::range<Dims>::get(Size, Size, Size);
   sycl::range<Dims> r_loc = sycl_cts::util::get_cts_object::range<Dims>::get(
       Size / 2, Size / 2, Size / 2);
-  int expected_res = (N - 1) * N / 2;
+
+  int sumResult = 0;
   {
     sycl::buffer<int> sumBuf{&sumResult, 1};
     q.submit([&](sycl::handler& h) {
@@ -203,14 +202,15 @@ static void test_launch_grouped_reduce_impl() {
   }
   CHECK(sumResult == expected_res);
 
-  {
+  if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
+    int* sumPtr = sycl::malloc_shared<int>(1, q);
+    sumPtr[0] = 0;
     sycl::khr::launch_grouped_reduce(q, r_glob, r_loc, task,
                                      sycl::reduction(sumPtr, sycl::plus<>()));
     q.wait();
     CHECK(sumPtr[0] == expected_res);
+    sycl::free(sumPtr, q);
   }
-
-  sycl::free(sumPtr, q);
 }
 
 static void test_launch_grouped_reduce() {
@@ -221,82 +221,87 @@ static void test_launch_grouped_reduce() {
 
 static void test_launch_task() {
   sycl::queue q;
-  int* buf = sycl::malloc_shared<int>(1, q);
   constexpr int val = 314;
 
-  const auto task = [=] { buf[0] = val; };
-
+  int data = 0;
   {
-    q.submit([&](sycl::handler& h) { sycl::khr::launch_task(h, task); });
+    sycl::buffer<int, 1> buf{&data, 1};
+    q.submit([&](sycl::handler& h) {
+      sycl::accessor acc{buf, h, sycl::write_only};
+      sycl::khr::launch_task(h, [=] { acc[0] = val; });
+    });
+  }
+  CHECK(data == val);
+
+  if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
+    int* buf = sycl::malloc_shared<int>(1, q);
+    sycl::khr::launch_task(q, [=] { buf[0] = val; });
     q.wait();
     CHECK(buf[0] == val);
-    buf[0] = 0;
+    sycl::free(buf, q);
   }
-  {
-    sycl::khr::launch_task(q, task);
-    q.wait();
-    CHECK(buf[0] == val);
-  }
-
-  sycl::free(buf, q);
 }
 
 static void test_memcpy() {
-  constexpr size_t N = 8;
   sycl::queue q;
-  int* src = sycl::malloc_shared<int>(N, q);
-  int* dst = sycl::malloc_shared<int>(N, q);
-  std::iota(src, src + N, 0);
+  if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
+    constexpr size_t N = 8;
+    int* src = sycl::malloc_shared<int>(N, q);
+    int* dst = sycl::malloc_shared<int>(N, q);
+    std::iota(src, src + N, 0);
 
-  {
-    q.submit([&](sycl::handler& h) {
-      sycl::khr::memcpy(h, dst, src, N * sizeof(*src));
-    });
-    q.wait();
+    {
+      q.submit([&](sycl::handler& h) {
+        sycl::khr::memcpy(h, dst, src, N * sizeof(*src));
+      });
+      q.wait();
 
-    for (int i = 0; i < N; ++i) {
-      CHECK(src[i] == dst[i]);
-      dst[i] = 0;
+      for (int i = 0; i < N; ++i) {
+        CHECK(src[i] == dst[i]);
+        dst[i] = 0;
+      }
     }
-  }
-  {
-    sycl::khr::memcpy(q, dst, src, N * sizeof(*src));
-    q.wait();
+    {
+      sycl::khr::memcpy(q, dst, src, N * sizeof(*src));
+      q.wait();
 
-    for (int i = 0; i < N; ++i) {
-      CHECK(src[i] == dst[i]);
-      dst[i] = 0;
+      for (int i = 0; i < N; ++i) {
+        CHECK(src[i] == dst[i]);
+        dst[i] = 0;
+      }
     }
-  }
 
-  sycl::free(src, q);
-  sycl::free(dst, q);
+    sycl::free(src, q);
+    sycl::free(dst, q);
+  }
 }
 
 template <typename T>
 static void test_copy_usm_pointers_impl() {
-  constexpr size_t N = 8;
   sycl::queue q;
-  T* src = sycl::malloc_shared<T>(N, q);
-  T* dst = sycl::malloc_shared<T>(N, q);
-  std::iota(src, src + N, 0);
+  if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
+    constexpr size_t N = 8;
+    T* src = sycl::malloc_shared<T>(N, q);
+    T* dst = sycl::malloc_shared<T>(N, q);
+    std::iota(src, src + N, 0);
 
-  {
-    q.submit([&](sycl::handler& h) { sycl::khr::copy(h, dst, src, N); });
-    q.wait();
-    for (int i = 0; i < N; ++i) {
-      CHECK(src[i] == dst[i]);
-      dst[i] = 0;
+    {
+      q.submit([&](sycl::handler& h) { sycl::khr::copy(h, dst, src, N); });
+      q.wait();
+      for (int i = 0; i < N; ++i) {
+        CHECK(src[i] == dst[i]);
+        dst[i] = 0;
+      }
     }
-  }
-  {
-    sycl::khr::copy(q, dst, src, N);
-    q.wait();
-    for (int i = 0; i < N; ++i) CHECK(src[i] == dst[i]);
-  }
+    {
+      sycl::khr::copy(q, dst, src, N);
+      q.wait();
+      for (int i = 0; i < N; ++i) CHECK(src[i] == dst[i]);
+    }
 
-  sycl::free(src, q);
-  sycl::free(dst, q);
+    sycl::free(src, q);
+    sycl::free(dst, q);
+  }
 }
 
 static void test_copy_usm_pointers() {
@@ -497,8 +502,10 @@ static void test_fill_impl() {
     for (int i = 0; i < N; ++i) CHECK(dst[i] == val);
   };
 
-  test_fill_shared(true);
-  test_fill_shared(false);
+  if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
+    test_fill_shared(true);
+    test_fill_shared(false);
+  }
   test_fill_buffer(true);
   test_fill_buffer(false);
 }
@@ -553,70 +560,77 @@ static void test_update_host() {
 
 static void test_prefetch() {
   sycl::queue q;
-  int* buffer = sycl::malloc_shared<int>(1, q);
-  CHECK_NOTHROW(sycl::khr::prefetch(q, buffer, sizeof(*buffer)));
-  CHECK_NOTHROW(q.submit([&](sycl::handler& h) {
-    sycl::khr::prefetch(h, buffer, sizeof(*buffer));
-  }));
-
-  sycl::free(buffer, q);
+  if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
+    int* buffer = sycl::malloc_shared<int>(1, q);
+    CHECK_NOTHROW(sycl::khr::prefetch(q, buffer, sizeof(*buffer)));
+    CHECK_NOTHROW(q.submit([&](sycl::handler& h) {
+      sycl::khr::prefetch(h, buffer, sizeof(*buffer));
+    }));
+    sycl::free(buffer, q);
+  }
 }
 
 static void test_mem_advise() {
   sycl::queue q;
-  int* buffer = sycl::malloc_shared<int>(1, q);
-  CHECK_NOTHROW(sycl::khr::mem_advise(q, buffer, sizeof(*buffer), 1));
-  CHECK_NOTHROW(q.submit([&](sycl::handler& h) {
-    sycl::khr::mem_advise(h, buffer, sizeof(*buffer), 1);
-  }));
-  sycl::free(buffer, q);
+  if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
+    int* buffer = sycl::malloc_shared<int>(1, q);
+    CHECK_NOTHROW(sycl::khr::mem_advise(q, buffer, sizeof(*buffer), 1));
+    CHECK_NOTHROW(q.submit([&](sycl::handler& h) {
+      sycl::khr::mem_advise(h, buffer, sizeof(*buffer), 1);
+    }));
+    sycl::free(buffer, q);
+  }
 }
 
 static void test_command_barrier() {
   sycl::queue q;
-  bool* task_done = sycl::malloc_shared<bool>(1, q);
-  bool* test_passed = sycl::malloc_shared<bool>(1, q);
-  *task_done = false;
-  *test_passed = false;
+  if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
+    bool* task_done = sycl::malloc_shared<bool>(1, q);
+    bool* test_passed = sycl::malloc_shared<bool>(1, q);
+    *task_done = false;
+    *test_passed = false;
 
-  q.single_task([=] {
-    float sum = 0;
-    for (int i = 0; i < 10000; ++i) sum += sycl::sqrt(float(i));
-    *task_done = (sum > 0);
-  });
-
-  sycl::khr::command_barrier(q);
-
-  q.single_task([=] { *test_passed = *task_done; });
-  q.wait();
-
-  CHECK(*task_done);
-  CHECK(*test_passed);
-  sycl::free(task_done, q);
-  sycl::free(test_passed, q);
-}
-
-static void test_event_barrier() {
-  sycl::queue q;
-  bool* task_done = sycl::malloc_shared<bool>(1, q);
-  bool* test_passed = sycl::malloc_shared<bool>(1, q);
-  *task_done = false;
-  *test_passed = false;
-  const auto event = q.submit([&](sycl::handler& h) {
-    h.single_task([=] {
+    q.single_task([=] {
       float sum = 0;
       for (int i = 0; i < 10000; ++i) sum += sycl::sqrt(float(i));
       *task_done = (sum > 0);
     });
-  });
-  sycl::khr::event_barrier(q, {event});
-  q.single_task([=] { *test_passed = *task_done; });
-  q.wait();
-  CHECK(*task_done);
-  CHECK(*test_passed);
 
-  sycl::free(task_done, q);
-  sycl::free(test_passed, q);
+    sycl::khr::command_barrier(q);
+
+    q.single_task([=] { *test_passed = *task_done; });
+    q.wait();
+
+    CHECK(*task_done);
+    CHECK(*test_passed);
+    sycl::free(task_done, q);
+    sycl::free(test_passed, q);
+  }
+}
+
+static void test_event_barrier() {
+  sycl::queue q;
+  if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
+    bool* task_done = sycl::malloc_shared<bool>(1, q);
+    bool* test_passed = sycl::malloc_shared<bool>(1, q);
+    *task_done = false;
+    *test_passed = false;
+    const auto event = q.submit([&](sycl::handler& h) {
+      h.single_task([=] {
+        float sum = 0;
+        for (int i = 0; i < 10000; ++i) sum += sycl::sqrt(float(i));
+        *task_done = (sum > 0);
+      });
+    });
+    sycl::khr::event_barrier(q, {event});
+    q.single_task([=] { *test_passed = *task_done; });
+    q.wait();
+    CHECK(*task_done);
+    CHECK(*test_passed);
+
+    sycl::free(task_done, q);
+    sycl::free(test_passed, q);
+  }
 }
 #endif  // SYCL_KHR_FREE_FUNCTION_COMMANDS
 
