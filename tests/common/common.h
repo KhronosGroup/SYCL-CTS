@@ -898,8 +898,8 @@ inline bool have_same_devices(std::vector<sycl::device> lhs,
  *  @param count number of bytes to examine
  */
 inline int memcmp_no_ext_lib(const void* lhs, const void* rhs, size_t count) {
-  const uint8_t* c1 = reinterpret_cast<const uint8_t*>(lhs);
-  const uint8_t* c2 = reinterpret_cast<const uint8_t*>(rhs);
+  const unsigned char* c1 = reinterpret_cast<const unsigned char*>(lhs);
+  const unsigned char* c2 = reinterpret_cast<const unsigned char*>(rhs);
   for (; count--; c1++, c2++) {
     if (*c1 != *c2) return *c1 < *c2 ? -1 : 1;
   }
