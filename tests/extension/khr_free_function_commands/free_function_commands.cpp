@@ -32,7 +32,7 @@ constexpr size_t get_N(size_t Size) {
 }
 
 static void test_submit() {
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
   constexpr int val = 314;
 
   auto test = [&](auto func) {
@@ -56,7 +56,7 @@ template <size_t Dims>
 static void test_launch_impl() {
   constexpr size_t Size = 4;
   constexpr size_t N = get_N<Dims>(Size);
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
   sycl::range<Dims> r =
       sycl_cts::util::get_cts_object::range<Dims>::get(Size, Size, Size);
 
@@ -96,7 +96,7 @@ static void test_launch_reduce_impl() {
   constexpr size_t Size = 4;
   constexpr size_t N = get_N<Dims>(Size);
   constexpr int expected_res = (N - 1) * N / 2;
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
 
   const auto task = [=](sycl::item<Dims> item, auto& sum) {
     sum += item.get_linear_id();
@@ -136,7 +136,7 @@ template <int Dims>
 static void test_launch_grouped_impl() {
   constexpr size_t Size = 4;
   constexpr size_t N = get_N<Dims>(Size);
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
 
   sycl::range<Dims> r_glob =
       sycl_cts::util::get_cts_object::range<Dims>::get(Size, Size, Size);
@@ -181,7 +181,7 @@ static void test_launch_grouped_reduce_impl() {
   constexpr size_t Size = 4;
   constexpr size_t N = get_N<Dims>(Size);
   constexpr int expected_res = (N - 1) * N / 2;
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
 
   const auto task = [=](sycl::nd_item<Dims> item, auto& sum) {
     sum += item.get_global_linear_id();
@@ -220,7 +220,7 @@ static void test_launch_grouped_reduce() {
 }
 
 static void test_launch_task() {
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
   constexpr int val = 314;
 
   int data = 0;
@@ -243,7 +243,7 @@ static void test_launch_task() {
 }
 
 static void test_memcpy() {
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
   if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
     constexpr size_t N = 8;
     int* src = sycl::malloc_shared<int>(N, q);
@@ -278,7 +278,7 @@ static void test_memcpy() {
 
 template <typename T>
 static void test_copy_usm_pointers_impl() {
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
   if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
     constexpr size_t N = 8;
     T* src = sycl::malloc_shared<T>(N, q);
@@ -315,7 +315,7 @@ static void test_copy_accessors_host_to_device_impl() {
   using accT = sycl::accessor<T, 1, sycl::access::mode::write,
                               sycl::access::target::device>;
   const size_t N = 8;
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
 
   const auto test = [&](const auto& src, bool use_handler) {
     T dst[N] = {0};
@@ -359,7 +359,7 @@ static void test_copy_accessors_device_to_host_impl() {
   using accT = sycl::accessor<T, 1, sycl::access::mode::read,
                               sycl::access::target::device>;
   const size_t N = 8;
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
 
   const auto test = [&](auto& dst, bool use_handler) {
     T src[N] = {0};
@@ -406,7 +406,7 @@ static void test_copy_accessors_device_to_device_impl() {
   T src[N] = {0};
   std::iota(&src[0], &src[0] + N, 0);
 
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
   auto test_copy = [&](bool use_handler) {
     T dst[N] = {0};
     {
@@ -444,7 +444,7 @@ static void test_copy_accessors_device_to_device() {
 static void test_memset() {
   constexpr size_t N = 8;
   constexpr int val = 7;
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
 
   auto test_memset = [&](bool use_handler) {
     auto ptr = (char*)malloc_shared(N, q);
@@ -469,7 +469,7 @@ static void test_fill_impl() {
                               sycl::access::target::device>;
   constexpr size_t N = 8;
   constexpr int val = 7;
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
 
   auto test_fill_shared = [&](bool use_handler) {
     auto ptr = sycl::malloc_shared<int>(N, q);
@@ -521,7 +521,7 @@ static void test_update_host_impl() {
   const size_t N = 8;
   using accT = sycl::accessor<T, 1, sycl::access::mode::write,
                               sycl::access::target::device>;
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
 
   auto test_buffer = [&](bool use_handler) {
     T data[N] = {0};
@@ -559,7 +559,7 @@ static void test_update_host() {
 }
 
 static void test_prefetch() {
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
   if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
     int* buffer = sycl::malloc_shared<int>(1, q);
     CHECK_NOTHROW(sycl::khr::prefetch(q, buffer, sizeof(*buffer)));
@@ -571,7 +571,7 @@ static void test_prefetch() {
 }
 
 static void test_mem_advise() {
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
   if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
     int* buffer = sycl::malloc_shared<int>(1, q);
     CHECK_NOTHROW(sycl::khr::mem_advise(q, buffer, sizeof(*buffer), 1));
@@ -583,7 +583,7 @@ static void test_mem_advise() {
 }
 
 static void test_command_barrier() {
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
   if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
     bool* task_done = sycl::malloc_shared<bool>(1, q);
     bool* test_passed = sycl::malloc_shared<bool>(1, q);
@@ -609,7 +609,7 @@ static void test_command_barrier() {
 }
 
 static void test_event_barrier() {
-  sycl::queue q;
+  auto q = sycl_cts::util::get_cts_object::queue();
   if (q.get_device().has(sycl::aspect::usm_shared_allocations)) {
     bool* task_done = sycl::malloc_shared<bool>(1, q);
     bool* test_passed = sycl::malloc_shared<bool>(1, q);
