@@ -165,16 +165,6 @@ def generate_mixed(type_str, size):
                             + ', ' + str(size) + '>', test_string)
 
 
-def generate_opencl(type_str, size):
-    """Generates test for vec(vector_t openclVector)"""
-    test_string = opencl_constructor_vec_template.substitute(
-        type=type_str, size=size)
-    return '#ifdef __SYCL_DEVICE_ONLY__\n' + wrap_with_kernel(
-        type_str, 'VEC_OPENCL_CONSTRUCTOR_KERNEL_' + type_str + str(size),
-        'vec(vector_t openclVector), sycl::vec<' + type_str + ', ' +
-        str(size) + '>', test_string) + '#endif  // __SYCL_DEVICE_ONLY__\n'
-
-
 def generate_constructor_tests(type_str, input_file, output_file):
     """Generates a string for each constructor type containing each combination of test
     Constructor types: default, explicit, vec, opencl
@@ -192,7 +182,6 @@ def generate_constructor_tests(type_str, input_file, output_file):
         test_str += generate_explicit(type_str, size)
         test_str += generate_vec(type_str, size)
         test_str += generate_mixed(type_str, size)
-        test_str += generate_opencl(type_str, size)
         test_func_str += wrap_with_test_func(TEST_NAME, type_str,
                                              test_str, str(size))
         test_str = ''
