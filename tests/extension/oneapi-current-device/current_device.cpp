@@ -52,7 +52,8 @@ TEST_CASE(
   const sycl::device default_device{sycl::default_selector()};
   const auto current_device =
       sycl::ext::oneapi::experimental::this_thread::get_current_device();
-  CHECK(std::is_same_v<decltype(current_device), sycl::device>);
+  CHECK(
+      std::is_same_v<std::remove_cv_t<decltype(current_device)>, sycl::device>);
   CHECK(default_device == current_device);
 #endif
 }
@@ -68,7 +69,8 @@ TEST_CASE(
       device_to_set);
   const auto current_device =
       sycl::ext::oneapi::experimental::this_thread::get_current_device();
-  CHECK(std::is_same_v<decltype(current_device), sycl::device>);
+  CHECK(
+      std::is_same_v<std::remove_cv_t<decltype(current_device)>, sycl::device>);
   CHECK(device_to_set == current_device);
 #endif
 }
