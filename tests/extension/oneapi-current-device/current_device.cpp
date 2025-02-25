@@ -19,9 +19,13 @@
 *******************************************************************************/
 
 #include "../../common/common.h"
+#include <condition_variable>
+#include <mutex>
+#include <thread>
+#include <vector>
 
 namespace current_device {
-#ifndef SYCL_EXT_ONEAPI_CURRENT_DEVICE
+#ifdef SYCL_EXT_ONEAPI_CURRENT_DEVICE
 
 sycl::device get_device_to_set() {
   static std::vector<sycl::device> devices = sycl::device::get_devices();
@@ -42,8 +46,12 @@ TEST_CASE(
 #ifndef SYCL_EXT_ONEAPI_CURRENT_DEVICE
   SKIP("SYCL_EXT_ONEAPI_CURRENT_DEVICE is not defined");
 #else
+  if (sycl::device::get_devices().size() < 1) {
+    SKIP("Test requires at least one device");
+  }
   const sycl::device default_device{sycl::default_selector()};
-  const auto current_device = syc::get_current_device();
+  const auto current_device =
+      sycl::ext::oneapi::experimental::this_thread::get_current_device();
   CHECK(std::is_same_v<decltype(current_device), sycl::device>);
   CHECK(default_device == current_device);
 #endif
@@ -55,9 +63,11 @@ TEST_CASE(
 #ifndef SYCL_EXT_ONEAPI_CURRENT_DEVICE
   SKIP("SYCL_EXT_ONEAPI_CURRENT_DEVICE is not defined");
 #else
-  const auto device_to_set = get_device_to_set();
-  sycl::set_current_device(device_to_set);
-  const auto current_device = sycl::get_current_device();
+  const auto device_to_set = current_device::get_device_to_set();
+  sycl::ext::oneapi::experimental::this_thread::set_current_device(
+      device_to_set);
+  const auto current_device =
+      sycl::ext::oneapi::experimental::this_thread::get_current_device();
   CHECK(std::is_same_v<decltype(current_device), sycl::device>);
   CHECK(device_to_set == current_device);
 #endif
@@ -84,26 +94,30 @@ TEST_CASE(
   sycl::device t1_current_device;
   sycl::device t2_current_device;
 
-  std::thread t1([]() {
+  std::thread t1([&]() {
     {
       std::unique_lock<std::mutex> lock(mtx);
-      sycl::set_current_device(t1_device_to_set);
+      sycl::ext::oneapi::experimental::this_thread::set_current_device(
+          t1_device_to_set);
       signal_thread1 = true;
     }
     cv_thread1.notify_one();
     {
       std::unique_lock<std::mutex> lock(mtx);
-      cv_thread2.wait(lock, [] { return signal_thread2; });
+      cv_thread2.wait(lock, [&] { return signal_thread2; });
     }
-    const auto t1_current_device = sycl::get_current_device();
+    const auto t1_current_device =
+        sycl::ext::oneapi::experimental::this_thread::get_current_device();
   });
 
-  std::thread t2([]() {
+  std::thread t2([&]() {
     std::unique_lock<std::mutex> lock(mtx);
-    cv_thread1.wait(lock, [] { return signal_thread1; });
-    sycl::set_current_device(t2_device_to_set);
+    cv_thread1.wait(lock, [&] { return signal_thread1; });
+    sycl::ext::oneapi::experimental::this_thread::set_current_device(
+        t2_device_to_set);
     signal_thread2 = true;
-    const auto t2_current_device = sycl::get_current_device();
+    const auto t2_current_device =
+        sycl::ext::oneapi::experimental::this_thread::get_current_device();
   });
   t1.join();
   t2.join();
