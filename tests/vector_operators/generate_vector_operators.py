@@ -27,7 +27,8 @@ from string import Template
 sys.path.append('../common/')
 from common_python_vec import (Data, ReverseData, wrap_with_kernel,
                                wrap_with_test_func, make_func_call,
-                               write_source_file, get_types, cast_to_bool)
+                               write_source_file, get_types, cast_to_bool,
+                               make_fp_or_byte_explicit)
 
 TEST_NAME = 'OPERATORS'
 
@@ -43,6 +44,7 @@ all_type_test_template = Template("""
   ${type} resArr2[${size}];
 
   // Arithmetic operators
+#if !${type_is_std_byte}
   for (int i = 0; i < ${size}; ++i) {
     resArr[i] = static_cast<${type}>(${test_value_1}) + static_cast<${type}>(${test_value_2});
   }
@@ -294,8 +296,10 @@ all_type_test_template = Template("""
     resAcc[0] = false;
   }
 #endif
+#endif
 
   // Assignment operators
+#if !${type_is_std_byte}
   for (int i = 0; i < ${size}; ++i) {
     resArr[i] = static_cast<${type}>(${test_value_1}) + static_cast<${type}>(${test_value_2});
   }
@@ -428,6 +432,7 @@ all_type_test_template = Template("""
   if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
+#endif
 """)
 
 specific_return_type_test_template = Template("""
@@ -744,6 +749,7 @@ non_fp_bitwise_test_template = Template("""
   ${type} resArr[${size}];
 
   // Bitwise operations
+#if !${type_is_std_byte}
   for (int i = 0; i < ${size}; ++i) {
     resArr[i] = static_cast<${type}>(${test_value_1}) >> static_cast<${type}>(${test_value_2});
   }
@@ -814,6 +820,7 @@ non_fp_bitwise_test_template = Template("""
   if (!check_vector_values(resVec, resArr)) {
     resAcc[0] = false;
   }
+#endif
   for (int i = 0; i < ${size}; ++i) {
     resArr[i] = static_cast<${type}>(${test_value_1}) | static_cast<${type}>(${test_value_2});
   }
@@ -942,6 +949,7 @@ non_fp_assignment_test_template = Template("""
   ${type} resArr[${size}];
 
   // Assignment operations
+#if !${type_is_std_byte}
   for (int i = 0; i < ${size}; ++i) {
     resArr[i] = static_cast<${type}>(${test_value_1}) % static_cast<${type}>(${test_value_2});
   }
@@ -975,6 +983,7 @@ non_fp_assignment_test_template = Template("""
   if (!check_vector_values(resVec, resArr)) {
     resAcc[0] = false;
   }
+#endif
   for (int i = 0; i < ${size}; ++i) {
     resArr[i] = static_cast<${type}>(${test_value_1}) | static_cast<${type}>(${test_value_2});
   }
@@ -1074,6 +1083,7 @@ non_fp_assignment_test_template = Template("""
   if (!check_vector_values(resVec, resArr)) {
     resAcc[0] = false;
   }
+#if !${type_is_std_byte}
   for (int i = 0; i < ${size}; ++i) {
     resArr[i] = static_cast<${type}>(${test_value_1}) >> static_cast<${type}>(${test_value_2});
   }
@@ -1140,6 +1150,7 @@ non_fp_assignment_test_template = Template("""
   if (!check_vector_values(resVec, resArr)) {
     resAcc[0] = false;
   }
+#endif
 """)
 
 non_fp_arithmetic_test_template = Template("""
@@ -1187,6 +1198,7 @@ non_fp_arithmetic_test_template = Template("""
   if (!check_vector_values(resVec, resArr)) {
     resAcc[0] = false;
   }
+#if !${type_is_std_byte}
   for (int i = 0; i < ${size}; ++i) {
     resArr[i] = static_cast<${type}>(${test_value_1}) % static_cast<${type}>(${test_value_2});
   }
@@ -1222,6 +1234,7 @@ non_fp_arithmetic_test_template = Template("""
   if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
+#endif
 
 """)
 
@@ -1321,7 +1334,7 @@ def generate_all_type_test(type_str, size):
         type=type_str,
         size=str(size),
         swizzle=get_swizzle(size),
-        data=', '.join(Data.vals_list_dict[size]))
+        data=', '.join(make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size])))
     if size == 1:
         test_string += dataT_operator_test_template.substitute(
           type=type_str,
@@ -1340,6 +1353,7 @@ def generate_all_type_test(type_str, size):
     test_string += all_type_test_template.substitute(
         type=type_str,
         type_is_bool=int(type_str == 'bool'),
+        type_is_std_byte=int(type_str == 'std::byte'),
         size=str(size),
         swizzle=get_swizzle(size),
         test_value_1=1,
@@ -1368,6 +1382,7 @@ def generate_all_types_specific_return_type_test(type_str, size):
 def generate_non_fp_bitwise_test(type_str, size):
     test_string = non_fp_bitwise_test_template.substitute(
         type=type_str,
+        type_is_std_byte=int(type_str == 'std::byte'),
         size=str(size),
         swizzle=get_swizzle(size),
         test_value_1=1,
@@ -1382,6 +1397,7 @@ def generate_non_fp_bitwise_test(type_str, size):
 def generate_non_fp_assignment_test(type_str, size):
     test_string = non_fp_assignment_test_template.substitute(
         type=type_str,
+        type_is_std_byte=int(type_str == 'std::byte'),
         size=str(size),
         swizzle=get_swizzle(size),
         test_value_1=1,
@@ -1396,6 +1412,7 @@ def generate_non_fp_assignment_test(type_str, size):
 def generate_non_fp_arithmetic_test(type_str, size):
     test_string = non_fp_arithmetic_test_template.substitute(
         type=type_str,
+        type_is_std_byte=int(type_str == 'std::byte'),
         size=str(size),
         swizzle=get_swizzle(size),
         test_value_1=1,
@@ -1416,9 +1433,9 @@ def generate_operator_tests(type_str, input_file, output_file):
     for size in Data.standard_sizes:
         test_str = generate_all_type_test(type_str, size)
         test_func_str += wrap_with_test_func(TEST_NAME + '_ALL_TYPES',
-                                             type_str, test_str, str(size))
+                                            type_str, test_str, str(size))
         func_calls += make_func_call(TEST_NAME + '_ALL_TYPES', type_str,
-                                     str(size))
+                                    str(size))
         if not type_str in [
                 'float', 'double', 'sycl::half'
         ]:

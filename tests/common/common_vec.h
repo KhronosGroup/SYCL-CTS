@@ -503,7 +503,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
   // lo()
   {
     sycl::vec<vecType, mid> loVec{inputVec.lo()};
-    vecType loVals[mid] = {0};
+    vecType loVals[mid] = {vecType{0}};
     for (size_t i = 0; i < mid; i++) {
       loVals[i] = vals[i];
     }
@@ -514,7 +514,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
   {
     sycl::vec<vecType, mid> loVec;
     DO_OPERATION_ON_SWIZZLE(N, inputVec, loVec, lo());
-    vecType loVals[mid] = {0};
+    vecType loVals[mid] = {vecType{0}};
     for (size_t i = 0; i < mid; i++) {
       loVals[i] = vals[i];
     }
@@ -528,7 +528,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
     {
       // hi()
       sycl::vec<vecType, mid> hiVec{inputVec.hi()};
-      vecType hiVals[mid] = {0};
+      vecType hiVals[mid] = {vecType{0}};
       for (size_t i = 0; i < mid; i++) {
         hiVals[i] = vals[i + mid];
       }
@@ -540,7 +540,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
       // hi()
       sycl::vec<vecType, mid> hiVec;
       DO_OPERATION_ON_SWIZZLE(N, inputVec, hiVec, hi());
-      vecType hiVals[mid] = {0};
+      vecType hiVals[mid] = {vecType{0}};
       for (size_t i = 0; i < mid; i++) {
         hiVals[i] = vals[i + mid];
       }
@@ -555,7 +555,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
     {
       // odd()
       sycl::vec<vecType, mid> oddVec{inputVec.odd()};
-      vecType oddVals[mid] = {0};
+      vecType oddVals[mid] = {vecType{0}};
       for (size_t i = 0; i < mid; ++i) {
         oddVals[i] = vals[i * 2 + 1];
       }
@@ -567,7 +567,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
       // odd()
       sycl::vec<vecType, mid> oddVec;
       DO_OPERATION_ON_SWIZZLE(N, inputVec, oddVec, odd());
-      vecType oddVals[mid] = {0};
+      vecType oddVals[mid] = {vecType{0}};
       for (size_t i = 0; i < mid; ++i) {
         oddVals[i] = vals[i * 2 + 1];
       }
@@ -579,7 +579,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
   // even()
   {
     sycl::vec<vecType, mid> evenVec{inputVec.even()};
-    vecType evenVals[mid] = {0};
+    vecType evenVals[mid] = {vecType{0}};
     for (size_t i = 0; i < mid; ++i) {
       evenVals[i] = vals[i * 2];
     }
@@ -590,7 +590,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
   {
     sycl::vec<vecType, mid> evenVec;
     DO_OPERATION_ON_SWIZZLE(N, inputVec, evenVec, even());
-    vecType evenVals[mid] = {0};
+    vecType evenVals[mid] = {vecType{0}};
     for (size_t i = 0; i < mid; ++i) {
       evenVals[i] = vals[i * 2];
     }
