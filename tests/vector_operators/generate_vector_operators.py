@@ -1433,9 +1433,9 @@ def generate_operator_tests(type_str, input_file, output_file):
     for size in Data.standard_sizes:
         test_str = generate_all_type_test(type_str, size)
         test_func_str += wrap_with_test_func(TEST_NAME + '_ALL_TYPES',
-                                            type_str, test_str, str(size))
+                                             type_str, test_str, str(size))
         func_calls += make_func_call(TEST_NAME + '_ALL_TYPES', type_str,
-                                    str(size))
+                                     str(size))
         if not type_str in [
                 'float', 'double', 'sycl::half'
         ]:
