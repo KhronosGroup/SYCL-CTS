@@ -444,6 +444,7 @@ specific_return_type_test_template = Template("""
   ${ret_type} resArr[${size}];
 
   // Logical operators
+#if !${type_is_std_byte}
   for (int i = 0; i < ${size}; ++i) {
     resArr[i] = static_cast<${ret_type}>(-(static_cast<${type}>(${test_value_1}) && static_cast<${type}>(${test_value_2})));
   }
@@ -525,6 +526,7 @@ specific_return_type_test_template = Template("""
   if (!check_vector_values(resVec, resArr)) {
     resAcc[0] = false;
   }
+#endif
 
   // Relational Operators
   for (int i = 0; i < ${size}; ++i) {
@@ -1367,6 +1369,7 @@ def generate_all_type_test(type_str, size):
 def generate_all_types_specific_return_type_test(type_str, size):
     test_string = specific_return_type_test_template.substitute(
         type=type_str,
+        type_is_std_byte=int(type_str == 'std::byte'),
         size=str(size),
         swizzle=get_swizzle(size),
         ret_type=Data.opencl_sized_return_type_dict[type_str],
