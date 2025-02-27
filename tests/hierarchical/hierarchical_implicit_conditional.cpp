@@ -74,9 +74,9 @@ template <int dim> void check_dim(util::logger &log) {
 
               group.parallel_for_work_item([&](sycl::h_item<dim> item) {
                 // Assign the work item id to a local variable.
-                work_item_id =
-                    group.get_linear_id() * item.get_local_range().size() +
-                    item.get_local().get_linear_id();
+                work_item_id = group.get_group_linear_id() *
+                                   item.get_local_range().size() +
+                               item.get_local().get_linear_id();
               });
 
               // Assign a value for the work item stored. Although this is

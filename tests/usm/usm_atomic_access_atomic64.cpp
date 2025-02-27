@@ -16,6 +16,10 @@ using namespace sycl_cts;
 
 TEST_CASE("Tests for usm atomics with atomic64 support",
           "[usm][atomic][atomic64]") {
+#if SYCL_CTS_COMPILING_WITH_SIMSYCL
+  FAIL("SimSYCL does not implement asynchronous execution.");
+#endif
+
   auto queue{util::get_cts_object::queue()};
 
   for_all_types<usm_atomic_access::run_all_tests>(

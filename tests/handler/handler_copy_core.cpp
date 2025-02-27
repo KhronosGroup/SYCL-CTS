@@ -6,6 +6,7 @@
 //
 *******************************************************************************/
 
+#include "../common/disabled_for_test_case.h"
 #include "../common/string_makers.h"
 #include "../common/type_coverage.h"
 #include "catch2/catch_test_macros.hpp"
@@ -14,7 +15,10 @@
 namespace handler_copy_core {
 using namespace handler_copy_common;
 
-TEST_CASE("Tests the API for sycl::handler::copy", "[handler]") {
+// Disabled: SimSYCL does not implement copies between accessors of different
+// dimensionality
+DISABLED_FOR_TEST_CASE(SimSYCL)
+("Tests the API for sycl::handler::copy", "[handler]")({
   auto queue = util::get_cts_object::queue();
 
   log_helper lh;
@@ -33,12 +37,14 @@ TEST_CASE("Tests the API for sycl::handler::copy", "[handler]") {
   test_all_variants<sycl::long8>(lh, queue);
   test_all_variants<sycl::float8>(lh, queue);
 #endif
-}
+});
 
-TEST_CASE(
-    "Check exception on copy(accessor, accessor) in case of invalid "
-    "destination accessor size",
-    "[handler]") {
+// Disabled: SimSYCL does not implement copies between accessors of different
+// dimensionality
+DISABLED_FOR_TEST_CASE(SimSYCL)
+("Check exception on copy(accessor, accessor) in case of invalid "
+ "destination accessor size",
+ "[handler]")({
   auto queue = util::get_cts_object::queue();
 
   const auto types =
@@ -72,6 +78,6 @@ TEST_CASE(
 
   for_all_combinations<CheckCopyAccToAccException>(types, dims, dims, src_modes,
                                                    dst_modes, queue);
-}
+});
 
 }  // namespace handler_copy_core

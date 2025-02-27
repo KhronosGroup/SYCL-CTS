@@ -29,11 +29,14 @@ using namespace sycl;
 // size for container
 constexpr int size = 3;
 
-// create property lists
-std::mutex mutex;
-auto context = sycl_cts::util::get_cts_object::context();
-const property_list props{property::buffer::use_mutex(mutex),
-                          property::buffer::context_bound(context)};
+const property_list& get_props() {
+  // static local instead of global to avoid static initialization order fiasco
+  static std::mutex mutex;
+  static auto context = sycl_cts::util::get_cts_object::context();
+  static const property_list props{property::buffer::use_mutex(mutex),
+                                   property::buffer::context_bound(context)};
+  return props;
+}
 
 template <typename T>
 class check_buffer_deduction {
@@ -96,7 +99,7 @@ class check_buffer_deduction {
     }
     // buffer with property list and no alloccator
     {
-      buffer buf_prop(data.begin(), data.end(), props);
+      buffer buf_prop(data.begin(), data.end(), get_props());
 
       INFO("Incorrect deduction with propery list");
       CHECK(std::is_same_v<decltype(buf_prop),
@@ -104,8 +107,8 @@ class check_buffer_deduction {
     }
     // buffer with allocator and property list
     {
-      buffer buf_std_alloc(data.begin(), data.end(), std_alloc, props);
-      buffer buf_buf_alloc(data.begin(), data.end(), buf_alloc, props);
+      buffer buf_std_alloc(data.begin(), data.end(), std_alloc, get_props());
+      buffer buf_buf_alloc(data.begin(), data.end(), buf_alloc, get_props());
 
       INFO("Incorrect deduction with property list and allocator");
       CHECK(std::is_same_v<
@@ -159,14 +162,14 @@ class check_buffer_deduction {
     }
     // buffer with property list and no alloccator
     {
-      buffer buf_prop(data.get(), r, props);
+      buffer buf_prop(data.get(), r, get_props());
       INFO("Incorrect deductionwith property list");
       CHECK(std::is_same_v<decltype(buf_prop), buffer<T, dims>>);
     }
     // buffer with allocator and property list
     {
-      buffer buf_std_alloc(data.get(), r, std_alloc, props);
-      buffer buf_buf_alloc(data.get(), r, buf_alloc, props);
+      buffer buf_std_alloc(data.get(), r, std_alloc, get_props());
+      buffer buf_buf_alloc(data.get(), r, buf_alloc, get_props());
 
       INFO("Incorrect deduction with T");
       CHECK(std::is_same_v<decltype(buf_std_alloc),
@@ -212,7 +215,7 @@ class check_buffer_deduction {
     }
     // buffer with property list and no alloccator
     {
-      buffer buf_prop(data, props);
+      buffer buf_prop(data, get_props());
 
       INFO("Incorrect deduction with propery list");
       CHECK(std::is_same_v<decltype(buf_prop),
@@ -220,8 +223,8 @@ class check_buffer_deduction {
     }
     // buffer with allocator and property list
     {
-      buffer buf_std_alloc(data, std_alloc, props);
-      buffer buf_buf_alloc(data, buf_alloc, props);
+      buffer buf_std_alloc(data, std_alloc, get_props());
+      buffer buf_buf_alloc(data, buf_alloc, get_props());
 
       INFO("Incorrect deduction with property list and allocator");
       CHECK(std::is_same_v<

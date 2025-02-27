@@ -109,11 +109,10 @@ template <int dim> void check_dim(util::logger &log) {
 
         cgh.parallel_for_work_group<kernel<dim>>(
             gr_range, l_range, [=](sycl::group<dim> group) {
-
-              int groupId0 = group.get_id(0);
-              int groupId1 = (dim > 1) ? group.get_id(1) : 0;
-              int groupId2 = (dim > 2) ? group.get_id(2) : 0;
-              int groupIdL = group.get_linear_id();
+              int groupId0 = group.get_group_id(0);
+              int groupId1 = (dim > 1) ? group.get_group_id(1) : 0;
+              int groupId2 = (dim > 2) ? group.get_group_id(2) : 0;
+              int groupIdL = group.get_group_linear_id();
 
               int groupRange0 = group.get_group_range(0);
               int groupRange1 = (dim > 1) ? group.get_group_range(1) : 0;

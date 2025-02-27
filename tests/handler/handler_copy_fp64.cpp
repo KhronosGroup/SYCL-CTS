@@ -6,6 +6,7 @@
 //
 *******************************************************************************/
 
+#include "../common/disabled_for_test_case.h"
 #include "handler_copy_common.h"
 
 #include "catch2/catch_test_macros.hpp"
@@ -13,7 +14,10 @@
 namespace handler_copy_fp64 {
 using namespace handler_copy_common;
 
-TEST_CASE("Tests the API for sycl::handler::copy for double", "[handler]") {
+// Disabled: SimSYCL does not implement copies between accessors of different
+// dimensionality
+DISABLED_FOR_TEST_CASE(SimSYCL)
+("Tests the API for sycl::handler::copy for double", "[handler]")({
   auto queue = util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     WARN(
@@ -25,6 +29,6 @@ TEST_CASE("Tests the API for sycl::handler::copy for double", "[handler]") {
   log_helper lh;
   test_all_variants<double>(lh, queue);
   test_all_variants<sycl::double16>(lh, queue);
-}
+});
 
 }  // namespace handler_copy_fp64

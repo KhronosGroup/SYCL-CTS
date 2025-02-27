@@ -175,7 +175,7 @@ class legacy_random_access_iterator_requirement {
       // If current iterator has iterator plus difference_type make `b`
       // iterator differ than `a` iterator
       if constexpr (has_iterator_plus_diff_type_operator) {
-        b = b + n;
+        static_assert(std::is_assignable_v<decltype((b)), decltype(b + n)>);
         using it_traits = std::iterator_traits<It>;
         if constexpr (has_iterator_minus_iterator_operator &&
                       has_difference_type_member) {

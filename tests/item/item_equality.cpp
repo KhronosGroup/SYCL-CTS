@@ -80,8 +80,6 @@ class TEST_NAME : public util::test_base {
       {
         auto testQueue = util::get_cts_object::queue();
 
-        const auto oneElemRange =
-            util::get_cts_object::range<numDims>::get(1, 1, 1);
         const auto itemRange =
             util::get_cts_object::range<numDims>::get(numItems, 1, 1);
 

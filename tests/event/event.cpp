@@ -74,6 +74,10 @@ TEST_CASE("event::get_backend returns the associated backend", "[event]") {
 
 TEST_CASE("event::get_wait_list returns a list of all direct dependencies",
           "[event]") {
+#if SYCL_CTS_COMPILING_WITH_SIMSYCL
+  FAIL("SimSYCL does not implement asynchronous execution.");
+#endif
+
   resolvable_host_event e_a;
   resolvable_host_event e_b{{e_a.get_sycl_event()}};
   resolvable_host_event e_c;
@@ -122,6 +126,10 @@ class delayed_host_event : public resolvable_host_event {
 };
 
 TEST_CASE("event can be waited upon", "[event]") {
+#if SYCL_CTS_COMPILING_WITH_SIMSYCL
+  FAIL("SimSYCL does not implement asynchronous execution.");
+#endif
+
   // Give main thread some time to fail the did_resolve check
   delayed_host_event dhe{std::chrono::milliseconds(100)};
 
@@ -143,6 +151,10 @@ TEST_CASE("event can be waited upon", "[event]") {
 }
 
 TEST_CASE("multiple events can be waited upon simultaneously", "[event]") {
+#if SYCL_CTS_COMPILING_WITH_SIMSYCL
+  FAIL("SimSYCL does not implement asynchronous execution.");
+#endif
+
   // Give main thread some time to fail the did_resolve check
   delayed_host_event dhe1{std::chrono::milliseconds(100)};
   delayed_host_event dhe2{std::chrono::milliseconds(100)};
@@ -307,6 +319,10 @@ TEST_CASE("event::get_info returns correct command execution status",
                        sycl::info::event_command_status>(make_device_event());
 
   SECTION("for host_task event") {
+#if SYCL_CTS_COMPILING_WITH_SIMSYCL
+    FAIL("SimSYCL does not implement asynchronous execution.");
+#endif
+
     resolvable_host_event rhe;
     auto& event = rhe.get_sycl_event();
 

@@ -248,4 +248,45 @@ TEST_CASE("Check exceptions thrown for mismatched context and device",
   }
 }
 
+TEST_CASE("Check that the default context contains all devices", "[queue]") {
+  sycl::platform platform{};
+  sycl::context defaultContext = sycl::queue{}.get_context();
+  CHECK(defaultContext.get_devices() == platform.get_devices());
+}
+
+TEST_CASE("Check that queue constructors use the correct context", "[queue]") {
+  const sycl::property_list& propList = {};
+  cts_async_handler asyncHandler;
+  const auto& deviceSelector = sycl::default_selector_v;
+  sycl::device syclDevice;
+  sycl::context syclContext;
+  sycl::context defaultContext = sycl::queue{}.get_context();
+
+  // Check that a default-constructed context is not the default context.
+  // recall, explicitly created contexts should not equal the default one.
+  CHECK(syclContext != defaultContext);
+
+  // Default context constructors
+  CHECK(defaultContext == sycl::queue{propList}.get_context());
+  CHECK(defaultContext == sycl::queue{asyncHandler, propList}.get_context());
+  CHECK(defaultContext == sycl::queue{deviceSelector, propList}.get_context());
+  CHECK(defaultContext ==
+        sycl::queue{deviceSelector, asyncHandler, propList}.get_context());
+  CHECK(defaultContext == sycl::queue{syclDevice, propList}.get_context());
+  CHECK(defaultContext ==
+        sycl::queue{syclDevice, asyncHandler, propList}.get_context());
+
+  // Non-default context constructors
+  CHECK(syclContext ==
+        sycl::queue{syclContext, deviceSelector, propList}.get_context());
+  CHECK(syclContext ==
+        sycl::queue{syclContext, deviceSelector, asyncHandler, propList}
+            .get_context());
+  CHECK(syclContext ==
+        sycl::queue{syclContext, syclDevice, propList}.get_context());
+  CHECK(syclContext ==
+        sycl::queue{syclContext, syclDevice, asyncHandler, propList}
+            .get_context());
+}
+
 } /* namespace queue_constructors */

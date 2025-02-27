@@ -82,7 +82,7 @@ class offset_helper {
      * See PR#124 and 'How to Miscompile Programs with "Benign" Data Races' from
      * Hans Boehm for more details.
      */
-    return group.get_linear_id() * numPerGroup +
+    return group.get_group_linear_id() * numPerGroup +
            item.get_logical_local().get_linear_id();
   }
 

@@ -305,7 +305,7 @@ bool check_equal_values(const T& lhs, const T& rhs) {
 }
 
 /**
- * @brief Instantiation for vectors with the same API as for scalar values. 
+ * @brief Instantiation for vectors with the same API as for scalar values.
  * Deprecated. Use \c value_operations::are_equal instead
  */
 template <typename T, int numElements>
@@ -435,8 +435,8 @@ namespace pixel_tag {
   struct upper: generic {};
 };
 
-// AdaptiveCpp does not yet support images
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+// AdaptiveCpp and SimSYCL do not yet support images
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP && !SYCL_CTS_COMPILING_WITH_SIMSYCL
 
 /**
  * @brief Helps with retrieving the right access type for reading/writing

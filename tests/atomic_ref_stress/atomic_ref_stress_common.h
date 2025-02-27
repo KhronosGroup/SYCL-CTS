@@ -42,10 +42,10 @@ class atomicity_device_scope {
       AddressSpaceT::value;
 
  public:
-  void operator()(const std::string &type_name,
-                  const std::string &memory_order_name,
-                  const std::string &memory_scope_name,
-                  const std::string &address_space_name) {
+  void operator()(const std::string& type_name,
+                  const std::string& memory_order_name,
+                  const std::string& memory_scope_name,
+                  const std::string& address_space_name) {
     INFO(atomic_ref::tests::common::get_section_name(
         type_name, memory_order_name, memory_scope_name, address_space_name,
         "atomicity_device_scope"));
@@ -59,7 +59,7 @@ class atomicity_device_scope {
         max_size);
     {
       sycl::buffer buf{&val, {1}};
-      queue.submit([&](sycl::handler &cgh) {
+      queue.submit([&](sycl::handler& cgh) {
         sycl::accessor acc{buf, cgh};
         cgh.parallel_for({size}, [=](auto i) {
           sycl::atomic_ref<T, MemoryOrder, MemoryScope, AddressSpace> a_r{
@@ -86,10 +86,10 @@ class atomicity_work_group_scope {
       AddressSpaceT::value;
 
  public:
-  void operator()(const std::string &type_name,
-                  const std::string &memory_order_name,
-                  const std::string &memory_scope_name,
-                  const std::string &address_space_name) {
+  void operator()(const std::string& type_name,
+                  const std::string& memory_order_name,
+                  const std::string& memory_scope_name,
+                  const std::string& address_space_name) {
     INFO(atomic_ref::tests::common::get_section_name(
         type_name, memory_order_name, memory_scope_name, address_space_name,
         "atomicity_work_group_scope"));
@@ -106,7 +106,7 @@ class atomicity_work_group_scope {
     {
       sycl::buffer buf{vals.data(), {group_range}};
       queue
-          .submit([&](sycl::handler &cgh) {
+          .submit([&](sycl::handler& cgh) {
             sycl::accessor acc{buf, cgh};
             sycl::local_accessor<T> lacc{{1}, cgh};
             cgh.parallel_for(
@@ -142,10 +142,10 @@ class aquire_release {
       AddressSpaceT::value;
 
  public:
-  void operator()(const std::string &type_name,
-                  const std::string &memory_order_name,
-                  const std::string &memory_scope_name,
-                  const std::string &address_space_name) {
+  void operator()(const std::string& type_name,
+                  const std::string& memory_order_name,
+                  const std::string& memory_scope_name,
+                  const std::string& address_space_name) {
     INFO(atomic_ref::tests::common::get_section_name(
         type_name, memory_order_name, memory_scope_name, address_space_name,
         "aquire_release"));
@@ -160,7 +160,7 @@ class aquire_release {
     res.fill(false);
     {
       sycl::buffer buf{res.data(), {global_range / local_range}};
-      queue.submit([&](sycl::handler &cgh) {
+      queue.submit([&](sycl::handler& cgh) {
         sycl::accessor res_acc{buf, cgh};
         sycl::local_accessor<T, 0> x{cgh};
         sycl::local_accessor<T, 0> y{cgh};
@@ -202,10 +202,10 @@ class ordering {
       AddressSpaceT::value;
 
  public:
-  void operator()(const std::string &type_name,
-                  const std::string &memory_order_name,
-                  const std::string &memory_scope_name,
-                  const std::string &address_space_name) {
+  void operator()(const std::string& type_name,
+                  const std::string& memory_order_name,
+                  const std::string& memory_scope_name,
+                  const std::string& address_space_name) {
     INFO(atomic_ref::tests::common::get_section_name(
         type_name, memory_order_name, memory_scope_name, address_space_name,
         "ordering"));
@@ -225,7 +225,7 @@ class ordering {
     res.fill(false);
     {
       sycl::buffer buf{res.data(), {global_range}};
-      queue.submit([&](sycl::handler &cgh) {
+      queue.submit([&](sycl::handler& cgh) {
         sycl::accessor res_acc{buf, cgh};
         sycl::local_accessor<T, 0> local_acc{cgh};
         sycl::local_accessor<bool> arr_acc{{local_range}, cgh};
@@ -246,9 +246,11 @@ class ordering {
   }
 };
 #ifdef __cpp_lib_atomic_ref
-template <typename T, typename MemoryOrderT, typename AddressSpaceT>
+template <typename T, typename MemoryOrderT, typename MemoryScopeT,
+          typename AddressSpaceT>
 class atomicity_with_host_code {
   static constexpr sycl::memory_order MemoryOrder = MemoryOrderT::value;
+  static constexpr sycl::memory_scope MemoryScope = MemoryScopeT::value;
   static constexpr sycl::access::address_space AddressSpace =
       AddressSpaceT::value;
 
@@ -278,10 +280,10 @@ class atomicity_with_host_code {
         sycl::atomic_ref<T, MemoryOrder, sycl::memory_scope::system,
                          AddressSpace>
             a_dev{*pval};
-        a_dev++;
+        a_dev.fetch_add(1);
       });
     });
-    for (int i = 0; i < count; i++) a_host++;
+    for (int i = 0; i < count; i++) a_host.fetch_add(1);
     event.wait();
     CHECK(*pval == size + count);
   }
@@ -289,7 +291,7 @@ class atomicity_with_host_code {
 #endif
 template <typename T>
 struct run_atomicity_device_scope {
-  void operator()(const std::string &type_name) {
+  void operator()(const std::string& type_name) {
     const auto memory_orders =
         value_pack<sycl::memory_order, sycl::memory_order::relaxed,
                    sycl::memory_order::acq_rel,
@@ -308,7 +310,7 @@ struct run_atomicity_device_scope {
 
 template <typename T>
 struct run_atomicity_work_group_scope {
-  void operator()(const std::string &type_name) {
+  void operator()(const std::string& type_name) {
     const auto memory_orders =
         value_pack<sycl::memory_order, sycl::memory_order::relaxed,
                    sycl::memory_order::acq_rel,
@@ -328,7 +330,7 @@ struct run_atomicity_work_group_scope {
 
 template <typename T>
 struct run_aquire_release {
-  void operator()(const std::string &type_name) {
+  void operator()(const std::string& type_name) {
     const auto memory_orders =
         value_pack<sycl::memory_order, sycl::memory_order::acq_rel,
                    sycl::memory_order::seq_cst>::generate_named();
@@ -347,7 +349,7 @@ struct run_aquire_release {
 
 template <typename T>
 struct run_ordering {
-  void operator()(const std::string &type_name) {
+  void operator()(const std::string& type_name) {
     const auto memory_orders =
         value_pack<sycl::memory_order, sycl::memory_order::release,
                    sycl::memory_order::seq_cst>::generate_named();
@@ -371,12 +373,15 @@ struct run_atomicity_with_host_code {
         value_pack<sycl::memory_order, sycl::memory_order::relaxed,
                    sycl::memory_order::acq_rel,
                    sycl::memory_order::seq_cst>::generate_named();
+    const auto memory_scopes =
+        value_pack<sycl::memory_scope,
+                   sycl::memory_scope::system>::generate_named();
     const auto address_spaces = value_pack<
         sycl::access::address_space, sycl::access::address_space::global_space,
         sycl::access::address_space::generic_space>::generate_named();
 
     for_all_combinations<atomicity_with_host_code, T>(
-        memory_orders, address_spaces, type_name);
+        memory_orders, memory_scopes, address_spaces, type_name);
   }
 };
 #endif
