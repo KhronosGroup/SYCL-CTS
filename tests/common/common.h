@@ -890,4 +890,20 @@ inline bool have_same_devices(std::vector<sycl::device> lhs,
          std::all_of(rhs.cbegin(), rhs.cend(), create_check_func(lhs));
 }
 
+/**
+ * @brief Helper function which implements the functionality of std::memcmp
+ * without linking external library
+ *  @param lhs pointer to the memory buffer to compare
+ *  @param rhs pointer to the memory buffer to compare
+ *  @param count number of bytes to examine
+ */
+inline int memcmp_no_ext_lib(const void* lhs, const void* rhs, size_t count) {
+  const unsigned char* c1 = static_cast<const unsigned char*>(lhs);
+  const unsigned char* c2 = static_cast<const unsigned char*>(rhs);
+  for (; count--; c1++, c2++) {
+    if (*c1 != *c2) return *c1 < *c2 ? -1 : 1;
+  }
+  return 0;
+}
+
 #endif  // __SYCLCTS_TESTS_COMMON_COMMON_H
