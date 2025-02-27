@@ -27,8 +27,11 @@
 namespace current_device {
 #ifdef SYCL_EXT_ONEAPI_CURRENT_DEVICE
 
-sycl::device get_device_to_set() {
-  static std::vector<sycl::device> devices = sycl::device::get_devices();
+sycl::device get_device_to_set(const bool is_need_to_reallocate) {
+  static std::vector<sycl::device> devices;  // = sycl::device::get_devices();
+  if (is_need_to_reallocate) {
+    devices = sycl::device::get_devices();
+  }
   for (const auto device : devices) {
     // remove device from the list of devices
     devices.erase(std::remove(devices.begin(), devices.end(), device),
@@ -64,7 +67,7 @@ TEST_CASE(
 #ifndef SYCL_EXT_ONEAPI_CURRENT_DEVICE
   SKIP("SYCL_EXT_ONEAPI_CURRENT_DEVICE is not defined");
 #else
-  const auto device_to_set = current_device::get_device_to_set();
+  const auto device_to_set = current_device::get_device_to_set(true);
   sycl::ext::oneapi::experimental::this_thread::set_current_device(
       device_to_set);
   const auto current_device =
@@ -90,9 +93,8 @@ TEST_CASE(
   std::condition_variable cv_thread2;
   bool signal_thread1 = false;
   bool signal_thread2 = false;
-
-  const auto t1_device_to_set = get_device_to_set();
-  const auto t2_device_to_set = get_device_to_set();
+  const auto t1_device_to_set = get_device_to_set(true);
+  const auto t2_device_to_set = get_device_to_set(false);
   sycl::device t1_current_device;
   sycl::device t2_current_device;
 
@@ -108,7 +110,7 @@ TEST_CASE(
       std::unique_lock<std::mutex> lock(mtx);
       cv_thread2.wait(lock, [&] { return signal_thread2; });
     }
-    const auto t1_current_device =
+    t1_current_device =
         sycl::ext::oneapi::experimental::this_thread::get_current_device();
   });
 
@@ -118,7 +120,8 @@ TEST_CASE(
     sycl::ext::oneapi::experimental::this_thread::set_current_device(
         t2_device_to_set);
     signal_thread2 = true;
-    const auto t2_current_device =
+    cv_thread2.notify_one();
+    t2_current_device =
         sycl::ext::oneapi::experimental::this_thread::get_current_device();
   });
   t1.join();
@@ -130,5 +133,4 @@ TEST_CASE(
 
 #endif
 }
-
 }  // namespace current_device
