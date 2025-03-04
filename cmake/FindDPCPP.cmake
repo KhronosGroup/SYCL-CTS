@@ -72,6 +72,13 @@ if(DPCPP_ENABLE_PREVIEW_CHANGES)
     set(CMAKE_CXX_FLAGS "-fpreview-breaking-changes ${CMAKE_CXX_FLAGS}")
 endif()
 
+cmake_dependent_option(DPCPP_ENABLE_UNFINISHED_KHR_EXTENSIONS
+  "Enable unfinished KHR extensions for DPC++ compiler" ON
+  "SYCL_CTS_ENABLE_KHR_TESTS" OFF)
+if(DPCPP_ENABLE_UNFINISHED_KHR_EXTENSIONS)
+    add_definitions(-D__DPCPP_ENABLE_UNFINISHED_KHR_EXTENSIONS)
+endif()
+
 add_library(DPCPP::Runtime INTERFACE IMPORTED GLOBAL)
 set_target_properties(DPCPP::Runtime PROPERTIES
   INTERFACE_COMPILE_OPTIONS   "${DPCPP_FLAGS}"
