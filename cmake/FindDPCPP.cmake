@@ -73,7 +73,7 @@ if(DPCPP_ENABLE_PREVIEW_CHANGES)
 endif()
 
 cmake_dependent_option(DPCPP_ENABLE_UNFINISHED_KHR_EXTENSIONS
-  "Enable unfinished KHR extensions" ON
+  "Enable unfinished KHR extensions for DPC++ compiler" ON
   "SYCL_CTS_ENABLE_KHR_TESTS" OFF)
 if(DPCPP_ENABLE_UNFINISHED_KHR_EXTENSIONS)
     add_definitions(-D__DPCPP_ENABLE_UNFINISHED_KHR_EXTENSIONS)
