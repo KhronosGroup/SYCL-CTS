@@ -51,6 +51,9 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS
 add_cts_option(SYCL_CTS_ENABLE_KHR_TESTS
     "Enable all extension Khronos tests" OFF)
 
+add_cts_option(SYCL_CTS_SYCL_NEXT_TESTS
+    "Enable all SYCL Next tests" OFF)
+
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS
     "Enable extension oneAPI compile-time property list tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
@@ -117,6 +120,10 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_LOCAL_MEMORY_TESTS
 
 add_cts_option(SYCL_CTS_ENABLE_KHR_DEFAULT_CONTEXT_TESTS
     "Enable extension Khronos default_context tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+
+add_cts_option(SYCL_CTS_ENABLE_KHR_FREE_FUNCTION_COMMANDS
+    "Enable extension Khronos free_function_commands tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
 add_cts_option(SYCL_CTS_ENABLE_KHR_QUEUE_EMPTY_QUERY_TESTS
