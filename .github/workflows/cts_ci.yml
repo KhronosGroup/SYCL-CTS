@@ -144,13 +144,6 @@ jobs:
           key: ${{ matrix.sycl-impl }}-ccache-${{ github.sha }}
           restore-keys: |
             ${{ matrix.sycl-impl }}-ccache-
-      # Use ccache's "depend mode" to work around DPC++ issue (see https://github.com/intel/llvm/issues/5260)
-      # This requires compilation with -MD, which is enabled because we use the Ninja generator
-      # Using this mode should not have any practical disadvantages
-      - name: Set ccache environment variables
-        run: |
-          echo "CCACHE_DEPEND=1" >> "$GITHUB_ENV"
-          echo "CCACHE_DIR=${{ env.container-workspace }}/.ccache" >> "$GITHUB_ENV"
       - name: Build 'oclmath'
         working-directory: ${{ env.container-workspace }}/build
         run: cmake --build . --target oclmath
