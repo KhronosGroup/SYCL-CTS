@@ -12,7 +12,7 @@ jobs:
   # Pushing container images requires DockerHub credentials, provided as GitHub secrets.
   # Secrets are not available for runs triggered from external branches (forks).
   check-secrets:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       available: ${{ steps.check.outputs.available }}
     steps:
@@ -25,7 +25,7 @@ jobs:
   build-common-base-image:
     needs: check-secrets
     if: needs.check-secrets.outputs.available == 'yes'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -49,7 +49,7 @@ jobs:
 
   build-image-for-sycl-impl:
     needs: build-common-base-image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       # NB: Don't forget to update versions in compile-cts step as well
@@ -109,7 +109,7 @@ jobs:
     needs: build-image-for-sycl-impl
     # Wait for Docker image builds, but run even if they're skipped
     if: always()
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       # NB: Don't forget to update versions in build-image-for-sycl-impl step as well
