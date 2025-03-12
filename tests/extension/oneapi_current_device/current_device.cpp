@@ -63,9 +63,9 @@ TEST_CASE(
 #endif
 }
 
-void thread_callback1(const sycl::device& device_to_set,
-                      sycl::device& current_device, bool& signal_thread1,
-                      bool& signal_thread2) {
+void thread_callback(const sycl::device& device_to_set,
+                     sycl::device& current_device, bool& signal_thread1,
+                     bool& signal_thread2) {
   sycl::ext::oneapi::experimental::this_thread::set_current_device(
       device_to_set);
   signal_thread1 = true;
@@ -96,10 +96,10 @@ TEST_CASE(
   sycl::device t1_current_device;
   sycl::device t2_current_device;
 
-  std::thread t1(thread_callback1, std::cref(t1_device_to_set),
+  std::thread t1(thread_callback, std::cref(t1_device_to_set),
                  std::ref(t1_current_device), std::ref(signal_thread1),
                  std::ref(signal_thread2));
-  std::thread t2(thread_callback1, std::cref(t2_device_to_set),
+  std::thread t2(thread_callback, std::cref(t2_device_to_set),
                  std::ref(t2_current_device), std::ref(signal_thread2),
                  std::ref(signal_thread1));
   t1.join();
