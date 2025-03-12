@@ -12,7 +12,7 @@ jobs:
   # Pushing container images requires DockerHub credentials, provided as GitHub secrets.
   # Secrets are not available for runs triggered from external branches (forks).
   check-secrets:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       available: ${{ steps.check.outputs.available }}
     steps:
@@ -25,7 +25,7 @@ jobs:
   build-common-base-image:
     needs: check-secrets
     if: needs.check-secrets.outputs.available == 'yes'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -49,7 +49,7 @@ jobs:
 
   build-image-for-sycl-impl:
     needs: build-common-base-image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       # NB: Don't forget to update versions in compile-cts step as well
@@ -109,7 +109,7 @@ jobs:
     needs: build-image-for-sycl-impl
     # Wait for Docker image builds, but run even if they're skipped
     if: always()
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       # NB: Don't forget to update versions in build-image-for-sycl-impl step as well
@@ -123,7 +123,7 @@ jobs:
             version: 27ca7a05e65d24c784ba831225d0a53341719590
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
-      parallel-build-jobs: 2
+      parallel-build-jobs: 3
     container:
       image: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
     steps:
@@ -144,13 +144,6 @@ jobs:
           key: ${{ matrix.sycl-impl }}-ccache-${{ github.sha }}
           restore-keys: |
             ${{ matrix.sycl-impl }}-ccache-
-      # Use ccache's "depend mode" to work around DPC++ issue (see https://github.com/intel/llvm/issues/5260)
-      # This requires compilation with -MD, which is enabled because we use the Ninja generator
-      # Using this mode should not have any practical disadvantages
-      - name: Set ccache environment variables
-        run: |
-          echo "CCACHE_DEPEND=1" >> "$GITHUB_ENV"
-          echo "CCACHE_DIR=${{ env.container-workspace }}/.ccache" >> "$GITHUB_ENV"
       - name: Build 'oclmath'
         working-directory: ${{ env.container-workspace }}/build
         run: cmake --build . --target oclmath
