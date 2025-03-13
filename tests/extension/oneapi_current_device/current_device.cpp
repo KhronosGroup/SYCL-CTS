@@ -24,8 +24,8 @@
 namespace current_device::tests {
 
 TEST_CASE(
-    "Test for \"get_current_device\" get default device, call function and "
-    "compare devices ") {
+    "Test for \"get_current_device\" gets default device, call function and "
+    "compares devices ") {
 #ifndef SYCL_EXT_ONEAPI_CURRENT_DEVICE
   SKIP(
       "The sycl_ext_oneapi_current_device extension is not supported "
