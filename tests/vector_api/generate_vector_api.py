@@ -25,7 +25,7 @@ import sys
 import argparse
 from string import Template
 sys.path.append('../common/')
-from common_python_vec import (Data, ReverseData, append_fp_postfix, wrap_with_kernel,
+from common_python_vec import (Data, ReverseData, make_fp_or_byte_explicit, wrap_with_kernel,
                                wrap_with_test_func, make_func_call,
                                write_source_file, get_types, cast_to_bool)
 
@@ -77,8 +77,9 @@ as_convert_call_template = Template("""
 
 
 def gen_checks(type_str, size):
-    vals_list = append_fp_postfix(type_str, Data.vals_list_dict[size])
-    if 'double' in type_str or 'half' in type_str or 'float' in type_str:
+    vals_list = make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size])
+    if type_str in ('double', 'float', 'half'):
+        # Want fractions/sign...
         vals_list =  Data.vals_list_dict_float[size]
     reverse_vals_list = vals_list[::-1]
     kernel_name = 'KERNEL_API_' + type_str + str(size)
