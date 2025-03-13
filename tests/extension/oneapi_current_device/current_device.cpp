@@ -44,7 +44,7 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Test for \"set_current_device and get_current_device\" check that "
+    "Test for \"set_current_device and get_current_device\" checks that "
     "get_current_device function returns the device set by "
     "set_current_device function") {
 #ifndef SYCL_EXT_ONEAPI_CURRENT_DEVICE
@@ -64,22 +64,16 @@ TEST_CASE(
 }
 
 void thread_callback(const sycl::device& device_to_set,
-                     sycl::device& current_device, bool& signal_thread1,
-                     bool& signal_thread2) {
+                     sycl::device& current_device) {
   sycl::ext::oneapi::experimental::this_thread::set_current_device(
       device_to_set);
-  signal_thread1 = true;
-  while (!signal_thread2) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-  }
   current_device =
       sycl::ext::oneapi::experimental::this_thread::get_current_device();
 }
 
 TEST_CASE(
     "Test for calling \"set_current_device and get_current_device in "
-    "different "
-    "threads\", check that each thread has its own current device") {
+    "different threads\", checks that each thread has its own current device") {
 #ifndef SYCL_EXT_ONEAPI_CURRENT_DEVICE
   SKIP(
       "The sycl_ext_oneapi_current_device extension is not supported "
@@ -89,19 +83,15 @@ TEST_CASE(
   if (devices.size() < 2) {
     SKIP("Test requires at least two devices");
   }
-  bool signal_thread1 = false;
-  bool signal_thread2 = false;
   const auto t1_device_to_set = devices[0];
   const auto t2_device_to_set = devices[1];
   sycl::device t1_current_device;
   sycl::device t2_current_device;
 
   std::thread t1(thread_callback, std::cref(t1_device_to_set),
-                 std::ref(t1_current_device), std::ref(signal_thread1),
-                 std::ref(signal_thread2));
+                 std::ref(t1_current_device));
   std::thread t2(thread_callback, std::cref(t2_device_to_set),
-                 std::ref(t2_current_device), std::ref(signal_thread2),
-                 std::ref(signal_thread1));
+                 std::ref(t2_current_device));
   t1.join();
   t2.join();
 
