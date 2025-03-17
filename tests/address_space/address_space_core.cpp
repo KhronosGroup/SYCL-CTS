@@ -66,7 +66,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
 #endif
 
 #ifdef SYCL_CTS_SYCL_NEXT_TESTS
-    static_assert(std::is_same_v<sycl::access::address_space, sycl::addrspace>);
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+static_assert(std::is_same_v<sycl::access::address_space, sycl::addrspace>);
     static_assert(
         std::is_same_v<sycl::addrspace::global_space, sycl::addrspace_global>);
     static_assert(
@@ -75,6 +76,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                                  sycl::addrspace_private>);
     static_assert(std::is_same_v<sycl::addrspace::generic_space,
                                  sycl::addrspace_generic>);
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #endif
   }
 };
