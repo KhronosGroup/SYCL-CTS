@@ -1355,7 +1355,7 @@ def generate_all_types_specific_return_type_test(type_str, size):
         type=type_str,
         size=str(size),
         swizzle=get_swizzle(size),
-        ret_type='rel_log_ret_t<{}>'.format(type_str),
+        ret_type=f'rel_log_ret_t<{type_str}>',
         test_value_1=1,
         test_value_2=2)
     return wrap_with_kernel(
