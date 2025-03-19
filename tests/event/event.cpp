@@ -217,7 +217,7 @@ static sycl::event make_throwing_host_event(
     for (auto& dep : dependencies) {
       cgh.depends_on(dep);
     }
-    cgh.host_task([name](auto) { throw test_exception{name}; });
+    cgh.host_task([name] { throw test_exception{name}; });
   });
 }
 
