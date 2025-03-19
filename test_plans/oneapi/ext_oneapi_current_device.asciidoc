@@ -1,0 +1,35 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for ext oneapi current device
+
+This is a test plan for the device selector as described in SYCL 2020 revision 9 specification.
+
+Estimated development time is one day.
+
+== Testing scope
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All of the tests described below are performed only on the default device that
+can be selected on the CTS command line.
+
+== Tests
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_CURRENT_DEVICE` so they can be skipped
+if feature is not supported.
+
+=== Functions `get_current_device` and `set_current_device`
+
+1. Get default device d1. Call `get_current_device()` but do not call `set_current_device`. Compare d1 and returned by `get_current_device()` devices.
+2. Call `set_current_device(d)` then call `get_current_device()` from the same thread.
+Compare return value of `get_current_device()` with `d`.
+3. Create two threads. Thread 1 calls `set_current_device(d1)` and sends signal to thread 2, waits signals from thread 2, calls `get_current_device()` and checks that got d1.
+Thread 2 calls `set_current_device(d2)` and sends signal to thread 1, waits signals from thread 1, calls `get_current_device()` and checks that got d2.
+Test checks that every thread has its own default device. Requires 2 devices at available.
