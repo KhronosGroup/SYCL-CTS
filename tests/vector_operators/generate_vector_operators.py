@@ -431,6 +431,9 @@ all_type_test_template = Template("""
 """)
 
 specific_return_type_test_template = Template("""
+#if SYCL_CTS_COMPILING_WITH_SIMSYCL
+  FAIL_CHECK("SimSYCL has incorrect return types for logical/relational operators.");
+#else
   /** Tests each logical and relational operator available to vector types
    */
   auto testVec1 = sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
@@ -732,6 +735,7 @@ specific_return_type_test_template = Template("""
   if (!check_vector_values(resVec, resArr)) {
     resAcc[0] = false;
   }
+#endif
 """)
 
 non_fp_bitwise_test_template = Template("""
