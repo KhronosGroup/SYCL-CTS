@@ -26,6 +26,10 @@ template <int N>
 void check_min_size() {
   auto queue = sycl_cts::util::get_cts_object::queue();
   auto dev = queue.get_device();
+
+  check_get_info_param<khr::info::device::max_num_work_groups<1>,
+                       sycl::range<N>>(dev);
+
   if (dev.get_info<sycl::info::device::device_type>() !=
       sycl::info::device_type::custom) {
     auto max_work_groups =
