@@ -1259,23 +1259,6 @@ subscript_operator_test_template = Template("""
   }
 """)
 
-vector_t_operator_test_template = Template("""
-#ifdef __SYCL_DEVICE_ONLY__
-  // check operator vector_t() const
-  {
-    ${type} val = ${val};
-    const sycl::vec<${type}, 1> testVec(val);
-    sycl::vec<${type}, ${size}>::vector_t data = testVec;
-
-    const sycl::vec<${type}, 1> testVec2(data);
-
-    if (!(testVec == testVec2)) {
-      resAcc[0] = false;
-    }
-  }
-#endif  // __SYCL_DEVICE_ONLY__
-""")
-
 dataT_operator_test_template = Template("""
   // check operator DataT() const
   {
@@ -1325,11 +1308,6 @@ def generate_all_type_test(type_str, size):
     if size == 1:
         test_string += dataT_operator_test_template.substitute(
           type=type_str,
-          swizzle=get_swizzle(size),
-          val=Data.value_default_dict[type_str])
-        test_string += vector_t_operator_test_template.substitute(
-          type=type_str,
-          size=str(size),
           swizzle=get_swizzle(size),
           val=Data.value_default_dict[type_str])
     test_string += assign_dataT_operator_test_template.substitute(
