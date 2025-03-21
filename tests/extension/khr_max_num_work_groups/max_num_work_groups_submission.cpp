@@ -22,30 +22,36 @@
 
 namespace max_num_work_groups::tests {
 
-TEST_CASE("max_num_work_groups submission at numeric_limits int max in ",
-          "dimension 1 [khr_max_num_work_groups]") {
-  sycl::queue q;
-  sycl::device dev = q.get_device();
+template <int N>
+void check_submit() {
+  auto q = sycl_cts::util::get_cts_object::queue();
 
   auto max_work_groups_nd =
-      dev.get_info<khr::info::device::max_num_work_groups<3>>();
-
-  if (max_work_groups_nd[0] >= std::numeric_limits<int>::max()) {
-    int* result = sycl::malloc_shared<int>(1, q);
-    *result = 0;
-
-    sycl::nd_range<3> ndra({std::numeric_limits<int>::max(), 1, 1}, {1, 1, 1});
-
-        q.submit([&](sycl::handler& h) {
-           h.parallel_for(ndra, [=](sycl::nd_item<3> item) {
-             if (item.get_global_id(0) == std::numeric_limits<int>::max() - 1)
-               *result = 42;
-           });
-         }).wait();
-
-    CHECK(*result == 42);
-    sycl::free(result, q);
+      q.get_device()
+          .get_info<sycl::info::device::max_num_work_groups<N>>();
+  auto local = sycl::range<N>();
+  for (int i = 0; i < N; i++) {
+    local[i] = 1;
+    max_work_groups_nd[i] = std::min(
+        max_work_groups_nd[i],
+        static_cast<size_t>(std::numeric_limits<unsigned int>::max() + 1));
   }
+
+  int* a = sycl::malloc_shared<int>(1, q);
+  a[0] = 0;
+  q.parallel_for(sycl::nd_range(max_work_groups_nd, local), [=](auto i) {
+     if (i.get_global_id(0) == 0) a[0] = 1;
+   }).wait_and_throw();
+
+  CHECK(a[0] == 1);
+
+  sycl::free(a, q);
+}
+
+TEST_CASE("max_num_work_groups nd_range submission [khr_max_num_work_groups]") {
+  check_submit<1>();
+  check_submit<2>();
+  check_submit<3>();
 }
 
 }  // namespace max_num_work_groups::tests
