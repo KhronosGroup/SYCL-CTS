@@ -22,15 +22,15 @@
 
 namespace max_num_work_groups::tests {
 
-template <int N>
+template <int DIMENSION>
 void check_submit() {
   auto queue = sycl_cts::util::get_cts_object::queue();
   auto dev = queue.get_device();
 
   auto max_work_groups_nd =
-      dev.get_info<sycl::info::device::max_num_work_groups<N>>();
-  auto local = sycl::range<N>();
-  for (int i = 0; i < N; i++) {
+      dev.get_info<sycl::info::device::max_num_work_groups<DIMENSION>>();
+  auto local = sycl::range<DIMENSION>();
+  for (int i = 0; i < DIMENSION; i++) {
     local[i] = 1;
     //to avoid running too long
     max_work_groups_nd[i] = std::min(

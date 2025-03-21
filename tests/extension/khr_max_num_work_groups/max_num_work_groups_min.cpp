@@ -22,20 +22,20 @@
 
 namespace max_num_work_groups::tests {
 
-template <int N>
+template <int DIMENSION>
 void check_min_size() {
   auto queue = sycl_cts::util::get_cts_object::queue();
   auto dev = queue.get_device();
 
-  check_get_info_param<khr::info::device::max_num_work_groups<1>,
-                       sycl::range<N>>(dev);
+  check_get_info_param<khr::info::device::max_num_work_groups<DIMENSION>,
+                       sycl::range<DIMENSION>>(dev);
 
   if (dev.get_info<sycl::info::device::device_type>() !=
       sycl::info::device_type::custom) {
     auto max_work_groups =
-        dev.get_info<khr::info::device::max_num_work_groups<N>>();
+        dev.get_info<khr::info::device::max_num_work_groups<DIMENSION>>();
 
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < DIMENSION; i++) {
       CHECK(max_work_groups[i] >= 1);
     }
   }
