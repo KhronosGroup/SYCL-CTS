@@ -24,28 +24,29 @@ namespace max_num_work_groups::tests {
 
 template <int N>
 void check_submit() {
-  auto q = sycl_cts::util::get_cts_object::queue();
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto dev = queue.get_device();
 
   auto max_work_groups_nd =
-      q.get_device()
-          .get_info<sycl::info::device::max_num_work_groups<N>>();
+      dev.get_info<sycl::info::device::max_num_work_groups<N>>();
   auto local = sycl::range<N>();
   for (int i = 0; i < N; i++) {
     local[i] = 1;
+    //to avoid running too long
     max_work_groups_nd[i] = std::min(
         max_work_groups_nd[i],
         static_cast<size_t>(std::numeric_limits<unsigned int>::max() + 1));
   }
 
-  int* a = sycl::malloc_shared<int>(1, q);
+  int* a = sycl::malloc_shared<int>(1, queue);
   a[0] = 0;
-  q.parallel_for(sycl::nd_range(max_work_groups_nd, local), [=](auto i) {
+  queue.parallel_for(sycl::nd_range(max_work_groups_nd, local), [=](auto i) {
      if (i.get_global_id(0) == 0) a[0] = 1;
    }).wait_and_throw();
 
   CHECK(a[0] == 1);
 
-  sycl::free(a, q);
+  sycl::free(a, queue);
 }
 
 TEST_CASE("max_num_work_groups nd_range submission [khr_max_num_work_groups]") {

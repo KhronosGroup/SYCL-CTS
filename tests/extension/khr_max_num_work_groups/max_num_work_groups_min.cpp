@@ -22,20 +22,26 @@
 
 namespace max_num_work_groups::tests {
 
-TEST_CASE("if the device is not info::device_type::custom, the minimal",
-          "size in each dimension is (1,1,1)",
-          "[khr_max_num_work_groups]") {
-  sycl::queue q;
-  sycl::device dev = q.get_device();
-
+template <int N>
+void check_min_size() {
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto dev = queue.get_device();
   if (dev.get_info<sycl::info::device::device_type>() !=
       sycl::info::device_type::custom) {
     auto max_work_groups =
-        dev.get_info<khr::info::device::max_num_work_groups<3>>();
-    CHECK(max_work_groups[0] >= 1);
-    CHECK(max_work_groups[1] >= 1);
-    CHECK(max_work_groups[2] >= 1);
+        dev.get_info<khr::info::device::max_num_work_groups<N>>();
+
+    for (int i = 0; i < N; i++) {
+      CHECK(max_work_groups[i] >= 1);
+    }
   }
+}
+
+TEST_CASE("if the device is not info::device_type::custom, the minimal",
+          "size in each dimension is (1,1,1)", "[khr_max_num_work_groups]") {
+  check_min_size<1>();
+  check_min_size<2>();
+  check_min_size<3>();
 }
 
 }  // namespace max_num_work_groups::tests
