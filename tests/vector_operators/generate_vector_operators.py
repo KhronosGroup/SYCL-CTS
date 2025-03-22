@@ -431,6 +431,9 @@ all_type_test_template = Template("""
 """)
 
 specific_return_type_test_template = Template("""
+#if SYCL_CTS_COMPILING_WITH_SIMSYCL
+  FAIL_CHECK("SimSYCL has incorrect return types for logical/relational operators.");
+#else
   /** Tests each logical and relational operator available to vector types
    */
   auto testVec1 = sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
@@ -732,6 +735,7 @@ specific_return_type_test_template = Template("""
   if (!check_vector_values(resVec, resArr)) {
     resAcc[0] = false;
   }
+#endif
 """)
 
 non_fp_bitwise_test_template = Template("""
@@ -1333,7 +1337,7 @@ def generate_all_types_specific_return_type_test(type_str, size):
         type=type_str,
         size=str(size),
         swizzle=get_swizzle(size),
-        ret_type=Data.opencl_sized_return_type_dict[type_str],
+        ret_type=f'rel_log_ret_t<{type_str}>',
         test_value_1=1,
         test_value_2=2)
     return wrap_with_kernel(
@@ -1397,6 +1401,15 @@ def generate_operator_tests(type_str, input_file, output_file):
                                              type_str, test_str, str(size))
         func_calls += make_func_call(TEST_NAME + '_ALL_TYPES', type_str,
                                      str(size))
+
+        test_str = generate_all_types_specific_return_type_test(
+            type_str, size)
+        test_func_str += wrap_with_test_func(
+            TEST_NAME + '_SPECIFIC_RETURN_TYPES', type_str, test_str,
+            str(size))
+        func_calls += make_func_call(TEST_NAME + '_SPECIFIC_RETURN_TYPES',
+                                        type_str, str(size))
+
         if not type_str in [
                 'float', 'double', 'sycl::half'
         ]:
