@@ -194,7 +194,7 @@ static bool testWorkItemGroup(sycl::nd_item<Dimensions> it) {
   bool passed = true;
   sycl::group<Dimensions> group{it.get_group()};
   sycl::khr::work_group<Dimensions> work_group{group};
-  sycl::khr::member_item item{sycl::khr::get_item(work_group)};
+  sycl::khr::member_item item{sycl::khr::get_member_item(work_group)};
 
   // id
   static_assert(
@@ -286,7 +286,7 @@ static bool testWorkItemSubgroup(sycl::nd_item<Dimensions> it) {
   bool passed = true;
   sycl::sub_group group{it.get_sub_group()};
   sycl::khr::sub_group sub_group{group};
-  sycl::khr::member_item item{sycl::khr::get_item(sub_group)};
+  sycl::khr::member_item item{sycl::khr::get_member_item(sub_group)};
 
   // id
   static_assert(std::is_same_v<
