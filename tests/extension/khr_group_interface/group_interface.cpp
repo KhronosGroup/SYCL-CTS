@@ -194,26 +194,26 @@ static bool testWorkItemGroup(sycl::nd_item<Dimensions> it) {
   bool passed = true;
   sycl::group<Dimensions> group{it.get_group()};
   sycl::khr::work_group<Dimensions> work_group{group};
-  sycl::khr::work_item item{sycl::khr::get_item(work_group)};
+  sycl::khr::member_item item{sycl::khr::get_item(work_group)};
 
   // id
   static_assert(
       std::is_same_v<decltype(item.id()),
-                     typename sycl::khr::work_item<
+                     typename sycl::khr::member_item<
                          sycl::khr::work_group<Dimensions>>::id_type>);
   passed &= (group.get_local_id() == item.id());
 
   // linear_id
   static_assert(
       std::is_same_v<decltype(item.linear_id()),
-                     typename sycl::khr::work_item<
+                     typename sycl::khr::member_item<
                          sycl::khr::work_group<Dimensions>>::linear_id_type>);
   passed &= (group.get_local_linear_id() == item.linear_id());
 
   // range
   static_assert(
       std::is_same_v<decltype(item.range()),
-                     typename sycl::khr::work_item<
+                     typename sycl::khr::member_item<
                          sycl::khr::work_group<Dimensions>>::range_type>);
   passed &= (group.get_local_range() == item.range());
 
@@ -221,7 +221,7 @@ static bool testWorkItemGroup(sycl::nd_item<Dimensions> it) {
   // extents
   static_assert(
       std::is_same_v<decltype(item.extents()),
-                     typename sycl::khr::work_item<
+                     typename sycl::khr::member_item<
                          sycl::khr::work_group<Dimensions>>::extents_type>);
   if constexpr (Dimensions == 1)
     passed &= (item.extents() == std::extents<std::size_t, 1>());
@@ -233,32 +233,32 @@ static bool testWorkItemGroup(sycl::nd_item<Dimensions> it) {
   // extent
   static_assert(
       std::is_same_v<decltype(item.extent(0)),
-                     typename sycl::khr::work_item<sycl::khr::work_group<
+                     typename sycl::khr::member_item<sycl::khr::work_group<
                          Dimensions>>::extents_type::index_type>);
   for (int i = 0; i < Dimensions; i++)
     passed &= (item.extent(i) == item.extents().extent(i));
 
   // rank
   static_assert(
-      std::is_same_v<decltype(sycl::khr::work_item<
+      std::is_same_v<decltype(sycl::khr::member_item<
                               sycl::khr::work_group<Dimensions>>::rank()),
-                     typename sycl::khr::work_item<sycl::khr::work_group<
+                     typename sycl::khr::member_item<sycl::khr::work_group<
                          Dimensions>>::extents_type::rank_type>);
   static_assert(decltype(item)::rank() == decltype(item.extents())::rank());
 
   // rank_dynamic
   static_assert(
       std::is_same_v<
-          decltype(sycl::khr::work_item<
+          decltype(sycl::khr::member_item<
                    sycl::khr::work_group<Dimensions>>::rank_dynamic()),
-          typename sycl::khr::work_item<
+          typename sycl::khr::member_item<
               sycl::khr::work_group<Dimensions>>::extents_type::rank_type>);
   static_assert(decltype(item)::rank_dynamic() ==
                 decltype(item.extents())::rank_dynamic());
 
   // static_extent
   static_assert(
-      std::is_same_v<decltype(sycl::khr::work_item<sycl::khr::work_group<
+      std::is_same_v<decltype(sycl::khr::member_item<sycl::khr::work_group<
                                   Dimensions>>::static_extent(0)),
                      std::size_t>);
   static_assert(decltype(item)::static_extent(0) ==
@@ -274,7 +274,7 @@ static bool testWorkItemGroup(sycl::nd_item<Dimensions> it) {
   // size
   static_assert(
       std::is_same_v<decltype(item.size()),
-                     typename sycl::khr::work_item<
+                     typename sycl::khr::member_item<
                          sycl::khr::work_group<Dimensions>>::size_type>);
   passed &= (1 == item.size());
 
@@ -286,26 +286,26 @@ static bool testWorkItemSubgroup(sycl::nd_item<Dimensions> it) {
   bool passed = true;
   sycl::sub_group group{it.get_sub_group()};
   sycl::khr::sub_group sub_group{group};
-  sycl::khr::work_item item{sycl::khr::get_item(sub_group)};
+  sycl::khr::member_item item{sycl::khr::get_item(sub_group)};
 
   // id
   static_assert(std::is_same_v<
                 decltype(item.id()),
-                typename sycl::khr::work_item<sycl::khr::sub_group>::id_type>);
+                typename sycl::khr::member_item<sycl::khr::sub_group>::id_type>);
   passed &= (group.get_local_id() == item.id());
 
   // linear_id
   static_assert(
       std::is_same_v<
           decltype(item.linear_id()),
-          typename sycl::khr::work_item<sycl::khr::sub_group>::linear_id_type>);
+          typename sycl::khr::member_item<sycl::khr::sub_group>::linear_id_type>);
   passed &= (group.get_local_linear_id() == item.linear_id());
 
   // range
   static_assert(
       std::is_same_v<
           decltype(item.range()),
-          typename sycl::khr::work_item<sycl::khr::sub_group>::range_type>);
+          typename sycl::khr::member_item<sycl::khr::sub_group>::range_type>);
   passed &= (group.get_local_range() == item.range());
 
 #if __cplusplus >= 202302L
@@ -313,35 +313,35 @@ static bool testWorkItemSubgroup(sycl::nd_item<Dimensions> it) {
   static_assert(
       std::is_same_v<
           decltype(item.extents()),
-          typename sycl::khr::work_item<sycl::khr::sub_group>::extents_type>);
+          typename sycl::khr::member_item<sycl::khr::sub_group>::extents_type>);
   passed &= (item.extents() == std::extents<std::uint32_t, 1>());
 
   // extent
   static_assert(
       std::is_same_v<decltype(item.extent(0)),
-                     typename sycl::khr::work_item<
+                     typename sycl::khr::member_item<
                          sycl::khr::sub_group>::extents_type::index_type>);
   passed &= (item.extent(0) == item.extents().extent(0));
 
   // rank
   static_assert(std::is_same_v<
-                decltype(sycl::khr::work_item<sycl::khr::sub_group>::rank()),
-                typename sycl::khr::work_item<
+                decltype(sycl::khr::member_item<sycl::khr::sub_group>::rank()),
+                typename sycl::khr::member_item<
                     sycl::khr::sub_group>::extents_type::rank_type>);
   static_assert(decltype(item)::rank() == decltype(item.extents())::rank());
 
   // rank_dynamic
   static_assert(
       std::is_same_v<
-          decltype(sycl::khr::work_item<sycl::khr::sub_group>::rank_dynamic()),
-          typename sycl::khr::work_item<
+          decltype(sycl::khr::member_item<sycl::khr::sub_group>::rank_dynamic()),
+          typename sycl::khr::member_item<
               sycl::khr::sub_group>::extents_type::rank_type>);
   static_assert(decltype(item)::rank_dynamic() ==
                 decltype(item.extents())::rank_dynamic());
 
   // static_extent
   static_assert(
-      std::is_same_v<decltype(sycl::khr::work_item<sycl::khr::work_group<
+      std::is_same_v<decltype(sycl::khr::member_item<sycl::khr::work_group<
                                   Dimensions>>::static_extent(0)),
                      std::size_t>);
   static_assert(decltype(item)::static_extent(0) ==
@@ -352,7 +352,7 @@ static bool testWorkItemSubgroup(sycl::nd_item<Dimensions> it) {
   static_assert(
       std::is_same_v<
           decltype(item.size()),
-          typename sycl::khr::work_item<sycl::khr::sub_group>::size_type>);
+          typename sycl::khr::member_item<sycl::khr::sub_group>::size_type>);
   passed &= (1 == item.size());
 
   return passed;
