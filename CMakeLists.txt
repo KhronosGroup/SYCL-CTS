@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.15)
 project(sycl_cts LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+if(SYCL_IMPLEMENTATION STREQUAL SimSYCL)
+    set(CMAKE_CXX_STANDARD 20)
+else()
+    set(CMAKE_CXX_STANDARD 17)
+endif()
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON) # Required for hex floats in C++11 mode on gcc 6+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
@@ -45,6 +50,9 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS
 
 add_cts_option(SYCL_CTS_ENABLE_KHR_TESTS
     "Enable all extension Khronos tests" OFF)
+
+add_cts_option(SYCL_CTS_SYCL_NEXT_TESTS
+    "Enable all SYCL Next tests" OFF)
 
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS
     "Enable extension oneAPI compile-time property list tests" OFF
@@ -98,6 +106,10 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_NON_UNIFORM_GROUPS_TESTS
     "Enable extension oneAPI non_uniform_groups tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_NUM_COMPUTE_UNITS_TESTS
+    "Enable extension oneAPI num_compute_units tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
+
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_ROOT_GROUP_TESTS
     "Enable extension oneAPI root group tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
@@ -114,8 +126,16 @@ add_cts_option(SYCL_CTS_ENABLE_KHR_DEFAULT_CONTEXT_TESTS
     "Enable extension Khronos default_context tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_KHR_FREE_FUNCTION_COMMANDS
+    "Enable extension Khronos free_function_commands tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+
 add_cts_option(SYCL_CTS_ENABLE_KHR_GROUP_INTERFACE_TESTS
     "Enable extension Khronos group_interface tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+
+add_cts_option(SYCL_CTS_ENABLE_KHR_QUEUE_EMPTY_QUERY_TESTS
+    "Enable extension Khronos queue_empty_query tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
 # TODO: Deprecated - remove
@@ -176,6 +196,17 @@ if(SYCL_CTS_MEASURE_BUILD_TIMES)
         # Only Makefiles and Ninja support CMake compiler launchers
         message(FATAL_ERROR "Build time measurements are only supported for the 'Unix Makefiles' and 'Ninja' generators.")
     endif()
+endif()
+# ------------------
+
+# ------------------
+# Math builtin fragment size option
+set(SYCL_CTS_MATH_BUILTIN_FRAGMENT_SIZE "230" CACHE STRING
+"Control the size of the fragment files generated for the math builtin tests.\
+ Decreasing this may help increase the parallelizability of the compilation of\
+ the math builtin, but may also increase the overall compilation time.")
+if(NOT "${SYCL_CTS_MATH_BUILTIN_FRAGMENT_SIZE}" MATCHES "^[1-9][0-9]*$")
+    message(FATAL_ERROR "SYCL_CTS_MATH_BUILTIN_FRAGMENT_SIZE (${SYCL_CTS_MATH_BUILTIN_FRAGMENT_SIZE}) must be an integer greater than 0.")
 endif()
 # ------------------
 

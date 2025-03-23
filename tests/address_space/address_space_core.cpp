@@ -64,6 +64,23 @@ class TEST_NAME : public sycl_cts::util::test_base {
 #ifdef UINT64_MAX
     test_types<std::uint64_t>(log);
 #endif
+
+#ifdef SYCL_CTS_SYCL_NEXT_TESTS
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP && \
+    !SYCL_CTS_COMPILING_WITH_SIMSYCL && !SYCL_CTS_COMPILING_WITH_DPCPP
+    // Tests are disabled because none of the implementations support them yet.
+    // FIXME: re-enable tests once the implementations support them.
+    static_assert(std::is_same_v<sycl::access::address_space, sycl::addrspace>);
+    static_assert(
+        std::is_same_v<sycl::addrspace::global_space, sycl::addrspace_global>);
+    static_assert(
+        std::is_same_v<sycl::addrspace::local_space, sycl::addrspace_local>);
+    static_assert(std::is_same_v<sycl::addrspace::private_space,
+                                 sycl::addrspace_private>);
+    static_assert(std::is_same_v<sycl::addrspace::generic_space,
+                                 sycl::addrspace_generic>);
+#endif
+#endif
   }
 };
 

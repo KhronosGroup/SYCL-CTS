@@ -29,9 +29,6 @@ set(DPCPP_FLAGS "${DPCPP_FLAGS};-fno-sycl-id-queries-fit-in-int")
 if(DEFINED DPCPP_TARGET_TRIPLES)
     set(DPCPP_FLAGS "${DPCPP_FLAGS};-fsycl-targets=${DPCPP_TARGET_TRIPLES};")
     message(STATUS "DPC++ compiling to triples: ${DPCPP_TARGET_TRIPLES}")
-    if(${DPCPP_TARGET_TRIPLES} MATCHES ".*-nvidia-cuda-.*")
-        add_definitions(-DSYCL_CTS_INTEL_PI_CUDA)
-    endif()
 endif()
 message(STATUS "DPC++ compiler flags: `${DPCPP_FLAGS}`")
 
@@ -62,7 +59,21 @@ endif()
 option(DPCPP_SYCL2020_CONFORMANT_APIS
   "Comply with the SYCL 2020 specification" ON)
 if(DPCPP_SYCL2020_CONFORMANT_APIS)
-    set(CMAKE_CXX_FLAGS "-DSYCL2020_CONFORMANT_APIS -fpreview-breaking-changes ${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "-DSYCL2020_CONFORMANT_APIS ${CMAKE_CXX_FLAGS}")
+endif()
+
+cmake_dependent_option(DPCPP_ENABLE_PREVIEW_CHANGES
+  "Enable preview changes for DPC++ Compiler" ON
+  "DPCPP_SYCL2020_CONFORMANT_APIS" OFF)
+if(DPCPP_ENABLE_PREVIEW_CHANGES)
+    set(CMAKE_CXX_FLAGS "-fpreview-breaking-changes ${CMAKE_CXX_FLAGS}")
+endif()
+
+cmake_dependent_option(DPCPP_ENABLE_UNFINISHED_KHR_EXTENSIONS
+  "Enable unfinished KHR extensions for DPC++ compiler" ON
+  "SYCL_CTS_ENABLE_KHR_TESTS" OFF)
+if(DPCPP_ENABLE_UNFINISHED_KHR_EXTENSIONS)
+    add_definitions(-D__DPCPP_ENABLE_UNFINISHED_KHR_EXTENSIONS)
 endif()
 
 add_library(DPCPP::Runtime INTERFACE IMPORTED GLOBAL)

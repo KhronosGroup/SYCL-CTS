@@ -1,0 +1,412 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl_khr_free_function_commands
+
+This is a test plan for the API described in
+https://github.com/KhronosGroup/SYCL-Docs/pull/644[sycl_khr_free_function_commands].
+
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_KHR_FREE_FUNCTION_COMMANDS` so they can be skipped
+if feature is not supported.
+
+== Tests
+
+=== Command-groups
+
+Define a command group function object with a simple task kernel to compute a value. For each `submit` overload, launch this command group function object using the free-function and the equivalent member function. Assert that the outputs computed from the two launches are the same.
+
+==== submit
+
+```C++
+namespace sycl::khr {
+
+template <typename CommandGroupFunc>
+void submit(sycl::queue q, CommandGroupFunc&& cgf);
+
+}
+```
+
+==== submit_tracked
+
+```C++
+namespace sycl::khr {
+
+template <typename CommandGroupFunc>
+sycl::event submit_tracked(sycl::queue q, CommandGroupFunc&& cgf);
+
+}
+```
+
+=== Kernel launch
+
+==== launch (kernel function)
+
+Define a basic kernel that computes a set of values. Launch this kernel using each `launch` overload and the equivalent member function. Assert that the output for both kernel launches are the same.
+
+```C++
+namespace sycl::khr {
+
+template <typename KernelType>
+void launch(sycl::handler& h, sycl::range<1> r, const KernelType& k);
+
+template <typename KernelType>
+void launch(sycl::handler& h, sycl::range<2> r, const KernelType& k);
+
+template <typename KernelType>
+void launch(sycl::handler& h, sycl::range<3> r, const KernelType& k);
+
+template <typename KernelType>
+void launch(sycl::queue q, sycl::range<1> r, const KernelType& k);
+
+template <typename KernelType>
+void launch(sycl::queue q, sycl::range<2> r, const KernelType& k);
+
+template <typename KernelType>
+void launch(sycl::queue q, sycl::range<3> r, const KernelType& k);
+
+}
+```
+
+==== launch_reduce (kernel function)
+
+Define a basic kernel that computes a set of values using `reduction`. Launch this kernel using each `launch_reduce` overload and the equivalent member function. Assert that the output for both kernel launches are the same.
+
+```C++
+namespace sycl::khr {
+
+template <typename KernelType, typename... Reductions>
+void launch_reduce(sycl::handler& h, sycl::range<1> r,
+                   const KernelType& k, Reductions&&... reductions);
+
+template <typename KernelType, typename... Reductions>
+void launch_reduce(sycl::handler& h, sycl::range<2> r,
+                   const KernelType& k, Reductions&&... reductions);
+
+template <typename KernelType, typename... Reductions>
+void launch_reduce(sycl::handler& h, sycl::range<3> r,
+                   const KernelType& k, Reductions&&... reductions);
+
+template <typename KernelType, typename... Reductions>
+void launch_reduce(sycl::queue q, sycl::range<1> r,
+                   const KernelType& k, Reductions&&... reductions);
+
+template <typename KernelType, typename... Reductions>
+void launch_reduce(sycl::queue q, sycl::range<2> r,
+                   const KernelType& k, Reductions&&... reductions);
+
+template <typename KernelType, typename... Reductions>
+void launch_reduce(sycl::queue q, sycl::range<3> r,
+                   const KernelType& k, Reductions&&... reductions);
+
+}
+```
+
+==== launch_grouped (kernel function)
+
+Define an ND-range kernel that computes a set of values. Launch this kernel using each `launch_grouped` overload and the equivalent member function. Assert that the output for both kernel launches are the same.
+
+```C++
+namespace sycl::khr {
+
+template <typename KernelType>
+void launch_grouped(sycl::handler& h, sycl::range<1> r, sycl::range<1> size,
+                    const KernelType& k);
+
+template <typename KernelType>
+void launch_grouped(sycl::handler& h, sycl::range<2> r, sycl::range<2> size,
+                    const KernelType& k);
+
+template <typename KernelType>
+void launch_grouped(sycl::handler& h, sycl::range<3> r, sycl::range<3> size,
+                    const KernelType& k);
+
+template <typename KernelType>
+void launch_grouped(sycl::queue q, sycl::range<1> r, sycl::range<1> size,
+                    const KernelType& k);
+
+template <typename KernelType>
+void launch_grouped(sycl::queue q, sycl::range<2> r, sycl::range<2> size,
+                    const KernelType& k);
+
+template <typename KernelType>
+void launch_grouped(sycl::queue q, sycl::range<3> r, sycl::range<3> size,
+                    const KernelType& k);
+
+}
+```
+
+==== launch_grouped_reduce (kernel function)
+
+Define an ND-range kernel that computes a set of values using `reduction`. Launch this kernel using each `launch_grouped_reduce` overload and the equivalent member function. Assert that the output for both kernel launches are the same.
+
+```C++
+namespace sycl::khr {
+
+template <typename KernelType, typename... Reductions>
+void launch_grouped_reduce(sycl::handler& h, sycl::range<1> r,
+                           sycl::range<1> size, const KernelType& k,
+                           Reductions&&... reductions);
+
+template <typename KernelType, typename... Reductions>
+void launch_grouped_reduce(sycl::handler& h, sycl::range<2> r,
+                           sycl::range<2> size, const KernelType& k,
+                           Reductions&&... reductions);
+
+template <typename KernelType, typename... Reductions>
+void launch_grouped_reduce(sycl::handler& h, sycl::range<3> r,
+                           sycl::range<3> size, const KernelType& k,
+                           Reductions&&... reductions);
+
+template <typename KernelType, typename... Reductions>
+void launch_grouped_reduce(sycl::queue q, sycl::range<1> r,
+                           sycl::range<1> size, const KernelType& k,
+                           Reductions&&... reductions);
+
+template <typename KernelType, typename... Reductions>
+void launch_grouped_reduce(sycl::queue q, sycl::range<2> r,
+                           sycl::range<2> size, const KernelType& k,
+                           Reductions&&... reductions);
+
+template <typename KernelType, typename... Reductions>
+void launch_grouped_reduce(sycl::queue q, sycl::range<3> r,
+                           sycl::range<3> size, const KernelType& k,
+                           Reductions&&... reductions);
+
+}
+```
+
+
+==== launch_task (kernel function)
+
+Define a simple task kernel to compute a value. For each `launch_task` overload, launch this kernel using the free-function and the equivalent member function. Assert that the outputs computed from the two launches are the same.
+
+```C++
+namespace sycl::khr {
+
+template <typename KernelType>
+void launch_task(sycl::handler& h, const KernelType& k);
+
+template <typename KernelType>
+void launch_task(sycl::queue q, const KernelType& k);
+
+}
+```
+
+=== Memory operations
+
+For the `memcpy`, `copy`, `memset`, and `fill` memory operations, create one or more test buffers and assert that they have the correct values after the operation completes.
+
+==== memcpy
+
+```C++
+namespace sycl::khr {
+
+void memcpy(sycl::handler& h, void* dest, const void* src, size_t numBytes);
+
+void memcpy(sycl::queue q, void* dest, const void* src, size_t numBytes);
+
+}
+```
+
+==== copy (USM pointers)
+
+```C++
+namespace sycl::khr {
+
+template <typename T>
+void copy(sycl::handler& h, const T* src, T* dest, size_t count);
+
+template <typename T>
+void copy(sycl::queue q, const T* src, T* dest, size_t count);
+
+}
+```
+
+==== copy (accessors, host to device)
+
+```C++
+namespace sycl::khr {
+
+template <typename SrcT, typename DestT, int DestDims, access_mode DestMode>
+void copy(sycl::handler& h,
+          const SrcT* src,
+          sycl::accessor<DestT, DestDims, DestMode, target::device> dest);
+
+template <typename SrcT, typename DestT, int DestDims, access_mode DestMode>
+void copy(sycl::handler& h,
+          std::shared_ptr<SrcT> src,
+          sycl::accessor<DestT, DestDims, DestMode, target::device> dest);
+
+template <typename SrcT, typename DestT, int DestDims, access_mode DestMode>
+void copy(sycl::queue q,
+          const SrcT* src,
+          sycl::accessor<DestT, DestDims, DestMode, target::device> dest);
+
+template <typename SrcT, typename DestT, int DestDims, access_mode DestMode>
+void copy(sycl::queue q,
+          std::shared_ptr<SrcT> src,
+          sycl::accessor<DestT, DestDims, DestMode, target::device> dest);
+
+}
+```
+
+==== copy (accessors, device to host)
+
+```C++
+namespace sycl::khr {
+
+template <typename SrcT, int SrcDims, access_mode SrcMode, typename DestT>
+void copy(sycl::handler& h,
+          sycl::accessor<SrcT, SrcDims, SrcMode, target::device> src,
+          DestT* dest);
+
+template <typename SrcT, int SrcDims, access_mode SrcMode, typename DestT>
+void copy(sycl::handler& h,
+          sycl::accessor<SrcT, SrcDims, SrcMode, target::device> src,
+          std::shared_ptr<DestT> dest);
+
+template <typename SrcT, int SrcDims, access_mode SrcMode, typename DestT>
+void copy(sycl::queue q,
+          sycl::accessor<SrcT, SrcDims, SrcMode, target::device> src,
+          DestT* dest);
+
+template <typename SrcT, int SrcDims, access_mode SrcMode, typename DestT>
+void copy(sycl::queue q,
+          sycl::accessor<SrcT, SrcDims, SrcMode, target::device> src,
+          std::shared_ptr<DestT> dest);
+
+}
+```
+
+==== copy (accessors, device to device)
+
+```C++
+namespace sycl::khr {
+
+template <typename SrcT, int SrcDims, access_mode SrcMode,
+          typename DestT, int DestDims, access_mode DestMode>
+void copy(sycl::queue q,
+          sycl::accessor<SrcT, SrcDims, SrcMode, target::device> src,
+          sycl::accessor<DestT, DestDims, DestMode, target::device> dest);
+
+template <typename SrcT, int SrcDims, access_mode SrcMode,
+          typename DestT, int DestDims, access_mode DestMode>
+void copy(sycl::queue q,
+          sycl::accessor<SrcT, SrcDims, SrcMode, target::device> src,
+          sycl::accessor<DestT, DestDims, DestMode, target::device> dest);
+
+}
+```
+
+==== memset
+
+```C++
+namespace sycl::khr {
+
+void memset(sycl::handler& h, void* ptr, int value, size_t numBytes);
+
+void memset(sycl::queue q, void* ptr, int value, size_t numBytes);
+
+}
+```
+
+==== fill
+```C++
+namespace sycl::khr {
+
+template <typename T>
+void fill(sycl::handler& h, T* ptr, const T& pattern, size_t count);
+
+template <typename T, int Dims, access_mode Mode>
+void fill(sycl::handler& h,
+          sycl::accessor<T, Dims, Mode, target::device> dest,
+          const T& src);
+
+template <typename T>
+void fill(sycl::queue q, T* ptr, const T& pattern, size_t count);
+
+template <typename T, int Dims, access_mode Mode>
+void fill(sycl::queue q,
+          sycl::accessor<T, Dims, Mode, target::device> dest,
+          const T& src);
+
+}
+```
+
+For the `update_host`, `prefetch` and `mem_advise` operations, assert that they can be called without throwing an exception.
+
+==== update_host
+
+```C++
+namespace sycl::khr {
+
+template <typename T, int Dims, access_mode Mode>
+void update_host(sycl::handler& h, accessor<T, Dims, Mode, target::device> acc);
+
+template <typename T, int Dims, access_mode Mode>
+void update_host(sycl::queue q, accessor<T, Dims, Mode, target::device> acc);
+
+}
+```
+
+==== prefetch
+
+```C++
+namespace sycl::khr {
+
+void prefetch(sycl::handler& h, void* ptr, size_t numBytes);
+
+void prefetch(sycl::queue q, void* ptr, size_t numBytes);
+
+}
+```
+
+==== mem_advise
+
+```C++
+namespace sycl::khr {
+
+void mem_advise(sycl::handler& h, void* ptr, size_t numBytes, int advice);
+
+void mem_advise(sycl::queue q, void* ptr, size_t numBytes, int advice);
+
+}
+```
+
+=== Command and event barriers
+
+For each barrier function, enqueue some commands before and after enqueuing the barrier. Assert that the commands enqueued after the barrier do not execute until those enqueued before the barrier have completed. The barrier functions are the following:
+
+==== command_barrier
+
+```C++
+namespace sycl::khr {
+
+void command_barrier(sycl::handler& h);
+
+void command_barrier(sycl::queue q);
+
+}
+```
+
+==== event_barrier
+
+```C++
+namespace sycl::khr {
+
+void event_barrier(sycl::handler& h, const std::vector<sycl::event>& events);
+
+void event_barrier(sycl::queue q, const std::vector<sycl::event>& events);
+
+}
+```

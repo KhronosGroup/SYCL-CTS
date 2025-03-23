@@ -23,7 +23,7 @@
  * currently does not compile for a given implementation, while other test cases
  * in the same translation unit would otherwise compile.
  *
- * The following implementations can be specified: DPCPP, AdaptiveCpp.
+ * The following implementations can be specified: DPCPP, AdaptiveCpp, SimSYCL.
  * A disabled test case will fail automatically at runtime.
  *
  * Usage example:
@@ -53,6 +53,8 @@
 #define INTERNAL_CTS_SYCL_IMPL_DPCPP ()
 #elif SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #define INTERNAL_CTS_SYCL_IMPL_AdaptiveCpp ()
+#elif SYCL_CTS_COMPILING_WITH_SIMSYCL
+#define INTERNAL_CTS_SYCL_IMPL_SimSYCL ()
 #else
 #error Unknown SYCL implementation
 #endif

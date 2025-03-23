@@ -1,0 +1,28 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl_ext_oneapi_num_compute_units
+
+This is a test plan for the APIs described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_num_compute_units.asciidoc[sycl_ext_oneapi_num_compute_units].
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_NUM_COMPUTE_UNITS` so they
+can be skipped if feature is not supported.
+
+== Tests
+
+The extension introduces a new device descriptor: `sycl::ext::oneapi::info::device::num_compute_units`.
+
+For this device descriptor, execute `sycl::device::get_info` and check that the following statements are true:
+
+1. the return type of `sycl::device::get_info` call is expected, it should be `size_t`,
+2. the return value of `sycl::device::get_info` call should be greater than or equal to `1`.

@@ -93,9 +93,7 @@ class check_local_accessor_api_methods {
           }
         }
         check_get_range(log, acc, range, typeName, is_zero_dim<dims>{});
-        if constexpr (target == sycl::access::target::constant_buffer ||
-                      target == sycl::access::target::local ||
-                      target == sycl::access::target::host_buffer) {
+        if constexpr (target == sycl::access::target::host_buffer) {
           /** check get_pointer() method for deprecated accessor targets
            */
           auto pointer = acc.get_pointer();
