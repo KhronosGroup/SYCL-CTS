@@ -32,7 +32,7 @@ void check_submit() {
   auto local = sycl::range<DIMENSION>();
   for (int i = 0; i < DIMENSION; i++) {
     local[i] = 1;
-    //to avoid running too long
+    // to avoid running too long
     max_work_groups_nd[i] = std::min(
         max_work_groups_nd[i],
         static_cast<size_t>(std::numeric_limits<unsigned int>::max() + 1));
@@ -40,9 +40,12 @@ void check_submit() {
 
   int* a = sycl::malloc_shared<int>(1, queue);
   a[0] = 0;
-  queue.parallel_for(sycl::nd_range(max_work_groups_nd, local), [=](auto i) {
-     if (i.get_global_id(0) == 0) a[0] = 1;
-   }).wait_and_throw();
+  queue
+      .parallel_for(sycl::nd_range(max_work_groups_nd, local),
+                    [=](auto i) {
+                      if (i.get_global_id(0) == 0) a[0] = 1;
+                    })
+      .wait_and_throw();
 
   CHECK(a[0] == 1);
 

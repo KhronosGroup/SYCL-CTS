@@ -21,12 +21,12 @@
 #include "../../common/common.h"
 
 namespace max_num_work_groups_macro::tests {
-    TEST_CASE(
-        "the max_num_work_groups extension defines the "
-        "SYCL_KHR_MAX_NUM_WORK_GROUPS macro",
-        "[khr_max_num_work_groups]") {
-    #ifndef SYCL_KHR_MAX_NUM_WORK_GROUPS
-    static_assert(false, "SYCL_KHR_MAX_NUM_WORK_GROUPS is not defined");
-    #endif
-    }
+TEST_CASE(
+    "the max_num_work_groups extension defines the "
+    "SYCL_KHR_MAX_NUM_WORK_GROUPS macro",
+    "[khr_max_num_work_groups]") {
+#ifndef SYCL_KHR_MAX_NUM_WORK_GROUPS
+  static_assert(false, "SYCL_KHR_MAX_NUM_WORK_GROUPS is not defined");
+#endif
+}
 }  // namespace max_num_work_groups_macro::tests
