@@ -360,7 +360,7 @@ static bool testWorkItemSubgroup(sycl::nd_item<Dimensions> it) {
 
 template <int Dimensions>
 static void testGroupInterface(sycl::nd_range<Dimensions> nd_range) {
-  constexpr std::size_t TEST_COUNT = 4;
+  constexpr std::size_t test_count = 4;
   sycl::queue q{sycl_cts::util::get_cts_object::queue()};
   sycl::buffer<bool> results{nd_range.get_global_range().size() * TEST_COUNT};
   results.get_range();
