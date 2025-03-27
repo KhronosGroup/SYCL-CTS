@@ -29,7 +29,7 @@ TEST_CASE(
 #ifndef SYCL_EXT_ONEAPI_CURRENT_DEVICE
   SKIP(
       "The sycl_ext_oneapi_current_device extension is not supported "
-      "by an implementation");
+      "by this implementation");
 #else
   if (sycl::device::get_devices().size() < 1) {
     SKIP("Test requires at least one device");
@@ -49,7 +49,7 @@ TEST_CASE(
     "set_current_device function") {
 #ifndef SYCL_EXT_ONEAPI_CURRENT_DEVICE
   SKIP(
-      "The sycl_ext_oneapi_current_device extension is not supported by an "
+      "The sycl_ext_oneapi_current_device extension is not supported by this "
       "implementation");
 #else
   for (const auto& device : sycl::device::get_devices()) {
@@ -77,7 +77,7 @@ TEST_CASE(
 #ifndef SYCL_EXT_ONEAPI_CURRENT_DEVICE
   SKIP(
       "The sycl_ext_oneapi_current_device extension is not supported "
-      "by an implementation");
+      "by this implementation");
 #else
   const auto devices = sycl::device::get_devices();
   if (devices.size() < 2) {
@@ -88,10 +88,19 @@ TEST_CASE(
   sycl::device t1_current_device;
   sycl::device t2_current_device;
 
-  std::thread t1(thread_callback, std::cref(t1_device_to_set),
-                 std::ref(t1_current_device));
-  std::thread t2(thread_callback, std::cref(t2_device_to_set),
-                 std::ref(t2_current_device));
+  std::thread t1([&t1_device_to_set, &t1_current_device]() {
+    sycl::ext::oneapi::experimental::this_thread::set_current_device(
+        t1_device_to_set);
+    t1_current_device =
+        sycl::ext::oneapi::experimental::this_thread::get_current_device();
+  });
+  std::thread t2([&t2_device_to_set, &t2_current_device]() {
+    sycl::ext::oneapi::experimental::this_thread::set_current_device(
+        t2_device_to_set);
+    t2_current_device =
+        sycl::ext::oneapi::experimental::this_thread::get_current_device();
+  });
+
   t1.join();
   t2.join();
 
