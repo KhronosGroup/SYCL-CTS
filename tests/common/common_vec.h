@@ -44,6 +44,15 @@
 
 namespace {
 
+template <typename T>
+using rel_log_ret_t = std::conditional_t<
+    sizeof(T) == 1, std::int8_t,
+    std::conditional_t<
+        sizeof(T) == 2, std::int16_t,
+        std::conditional_t<sizeof(T) == 4, std::int32_t,
+                           std::conditional_t<sizeof(T) == 8, std::int64_t,
+                                              void /*Not expected*/>>>>;
+
 /**
  * @brief Helper function to check the size of a vector is correct.
  */
