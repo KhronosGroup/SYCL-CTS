@@ -56,7 +56,7 @@ jobs:
       matrix:
         include:
           - sycl-impl: dpcpp
-            version: 2025-01-14
+            version: 2025-04-01
           - sycl-impl: adaptivecpp
             version: 061e2d6ffe1084021d99f22ac1f16e28c6dab899
           - sycl-impl: simsycl
@@ -113,7 +113,7 @@ jobs:
       matrix:
         include:
           - sycl-impl: dpcpp
-            version: 2025-01-14
+            version: 2025-04-01
           - sycl-impl: adaptivecpp
             version: 061e2d6ffe1084021d99f22ac1f16e28c6dab899
           - sycl-impl: simsycl
@@ -141,9 +141,10 @@ jobs:
           key: ${{ matrix.sycl-impl }}-ccache-${{ github.sha }}
           restore-keys: |
             ${{ matrix.sycl-impl }}-ccache-
-      # Use ccache's "depend mode" to work around DPC++ issue (see https://github.com/intel/llvm/issues/5260)
-      # This requires compilation with -MD, which is enabled because we use the Ninja generator
-      # Using this mode should not have any practical disadvantages
+      # Use ccache's "depend mode" to meet the GitHub Actions timeout of 6 hours with DPC++ compiler.
+      # This is a workaround for the fact that ccache's default mode (i.e. "preprocessor mode") introduces significant overhead in case of the cache miss.
+      # This requires compilation with -MD, which is enabled because we use the Ninja generator.
+      # Using this mode should not have any practical disadvantages.
       - name: Set ccache environment variables
         run: |
           echo "CCACHE_DEPEND=1" >> "$GITHUB_ENV"
