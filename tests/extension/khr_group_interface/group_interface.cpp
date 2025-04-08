@@ -94,10 +94,10 @@ static bool testWorkGroup(sycl::nd_item<Dimensions> it) {
                 std::size_t>);
   static_assert(decltype(work_group)::static_extent(0) ==
                 decltype(work_group.extents())::static_extent(0));
-  if (Dimensions >= 2)
+  if constexpr (Dimensions >= 2)
     static_assert(decltype(work_group)::static_extent(1) ==
                   decltype(work_group.extents())::static_extent(1));
-  if (Dimensions == 3)
+  if constexpr (Dimensions == 3)
     static_assert(decltype(work_group)::static_extent(2) ==
                   decltype(work_group.extents())::static_extent(2));
 #endif
@@ -263,10 +263,10 @@ static bool testWorkItemGroup(sycl::nd_item<Dimensions> it) {
                      std::size_t>);
   static_assert(decltype(item)::static_extent(0) ==
                 decltype(item.extents())::static_extent(0));
-  if (Dimensions >= 2)
+  if constexpr (Dimensions >= 2)
     static_assert(decltype(item)::static_extent(1) ==
                   decltype(item.extents())::static_extent(1));
-  if (Dimensions == 3)
+  if constexpr (Dimensions == 3)
     static_assert(decltype(item)::static_extent(2) ==
                   decltype(item.extents())::static_extent(2));
 #endif
