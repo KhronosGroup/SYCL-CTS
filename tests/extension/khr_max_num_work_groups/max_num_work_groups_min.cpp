@@ -31,14 +31,14 @@ void check_min_size() {
                        sycl::range<DIMENSION>>(dev);
 
   if (dev.get_info<sycl::info::device::device_type>() ==
-      sycl::info::device_type::custom)
+      sycl::info::device_type::custom) {
     return;
-    auto max_work_groups =
-        dev.get_info<khr::info::device::max_num_work_groups<DIMENSION>>();
+  }
+  auto max_work_groups =
+      dev.get_info<khr::info::device::max_num_work_groups<DIMENSION>>();
 
-    for (int i = 0; i < DIMENSION; i++) {
-      CHECK(max_work_groups[i] >= 1);
-    }
+  for (int i = 0; i < DIMENSION; i++) {
+    CHECK(max_work_groups[i] >= 1);
   }
 }
 
