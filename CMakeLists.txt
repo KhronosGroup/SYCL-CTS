@@ -134,6 +134,10 @@ add_cts_option(SYCL_CTS_ENABLE_KHR_FREE_FUNCTION_COMMANDS
     "Enable extension Khronos free_function_commands tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_KHR_GROUP_INTERFACE_TESTS
+    "Enable extension Khronos group_interface tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+
 add_cts_option(SYCL_CTS_ENABLE_KHR_QUEUE_EMPTY_QUERY_TESTS
     "Enable extension Khronos queue_empty_query tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
