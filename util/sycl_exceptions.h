@@ -95,7 +95,6 @@ class matcher_exception_category : public Catch::Matchers::MatcherGenericBase {
   const std::error_category& m_category;
 };
 
-#if SYCL_CTS_SUPPORT_HAS_ERRC_ENUM == 1
 /**
  *  Matcher for sycl::errc error codes
  *  C++ provides semantic match for std::error_code by operator==, still SYCL
@@ -132,7 +131,6 @@ struct matcher_equals_exception
  private:
   const sycl::errc& m_code_value;
 };
-#endif //  SYCL_CTS_SUPPORT_HAS_ERRC_ENUM
 
 }  // namespace detail
 
@@ -148,7 +146,6 @@ inline auto has_exception_category(const std::error_category& category) {
   return detail::matcher_exception_category(category);
 }
 
-#if SYCL_CTS_SUPPORT_HAS_ERRC_ENUM == 1
 /**
  *  Provides matcher for sycl::errc error codes with sycl_category check
  *
@@ -160,7 +157,6 @@ inline auto has_exception_category(const std::error_category& category) {
 inline auto equals_exception(const sycl::errc& code) {
   return detail::matcher_equals_exception(code);
 }
-#endif //  SYCL_CTS_SUPPORT_HAS_ERRC_ENUM == 1
 
 }  //  namespace sycl_cts::util
 
