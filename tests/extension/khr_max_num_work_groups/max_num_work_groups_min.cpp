@@ -27,15 +27,14 @@ void check_min_size() {
   auto queue = sycl_cts::util::get_cts_object::queue();
   auto dev = queue.get_device();
 
-  check_get_info_param<khr::info::device::max_num_work_groups<DIMENSION>,
+  check_get_info_param<sycl::khr::info::device::max_num_work_groups<DIMENSION>,
                        sycl::range<DIMENSION>>(dev);
 
   if (dev.get_info<sycl::info::device::device_type>() ==
-      sycl::info::device_type::custom) {
+      sycl::info::device_type::custom)
     return;
-  }
   auto max_work_groups =
-      dev.get_info<khr::info::device::max_num_work_groups<DIMENSION>>();
+      dev.get_info<sycl::khr::info::device::max_num_work_groups<DIMENSION>>();
 
   for (int i = 0; i < DIMENSION; i++) {
     CHECK(max_work_groups[i] >= 1);
@@ -43,7 +42,7 @@ void check_min_size() {
 }
 
 TEST_CASE("if the device is not info::device_type::custom, the minimal",
-          "size in each dimension is (1,1,1)", "[khr_max_num_work_groups]") {
+          "size in each dimension is (1,1,1) [khr_max_num_work_groups]") {
   check_min_size<1>();
   check_min_size<2>();
   check_min_size<3>();
