@@ -18,7 +18,6 @@
 //
 *******************************************************************************/
 
-#include "../../util/extensions.h"
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
 #include "../common/type_coverage.h"
@@ -32,9 +31,7 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("function objects void specializations scalar fp64",
  "[function_objects][fp64]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
-  using availability = sycl_cts::util::extensions::availability<
-      sycl_cts::util::extensions::tag::fp64>;
-  if (!availability::check(queue)) {
+  if (!queue.get_device().has(sycl::aspect::fp64)) {
     SKIP("Device does not support double precision floating point operations.");
   }
 
@@ -54,9 +51,7 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("function objects void specializations vector fp64",
  "[function_objects][fp64]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
-  using availability = sycl_cts::util::extensions::availability<
-      sycl_cts::util::extensions::tag::fp64>;
-  if (!availability::check(queue)) {
+  if (!queue.get_device().has(sycl::aspect::fp64)) {
     SKIP("Device does not support double precision floating point operations.");
   }
 
