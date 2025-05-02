@@ -418,7 +418,8 @@ def get_ifdef_string(source, type_str):
         source = source.replace('$IFDEF',
 '''
 #if SYCL_CTS_COMPILING_WITH_SIMSYCL
-  FAIL_CHECK("SimSYCL doesn't support sycl::vec<N, std::byte>");
+#include "../common/common.h"
+FAIL_CHECK("SimSYCL doesn't support sycl::vec<N, std::byte>");
 #else
 $IFDEF
 ''')
