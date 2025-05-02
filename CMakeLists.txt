@@ -21,6 +21,12 @@ macro(add_submodule_directory RELPATH)
     add_subdirectory("${RELPATH}")
 endmacro()
 
+# Disable page fault handler feature, due to its implementation not respecting page fault handler chain
+if(WIN32)
+    set(CATCH_CONFIG_NO_WINDOWS_SEH ON CACHE BOOL "" FORCE)
+else()
+    set(CATCH_CONFIG_NO_POSIX_SIGNALS ON CACHE BOOL "" FORCE)
+endif()
 add_submodule_directory(vendor/Catch2)
 
 # set host compiler flags
