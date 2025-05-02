@@ -414,6 +414,20 @@ def replace_string_in_source_string(source, generated_tests,
     return new_source
 
 def get_ifdef_string(source, type_str):
+    if type_str == 'std::byte':
+        source = source.replace('$IFDEF',
+'''
+#if SYCL_CTS_COMPILING_WITH_SIMSYCL
+  FAIL_CHECK("SimSYCL doesn't support sycl::vec<N, std::byte>");
+#else
+$IFDEF
+''')
+        source = source.replace('$ENDIF',
+'''
+$ENDIF
+#endif
+''')
+
     if type_str in ReverseData.rev_fixed_width_type_dict:
         include_string = '#include <cstdint>\n'
         ifdef_string = '#ifdef ' + Data.fixed_width_type_define_dict[type_str]
