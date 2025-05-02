@@ -424,27 +424,29 @@ def get_ifdef_string(source, type_str):
         source = source.replace('$ENDIF', '')
     return source
 
+def replace_ifbyte_strings(source, type_str):
+    if type_str == 'std::byte':
+        source = source.replace('$EXCLUDE_IF_SIMSYCL_BYTE_BEGIN',
+                                '#if !SYCL_CTS_COMPILING_WITH_SIMSYCL')
+        source = source.replace('$EXCLUDE_IF_SIMSYCL_BYTE_END',
+                                '#endif')
+        source = source.replace('$FAIL_IF_SIMSYCL_BYTE',
+                                '''#if SYCL_CTS_COMPILING_WITH_SIMSYCL
+FAIL_CHECK("SimSYCL doesn't support sycl::vec<N, std::byte>");
+#endif''')
+    else:
+        source = source.replace('$EXCLUDE_IF_SIMSYCL_BYTE_BEGIN', '')
+        source = source.replace('$EXCLUDE_IF_SIMSYCL_BYTE_END', '')
+        source = source.replace('$FAIL_IF_SIMSYCL_BYTE', '')
+    return source
+
 def write_source_file(test_str, func_calls, test_name, input_file, output_file,
                       type_str):
 
     with open(input_file, 'r') as source_file:
         source = source_file.read()
 
-    if type_str == 'std::byte':
-        source = source.replace('$TEST_FUNCS',
-'''
-#if !SYCL_CTS_COMPILING_WITH_SIMSYCL
-$TEST_FUNCS
-#endif
-''')
-        source = source.replace('$FUNC_CALLS',
-'''
-#if SYCL_CTS_COMPILING_WITH_SIMSYCL
-FAIL_CHECK("SimSYCL doesn't support sycl::vec<N, std::byte>");
-#else
-$FUNC_CALLS
-#endif
-''')
+    source = replace_ifbyte_strings(source, type_str)
 
     source = replace_string_in_source_string(source,
                                              remove_namespaces_whitespaces(type_str),
@@ -746,6 +748,8 @@ def write_swizzle_source_file(swizzles, input_file, output_file, type_str):
 
     with open(input_file, 'r') as source_file:
         source = source_file.read()
+
+    source = replace_ifbyte_strings(source, type_str)
 
     source = replace_string_in_source_string(source,
                                             remove_namespaces_whitespaces(type_str),

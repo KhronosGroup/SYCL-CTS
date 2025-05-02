@@ -53,6 +53,7 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     {
+$EXCLUDE_IF_SIMSYCL_BYTE_BEGIN
       auto testQueue = util::get_cts_object::queue();
       {
         auto testDevice = testQueue.get_device();
@@ -79,6 +80,8 @@ class TEST_NAME : public util::test_base {
       }
 
       testQueue.wait_and_throw();
+$EXCLUDE_IF_SIMSYCL_BYTE_END
+$FAIL_IF_SIMSYCL_BYTE
     }
   }
 };

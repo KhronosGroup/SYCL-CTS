@@ -42,13 +42,18 @@ class TEST_NAME : public util::test_base {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
+$EXCLUDE_IF_SIMSYCL_BYTE_BEGIN
   $TEST_FUNCS
+$EXCLUDE_IF_SIMSYCL_BYTE_END
 
   /** execute the test
    */
   void run(util::logger &log) override {
 
+$EXCLUDE_IF_SIMSYCL_BYTE_BEGIN
     $FUNC_CALLS
+$EXCLUDE_IF_SIMSYCL_BYTE_END
+$FAIL_IF_SIMSYCL_BYTE
 
   }
 };
