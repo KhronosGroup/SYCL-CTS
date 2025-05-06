@@ -18,7 +18,6 @@
 //
 *******************************************************************************/
 
-#include "../../util/extensions.h"
 #include "marray_common.h"
 
 namespace marray_alignment {
@@ -57,9 +56,7 @@ TEST_CASE("marray_alignment", "[marray]") {
   auto queue = util::get_cts_object::queue();
 
 #if SYCL_CTS_ENABLE_HALF_TESTS
-  using availability_fp16 =
-      util::extensions::availability<util::extensions::tag::fp16>;
-  if (!availability_fp16::check(queue)) {
+  if (!queue.get_device().has(sycl::aspect::fp16)) {
     WARN(
         "Device does not support half precision floating point operations."
         "Skipping the test case.");
@@ -69,9 +66,7 @@ TEST_CASE("marray_alignment", "[marray]") {
 #endif  // SYCL_CTS_ENABLE_HALF_TESTS
 
 #if SYCL_CTS_ENABLE_DOUBLE_TESTS
-  using availability_fp64 =
-      util::extensions::availability<util::extensions::tag::fp64>;
-  if (!availability_fp64::check(queue)) {
+  if (!queue.get_device().has(sycl::aspect::fp64)) {
     WARN(
         "Device does not support double precision floating point operations."
         "Skipping the test case.");
