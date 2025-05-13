@@ -41,8 +41,7 @@ TEST_CASE("Flush and spin lock event", "[khr_queue_flush]") {
   };
 }
 
-TEST_CASE("Flush and host task",
-          "[khr_queue_flush]") {
+TEST_CASE("Flush and host task", "[khr_queue_flush]") {
   sycl::queue q;
   std::promise<void> promise;
 
