@@ -32,8 +32,7 @@ TEST_CASE(
 #endif
 }
 
-TEST_CASE("Flush and spin lock event",
-          "[khr_queue_flush]") {
+TEST_CASE("Flush and spin lock event", "[khr_queue_flush]") {
   sycl::queue q;
   auto e = Q.single_task([] {});
   q.khr_flush();
