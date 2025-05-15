@@ -148,19 +148,21 @@ struct non_uniform_group_barrier_test {
                   "memory_scope fence_scope) is wrong\n");
 
               // test of default barrier
-              local_acc[llid] = llid;
-              sycl::group_barrier(non_uniform_group);
+              if (sub_group.get_group_linear_id() == 0){
+                local_acc[llid] = llid;
+                sycl::group_barrier(non_uniform_group);
 
-              if (local_acc[max_id - llid] != max_id - llid)
-                std::get<s::test>(non_uniform_group_barriers_acc[0]) = false;
-              sycl::group_barrier(non_uniform_group);
+                if (local_acc[max_id - llid] != max_id - llid)
+                  std::get<s::test>(non_uniform_group_barriers_acc[0]) = false;
+                sycl::group_barrier(non_uniform_group);
 
-              local_acc[llid] = 1;
-              sycl::group_barrier(non_uniform_group);
+                local_acc[llid] = 1;
+                sycl::group_barrier(non_uniform_group);
 
-              if (local_acc[max_id - llid] != 1)
-                std::get<s::test>(non_uniform_group_barriers_acc[0]) = false;
-              sycl::group_barrier(non_uniform_group);
+                if (local_acc[max_id - llid] != 1)
+                  std::get<s::test>(non_uniform_group_barriers_acc[0]) = false;
+                sycl::group_barrier(non_uniform_group);
+              }
 
               // tests for other barriers
               for (int i = 1; i < non_uniform_group_barrier_variants; ++i) {
