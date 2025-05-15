@@ -30,8 +30,7 @@ TEST_CASE("queue shortcuts kernel function fp16", "[queue]") {
   auto queue = util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp16)) {
     SKIP(
-        "Device does not support half precision floating point operations"
-        "Skipping the test case.");
+        "Device does not support half precision floating point operations.");
   }
 
   check_queue_shortcuts_kernel_for_type<sycl::half>{}(queue, "sycl::half");
