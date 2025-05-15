@@ -58,14 +58,10 @@ std::string stringify_sycl_exception(const sycl::exception& e) {
   // Using reference to avoid object slicing
   const auto& code = e.code();
 
-#if SYCL_CTS_SUPPORT_HAS_ERRC_ENUM == 0
-  append_cstr("code", "errc enum not supported by implementation");
-#else
   using CodeStringMakerT = Catch::StringMaker<sycl::errc>;
   const auto& errc_value = static_cast<sycl::errc>(code.value());
 
   append_str("code", CodeStringMakerT::convert(errc_value));
-#endif //  SYCL_CTS_SUPPORT_HAS_ERRC_ENUM
 
   append_str("code raw value", std::to_string(code.value()));
   append_str("code message", code.message());
