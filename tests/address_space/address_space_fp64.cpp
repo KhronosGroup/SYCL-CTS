@@ -23,7 +23,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void run(util::logger &log) override {
     auto queue = util::get_cts_object::queue();
 
-    if (!queue.get_device().has(sycl::aspect::fp16)) {
+    if (!queue.get_device().has(sycl::aspect::fp64)) {
       WARN(
           "Device doesn't support double precision floating point data type - "
           "skipping the test");
