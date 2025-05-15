@@ -9,7 +9,6 @@
 #define TEST_NAME address_space_fp16
 
 #include "../common/common.h"
-#include "./../../util/extensions.h"
 #include "address_space_common.h"
 
 namespace TEST_NAMESPACE {
@@ -24,9 +23,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void run(util::logger &log) override {
     auto queue = util::get_cts_object::queue();
 
-    using availability =
-        util::extensions::availability<util::extensions::tag::fp16>;
-    if (!availability::check(queue, log)) return;
+    if (!queue.get_device().has(sycl::aspect::fp16)) {
+      WARN(
+          "Device doesn't support half precision floating point data type - "
+          "skipping the test");
+      return;
+    }
 
     test_types<sycl::half>(log);
   }

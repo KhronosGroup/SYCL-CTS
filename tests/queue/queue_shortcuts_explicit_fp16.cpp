@@ -18,7 +18,6 @@
 //
 *******************************************************************************/
 
-#include "../../util/extensions.h"
 #include "../common/common.h"
 #include "queue_shortcuts_explicit.h"
 
@@ -29,13 +28,9 @@ using namespace queue_shortcuts_explict;
 
 TEST_CASE("queue shortcuts explicit copy fp16", "[queue]") {
   auto queue = util::get_cts_object::queue();
-  using availability =
-      util::extensions::availability<util::extensions::tag::fp16>;
-  if (!availability::check(queue)) {
-    WARN(
-        "Device does not support half precision floating point operations"
-        "Skipping the test case.");
-    return;
+  if (!queue.get_device().has(sycl::aspect::fp16)) {
+    SKIP(
+        "Device does not support half precision floating point operations.");
   }
 
   check_queue_shortcuts_explicit_for_type<sycl::half>{}(queue, "sycl::half");
