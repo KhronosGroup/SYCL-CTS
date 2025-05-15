@@ -21,6 +21,12 @@ macro(add_submodule_directory RELPATH)
     add_subdirectory("${RELPATH}")
 endmacro()
 
+# Disable page fault handler feature, due to its implementation not respecting page fault handler chain
+if(WIN32)
+    set(CATCH_CONFIG_NO_WINDOWS_SEH ON CACHE BOOL "" FORCE)
+else()
+    set(CATCH_CONFIG_NO_POSIX_SIGNALS ON CACHE BOOL "" FORCE)
+endif()
 add_submodule_directory(vendor/Catch2)
 
 # set host compiler flags
@@ -130,8 +136,12 @@ add_cts_option(SYCL_CTS_ENABLE_KHR_DEFAULT_CONTEXT_TESTS
     "Enable extension Khronos default_context tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
-add_cts_option(SYCL_CTS_ENABLE_KHR_FREE_FUNCTION_COMMANDS
+add_cts_option(SYCL_CTS_ENABLE_KHR_FREE_FUNCTION_COMMANDS_TESTS
     "Enable extension Khronos free_function_commands tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+
+add_cts_option(SYCL_CTS_ENABLE_KHR_GROUP_INTERFACE_TESTS
+    "Enable extension Khronos group_interface tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
 add_cts_option(SYCL_CTS_ENABLE_KHR_QUEUE_EMPTY_QUERY_TESTS

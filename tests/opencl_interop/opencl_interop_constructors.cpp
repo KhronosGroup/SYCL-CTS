@@ -127,8 +127,10 @@ class TEST_NAME :
       /** check make_queue (cl_command_queue, const context&)
        */
       {
+        sycl::context context =
+            sycl::make_context<sycl::backend::opencl>(m_cl_context);
         sycl::queue queue = sycl::make_queue<sycl::backend::opencl>(
-            m_cl_command_queue, ctsContext);
+            m_cl_command_queue, context);
 
         cl_command_queue interopQueue =
             sycl::get_native<sycl::backend::opencl>(queue);
@@ -148,9 +150,11 @@ class TEST_NAME :
       /** check make_queue (cl_command_queue, const context&, async_handler)
        */
       {
+        sycl::context context =
+            sycl::make_context<sycl::backend::opencl>(m_cl_context);
         cts_async_handler asyncHandler;
         sycl::queue queue = sycl::make_queue<sycl::backend::opencl>(
-            m_cl_command_queue, ctsContext, asyncHandler);
+            m_cl_command_queue, context, asyncHandler);
 
         cl_command_queue interopQueue =
             sycl::get_native<sycl::backend::opencl>(queue);
