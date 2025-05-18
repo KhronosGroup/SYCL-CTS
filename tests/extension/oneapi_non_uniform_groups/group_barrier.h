@@ -135,7 +135,7 @@ struct non_uniform_group_barrier_test {
 
               size_t llid = non_uniform_group.get_local_linear_id();
               size_t max_id = non_uniform_group.get_local_linear_range() - 1;
-              size_t offset = sub_group.get_group_id() * (sub_group.get_max_local_range().size());
+              size_t offset = sub_group.get_group_linear_id() * sub_group.get_max_local_range().size();
 
               static_assert(
                   std::is_same_v<void, decltype(sycl::group_barrier(
