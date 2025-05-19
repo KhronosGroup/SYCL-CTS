@@ -88,10 +88,6 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_QUEUE_EMPTY
     "Enable extension oneAPI queue_empty tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
-add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_DISCARD_QUEUE_EVENTS_TESTS
-    "Enable extension oneAPI discard_queue_events tests" OFF
-    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
-
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_BFLOAT16_TESTS
     "Enable extension oneAPI bfloat16 tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
