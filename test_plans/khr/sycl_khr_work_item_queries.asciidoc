@@ -28,7 +28,7 @@ in the extension:
 * `sycl::khr::this_group`
 * `sycl::khr::work_item<sycl::khr::sub_group>`
 
-Each test case should ru in ND-range kernels with `Dimensions` equal to 1, 2,
+Each test case should run ND-range kernels with `Dimensions` equal to 1, 2,
 and 3.
 
 === Test description
