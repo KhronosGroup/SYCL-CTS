@@ -30,7 +30,7 @@ class Data:
     standard_sizes = [1, 2, 3, 4, 8, 16]
     standard_types = [
         'bool', 'char', 'short', 'int', 'long', 'long long', 'float',
-        'double', 'sycl::half'
+        'double', 'sycl::half', 'std::byte'
     ]
     standard_type_dict = {
         (True, 'bool'): 'bool',
@@ -46,7 +46,8 @@ class Data:
         (True, 'long long'): 'long long',
         (True, 'float'): 'float',
         (True, 'double'): 'double',
-        (True, 'sycl::half'): 'sycl::half'
+        (True, 'sycl::half'): 'sycl::half',
+        (False, 'std::byte'): 'std::byte'
     }
 
     fixed_width_types = [
@@ -92,7 +93,8 @@ class Data:
         'bool': 'false',
         'float': '0.0f',
         'double': '0.0',
-        'sycl::half': '0.0f'
+        'sycl::half': '0.0f',
+        'std::byte': 'std::byte{0}'
     })
     vec_name_dict = {
         1: 'One',
@@ -245,7 +247,8 @@ def remove_namespaces_whitespaces(type_str):
     Clear type name from namespaces and whitespaces
     """
     return type_str.replace('sycl::', '').replace(
-            ' ', '_').replace('std::', '')
+            ' ', '_').replace('std::byte', 'std_byte').replace(
+            'std::', '')
 
 def wrap_with_kernel(type_str, kernel_name, test_name, test_string):
     """
@@ -338,7 +341,7 @@ def wrap_with_extension_checks(type_str, test_string):
     return test_string
 
 
-def append_fp_postfix(type_str, input_val_list):
+def make_fp_or_byte_explicit(type_str, input_val_list):
     """Generates and returns a new list from the input, with .0f or .0 appended
     to each value in the list if type_str is 'float', 'double' or 'sycl::half'"""
     result_val_list = []
@@ -348,6 +351,8 @@ def append_fp_postfix(type_str, input_val_list):
             result_val_list.append(val + '.0f')
         elif type_str == 'double':
             result_val_list.append(val + '.0')
+        elif type_str == 'std::byte':
+            result_val_list.append('std::byte{{{}}}'.format(val))
         else:
             result_val_list.append(val)
     return result_val_list
@@ -359,7 +364,7 @@ def generate_value_list(type_str, size):
     vec_val_list = []
     for val in Data.vals_list_dict[size]:
         vec_val_list.append(val)
-    vec_val_list = append_fp_postfix(type_str, vec_val_list)
+    vec_val_list = make_fp_or_byte_explicit(type_str, vec_val_list)
     vec_val_string = ', '.join(vec_val_list)
     return str(vec_val_string)
 
@@ -419,11 +424,29 @@ def get_ifdef_string(source, type_str):
         source = source.replace('$ENDIF', '')
     return source
 
+def replace_ifbyte_strings(source, type_str):
+    if type_str == 'std::byte':
+        source = source.replace('$EXCLUDE_IF_SIMSYCL_BYTE_BEGIN',
+                                '#if !SYCL_CTS_COMPILING_WITH_SIMSYCL')
+        source = source.replace('$EXCLUDE_IF_SIMSYCL_BYTE_END',
+                                '#endif')
+        source = source.replace('$FAIL_IF_SIMSYCL_BYTE',
+                                '''#if SYCL_CTS_COMPILING_WITH_SIMSYCL
+FAIL_CHECK("SimSYCL doesn't support sycl::vec<N, std::byte>");
+#endif''')
+    else:
+        source = source.replace('$EXCLUDE_IF_SIMSYCL_BYTE_BEGIN', '')
+        source = source.replace('$EXCLUDE_IF_SIMSYCL_BYTE_END', '')
+        source = source.replace('$FAIL_IF_SIMSYCL_BYTE', '')
+    return source
+
 def write_source_file(test_str, func_calls, test_name, input_file, output_file,
                       type_str):
 
     with open(input_file, 'r') as source_file:
         source = source_file.read()
+
+    source = replace_ifbyte_strings(source, type_str)
 
     source = replace_string_in_source_string(source,
                                              remove_namespaces_whitespaces(type_str),
@@ -443,6 +466,8 @@ def get_types():
         for sign in Data.signs:
             if (base_type == 'float' or base_type == 'double' or base_type == 'bool'
                 or base_type == 'sycl::half') and sign is False:
+                continue
+            if base_type == 'std::byte' and sign is True:
                 continue
             types.append(Data.standard_type_dict[(sign, base_type)])
 
@@ -581,7 +606,6 @@ def substitute_swizzles_templates(type_str, size, index_subset, value_subset, co
     for index, value in zip(index_subset, value_subset):
         index_list.append(index)
         val_list.append(value)
-    val_list = append_fp_postfix(type_str, val_list)
     index_string = ''.join(index_list)
     test_string = SwizzleData.swizzle_template.substitute(
         name=Data.vec_name_dict[size],
@@ -624,6 +648,7 @@ def substitute_swizzles_templates(type_str, size, index_subset, value_subset, co
 
 def gen_swizzle_test(type_str, convert_type_str, as_type_str, size, num_batches, batch_index):
     string = ''
+    val_list = make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size])
     if size > 4:
         test_string = SwizzleData.swizzle_full_test_template.substitute(
             name=Data.vec_name_dict[size],
@@ -639,17 +664,15 @@ def gen_swizzle_test(type_str, convert_type_str, as_type_str, size, num_batches,
                 swap_pairs(Data.swizzle_elem_list_dict[size])),
             reverse_order_reversed_pair_swiz_indexes=', '.join(
                 swap_pairs(Data.swizzle_elem_list_dict[size][::-1])),
-            in_order_vals=', '.join(Data.vals_list_dict[size]),
-            reversed_vals=', '.join(Data.vals_list_dict[size][::-1]),
-            in_order_pair_vals=', '.join(
-                swap_pairs(Data.vals_list_dict[size])),
-            reverse_order_pair_vals=', '.join(
-                swap_pairs(Data.vals_list_dict[size][::-1])))
+            in_order_vals=', '.join(val_list),
+            reversed_vals=', '.join(val_list[::-1]),
+            in_order_pair_vals=', '.join(swap_pairs(val_list)),
+            reverse_order_pair_vals=', '.join(swap_pairs(val_list[::-1])))
         string += wrap_with_swizzle_kernel(
-                type_str, str(size), ', '.join(Data.vals_list_dict[size]),
-                ', '.join(Data.vals_list_dict[size][::-1]),
-                ', '.join(swap_pairs(Data.vals_list_dict[size])),
-                ', '.join(swap_pairs(Data.vals_list_dict[size][::-1])),
+                type_str, str(size), ', '.join(val_list),
+                ', '.join(val_list[::-1]),
+                ', '.join(swap_pairs(val_list)),
+                ', '.join(swap_pairs(val_list[::-1])),
             'ELEM_KERNEL_' + type_str + str(size) +
             ''.join(Data.swizzle_elem_list_dict[size][:size]).replace(
                 'sycl::elem::', ''),
@@ -672,7 +695,7 @@ def gen_swizzle_test(type_str, convert_type_str, as_type_str, size, num_batches,
                 product(
                     Data.swizzle_xyzw_list_dict[size][:size],
                     repeat=length),
-                product(Data.vals_list_dict[size][:size], repeat=length)):
+                product(val_list[:size], repeat=length)):
             total_tests += 1
     batch_size = ceil(total_tests / num_batches)
     cur_index = 0
@@ -682,7 +705,7 @@ def gen_swizzle_test(type_str, convert_type_str, as_type_str, size, num_batches,
                 product(
                     Data.swizzle_xyzw_list_dict[size][:size],
                     repeat=length),
-                product(Data.vals_list_dict[size][:size], repeat=length)):
+                product(val_list[:size], repeat=length)):
             cur_batch = floor(cur_index / batch_size)
             if cur_batch > batch_index:
                 break
@@ -700,7 +723,7 @@ def gen_swizzle_test(type_str, convert_type_str, as_type_str, size, num_batches,
                         Data.swizzle_rgba_list_dict[size][:size],
                         repeat=length),
                     product(
-                        Data.vals_list_dict[size][:size], repeat=length)):
+                        val_list[:size], repeat=length)):
                 total_tests += 1
         batch_size = ceil(total_tests / num_batches)
         cur_index = 0
@@ -710,8 +733,7 @@ def gen_swizzle_test(type_str, convert_type_str, as_type_str, size, num_batches,
                     product(
                         Data.swizzle_rgba_list_dict[size][:size],
                         repeat=length),
-                    product(
-                        Data.vals_list_dict[size][:size], repeat=length)):
+                    product(val_list[:size], repeat=length)):
                 cur_batch = floor(cur_index / batch_size)
                 if cur_batch > batch_index:
                     break
@@ -726,6 +748,8 @@ def write_swizzle_source_file(swizzles, input_file, output_file, type_str):
 
     with open(input_file, 'r') as source_file:
         source = source_file.read()
+
+    source = replace_ifbyte_strings(source, type_str)
 
     source = replace_string_in_source_string(source,
                                             remove_namespaces_whitespaces(type_str),
