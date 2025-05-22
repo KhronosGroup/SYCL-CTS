@@ -6,7 +6,6 @@
 //
 *******************************************************************************/
 
-#include "../../util/extensions.h"
 #include "../common/common.h"
 #include "../common/type_coverage.h"
 
@@ -33,10 +32,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
     using namespace multi_ptr_common_constructors;
 
     auto queue = util::get_cts_object::queue();
-    using avaliability =
-        util::extensions::availability<util::extensions::tag::fp16>;
-    if (!avaliability::check(queue, log)) {
-      WARN("Device does not support half precision floating point operations");
+    if (!queue.get_device().has(sycl::aspect::fp16)) {
+      WARN(
+          "Device does not support half precision floating point operations - "
+          "skipping the test");
       return;
     }
 
