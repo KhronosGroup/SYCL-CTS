@@ -13,7 +13,6 @@
 #include "macro_utils.h"
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <sycl/sycl.hpp>
 
 // TODO: Add other Catch2 test case variants, as needed
 
