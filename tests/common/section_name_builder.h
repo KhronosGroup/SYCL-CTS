@@ -7,8 +7,6 @@
 #ifndef __SYCLCTS_TESTS_COMMON_SECTION_NAME_BUILDER_H
 #define __SYCLCTS_TESTS_COMMON_SECTION_NAME_BUILDER_H
 
-#include "string_makers.h"
-
 #include <sstream>
 #include <utility>
 
