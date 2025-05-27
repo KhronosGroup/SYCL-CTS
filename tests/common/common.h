@@ -48,14 +48,6 @@
 namespace {
 
 /**
- * @brief Helper function to print an error message and fail a test
- */
-inline void fail_test(sycl_cts::util::logger& log,
-                      std::string errorMsg) {
-  FAIL(log, errorMsg);
-}
-
-/**
  * @brief Helper function to check the return value of a function.
  *
  * @deprecated Prefer using CHECK/REQUIRE macros instead.
@@ -379,75 +371,6 @@ inline bool is_linker_available(
     }
   }
   return linker_available;
-}
-
-/**
- * @brief Helper function to check work-group size device limit
- * @param log Logger to use
- * @param queue Queue to verify against
- * @param wgSize Work-group size to verify for support
- */
-inline bool device_supports_wg_size(sycl_cts::util::logger& log,
-                                    sycl::queue &queue,
-                                    size_t wgSize)
-{
-  auto device = queue.get_device();
-  const auto maxDeviceWorkGroupSize =
-      device.template get_info<sycl::info::device::max_work_group_size>();
-
-  const bool supports = maxDeviceWorkGroupSize >= wgSize;
-  if (!supports)
-    log.note("Device does not support work group size %" PRIu64,
-             static_cast<std::uint64_t>(wgSize));
-  return supports;
-}
-
-/**
- * @brief Helper function to check work-group size kernel limit
- * @tparam kernelT Kernel to run onto
- * @param log Logger to use
- * @param queue Queue to verify against
- * @param wgSize Work-group size to verify for support
- */
-template <class kernelT>
-inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
-                                    sycl::queue &queue,
-                                    size_t wgSize)
-{
-  // Verify only for device in use
-  auto device = queue.get_device();
-  const auto& context = queue.get_context();
-  const std::vector<sycl::device> devicesToCheck{device};
-
-  /* To query info::kernel_work_group::work_group_size property, we need to
-   * obtain test kernel handler, which requires online compilation
-   * */
-  if (!is_compiler_available(devicesToCheck) ||
-      !is_linker_available(devicesToCheck)) {
-    log.note("Device does not support online compilation");
-    return false;
-  }
-
-// AdaptiveCpp does not yet support sycl::get_kernel_bundle
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
-  auto kb =
-      sycl::get_kernel_bundle<kernelT, sycl::bundle_state::executable>(context);
-  auto kernel = kb.get_kernel(sycl::get_kernel_id<kernelT>());
-#else
-  sycl::program program(context, devicesToCheck);
-  program.build_with_kernel_type<kernelT>("");
-  auto kernel = program.get_kernel<kernelT>();
-#endif
-  auto maxKernelWorkGroupSize =
-      device.template get_info<sycl::info::device::max_work_group_size>();
-
-  const bool supports = maxKernelWorkGroupSize >= wgSize;
-  if (!supports) {
-    // We cannot use %zu in C++11; see P0330R8 proposal
-    log.note("Kernel does not support work group size %" PRIu64,
-             static_cast<std::uint64_t>(wgSize));
-  }
-  return supports;
 }
 
 }  // namespace
