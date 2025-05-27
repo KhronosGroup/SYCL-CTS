@@ -20,6 +20,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "helpers.h"
 
 #define TEST_NAME scalars_interopability_types
 
