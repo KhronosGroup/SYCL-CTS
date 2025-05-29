@@ -34,7 +34,7 @@ TEST_CASE(
 
 TEST_CASE("Flush and spin lock event", "[khr_queue_flush]") {
   sycl::queue q;
-  auto e = Q.single_task([] {});
+  auto e = q.single_task([] {});
   q.khr_flush();
   while (e.get_info<sycl::info::event::command_execution_status>() !=
          sycl::info::event_command_status::complete) {
