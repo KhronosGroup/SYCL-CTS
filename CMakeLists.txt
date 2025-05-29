@@ -21,6 +21,12 @@ macro(add_submodule_directory RELPATH)
     add_subdirectory("${RELPATH}")
 endmacro()
 
+# Disable page fault handler feature, due to its implementation not respecting page fault handler chain
+if(WIN32)
+    set(CATCH_CONFIG_NO_WINDOWS_SEH ON CACHE BOOL "" FORCE)
+else()
+    set(CATCH_CONFIG_NO_POSIX_SIGNALS ON CACHE BOOL "" FORCE)
+endif()
 add_submodule_directory(vendor/Catch2)
 
 # set host compiler flags
@@ -51,6 +57,9 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS
 add_cts_option(SYCL_CTS_ENABLE_KHR_TESTS
     "Enable all extension Khronos tests" OFF)
 
+add_cts_option(SYCL_CTS_SYCL_NEXT_TESTS
+    "Enable all SYCL Next tests" OFF)
+
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS
     "Enable extension oneAPI compile-time property list tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
@@ -79,10 +88,6 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_QUEUE_EMPTY
     "Enable extension oneAPI queue_empty tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
-add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_DISCARD_QUEUE_EVENTS_TESTS
-    "Enable extension oneAPI discard_queue_events tests" OFF
-    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
-
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_BFLOAT16_TESTS
     "Enable extension oneAPI bfloat16 tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
@@ -103,6 +108,10 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_NON_UNIFORM_GROUPS_TESTS
     "Enable extension oneAPI non_uniform_groups tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_NUM_COMPUTE_UNITS_TESTS
+    "Enable extension oneAPI num_compute_units tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
+
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_ROOT_GROUP_TESTS
     "Enable extension oneAPI root group tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
@@ -115,12 +124,20 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_LOCAL_MEMORY_TESTS
     "Enable extension oneAPI local_memory tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_CURRENT_DEVICE_TESTS
+    "Enable extension oneAPI current_device tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
+
 add_cts_option(SYCL_CTS_ENABLE_KHR_DEFAULT_CONTEXT_TESTS
     "Enable extension Khronos default_context tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
-add_cts_option(SYCL_CTS_ENABLE_KHR_FREE_FUNCTION_COMMANDS
+add_cts_option(SYCL_CTS_ENABLE_KHR_FREE_FUNCTION_COMMANDS_TESTS
     "Enable extension Khronos free_function_commands tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+
+add_cts_option(SYCL_CTS_ENABLE_KHR_GROUP_INTERFACE_TESTS
+    "Enable extension Khronos group_interface tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
 add_cts_option(SYCL_CTS_ENABLE_KHR_QUEUE_EMPTY_QUERY_TESTS

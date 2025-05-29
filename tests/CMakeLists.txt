@@ -68,6 +68,7 @@ endfunction()
 function(get_no_vec_alias_type OUT_LIST)
   set(NO_VEC_ALIAS_LIST "")
   list(APPEND NO_VEC_ALIAS_LIST sycl::byte)
+  list(APPEND NO_VEC_ALIAS_LIST std::byte)
 
   set(${OUT_LIST} ${${OUT_LIST}} ${NO_VEC_ALIAS_LIST} PARENT_SCOPE)
 endfunction()

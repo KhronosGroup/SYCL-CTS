@@ -17,7 +17,6 @@
 //  limitations under the License.
 //
 *******************************************************************************/
-#include "../../util/extensions.h"
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
 // FIXME: re-enable when sycl::reduction is implemented in AdaptiveCpp
@@ -30,9 +29,7 @@
 DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 ("reducer api fp64", "[reducer][fp64]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
-  using avaliability = sycl_cts::util::extensions::availability<
-      sycl_cts::util::extensions::tag::fp64>;
-  if (!avaliability::check(queue)) {
+  if (!queue.get_device().has(sycl::aspect::fp64)) {
     SKIP("Device does not support double precision floating point operations.");
   }
 

@@ -93,9 +93,7 @@ class check_local_accessor_api_methods {
           }
         }
         check_get_range(log, acc, range, typeName, is_zero_dim<dims>{});
-        if constexpr (target == sycl::access::target::constant_buffer ||
-                      target == sycl::access::target::local ||
-                      target == sycl::access::target::host_buffer) {
+        if constexpr (target == sycl::access::target::host_buffer) {
           /** check get_pointer() method for deprecated accessor targets
            */
           auto pointer = acc.get_pointer();
@@ -330,8 +328,8 @@ struct check_local_accessor_api_dim<generic_path_t> {
     // Do not run atomic64 checks
 #if SYCL_CTS_ENABLE_VERBOSE_LOG
     constexpr auto mode = sycl::access_mode::atomic;
-    log_accessor<T, kernelName, dims, mode, target>(
-        "skip_local_accessor_atomic64", typeName, log);
+    log_accessor<T, dims, mode, target>("skip_local_accessor_atomic64",
+                                        typeName, log);
 #else
     static_cast<void>(log);
     static_cast<void>(typeName);

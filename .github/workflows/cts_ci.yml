@@ -12,7 +12,7 @@ jobs:
   # Pushing container images requires DockerHub credentials, provided as GitHub secrets.
   # Secrets are not available for runs triggered from external branches (forks).
   check-secrets:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       available: ${{ steps.check.outputs.available }}
     steps:
@@ -25,7 +25,7 @@ jobs:
   build-common-base-image:
     needs: check-secrets
     if: needs.check-secrets.outputs.available == 'yes'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -49,14 +49,14 @@ jobs:
 
   build-image-for-sycl-impl:
     needs: build-common-base-image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       # NB: Don't forget to update versions in compile-cts step as well
       matrix:
         include:
           - sycl-impl: dpcpp
-            version: 2025-01-14
+            version: 2025-05-01
           - sycl-impl: adaptivecpp
             version: 061e2d6ffe1084021d99f22ac1f16e28c6dab899
           - sycl-impl: simsycl
@@ -86,37 +86,34 @@ jobs:
 
   check-clang-format:
     if: github.event_name == 'pull_request'
-    runs-on: "ubuntu-22.04"
+    
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: cpp-linter/cpp-linter-action@main
+        id: linter
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          fetch-depth: 0 # Need to check out base branch as well
-      - name: Run clang-format on changed files
-        run: |
-          set -o errexit -o pipefail -o noclobber -o nounset
-          DIFF=$( git diff -U0 --no-color ${{ github.event.pull_request.base.sha }} | clang-format-diff-14 -p1 )
-          if [ ! -z "$DIFF" ]; then
-            echo 'The following changes are not formatted according to `clang-format`:' >> $GITHUB_STEP_SUMMARY
-            echo '```diff' >> $GITHUB_STEP_SUMMARY
-            echo "$DIFF" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            echo "Not all files are formatted according to clang-format. See workflow summary for details."
-            exit 1 # Fail CI run
-          fi
+          style: file
+          tidy-checks: '-*' # Disable all clang-tidy checks for now. Enable checks as needed.
+          lines-changed-only: true
+          format-review: true
+          passive-reviews: true
 
   compile-cts:
     needs: build-image-for-sycl-impl
     # Wait for Docker image builds, but run even if they're skipped
     if: always()
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       # NB: Don't forget to update versions in build-image-for-sycl-impl step as well
       matrix:
         include:
           - sycl-impl: dpcpp
-            version: 2025-01-14
+            version: 2025-05-01
           - sycl-impl: adaptivecpp
             version: 061e2d6ffe1084021d99f22ac1f16e28c6dab899
           - sycl-impl: simsycl
@@ -144,9 +141,10 @@ jobs:
           key: ${{ matrix.sycl-impl }}-ccache-${{ github.sha }}
           restore-keys: |
             ${{ matrix.sycl-impl }}-ccache-
-      # Use ccache's "depend mode" to work around DPC++ issue (see https://github.com/intel/llvm/issues/5260)
-      # This requires compilation with -MD, which is enabled because we use the Ninja generator
-      # Using this mode should not have any practical disadvantages
+      # Use ccache's "depend mode" to meet the GitHub Actions timeout of 6 hours with DPC++ compiler.
+      # This is a workaround for the fact that ccache's default mode (i.e. "preprocessor mode") introduces significant overhead in case of the cache miss.
+      # This requires compilation with -MD, which is enabled because we use the Ninja generator.
+      # Using this mode should not have any practical disadvantages.
       - name: Set ccache environment variables
         run: |
           echo "CCACHE_DEPEND=1" >> "$GITHUB_ENV"

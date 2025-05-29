@@ -343,225 +343,6 @@ bool check_equal_values(const sycl::marray<T, numElements>& lhs,
 }
 #endif
 
-/** Enables concept checking ahead of the Concepts TS
- *  Idea for macro taken from Eric Niebler's range-v3
- */
-#define REQUIRES_IMPL(B) typename std::enable_if<(B), int>::type = 1
-#define REQUIRES(...) REQUIRES_IMPL((__VA_ARGS__))
-
-/**
- * @brief Transforms the input type into a dependant type and performs
- *        an enable_if based on the condition.
- *
- *        Useful for disabling a member function based on a template parameter
- *        of the class.
- * @param typeName Non-dependant type to be made dependant
- * @param condition The condition specifying when the template
- *        should be enabled. typeName can occur within this expression.
- */
-#define ENABLE_IF_DEPENDANT(typeName, condition)                               \
-  typename overloadDependantT = typeName,                                      \
-           typename = typename std::enable_if <                                \
-                          std::is_same<typeName, overloadDependantT>::value && \
-                      (condition) > ::type
-
-template <bool condition, typename F1, typename F2,
-          bool same_return_type =
-              std::is_same<typename std::result_of<F1&()>::type,
-                           typename std::result_of<F2&()>::type>::value>
-struct if_constexpr_impl;
-
-template <bool condition, typename F1, typename F2>
-struct if_constexpr_impl<condition, F1, F2, true> {
-  static constexpr auto result(const F1& f1, const F2& f2) -> decltype(f1()) {
-    return condition ? f1() : f2();
-  }
-};
-
-template <typename F1, typename F2>
-struct if_constexpr_impl<true, F1, F2, false> {
-  static constexpr auto result(const F1& f1, const F2&) -> decltype(f1()) {
-    return f1();
-  }
-};
-
-template <typename F1, typename F2>
-struct if_constexpr_impl<false, F1, F2, false> {
-  static constexpr auto result(const F1&, const F2& f2) -> decltype(f2()) {
-    return f2();
-  }
-};
-
-/**
- * @brief Library implementation for C++17's compile-time if-statement so that
- * it works in C++11. Generates a call to the invocable object `f1` if
- * `condition == true` at compile-time, otherwise a call to `f2` is generated.
- */
-template <bool condition, typename F1, typename F2,
-          typename R = typename std::conditional<
-              condition, typename std::result_of<F1&()>::type,
-              typename std::result_of<F2&()>::type>::type>
-inline R if_constexpr(const F1& f1, const F2& f2) {
-  return if_constexpr_impl<condition, F1, F2>::result(f1, f2);
-}
-
-/**
- * @brief Library implementation for C++17's compile-time if-statement so that
- * it works in C++11. Generates a call to the invocable object `f` if
- * `condition == true` at compile-time, otherwise no code is generated.
- */
-template <bool condition, typename F>
-inline void if_constexpr(const F& f) {
-  if (condition) {
-    f();
-  }
-}
-
-/**
- * @brief Tag to denote mapping of integer coordinates to real scale
- *
- * For example, if we make a one pixel wide image this pixel can have
- * any coordinate in range [0.0 .. 1.0)
- */
-namespace pixel_tag {
-  struct generic {};
-  /** @brief The low boundary of the pixel, equal to the integer one
-   *         if representable
-   */
-  struct lower : generic {};
-  /** @brief The upper boundary of the pixel, equal to the left limit
-   *         lim(x-) where x is the low boundary for the next pixel
-   */
-  struct upper: generic {};
-};
-
-// AdaptiveCpp and SimSYCL do not yet support images
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP && !SYCL_CTS_COMPILING_WITH_SIMSYCL
-
-/**
- * @brief Helps with retrieving the right access type for reading/writing
- *        an image
- * @tparam dims Number of image dimensions
- */
-template <int dims>
-struct image_access;
-
-/**
- * @brief Specialization for one dimension
- */
-template <>
-struct image_access<1> {
-  using int_type = sycl::opencl::cl_int;
-  using float_type = sycl::opencl::cl_float;
-  static int_type get_int(const sycl::id<1>& i) {
-    return int_type(i.get(0));
-  }
-  static int_type get_int(const sycl::item<1>& i) {
-    return get_int(i.get_id());
-  }
-  static float_type get_float(const sycl::id<1>& i) {
-    return float_type(static_cast<float>(i.get(0)));
-  }
-  static float_type get_float(const sycl::item<1>& i) {
-    return get_float(i.get_id());
-  }
-  static float_type get_normalized(const pixel_tag::lower,
-                                   const sycl::id<1>& i,
-                                   const sycl::range<1>& r) {
-    return get_float(i) / static_cast<int>(r.get(0));
-  }
-  static float_type get_normalized(const pixel_tag::upper,
-                                   const sycl::id<1>& i,
-                                   const sycl::range<1>& r) {
-    const auto negative_inf =
-        -1.0f * std::numeric_limits<float_type>::infinity();
-    const auto next = get_normalized(pixel_tag::lower{}, 1 + i, r);
-
-    return sycl::nextafter(next, negative_inf);
-  }
-};
-
-/**
- * @brief Specialization for two dimensions
- */
-template <>
-struct image_access<2> {
-  using int_type = sycl::cl_int2;
-  using float_type = sycl::cl_float2;
-  static int_type get_int(const sycl::id<2>& i) {
-    return int_type(i.get(0), i.get(1));
-  }
-  static int_type get_int(const sycl::item<2>& i) {
-    return get_int(i.get_id());
-  }
-  static float_type get_float(const sycl::id<2>& i) {
-    return float_type(static_cast<float>(i.get(0)),
-                      static_cast<float>(i.get(1)));
-  }
-  static float_type get_float(const sycl::item<2>& i) {
-    return get_float(i.get_id());
-  }
-  static float_type get_normalized(const pixel_tag::lower,
-                                   const sycl::id<2>& i,
-                                   const sycl::range<2>& r) {
-    return float_type(
-        static_cast<float>(i.get(0)) / static_cast<int>(r.get(0)),
-        static_cast<float>(i.get(1)) / static_cast<int>(r.get(1)));
-  }
-  static float_type get_normalized(const pixel_tag::upper,
-                                   const sycl::id<2>& i,
-                                   const sycl::range<2>& r) {
-    const auto negative_inf = -1.0f * std::numeric_limits<float>::infinity();
-    const auto next = get_normalized(pixel_tag::lower{}, 1 + i, r);
-
-    return float_type(sycl::nextafter(next[0], negative_inf),
-                      sycl::nextafter(next[1], negative_inf));
-  }
-};
-
-/**
- * @brief Specialization for three dimensions
- */
-template <>
-struct image_access<3> {
-  using int_type = sycl::cl_int4;
-  using float_type = sycl::cl_float4;
-  static int_type get_int(const sycl::id<3>& i) {
-    return int_type(i.get(0), i.get(1), i.get(2), 0);
-  }
-  static int_type get_int(const sycl::item<3>& i) {
-    return get_int(i.get_id());
-  }
-  static float_type get_float(const sycl::id<3>& i) {
-    return float_type(static_cast<float>(i.get(0)),
-                      static_cast<float>(i.get(1)),
-                      static_cast<float>(i.get(2)), .0f);
-  }
-  static float_type get_float(const sycl::item<3>& i) {
-    return get_float(i.get_id());
-  }
-  static float_type get_normalized(const pixel_tag::lower,
-                                   const sycl::id<3>& i,
-                                   const sycl::range<3>& r) {
-    return float_type(
-        static_cast<float>(i.get(0)) / static_cast<int>(r.get(0)),
-        static_cast<float>(i.get(1)) / static_cast<int>(r.get(1)),
-        static_cast<float>(i.get(2)) / static_cast<int>(r.get(2)), .0f);
-  }
-  static float_type get_normalized(const pixel_tag::upper,
-                                   const sycl::id<3>& i,
-                                   const sycl::range<3>& r) {
-    const auto negative_inf = -1.0f * std::numeric_limits<float>::infinity();
-    const auto next = get_normalized(pixel_tag::lower{}, 1 + i, r);
-
-    return float_type(sycl::nextafter(next[0], negative_inf),
-                      sycl::nextafter(next[1], negative_inf),
-                      sycl::nextafter(next[2], negative_inf), .0f);
-  }
-};
-
-#endif
-
 /**
  * @brief Dummy template function to check type existence without generating warnings.
  */
@@ -888,6 +669,22 @@ inline bool have_same_devices(std::vector<sycl::device> lhs,
   };
   return std::all_of(lhs.cbegin(), lhs.cend(), create_check_func(rhs)) &&
          std::all_of(rhs.cbegin(), rhs.cend(), create_check_func(lhs));
+}
+
+/**
+ * @brief Helper function which implements the functionality of std::memcmp
+ * without linking external library
+ *  @param lhs pointer to the memory buffer to compare
+ *  @param rhs pointer to the memory buffer to compare
+ *  @param count number of bytes to examine
+ */
+inline int memcmp_no_ext_lib(const void* lhs, const void* rhs, size_t count) {
+  const unsigned char* c1 = static_cast<const unsigned char*>(lhs);
+  const unsigned char* c2 = static_cast<const unsigned char*>(rhs);
+  for (; count--; c1++, c2++) {
+    if (*c1 != *c2) return *c1 < *c2 ? -1 : 1;
+  }
+  return 0;
 }
 
 #endif  // __SYCLCTS_TESTS_COMMON_COMMON_H
