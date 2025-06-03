@@ -30,6 +30,8 @@
 #include "../../util/type_names.h"
 #include "macro_utils.h"
 
+#include <string>
+
 #define TEST_FILE __FILE__
 
 /** convert a parameter to a string
