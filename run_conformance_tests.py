@@ -38,6 +38,12 @@ def handle_args(argv):
         type=str,
         required=True)
     parser.add_argument(
+        '--build-dir',
+        help='The name of the build directory to use/create',
+        type=str,
+        default='build',
+        required=False)
+    parser.add_argument(
         '-c',
         '--build-system-call',
         help='The call to the used build system.',
@@ -108,7 +114,7 @@ def handle_args(argv):
             full_conformance, test_deprecated_features, args.exclude_categories,
             args.implementation_name, args.additional_cmake_args, args.device,
             args.additional_ctest_args, args.build_only, args.run_only,
-            commit_hash, full_feature_set)
+            commit_hash, full_feature_set, args.build_dir)
 
 
 def split_additional_args(additional_args):
@@ -297,7 +303,7 @@ def main(argv=sys.argv[1:]):
     (cmake_exe, build_system_name, build_system_call, full_conformance,
      test_deprecated_features, exclude_categories, implementation_name,
      additional_cmake_args, device, additional_ctest_args,
-     build_only, run_only, commit_hash, full_feature_set) = handle_args(argv)
+     build_only, run_only, commit_hash, full_feature_set, build_dir) = handle_args(argv)
 
     # Generate a cmake call in a form accepted by subprocess.call()
     cmake_call = generate_cmake_call(cmake_exe, build_system_name,
@@ -310,9 +316,9 @@ def main(argv=sys.argv[1:]):
     ctest_call = generate_ctest_call(additional_ctest_args)
 
     # Make a build directory if required and enter it
-    if not os.path.isdir('build'):
-        os.mkdir('build')
-    os.chdir('build')
+    if not os.path.isdir(build_dir):
+        os.mkdir(build_dir)
+    os.chdir(build_dir)
 
     # Configure the build system with cmake, run the build, and run the tests.
     error_code = configure_and_run_tests(cmake_call, build_system_call,
