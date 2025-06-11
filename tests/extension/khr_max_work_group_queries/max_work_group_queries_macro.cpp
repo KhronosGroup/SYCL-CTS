@@ -26,7 +26,7 @@ TEST_CASE(
     "SYCL_KHR_MAX_NUM_WORK_GROUPS macro",
     "[khr_max_num_work_groups]") {
 #ifndef SYCL_KHR_MAX_WORK_GROUP_QUERIES
-  static_assert(false, "SYCL_KHR_MAX_NUM_WORK_GROUPS is not defined");
+  static_assert(false, "SYCL_KHR_MAX_WORK_GROUP_QUERIES is not defined");
 #endif
 }
 }  // namespace max_num_work_groups_macro::tests
