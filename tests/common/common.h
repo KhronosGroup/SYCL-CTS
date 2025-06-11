@@ -35,7 +35,6 @@
 #include "cts_selector.h"
 #include "get_cts_object.h"
 #include "macros.h"
-#include "string_makers.h"
 #include "value_operations.h"
 
 #include <algorithm>
