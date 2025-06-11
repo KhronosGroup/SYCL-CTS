@@ -22,8 +22,6 @@
 #ifndef __SYCLCTS_TESTS_COMMON_MACROS_H
 #define __SYCLCTS_TESTS_COMMON_MACROS_H
 
-#include <sycl/sycl.hpp>
-
 #include <catch2/catch_test_macros.hpp>
 #undef FAIL  // We define our own FAIL macro
 
@@ -31,6 +29,8 @@
 #include "../../util/test_base.h"
 #include "../../util/type_names.h"
 #include "macro_utils.h"
+
+#include <string>
 
 #define TEST_FILE __FILE__
 
