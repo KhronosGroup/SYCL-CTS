@@ -25,7 +25,7 @@ TEST_CASE(
     "the max_num_work_groups extension defines the "
     "SYCL_KHR_MAX_NUM_WORK_GROUPS macro",
     "[khr_max_num_work_groups]") {
-#ifndef SYCL_KHR_MAX_NUM_WORK_GROUPS
+#ifndef SYCL_KHR_MAX_WORK_GROUP_QUERY
   static_assert(false, "SYCL_KHR_MAX_NUM_WORK_GROUPS is not defined");
 #endif
 }
