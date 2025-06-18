@@ -26,7 +26,6 @@
 #include <sycl/sycl.hpp>
 
 #include "../../util/accuracy.h"
-#include "../../util/math_reference.h"
 #include "../../util/proxy.h"
 #include "../../util/test_base.h"
 #include "../../util/type_traits.h"
@@ -144,7 +143,7 @@ sycl::vec<convertType, N> convert_vec(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rte(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    sycl::vec<vecType, N> roundedVec = reference::rint(inputVec);
+    sycl::vec<vecType, N> roundedVec = sycl::rint(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       resVec[i] = static_cast<convertType>(roundedVec[i]);
@@ -158,7 +157,7 @@ sycl::vec<convertType, N> rte(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rtz(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    sycl::vec<vecType, N> roundedVec = reference::trunc(inputVec);
+    sycl::vec<vecType, N> roundedVec = sycl::trunc(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       resVec[i] = static_cast<convertType>(roundedVec[i]);
@@ -172,7 +171,7 @@ sycl::vec<convertType, N> rtz(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rtp(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    sycl::vec<vecType, N> roundedVec = reference::ceil(inputVec);
+    sycl::vec<vecType, N> roundedVec = sycl::ceil(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       resVec[i] = static_cast<convertType>(roundedVec[i]);
@@ -186,7 +185,7 @@ sycl::vec<convertType, N> rtp(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rtn(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    sycl::vec<vecType, N> roundedVec = reference::floor(inputVec);
+    sycl::vec<vecType, N> roundedVec = sycl::floor(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       resVec[i] = static_cast<convertType>(roundedVec[i]);
