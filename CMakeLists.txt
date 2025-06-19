@@ -144,6 +144,10 @@ add_cts_option(SYCL_CTS_ENABLE_KHR_QUEUE_EMPTY_QUERY_TESTS
     "Enable extension Khronos queue_empty_query tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_KHR_MAX_WORK_GROUP_QUERIES_TESTS
+    "Enable extension Khronos max_work_group_query tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+    
 add_cts_option(SYCL_CTS_ENABLE_KHR_WORK_ITEM_QUERIES_TESTS
     "Enable extension Khronos work_item_queries tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
