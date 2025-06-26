@@ -362,15 +362,15 @@ template <int Dimensions>
 static void testGroupInterface(sycl::nd_range<Dimensions> nd_range) {
   constexpr std::size_t test_count = 4;
   sycl::queue q{sycl_cts::util::get_cts_object::queue()};
-  sycl::buffer<bool> results{nd_range.get_global_range().size() * TEST_COUNT};
+  sycl::buffer<bool> results{nd_range.get_global_range().size() * test_count};
   results.get_range();
   q.submit([&](sycl::handler& cgh) {
     sycl::accessor acc{results, cgh, sycl::write_only};
     cgh.parallel_for(nd_range, [=](sycl::nd_item<Dimensions> it) {
-      acc[(it.get_global_linear_id() * TEST_COUNT) + 0] = testWorkGroup(it);
-      acc[(it.get_global_linear_id() * TEST_COUNT) + 1] = testSubGroup(it);
-      acc[(it.get_global_linear_id() * TEST_COUNT) + 2] = testWorkItemGroup(it);
-      acc[(it.get_global_linear_id() * TEST_COUNT) + 3] =
+      acc[(it.get_global_linear_id() * test_count) + 0] = testWorkGroup(it);
+      acc[(it.get_global_linear_id() * test_count) + 1] = testSubGroup(it);
+      acc[(it.get_global_linear_id() * test_count) + 2] = testWorkItemGroup(it);
+      acc[(it.get_global_linear_id() * test_count) + 3] =
           testWorkItemSubgroup(it);
     });
   });

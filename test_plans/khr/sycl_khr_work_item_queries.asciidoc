@@ -1,0 +1,57 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for SYCL extension KHR work item queries
+
+This is a test plan for an extension that defines a new interface for groups
+described in
+https://github.com/KhronosGroup/SYCL-Docs/blob/f972f91ef7676c1423eb8402974e1682411903eb/adoc/extensions/sycl_khr_work_item_queries.adoc[sycl_khr_work_item_queries].
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+The tests should statically check that the `SYCL_KHR_WORK_ITEM_QUERIES` macro is
+defined.
+
+== Tests
+
+The test cases should test the interface of each of the free functions defined
+in the extension:
+
+* `sycl::khr::this_nd_item`
+* `sycl::khr::this_group`
+* `sycl::khr::work_item<sycl::khr::sub_group>`
+
+Each test case should run ND-range kernels with `Dimensions` equal to 1, 2,
+and 3.
+
+=== Test description
+
+In the following tests, `Dimensions` is the number of dimensions of the kernel
+being tested. Equality checks in the kernels should set a value in a buffer or
+USM allocation that is then checked on the host.
+
+==== `sycl::khr::this_nd_item` function
+
+In the kernel scope, the test should call
+`sycl::khr::this_nd_item<Dimensions>()` to get an `nd_item<Dimensions>` and
+check that it's equal to the one passed as a parameter to the kernel.
+
+==== `sycl::khr::this_group` function
+
+In the kernel scope, the test should call `sycl::khr::this_group<Dimensions>()`
+to get an `nd_item<Dimensions>` and check that it's equal to the one obtained
+from the kernel's `nd_item` using the `nd_item::get_group` member function.
+
+==== `sycl::khr::this_sub_group` class
+
+In the kernel scope, the test should use function to get a `sub_group` and check
+that it's equal to the one obtained from the kernel's `nd_item` using the
+`nd_item::get_sub_group` member function.
+

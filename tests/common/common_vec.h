@@ -26,7 +26,6 @@
 #include <sycl/sycl.hpp>
 
 #include "../../util/accuracy.h"
-#include "../../util/math_reference.h"
 #include "../../util/proxy.h"
 #include "../../util/test_base.h"
 #include "../../util/type_traits.h"
@@ -144,7 +143,7 @@ sycl::vec<convertType, N> convert_vec(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rte(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    sycl::vec<vecType, N> roundedVec = reference::rint(inputVec);
+    sycl::vec<vecType, N> roundedVec = sycl::rint(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       resVec[i] = static_cast<convertType>(roundedVec[i]);
@@ -158,7 +157,7 @@ sycl::vec<convertType, N> rte(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rtz(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    sycl::vec<vecType, N> roundedVec = reference::trunc(inputVec);
+    sycl::vec<vecType, N> roundedVec = sycl::trunc(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       resVec[i] = static_cast<convertType>(roundedVec[i]);
@@ -172,7 +171,7 @@ sycl::vec<convertType, N> rtz(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rtp(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    sycl::vec<vecType, N> roundedVec = reference::ceil(inputVec);
+    sycl::vec<vecType, N> roundedVec = sycl::ceil(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       resVec[i] = static_cast<convertType>(roundedVec[i]);
@@ -186,7 +185,7 @@ sycl::vec<convertType, N> rtp(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> rtn(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
-    sycl::vec<vecType, N> roundedVec = reference::floor(inputVec);
+    sycl::vec<vecType, N> roundedVec = sycl::floor(inputVec);
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       resVec[i] = static_cast<convertType>(roundedVec[i]);
@@ -512,7 +511,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
   // lo()
   {
     sycl::vec<vecType, mid> loVec{inputVec.lo()};
-    vecType loVals[mid] = {0};
+    vecType loVals[mid] = {vecType{0}};
     for (size_t i = 0; i < mid; i++) {
       loVals[i] = vals[i];
     }
@@ -523,7 +522,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
   {
     sycl::vec<vecType, mid> loVec;
     DO_OPERATION_ON_SWIZZLE(N, inputVec, loVec, lo());
-    vecType loVals[mid] = {0};
+    vecType loVals[mid] = {vecType{0}};
     for (size_t i = 0; i < mid; i++) {
       loVals[i] = vals[i];
     }
@@ -537,7 +536,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
     {
       // hi()
       sycl::vec<vecType, mid> hiVec{inputVec.hi()};
-      vecType hiVals[mid] = {0};
+      vecType hiVals[mid] = {vecType{0}};
       for (size_t i = 0; i < mid; i++) {
         hiVals[i] = vals[i + mid];
       }
@@ -549,7 +548,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
       // hi()
       sycl::vec<vecType, mid> hiVec;
       DO_OPERATION_ON_SWIZZLE(N, inputVec, hiVec, hi());
-      vecType hiVals[mid] = {0};
+      vecType hiVals[mid] = {vecType{0}};
       for (size_t i = 0; i < mid; i++) {
         hiVals[i] = vals[i + mid];
       }
@@ -564,7 +563,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
     {
       // odd()
       sycl::vec<vecType, mid> oddVec{inputVec.odd()};
-      vecType oddVals[mid] = {0};
+      vecType oddVals[mid] = {vecType{0}};
       for (size_t i = 0; i < mid; ++i) {
         oddVals[i] = vals[i * 2 + 1];
       }
@@ -576,7 +575,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
       // odd()
       sycl::vec<vecType, mid> oddVec;
       DO_OPERATION_ON_SWIZZLE(N, inputVec, oddVec, odd());
-      vecType oddVals[mid] = {0};
+      vecType oddVals[mid] = {vecType{0}};
       for (size_t i = 0; i < mid; ++i) {
         oddVals[i] = vals[i * 2 + 1];
       }
@@ -588,7 +587,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
   // even()
   {
     sycl::vec<vecType, mid> evenVec{inputVec.even()};
-    vecType evenVals[mid] = {0};
+    vecType evenVals[mid] = {vecType{0}};
     for (size_t i = 0; i < mid; ++i) {
       evenVals[i] = vals[i * 2];
     }
@@ -599,7 +598,7 @@ bool check_lo_hi_odd_even(sycl::vec<vecType, N> inputVec, vecType* vals) {
   {
     sycl::vec<vecType, mid> evenVec;
     DO_OPERATION_ON_SWIZZLE(N, inputVec, evenVec, even());
-    vecType evenVals[mid] = {0};
+    vecType evenVals[mid] = {vecType{0}};
     for (size_t i = 0; i < mid; ++i) {
       evenVals[i] = vals[i * 2];
     }
