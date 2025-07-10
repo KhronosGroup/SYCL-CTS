@@ -152,6 +152,10 @@ add_cts_option(SYCL_CTS_ENABLE_KHR_WORK_ITEM_QUERIES_TESTS
     "Enable extension Khronos work_item_queries tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_KHR_QUEUE_FLUSH_TESTS
+    "Enable extension Khronos queue_flush tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+
 # TODO: Deprecated - remove
 add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG
     "Enable debug-level logs (deprecated)" OFF)
