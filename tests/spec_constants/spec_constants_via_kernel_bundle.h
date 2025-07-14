@@ -14,7 +14,9 @@
 #include "../common/type_coverage.h"
 #include "spec_constants_common.h"
 
+#include <algorithm>
 #include <stdexcept>
+#include <string>
 
 namespace specialization_constants_via_kernel_bundle {
 
@@ -172,8 +174,25 @@ class bundle_factory {
    */
   auto create() {
     if constexpr (id::group != case_group::read_from_kernel) {
-      // Literally any bundle will be OK
-      return sycl::get_kernel_bundle<id::state>(context, {device});
+      // Literally any bundle will be OK.
+      // To avoid creating a bundle with all device images in the executable
+      // (can be large), find id of any kernel from the
+      // "specialization_constants_via_kernel_bundle" namespace.
+      std::vector<sycl::kernel_id> all_kernels = sycl::get_kernel_ids();
+      assert(all_kernels.size() > 0 &&
+             "At least one kernel should be available");
+      auto it = std::find_if(
+          all_kernels.begin(), all_kernels.end(),
+          [](const sycl::kernel_id& kernel_id) {
+            return std::string(kernel_id.get_name())
+                       .find("specialization_constants_via_kernel_bundle") !=
+                   std::string::npos;
+          });
+      // Use the first kernel if no such kernel found.
+      if (it == all_kernels.end()) {
+        it = all_kernels.begin();
+      }
+      return sycl::get_kernel_bundle<id::state>(context, {device}, {*it});
     } else {
       // We should use only the one containing the kernel required
       auto kernelId = sycl::get_kernel_id<kernel<T, id>>();
