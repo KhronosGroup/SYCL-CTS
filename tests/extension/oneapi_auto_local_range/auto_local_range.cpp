@@ -19,7 +19,7 @@
 *******************************************************************************/
 
 #include "../../common/common.h"
-#include "../../common/index_space.h"
+#include "../../common/range_index_space_id.h"
 #include <type_traits>
 
 namespace auto_local_range::tests {

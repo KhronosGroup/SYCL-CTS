@@ -19,9 +19,14 @@
 //
 *******************************************************************************/
 
+#ifndef __SYCLCTS_TESTS_COMMON_RANGE_INDEX_SPACE_ID_H
+#define __SYCLCTS_TESTS_COMMON_RANGE_INDEX_SPACE_ID_H
+
 #ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "../common/type_coverage.h"
 #endif
+
+#include "once_per_unit.h"
 
 namespace range_index_space_id {
 
@@ -95,3 +100,44 @@ void check_members_test(const std::string& type_name) {
 }
 
 }  // namespace range_index_space_id
+
+/// Linearizes a multi-dimensional index according to the specification.
+template <unsigned int dimension>
+size_t linearize(sycl::range<dimension> range, sycl::id<dimension> id);
+
+inline size_t linearize(sycl::range<1> range, sycl::id<1> id) {
+  static_cast<void>(range);
+  return id[0];
+}
+
+inline size_t linearize(sycl::range<2> range, sycl::id<2> id) {
+  return id[1] + id[0] * range[1];
+}
+
+inline size_t linearize(sycl::range<3> range, sycl::id<3> id) {
+  return id[2] + id[1] * range[2] + id[0] * range[1] * range[2];
+}
+
+/**
+Computes a multi-dimensional index such that id = unlinearize(range,
+linearize(range, id)) if id is a valid index in range. */
+template <unsigned int dimension>
+sycl::id<dimension> unlinearize(sycl::range<dimension> range, size_t id);
+
+inline sycl::id<1> unlinearize(sycl::range<1>, size_t id) { return {id}; }
+
+inline sycl::id<2> unlinearize(sycl::range<2> range, size_t id) {
+  size_t id0 = id / range[1];
+  size_t id1 = id % range[1];
+  return {id0, id1};
+}
+
+inline sycl::id<3> unlinearize(sycl::range<3> range, size_t id) {
+  size_t id0 = id / (range[1] * range[2]);
+  size_t rem = id % (range[1] * range[2]);
+  size_t id1 = rem / range[2];
+  size_t id2 = rem % range[2];
+  return {id0, id1, id2};
+}
+
+#endif // __SYCLCTS_TESTS_COMMON_RANGE_INDEX_SPACE_ID_H
