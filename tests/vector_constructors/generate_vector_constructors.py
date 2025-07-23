@@ -28,7 +28,7 @@ from string import Template
 sys.path.append('../common/')
 from common_python_vec import (Data, ReverseData, wrap_with_kernel, wrap_with_test_func,
                                make_func_call, write_source_file, get_types, cast_to_bool,
-                               append_fp_postfix)
+                               make_fp_or_byte_explicit)
 
 TEST_NAME = 'CONSTRUCTORS'
 
@@ -43,7 +43,7 @@ default_constructor_vec_template = Template(
 """)
 
 explicit_constructor_vec_template = Template(
-    """        const ${type} val = ${val};
+    """        const ${type} val{${val}};
         ${type} vals[] = {${vals}};
         auto test = sycl::vec<${type}, ${size}>(val);
         if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(test)) {
@@ -151,8 +151,8 @@ def generate_mixed(type_str, size):
         return ''
     input_vec_size = size//2
     values_size = size - input_vec_size
-    vals_list1 = append_fp_postfix(type_str, Data.vals_list_dict[size][:input_vec_size])
-    vals_list2 = append_fp_postfix(type_str, Data.vals_list_dict[size][-values_size:])
+    vals_list1 = make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size][:input_vec_size])
+    vals_list2 = make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size][-values_size:])
     test_string = mixed_constructor_vec_template.substitute(
         type=type_str,
         size=size,

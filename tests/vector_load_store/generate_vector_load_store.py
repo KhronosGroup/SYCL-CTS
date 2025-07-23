@@ -25,7 +25,7 @@ import sys
 import argparse
 from string import Template
 sys.path.append('../common/')
-from common_python_vec import (Data, append_fp_postfix, make_func_call,
+from common_python_vec import (Data, make_fp_or_byte_explicit, make_func_call,
                                wrap_with_test_func, write_source_file,
                                wrap_with_extension_checks, get_types,
                                remove_namespaces_whitespaces, cast_to_bool)
@@ -411,9 +411,9 @@ def gen_load_store_test(type_str, size):
             size=size,
             val=Data.value_default_dict[type_str],
             in_order_vals=', '.join(
-                append_fp_postfix(type_str, Data.vals_list_dict[size])),
+                make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size])),
             reverse_order_vals=', '.join(
-                append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])),
+                make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size][::-1])),
             kernelName=gen_kernel_name(type_str, size, decoration + '_global'),
             swizVals=', '.join(Data.swizzle_elem_list_dict[size]),
             decorated=('sycl::access::decorated::' + decoration))
@@ -423,9 +423,9 @@ def gen_load_store_test(type_str, size):
             size=size,
             val=Data.value_default_dict[type_str],
             in_order_vals=', '.join(
-                append_fp_postfix(type_str, Data.vals_list_dict[size])),
+                make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size])),
             reverse_order_vals=', '.join(
-                append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])),
+                make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size][::-1])),
             kernelName=gen_kernel_name(type_str, size, decoration + '_local'),
             swizVals=', '.join(Data.swizzle_elem_list_dict[size]),
             decorated=('sycl::access::decorated::' + decoration))
@@ -435,9 +435,9 @@ def gen_load_store_test(type_str, size):
             size=size,
             val=Data.value_default_dict[type_str],
             in_order_vals=', '.join(
-                append_fp_postfix(type_str, Data.vals_list_dict[size])),
+                make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size])),
             reverse_order_vals=', '.join(
-                append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])),
+                make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size][::-1])),
             kernelName=gen_kernel_name(type_str, size, decoration + '_private'),
             swizVals=', '.join(Data.swizzle_elem_list_dict[size]),
             decorated=('sycl::access::decorated::' + decoration))
@@ -450,9 +450,9 @@ def gen_load_store_test(type_str, size):
         size=size,
         val=Data.value_default_dict[type_str],
         in_order_vals=', '.join(
-            append_fp_postfix(type_str, Data.vals_list_dict[size])),
+            make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size])),
         reverse_order_vals=', '.join(
-            append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])),
+            make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size][::-1])),
         kernelName=gen_kernel_name(type_str, size, 'raw_global'),
         swizVals=', '.join(Data.swizzle_elem_list_dict[size]))
     test_string += local_raw_ptr_load_store_test_template.substitute(
@@ -461,9 +461,9 @@ def gen_load_store_test(type_str, size):
         size=size,
         val=Data.value_default_dict[type_str],
         in_order_vals=', '.join(
-            append_fp_postfix(type_str, Data.vals_list_dict[size])),
+            make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size])),
         reverse_order_vals=', '.join(
-            append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])),
+            make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size][::-1])),
         kernelName=gen_kernel_name(type_str, size, 'raw_local'),
         swizVals=', '.join(Data.swizzle_elem_list_dict[size]))
     test_string += private_raw_ptr_load_store_test_template.substitute(
@@ -472,9 +472,9 @@ def gen_load_store_test(type_str, size):
         size=size,
         val=Data.value_default_dict[type_str],
         in_order_vals=', '.join(
-            append_fp_postfix(type_str, Data.vals_list_dict[size])),
+            make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size])),
         reverse_order_vals=', '.join(
-            append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])),
+            make_fp_or_byte_explicit(type_str, Data.vals_list_dict[size][::-1])),
         kernelName=gen_kernel_name(type_str, size, 'raw_private'),
         swizVals=', '.join(Data.swizzle_elem_list_dict[size]))
     return wrap_with_test_func(TEST_NAME, type_str,

@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2025 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -18,22 +18,15 @@
 //
 *******************************************************************************/
 
-#include "../common/common.h"
-#include "queue_shortcuts_explicit.h"
+#include "../../common/common.h"
 
-namespace queue_shortcuts_explicit_fp64 {
-
-using namespace sycl_cts;
-using namespace queue_shortcuts_explict;
-
-TEST_CASE("queue shortcuts explicit copy fp64", "[queue]") {
-  auto queue = util::get_cts_object::queue();
-  if (!queue.get_device().has(sycl::aspect::fp64)) {
-    SKIP(
-        "Device does not support double precision floating point operations.");
-  }
-
-  check_queue_shortcuts_explicit_for_type<double>{}(queue, "double");
+namespace max_num_work_groups_macro::tests {
+TEST_CASE(
+    "the max_num_work_groups extension defines the "
+    "SYCL_KHR_MAX_WORK_GROUP_QUERIES macro",
+    "[khr_max_num_work_groups]") {
+#ifndef SYCL_KHR_MAX_WORK_GROUP_QUERIES
+  static_assert(false, "SYCL_KHR_MAX_WORK_GROUP_QUERIES is not defined");
+#endif
 }
-
-}  // namespace queue_shortcuts_explicit_fp64
+}  // namespace max_num_work_groups_macro::tests

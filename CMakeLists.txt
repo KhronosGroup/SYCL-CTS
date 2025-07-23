@@ -21,6 +21,12 @@ macro(add_submodule_directory RELPATH)
     add_subdirectory("${RELPATH}")
 endmacro()
 
+# Disable page fault handler feature, due to its implementation not respecting page fault handler chain
+if(WIN32)
+    set(CATCH_CONFIG_NO_WINDOWS_SEH ON CACHE BOOL "" FORCE)
+else()
+    set(CATCH_CONFIG_NO_POSIX_SIGNALS ON CACHE BOOL "" FORCE)
+endif()
 add_submodule_directory(vendor/Catch2)
 
 # set host compiler flags
@@ -82,10 +88,6 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_QUEUE_EMPTY
     "Enable extension oneAPI queue_empty tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
 
-add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_DISCARD_QUEUE_EVENTS_TESTS
-    "Enable extension oneAPI discard_queue_events tests" OFF
-    FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
-
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_BFLOAT16_TESTS
     "Enable extension oneAPI bfloat16 tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_EXT_ONEAPI_TESTS})
@@ -130,12 +132,24 @@ add_cts_option(SYCL_CTS_ENABLE_KHR_DEFAULT_CONTEXT_TESTS
     "Enable extension Khronos default_context tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
-add_cts_option(SYCL_CTS_ENABLE_KHR_FREE_FUNCTION_COMMANDS
+add_cts_option(SYCL_CTS_ENABLE_KHR_FREE_FUNCTION_COMMANDS_TESTS
     "Enable extension Khronos free_function_commands tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+
+add_cts_option(SYCL_CTS_ENABLE_KHR_GROUP_INTERFACE_TESTS
+    "Enable extension Khronos group_interface tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
 add_cts_option(SYCL_CTS_ENABLE_KHR_QUEUE_EMPTY_QUERY_TESTS
     "Enable extension Khronos queue_empty_query tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+
+add_cts_option(SYCL_CTS_ENABLE_KHR_MAX_WORK_GROUP_QUERIES_TESTS
+    "Enable extension Khronos max_work_group_query tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+    
+add_cts_option(SYCL_CTS_ENABLE_KHR_WORK_ITEM_QUERIES_TESTS
+    "Enable extension Khronos work_item_queries tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
 # TODO: Deprecated - remove

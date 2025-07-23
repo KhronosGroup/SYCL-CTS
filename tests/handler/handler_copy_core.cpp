@@ -7,7 +7,6 @@
 *******************************************************************************/
 
 #include "../common/disabled_for_test_case.h"
-#include "../common/string_makers.h"
 #include "../common/type_coverage.h"
 #include "catch2/catch_test_macros.hpp"
 #include "handler_copy_common.h"
