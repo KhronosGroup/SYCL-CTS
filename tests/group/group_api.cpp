@@ -21,6 +21,7 @@
 
 #include "../../util/array.h"
 #include "../common/common.h"
+#include "../common/range_index_space_id.h"
 
 #include <cstddef>
 #include <limits>
