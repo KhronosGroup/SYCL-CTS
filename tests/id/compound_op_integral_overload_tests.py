@@ -1,0 +1,38 @@
+import random
+
+typelist = ["bool", "char", "char16_t", "char32_t", "wchar_t", "short", "int", "long", "long long"]
+for type in typelist:
+    a1 = int(random.randint(1, 10))
+    a2 = int(random.randint(1, 10))
+    a3 = int(random.randint(1, 10))
+    if type == "bool":
+        b = int(1)
+    else:
+        b = int(random.randint(1, 10))
+    print("TEMPLATE_TEST_CASE_SIG(\n    \"id supports various compound binary operators of the form `id OP= ", type, "`\",\n    \"[id]\", ((int D), D), 1, 2, 3) {", sep='')
+    print("  const auto a = idh<D>::get(", a1, ", " , a2, ", ", a3, ");\n  const ", type, " b = ", b, ";", sep = '')
+    print("")
+    print("  CHECK(COMPOUND_OP(a, x += b) == idh<D>::get(", a1+b, ", ", a2+b, ", ", a3+b, "));", sep = '')
+    print("  CHECK(COMPOUND_OP(a, x -= b) == idh<D>::get(", a1-b, ", ", a2-b, ", ", a3-b, "));", sep = '')
+    print("  CHECK(COMPOUND_OP(a, x *= b) == idh<D>::get(", a1*b, ", ", a2*b, ", ", a3*b, "));", sep = '')
+    print("  CHECK(COMPOUND_OP(a, x /= b) == idh<D>::get(", a1//b, ", ", a2//b, ", ", a3//b, "));", sep = '')
+    print("  CHECK(COMPOUND_OP(a, x %= b) == idh<D>::get(", a1%b, ", ", a2%b, ", ", a3%b, "));", sep = '')
+    print("  CHECK(COMPOUND_OP(a, x <<= b) == idh<D>::get(", a1<<b, ", ", a2<<b, ", ", a3<<b, "));", sep = '')
+    print("  CHECK(COMPOUND_OP(a, x >>= b) == idh<D>::get(", a1>>b, ", ", a2>>b, ", ", a3>>b, "));", sep = '')
+    print("  CHECK(COMPOUND_OP(a, x &= b) == idh<D>::get(", a1&b, ", ", a2&b, ", ", a3&b, "));", sep = '')
+    print("  CHECK(COMPOUND_OP(a, x |= b) == idh<D>::get(", a1|b, ", ", a2|b, ", ", a3|b, "));", sep = '')
+    print("  CHECK(COMPOUND_OP(a, x ^= b) == idh<D>::get(", a1^b, ", ", a2^b, ", ", a3^b, "));", sep = '')
+    print("")
+    print("  using sycl::id;")
+    print("  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x += b)) == idh<D>::get(", a1+b, ", ", a2+b, ", ", a3+b, "));", sep = '')
+    print("  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x -= b)) == idh<D>::get(", a1-b, ", ", a2-b, ", ", a3-b, "));", sep = '')
+    print("  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x *= b)) == idh<D>::get(", a1*b, ", ", a2*b, ", ", a3*b, "));", sep = '')
+    print("  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x /= b)) == idh<D>::get(", a1//b, ", ", a2//b, ", ", a3//b, "));", sep = '')
+    print("  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x %= b)) == idh<D>::get(", a1%b, ", ", a2%b, ", ", a3%b, "));", sep = '')
+    print("  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x <<= b)) == idh<D>::get(", a1<<b, ", ", a2<<b, ", ", a3<<b, "));", sep = '')
+    print("  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x >>= b)) == idh<D>::get(", a1>>b, ", ", a2>>b, ", ", a3>>b, "));", sep = '')
+    print("  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x &= b)) == idh<D>::get(", a1&b, ", ", a2&b, ", ", a3&b, "));", sep = '')
+    print("  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x |= b)) == idh<D>::get(", a1|b, ", ", a2|b, ", ", a3|b, "));", sep = '')
+    print("  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x ^= b)) == idh<D>::get(", a1^b, ", ", a2^b, ", ", a3^b, "));", sep = '')
+    print("}")
+    print("")
