@@ -39,7 +39,7 @@ TEST_CASE(
  *
  * @tparam Dims The dimensions of the test kernel.
  */
-template <std::size_t... Dims>
+template <typename T, std::size_t... Dims>
 static void check_global_ptr_cast() {
   // Define the dimensions of the global buffer
   constexpr int dimensions = sizeof...(Dims);
@@ -60,15 +60,16 @@ static void check_global_ptr_cast() {
         result_buffer.template get_access<sycl::access::mode::write>(cgh);
     cgh.parallel_for(range, [=](sycl::item<dimensions> item) {
       // Get a raw pointer to the global buffer
-      int* raw_global_ptr = &global_acc[item.get_id()];
+      T raw_global_ptr{
+          global_acc.template get_multi_ptr<sycl::access::decorated::no>()};
 
       // Cast the raw pointer to a global address space pointer
       auto global_ptr = sycl::khr::static_addrspace_cast<
           sycl::access::address_space::global_space>(raw_global_ptr);
 
       // Check if the casted pointer matches the original raw pointer
-      bool success = (reinterpret_cast<std::size_t>(raw_global_ptr) ==
-                      reinterpret_cast<std::size_t>(global_ptr.get_raw()));
+      bool success = (sycl::bit_cast<std::size_t>(raw_global_ptr) ==
+                      sycl::bit_cast<std::size_t>(global_ptr.get_raw()));
 
       // Store the result of the check in the result buffer
       result_acc[item.get_id()] = success;
@@ -83,9 +84,18 @@ static void check_global_ptr_cast() {
 TEST_CASE(
     "static_addrspace_cast works on pointers in address_space::global_space",
     "[khr_static_addrspace_cast]") {
-  check_global_ptr_cast<4>();
-  check_global_ptr_cast<2, 3>();
-  check_global_ptr_cast<2, 3, 4>();
+  check_global_ptr_cast<int*, 4>();
+  check_global_ptr_cast<int*, 2, 3>();
+  check_global_ptr_cast<int*, 2, 3, 4>();
+  check_global_ptr_cast<sycl::generic_ptr<int>, 4>();
+  check_global_ptr_cast<sycl::generic_ptr<int>, 2, 3>();
+  check_global_ptr_cast<sycl::generic_ptr<int>, 4, 2, 3>();
+  check_global_ptr_cast<sycl::raw_generic_ptr<int>, 4>();
+  check_global_ptr_cast<sycl::raw_generic_ptr<int>, 2, 3>();
+  check_global_ptr_cast<sycl::raw_generic_ptr<int>, 2, 3, 4>();
+  check_global_ptr_cast<sycl::decorated_generic_ptr<int>, 4>();
+  check_global_ptr_cast<sycl::decorated_generic_ptr<int>, 2, 3>();
+  check_global_ptr_cast<sycl::decorated_generic_ptr<int>, 2, 3, 4>();
 }
 
 /*
@@ -96,7 +106,7 @@ TEST_CASE(
  *
  * @tparam Dims The dimensions of the test kernel.
  */
-template <std::size_t... Dims>
+template <typename T, std::size_t... Dims>
 static void check_local_ptr_cast() {
   // Define the dimensions of the local buffer
   constexpr int dimensions = sizeof...(Dims);
@@ -116,15 +126,16 @@ static void check_local_ptr_cast() {
         sycl::nd_range<dimensions>{range, sycl::range<dimensions>{} + 1},
         [=](sycl::nd_item<dimensions> item) {
           // Get a raw pointer to the local accessor
-          int* raw_local_ptr = &local_acc[0];
+          T raw_local_ptr{
+              local_acc.get_multi_ptr<sycl::access::decorated::no>()};
 
           // Cast the raw pointer to a local address space pointer
           auto local_ptr = sycl::khr::static_addrspace_cast<
               sycl::access::address_space::local_space>(raw_local_ptr);
 
           // Check if the casted pointer matches the original raw pointer
-          bool success = (reinterpret_cast<std::size_t>(raw_local_ptr) ==
-                          reinterpret_cast<std::size_t>(local_ptr.get_raw()));
+          bool success = (sycl::bit_cast<std::size_t>(raw_local_ptr) ==
+                          sycl::bit_cast<std::size_t>(local_ptr.get_raw()));
 
           // Store the result of the check in the result buffer
           result_acc[item.get_global_id()] = success;
@@ -139,9 +150,18 @@ static void check_local_ptr_cast() {
 TEST_CASE(
     "static_addrspace_cast works on pointers in address_space::local_space",
     "[khr_static_addrspace_cast]") {
-  check_local_ptr_cast<4>();
-  check_local_ptr_cast<2, 3>();
-  check_local_ptr_cast<2, 3, 4>();
+  check_local_ptr_cast<int*, 4>();
+  check_local_ptr_cast<int*, 2, 3>();
+  check_local_ptr_cast<int*, 2, 3, 4>();
+  check_local_ptr_cast<sycl::generic_ptr<int>, 4>();
+  check_local_ptr_cast<sycl::generic_ptr<int>, 2, 3>();
+  check_local_ptr_cast<sycl::generic_ptr<int>, 4, 2, 3>();
+  check_local_ptr_cast<sycl::raw_generic_ptr<int>, 4>();
+  check_local_ptr_cast<sycl::raw_generic_ptr<int>, 2, 3>();
+  check_local_ptr_cast<sycl::raw_generic_ptr<int>, 2, 3, 4>();
+  check_local_ptr_cast<sycl::decorated_generic_ptr<int>, 4>();
+  check_local_ptr_cast<sycl::decorated_generic_ptr<int>, 2, 3>();
+  check_local_ptr_cast<sycl::decorated_generic_ptr<int>, 2, 3, 4>();
 }
 
 /*
@@ -152,7 +172,7 @@ TEST_CASE(
  *
  * @tparam Dims The dimensions of the test kernel.
  */
-template <std::size_t... Dims>
+template <typename T, std::size_t... Dims>
 static void check_private_ptr_cast() {
   // Define the dimensions of the private buffer
   constexpr int dimensions = sizeof...(Dims);
@@ -170,15 +190,15 @@ static void check_private_ptr_cast() {
     cgh.parallel_for(range, [=](sycl::item<dimensions> item) {
       // Create a raw pointer to a private variable
       int private_var = 0;
-      int* raw_private_ptr = &private_var;
+      T raw_private_ptr{&private_var};
 
       // Cast the raw pointer to a private address space pointer
       auto private_ptr = sycl::khr::static_addrspace_cast<
           sycl::access::address_space::private_space>(raw_private_ptr);
 
       // Check if the casted pointer matches the original raw pointer
-      bool success = (reinterpret_cast<std::size_t>(raw_private_ptr) ==
-                      reinterpret_cast<std::size_t>(private_ptr.get_raw()));
+      bool success = (sycl::bit_cast<std::size_t>(raw_private_ptr) ==
+                      sycl::bit_cast<std::size_t>(private_ptr.get_raw()));
 
       // Store the result of the check in the result buffer
       result_acc[item.get_id()] = success;
@@ -193,9 +213,18 @@ static void check_private_ptr_cast() {
 TEST_CASE(
     "static_addrspace_cast works on pointers in address_space::private_space",
     "[khr_static_addrspace_cast]") {
-  check_private_ptr_cast<4>();
-  check_private_ptr_cast<2, 3>();
-  check_private_ptr_cast<2, 3, 4>();
+  check_private_ptr_cast<int*, 4>();
+  check_private_ptr_cast<int*, 2, 3>();
+  check_private_ptr_cast<int*, 2, 3, 4>();
+  check_private_ptr_cast<sycl::generic_ptr<int>, 4>();
+  check_private_ptr_cast<sycl::generic_ptr<int>, 2, 3>();
+  check_private_ptr_cast<sycl::generic_ptr<int>, 4, 2, 3>();
+  check_private_ptr_cast<sycl::raw_generic_ptr<int>, 4>();
+  check_private_ptr_cast<sycl::raw_generic_ptr<int>, 2, 3>();
+  check_private_ptr_cast<sycl::raw_generic_ptr<int>, 2, 3, 4>();
+  check_private_ptr_cast<sycl::decorated_generic_ptr<int>, 4>();
+  check_private_ptr_cast<sycl::decorated_generic_ptr<int>, 2, 3>();
+  check_private_ptr_cast<sycl::decorated_generic_ptr<int>, 2, 3, 4>();
 }
 
 }  // namespace static_addrspace_cast::tests
