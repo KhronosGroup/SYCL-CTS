@@ -44,7 +44,9 @@ In the kernel scope, do the following:
 * Check that `local_ptr.get_raw() == nullptr` and `private_ptr.get_raw() == nullptr`.
 * Store the result of the checks in a buffer or USM allocation.
 
-Then, on the host, check that all values in the buffer or USM allocation are `true`.
+Then, on the host, check that all values in the buffer or USM allocation are
+`true`. Repeat this test with `raw_global_ptr` of type `sycl::generic_ptr<int>`,
+`sycl::raw_generic_ptr<int>`, and `sycl::decorated_generic_ptr<int>`.
 
 ==== `sycl::access::address_space::local_space`
 
@@ -58,7 +60,9 @@ In the kernel scope, do the following:
 * Check that `global_ptr.get_raw() == nullptr` and `private_ptr.get_raw() == nullptr`.
 * Store the result of the checks in a buffer or USM allocation.
 
-Then, on the host, check that all values in the buffer or USM allocation are `true`.
+Then, on the host, check that all values in the buffer or USM allocation are
+`true`. Repeat this test with `raw_local_ptr` of type `sycl::generic_ptr<int>`,
+`sycl::raw_generic_ptr<int>`, and `sycl::decorated_generic_ptr<int>`.
 
 ==== `sycl::access::address_space::private_space`
 
@@ -72,4 +76,7 @@ In the kernel scope, do the following:
 * Check that `global_ptr.get_raw() == nullptr` and `local_ptr.get_raw() == nullptr`.
 * Store the result of the checks in a buffer or USM allocation.
 
-Then, on the host, check that all values in the buffer or USM allocation are `true`.
+Then, on the host, check that all values in the buffer or USM allocation are
+`true`. Repeat this test with `raw_private_ptr` of type
+`sycl::generic_ptr<int>`, `sycl::raw_generic_ptr<int>`, and
+`sycl::decorated_generic_ptr<int>`.

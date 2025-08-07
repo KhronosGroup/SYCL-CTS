@@ -42,7 +42,9 @@ In the kernel scope, do the following:
 * Check that `reinterpret_cast<std::size_t>(raw_global_ptr) == reinterpret_cast<std::size_t>(global_ptr.get_raw())`.
 * Store the result of the check in a buffer or USM allocation.
 
-Then, on the host, check that all values in the buffer or USM allocation are `true`.
+Then, on the host, check that all values in the buffer or USM allocation are
+`true`. Repeat this test with `raw_global_ptr` of type `sycl::generic_ptr<int>`,
+`sycl::raw_generic_ptr<int>`, and `sycl::decorated_generic_ptr<int>`.
 
 ==== `sycl::access::address_space::local_space`
 
@@ -53,7 +55,9 @@ In the kernel scope, do the following:
 * Check that `reinterpret_cast<std::size_t>(raw_local_ptr) == reinterpret_cast<std::size_t>(local_ptr.get_raw())`.
 * Store the result of the check in a buffer or USM allocation.
 
-Then, on the host, check that all values in the buffer or USM allocation are `true`.
+Then, on the host, check that all values in the buffer or USM allocation are
+`true`. Repeat this test with `raw_local_ptr` of type `sycl::generic_ptr<int>`,
+`sycl::raw_generic_ptr<int>`, and `sycl::decorated_generic_ptr<int>`.
 
 ==== `sycl::access::address_space::private_space`
 
@@ -64,4 +68,7 @@ In the kernel scope, do the following:
 * Check that `reinterpret_cast<std::size_t>(raw_private_ptr) == reinterpret_cast<std::size_t>(private_ptr.get_raw())`.
 * Store the result of the check in a buffer or USM allocation.
 
-Then, on the host, check that all values in the buffer or USM allocation are `true`.
+Then, on the host, check that all values in the buffer or USM allocation are
+`true`. Repeat this test with `raw_private_ptr` of type
+`sycl::generic_ptr<int>`, `sycl::raw_generic_ptr<int>`, and
+`sycl::decorated_generic_ptr<int>`.
