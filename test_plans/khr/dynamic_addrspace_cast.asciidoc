@@ -1,0 +1,82 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for SYCL extension KHR dynamic addrspace cast extension
+
+This is a test plan for an extension that defines a new free function for dynamic casts
+described in
+https://github.com/KhronosGroup/SYCL-Docs/blob/61d8237c37c462f10b2ea0ac0c437aeb544e7882/adoc/extensions/sycl_khr_dynamic_addrspace_cast.adoc[sycl_khr_dynamic_addrspace_cast].
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+The tests should statically check that the `SYCL_KHR_DYNAMIC_ADDRSPACE_CAST`
+macro is defined.
+
+== Tests
+
+The test cases should test the cast function defined in the extension for
+pointers in each of the following address spaces:
+
+* `sycl::access::address_space::global_space`
+* `sycl::access::address_space::local_space`
+* `sycl::access::address_space::private_space`
+
+These test cases should run on 1D, 2D, and 3D kernels.
+
+=== Test description
+
+==== `sycl::access::address_space::global_space`
+
+In the kernel scope, do the following:
+
+* Define a `raw_global_ptr` of type `int*` that points to a global buffer element.
+* Define a `global_ptr` using `sycl::khr::dynamic_addrspace_cast<sycl::access::address_space::global_space>(raw_global_ptr)`.
+* Define a `local_ptr` using `sycl::khr::dynamic_addrspace_cast<sycl::access::address_space::local_space>(raw_global_ptr)`.
+* Define a `private_ptr` using `sycl::khr::dynamic_addrspace_cast<sycl::access::address_space::private_space>(raw_global_ptr)`.
+* Check that `reinterpret_cast<std::size_t>(raw_global_ptr) == reinterpret_cast<std::size_t>(global_ptr.get_raw())`.
+* Check that `local_ptr.get_raw() == nullptr` and `private_ptr.get_raw() == nullptr`.
+* Store the result of the checks in a buffer or USM allocation.
+
+Then, on the host, check that all values in the buffer or USM allocation are
+`true`. Repeat this test with `raw_global_ptr` of type `sycl::generic_ptr<int>`,
+`sycl::raw_generic_ptr<int>`, and `sycl::decorated_generic_ptr<int>`.
+
+==== `sycl::access::address_space::local_space`
+
+In the kernel scope, do the following:
+
+* Define a `raw_local_ptr` of type `int*` that points to a local accessor element.
+* Define a `global_ptr` using `sycl::khr::dynamic_addrspace_cast<sycl::access::address_space::global_space>(raw_local_ptr)`.
+* Define a `local_ptr` using `sycl::khr::dynamic_addrspace_cast<sycl::access::address_space::local_space>(raw_local_ptr)`.
+* Define a `private_ptr` using `sycl::khr::dynamic_addrspace_cast<sycl::access::address_space::private_space>(raw_local_ptr)`.
+* Check that `reinterpret_cast<std::size_t>(raw_local_ptr) == reinterpret_cast<std::size_t>(local_ptr.get_raw())`.
+* Check that `global_ptr.get_raw() == nullptr` and `private_ptr.get_raw() == nullptr`.
+* Store the result of the checks in a buffer or USM allocation.
+
+Then, on the host, check that all values in the buffer or USM allocation are
+`true`. Repeat this test with `raw_local_ptr` of type `sycl::generic_ptr<int>`,
+`sycl::raw_generic_ptr<int>`, and `sycl::decorated_generic_ptr<int>`.
+
+==== `sycl::access::address_space::private_space`
+
+In the kernel scope, do the following:
+
+* Define a `raw_private_ptr` of type `int*` that points to a private variable.
+* Define a `global_ptr` using `sycl::khr::dynamic_addrspace_cast<sycl::access::address_space::global_space>(raw_private_ptr)`.
+* Define a `local_ptr` using `sycl::khr::dynamic_addrspace_cast<sycl::access::address_space::local_space>(raw_private_ptr)`.
+* Define a `private_ptr` using `sycl::khr::dynamic_addrspace_cast<sycl::access::address_space::private_space>(raw_private_ptr)`.
+* Check that `reinterpret_cast<std::size_t>(raw_private_ptr) == reinterpret_cast<std::size_t>(private_ptr.get_raw())`.
+* Check that `global_ptr.get_raw() == nullptr` and `local_ptr.get_raw() == nullptr`.
+* Store the result of the checks in a buffer or USM allocation.
+
+Then, on the host, check that all values in the buffer or USM allocation are
+`true`. Repeat this test with `raw_private_ptr` of type
+`sycl::generic_ptr<int>`, `sycl::raw_generic_ptr<int>`, and
+`sycl::decorated_generic_ptr<int>`.
