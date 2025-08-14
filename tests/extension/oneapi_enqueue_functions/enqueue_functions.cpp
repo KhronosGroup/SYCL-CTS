@@ -29,7 +29,7 @@ static void test_single_task() {
   const auto Increment = [](const auto& enqueue,
                             const std::vector<int>& input) {
     const int N = input.size();
-    sycl::queue q;
+    sycl::queue q = sycl_cts::util::get_cts_object::queue();
     int* data = sycl::malloc_shared<int>(N, q);
     std::copy(input.begin(), input.end(), data);
 
@@ -66,7 +66,7 @@ static void test_single_task() {
 static void test_parallel_for() {
   const auto Sum = [](const auto& enqueue, const std::vector<int>& input) {
     const int N = input.size();
-    sycl::queue q;
+    sycl::queue q = sycl_cts::util::get_cts_object::queue();
     int* data = sycl::malloc_shared<int>(N, q);
     std::copy(input.begin(), input.end(), data);
 
@@ -134,7 +134,7 @@ static void test_parallel_for() {
 static void test_nd_launch() {
   const auto Sum = [](const auto& enqueue, const std::vector<int>& input) {
     const int N = input.size();
-    sycl::queue q;
+    sycl::queue q = sycl_cts::util::get_cts_object::queue();
     int* data = sycl::malloc_shared<int>(N, q);
     std::copy(input.begin(), input.end(), data);
 
@@ -204,7 +204,7 @@ static void test_nd_launch() {
 static void test_memcpy() {
   const auto TestMemcpy = [](auto memcpy) {
     constexpr int N = 100;
-    sycl::queue q;
+    sycl::queue q = sycl_cts::util::get_cts_object::queue();
     int* source = sycl::malloc_shared<int>(N, q);
     int* destination = sycl::malloc_shared<int>(N, q);
     std::iota(source, source + N, 0);
@@ -231,7 +231,7 @@ static void test_memcpy() {
 static void test_copy() {
   const auto TestCopy = [](auto copy) {
     constexpr int N = 100;
-    sycl::queue q;
+    sycl::queue q = sycl_cts::util::get_cts_object::queue();
     int* source = sycl::malloc_shared<int>(N, q);
     int* destination = sycl::malloc_shared<int>(N, q);
     std::iota(source, source + N, 0);
@@ -259,7 +259,7 @@ static void test_memset() {
   const auto TestMemset = [](auto memset) {
     constexpr int N = 100;
     constexpr unsigned char value = 0xFF;
-    sycl::queue q;
+    sycl::queue q = sycl_cts::util::get_cts_object::queue();
     unsigned char* buffer = sycl::malloc_shared<unsigned char>(N, q);
     std::fill(buffer, buffer + N, 0);
 
@@ -284,7 +284,7 @@ static void test_fill() {
   const auto TestFill = [](auto fill) {
     constexpr int N = 100;
     constexpr int value = 17;
-    sycl::queue q;
+    sycl::queue q = sycl_cts::util::get_cts_object::queue();
     int* buffer = sycl::malloc_shared<int>(N, q);
     std::fill(buffer, buffer + N, 0);
 
@@ -306,7 +306,7 @@ static void test_fill() {
 }
 
 static void test_prefetch() {
-  sycl::queue q;
+  sycl::queue q = sycl_cts::util::get_cts_object::queue();
   int* buffer = sycl::malloc_shared<int>(1, q);
   CHECK_NOTHROW(oneapi_ext::prefetch(q, buffer, sizeof(*buffer)));
   CHECK_NOTHROW(oneapi_ext::submit(q, [&](sycl::handler& h) {
@@ -316,7 +316,7 @@ static void test_prefetch() {
 }
 
 static void test_mem_advise() {
-  sycl::queue q;
+  sycl::queue q = sycl_cts::util::get_cts_object::queue();
   int* buffer = sycl::malloc_shared<int>(1, q);
   CHECK_NOTHROW(oneapi_ext::mem_advise(q, buffer, sizeof(*buffer), 1));
   CHECK_NOTHROW(oneapi_ext::submit(q, [&](sycl::handler& h) {
@@ -327,7 +327,7 @@ static void test_mem_advise() {
 
 #ifdef SYCL_EXT_ONEAPI_ENQUEUE_BARRIER
 static void test_barrier() {
-  sycl::queue q;
+  sycl::queue q = sycl_cts::util::get_cts_object::queue();
   bool* task_done = sycl::malloc_shared<bool>(1, q);
   bool* test_passed = sycl::malloc_shared<bool>(1, q);
   *task_done = false;
@@ -347,7 +347,7 @@ static void test_barrier() {
 }
 
 static void test_partial_barrier() {
-  sycl::queue q;
+  sycl::queue q = sycl_cts::util::get_cts_object::queue();
   bool* task_done = sycl::malloc_shared<bool>(1, q);
   bool* test_passed = sycl::malloc_shared<bool>(1, q);
   *task_done = false;
