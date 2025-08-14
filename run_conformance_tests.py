@@ -38,11 +38,16 @@ def handle_args(argv):
         type=str,
         required=True)
     parser.add_argument(
-        '-c',
-        '--build-system-call',
-        help='The call to the used build system.',
+        '--build-system-args',
+        help='Additional args to pass to the build system through CMake',
         type=str,
         required=True)
+    parser.add_argument(
+        '--build-dir',
+        help='The name of the build directory to use/create',
+        type=str,
+        default='build',
+        required=False)
     parser.add_argument(
         '--build-only',
         help='Whether to perform only a build without any testing.',
@@ -104,11 +109,11 @@ def handle_args(argv):
               'together in a single script run.')
         exit(-1)
 
-    return (args.cmake_exe, args.build_system_name, args.build_system_call,
+    return (args.cmake_exe, args.build_system_name, args.build_system_args,
             full_conformance, test_deprecated_features, args.exclude_categories,
             args.implementation_name, args.additional_cmake_args, args.device,
             args.additional_ctest_args, args.build_only, args.run_only,
-            commit_hash, full_feature_set)
+            commit_hash, full_feature_set, args.build_dir)
 
 
 def split_additional_args(additional_args):
@@ -130,7 +135,8 @@ def split_additional_args(additional_args):
     return shlex.split(additional_args, posix=use_posix_mode)
 
 
-def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
+def generate_cmake_call(cmake_exe, build_dir, build_system_name,
+                        full_conformance,
                         test_deprecated_features, exclude_categories,
                         implementation_name, additional_cmake_args, device,
                         full_feature_set):
@@ -140,7 +146,8 @@ def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
     """
     call = [
         cmake_exe,
-        '..',
+        '.',
+        '-B' + build_dir,
         '-G' + build_system_name,
         '-DSYCL_CTS_ENABLE_FULL_CONFORMANCE=' + full_conformance,
         '-DSYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS=' + test_deprecated_features,
@@ -154,15 +161,27 @@ def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
     return call
 
 
-def generate_ctest_call(additional_ctest_args):
+def generate_ctest_call(build_dir, additional_ctest_args):
     """
     Generates a CTest call based on the input in a form accepted by
     subprocess.call().
     """
     return [
-        'ctest', '.', '-T', 'Test', '--no-compress-output',
+        'ctest', '.', '--test-dir', build_dir, '-T', 'Test', '--no-compress-output',
         '--test-output-size-passed', '0', '--test-output-size-failed', '0'
     ] + split_additional_args(additional_ctest_args)
+
+
+def generate_build_call(cmake_exe, build_dir, build_system_args):
+    """
+    Generates a CTest call based on the input in a form accepted by
+    subprocess.call().
+    """
+    build_call = [ cmake_exe, '--build', build_dir, '--parallel' ]
+    build_system_args = split_additional_args(build_system_args)
+    if build_system_args:
+        build_call.extend(['--'] + build_system_args)
+    return build_call
 
 
 def subprocess_call(parameter_list):
@@ -174,7 +193,7 @@ def subprocess_call(parameter_list):
     return subprocess.call(parameter_list)
 
 
-def configure_and_run_tests(cmake_call, build_system_call, build_only,
+def configure_and_run_tests(cmake_call, build_call, build_only,
                             run_only, ctest_call):
     """
     Configures the tests with cmake to produce a ninja.build file.
@@ -185,10 +204,9 @@ def configure_and_run_tests(cmake_call, build_system_call, build_only,
     error_code = 0
 
     if (not run_only):
-        build_system_call = build_system_call.split()
-
         subprocess_call(cmake_call)
-        error_code = subprocess_call(build_system_call)
+
+        error_code = subprocess_call(build_call)
 
     if (not build_only):
         error_code = subprocess_call(ctest_call)
@@ -196,7 +214,7 @@ def configure_and_run_tests(cmake_call, build_system_call, build_only,
     return error_code
 
 
-def collect_info_filenames():
+def collect_info_filenames(build_dir):
     """
     Collects all the .info test result files in the Testing directory.
     Exits the program if no result files are found.
@@ -205,8 +223,9 @@ def collect_info_filenames():
     info_filenames = []
 
     # Get all the test results in Testing
-    for filename in os.listdir('Testing'):
-        filename_full = os.path.join('Testing', filename)
+    testing_dir = os.path.join(build_dir, 'Testing')
+    for filename in os.listdir(testing_dir):
+        filename_full = os.path.join(testing_dir, filename)
         if filename.endswith('.info'):
             info_filenames.append(filename_full)
 
@@ -236,15 +255,15 @@ def get_valid_json_info(info_filenames):
     return json.loads(reference_info)
 
 
-def get_xml_test_results():
+def get_xml_test_results(build_dir):
     """
     Finds the xml file output by the test and returns the rool of the xml tree.
     """
     test_tag = ""
-    with open(os.path.join("Testing", "TAG"), 'r') as tag_file:
+    with open(os.path.join(build_dir, "Testing", "TAG"), 'r') as tag_file:
         test_tag = tag_file.readline()[:-1]
 
-    test_xml_file = os.path.join("Testing", test_tag, "Test.xml")
+    test_xml_file = os.path.join(build_dir, "Testing", test_tag, "Test.xml")
     test_xml_tree = ET.parse(test_xml_file)
     return test_xml_tree.getroot()
 
@@ -283,7 +302,7 @@ def update_xml_attribs(info_json, implementation_name, test_xml_root,
     test_xml_root.attrib["FullConformanceMode"] = full_conformance
     test_xml_root.attrib["CMakeInput"] = ' '.join(cmake_call)
     test_xml_root.attrib["BuildSystemGenerator"] = build_system_name
-    test_xml_root.attrib["BuildSystemCall"] = build_system_call
+    test_xml_root.attrib["BuildSystemCall"] = ' '.join(build_system_call)
     test_xml_root.attrib["CTestCall"] = ' '.join(ctest_call)
     test_xml_root.attrib["TestDeprecatedFeatures"] = test_deprecated_features
     test_xml_root.attrib["FullFeatureSet"] = full_feature_set
@@ -294,49 +313,48 @@ def update_xml_attribs(info_json, implementation_name, test_xml_root,
 def main(argv=sys.argv[1:]):
 
     # Parse and gather all the script args
-    (cmake_exe, build_system_name, build_system_call, full_conformance,
+    (cmake_exe, build_system_name, build_system_args, full_conformance,
      test_deprecated_features, exclude_categories, implementation_name,
-     additional_cmake_args, device, additional_ctest_args,
-     build_only, run_only, commit_hash, full_feature_set) = handle_args(argv)
+     additional_cmake_args, device, additional_ctest_args, build_only, run_only,
+     commit_hash, full_feature_set, build_dir) = handle_args(argv)
 
     # Generate a cmake call in a form accepted by subprocess.call()
-    cmake_call = generate_cmake_call(cmake_exe, build_system_name,
+    cmake_call = generate_cmake_call(cmake_exe, build_dir, build_system_name,
                                      full_conformance, test_deprecated_features,
                                      exclude_categories, implementation_name,
                                      additional_cmake_args, device,
                                      full_feature_set)
 
     # Generate a CTest call in a form accepted by subprocess.call()
-    ctest_call = generate_ctest_call(additional_ctest_args)
+    ctest_call = generate_ctest_call(build_dir, additional_ctest_args)
 
-    # Make a build directory if required and enter it
-    if not os.path.isdir('build'):
-        os.mkdir('build')
-    os.chdir('build')
+    build_call = generate_build_call(cmake_exe, build_dir, build_system_args)
 
     # Configure the build system with cmake, run the build, and run the tests.
-    error_code = configure_and_run_tests(cmake_call, build_system_call,
-                                         build_only, run_only, ctest_call)
+    error_code = configure_and_run_tests(cmake_call, build_call, build_only,
+                                         run_only, ctest_call)
 
     if build_only:
         return error_code
 
     # Collect the test info files, validate them and get the contents as json.
-    info_filenames = collect_info_filenames()
+    info_filenames = collect_info_filenames(build_dir)
     info_json = get_valid_json_info(info_filenames)
 
     # Get the xml results and update with the necessary information.
-    result_xml_root = get_xml_test_results()
+    result_xml_root = get_xml_test_results(build_dir)
     result_xml_root = update_xml_attribs(info_json, implementation_name,
                                          result_xml_root, full_conformance,
                                          cmake_call, build_system_name,
-                                         build_system_call, ctest_call,
+                                         build_call, ctest_call,
                                          test_deprecated_features,
                                          commit_hash,
                                          full_feature_set)
 
     # Get the xml report stylesheet and add it to the results.
-    stylesheet_xml_file = os.path.join("..", "tools", "stylesheet.xml")
+    stylesheet_xml_file = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), "tools", "stylesheet.xml"
+    )
     stylesheet_xml_tree = ET.parse(stylesheet_xml_file)
     stylesheet_xml_root = stylesheet_xml_tree.getroot()
     result_xml_root.append(stylesheet_xml_root[0])
@@ -344,7 +362,9 @@ def main(argv=sys.argv[1:]):
     # Get the xml results as a string and append them to the report header.
     report = REPORT_HEADER + ET.tostring(result_xml_root).decode("utf-8")
 
-    with open("conformance_report.xml", 'w') as final_conformance_report:
+    with open(
+        os.path.join(build_dir, "conformance_report.xml"), "w"
+    ) as final_conformance_report:
         final_conformance_report.write(report)
 
     return error_code
