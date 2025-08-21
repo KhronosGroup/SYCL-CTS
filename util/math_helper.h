@@ -72,13 +72,10 @@ int numElements(const sycl::vec<T, numElems> &) {
 
 /* Generic function for both scalar and marray types to
  * return the number of elements in a type. */
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t numElems>
 int numElements(const sycl::marray<T, numElems> &) {
   return numElems;
 }
-#endif
 
 /* Generic function for both scalar and vector types to
  * extract an individual element. */
@@ -94,15 +91,12 @@ T getElement(sycl::vec<T, dim> &f, int ix) {
   return f[ix];
 }
 
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /* Generic function for both scalar and vector types to
  * extract an individual element. */
 template <typename T, size_t dim>
 T getElement(sycl::marray<T, dim> &f, size_t ix) {
   return f[ix];
 }
-#endif
 
 template <typename T, int dim>
 void setElement(sycl::vec<T, dim> &f, int ix, T value) {
@@ -118,8 +112,6 @@ sycl::vec<R, N> run_func_on_vector(funT fun, Args... args) {
   return res;
 }
 
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename R, typename T, size_t N, typename funT, typename... Args>
 sycl::marray<R, N> run_func_on_marray(funT fun, Args... args) {
   sycl::marray<R, N> res;
@@ -128,7 +120,6 @@ sycl::marray<R, N> run_func_on_marray(funT fun, Args... args) {
   }
   return res;
 }
-#endif
 
 /* helper for relational functions where true result gives 1 for scalar
     and -1 for vector argument types */
@@ -144,8 +135,6 @@ sycl::vec<R, N> run_rel_func_on_vector(funT fun, Args... args) {
   return res;
 }
 
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N, typename funT, typename... Args>
 sycl::marray<bool, N> run_rel_func_on_marray(funT fun, Args... args) {
   sycl::marray<bool, N> res;
@@ -154,7 +143,6 @@ sycl::marray<bool, N> run_rel_func_on_marray(funT fun, Args... args) {
   }
   return res;
 }
-#endif
 
 template <typename T, int N, typename funT, typename... Args>
 sycl_cts::resultRef<sycl::vec<T, N>>
@@ -172,8 +160,6 @@ run_func_on_vector_result_ref(funT fun, Args... args) {
   return sycl_cts::resultRef<sycl::vec<T, N>>(res, undefined);
 }
 
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N, typename funT, typename... Args>
 sycl_cts::resultRef<sycl::marray<T, N>> run_func_on_marray_result_ref(
     funT fun, Args... args) {
@@ -188,7 +174,6 @@ sycl_cts::resultRef<sycl::marray<T, N>> run_func_on_marray_result_ref(
   }
   return sycl_cts::resultRef<sycl::marray<T, N>>(res, undefined);
 }
-#endif
 
 template <typename T>
 struct rel_funcs_return;
@@ -219,13 +204,10 @@ rel_func_dispatcher(sycl::vec<T, N> a, Args... args) {
       funT<T>{}, a, args...);
 }
 
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <template <class> class funT, typename T, size_t N, typename... Args>
 sycl::marray<bool, N> rel_func_dispatcher(sycl::marray<T, N> a, Args... args) {
   return run_rel_func_on_marray<T, N>(funT<T>{}, a, args...);
 }
-#endif
 
 template <typename funT, typename T, typename... Args>
 typename rel_funcs_return<T>::type rel_func_dispatcher(funT fun, T a,
@@ -240,14 +222,11 @@ rel_func_dispatcher(funT fun, sycl::vec<T, N> a, Args... args) {
       fun, a, args...);
 }
 
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename funT, typename T, size_t N, typename... Args>
 sycl::marray<bool, N> rel_func_dispatcher(funT fun, sycl::marray<T, N> a,
                                           Args... args) {
   return run_rel_func_on_marray<T, N>(fun, a, args...);
 }
-#endif
 
 template <typename T>
 int32_t num_bits(T) {
