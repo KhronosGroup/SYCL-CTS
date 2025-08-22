@@ -63,14 +63,9 @@ sycl::range<Dimensions> work_group_range(
   {
     // FIXME: AdaptiveCpp does not implement
     //        sycl::info::device::max_work_item_sizes<3> property
-#if SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
-    sycl::id<3> sizes =
-        queue.get_device().get_info<sycl::info::device::max_work_item_sizes>();
-#else
     sycl::id<3> sizes =
         queue.get_device()
             .get_info<sycl::info::device::max_work_item_sizes<3> >();
-#endif
     for (int i = 0; i < Dimensions; ++i) {
       max_work_item_sizes[i] = sizes.get(i);
     }
