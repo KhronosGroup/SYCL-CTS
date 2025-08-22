@@ -27,7 +27,6 @@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
 // clang-format on
 
-
 #include "../accessor_basic/accessor_common.h"
 #include "generic_accessor_def_constructor.h"
 
