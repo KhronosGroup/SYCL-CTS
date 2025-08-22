@@ -58,7 +58,7 @@ jobs:
           - sycl-impl: dpcpp
             version: 2025-05-01
           - sycl-impl: adaptivecpp
-            version: 061e2d6ffe1084021d99f22ac1f16e28c6dab899
+            version: 65e010622e37b25d75b70d41776ebb2685b2e4a8
           - sycl-impl: simsycl
             version: 27ca7a05e65d24c784ba831225d0a53341719590
     steps:
@@ -115,7 +115,7 @@ jobs:
           - sycl-impl: dpcpp
             version: 2025-05-01
           - sycl-impl: adaptivecpp
-            version: 061e2d6ffe1084021d99f22ac1f16e28c6dab899
+            version: 65e010622e37b25d75b70d41776ebb2685b2e4a8
           - sycl-impl: simsycl
             version: 27ca7a05e65d24c784ba831225d0a53341719590
     env:
