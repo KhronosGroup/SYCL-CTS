@@ -744,7 +744,7 @@ def gen_swizzle_test(type_str, convert_type_str, as_type_str, size, num_batches,
     return string
 
 
-def write_swizzle_source_file(swizzles, input_file, output_file, type_str):
+def write_swizzle_source_file(swizzles, input_file, output_file, type_str, batch_index):
 
     with open(input_file, 'r') as source_file:
         source = source_file.read()
@@ -752,7 +752,7 @@ def write_swizzle_source_file(swizzles, input_file, output_file, type_str):
     source = replace_ifbyte_strings(source, type_str)
 
     source = replace_string_in_source_string(source,
-                                            remove_namespaces_whitespaces(type_str),
+                                            "{}_{}".format(remove_namespaces_whitespaces(type_str), batch_index),
                                             '$TYPE_NAME')
 
     source = replace_string_in_source_string(source, swizzles[0],
@@ -813,4 +813,4 @@ def make_swizzles_tests(type_str, input_file, output_file, num_batches, batch_in
                                    as_type_str, 8, num_batches, batch_index)
     swizzles[5] = gen_swizzle_test(type_str, convert_type_str,
                                    as_type_str, 16, num_batches, batch_index)
-    write_swizzle_source_file(swizzles, input_file, output_file, type_str)
+    write_swizzle_source_file(swizzles, input_file, output_file, type_str, batch_index)
