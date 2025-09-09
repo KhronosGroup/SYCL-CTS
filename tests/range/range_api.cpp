@@ -30,6 +30,9 @@ template <int dims>
 class test_range_kernel {};
 
 template <int dims>
+class test_range_kernel_1 {};
+
+template <int dims>
 void test_range_kernels(
     sycl::range<dims> range,
     sycl::accessor<int, 1, sycl::access_mode::read_write, sycl::target::device>
@@ -38,17 +41,8 @@ void test_range_kernels(
   // scratch value to test the operators
   sycl::range<dims> result(range);
 
-  // non-zero values to test the operators
-  size_t integer0 = 16;
-  bool integer1 = 1;
-  char integer2 = 9;
-  char16_t integer3 = 11;
-  char32_t integer4 = 23;
-  wchar_t integer5 = 8;
-  short integer6 = 15;
-  int integer7 = 21;
-  long integer8 = 19;
-  long long integer9 = 16;
+  // non-zero value to test the operators
+  size_t integer = 16;
   sycl::range<dims> range_two(range * 2);
   for (int j = 0; j < dims; j++) {
     if (range_two.get(j) == 0) {
@@ -87,177 +81,23 @@ void test_range_kernels(
   INDEX_KERNEL_TEST(<=, range, range_two_const, result);
   INDEX_KERNEL_TEST(>=, range, range_two_const, result);
 
-  // friend range operatorOP(const range& lhs, const size_t& rhs)
   // friend range operatorOP(const size_t& lhs, const range& rhs)
-  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range_quarter, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range_quarter, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integer0, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integer0, result);
-
-  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range_quarter, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range_quarter, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integer1, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integer1, result);
-
-  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range_quarter, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range_quarter, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integer2, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integer2, result);
-
-  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range_quarter, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range_quarter, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integer3, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integer3, result);
-
-  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range_quarter, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range_quarter, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integer4, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integer4, result);
-
-  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range_quarter, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range_quarter, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integer5, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integer5, result);
-
-  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range_quarter, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range_quarter, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integer6, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integer6, result);
-
-  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range_quarter, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range_quarter, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integer7, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integer7, result);
-
-  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range_quarter, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range_quarter, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integer8, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integer8, result);
-
-  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range_quarter, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range_quarter, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integer9, result);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integer9, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range_quarter, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range_quarter, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integer, result);
 
   // friend range& operatorOP(range& lhs, const range& rhs)
   INDEX_ASSIGNMENT_TESTS(+=, +, range, range_two, result);
@@ -272,115 +112,16 @@ void test_range_kernels(
   INDEX_ASSIGNMENT_TESTS(^=, ^, range, range_two, result);
 
   // friend range& operatorOP(range& lhs, const size_t& rhs)
-  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integer0, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integer0, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integer0, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integer0, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integer0, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integer0, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integer0, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integer0, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integer0, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integer0, result);
-
-  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integer1, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integer1, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integer1, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integer1, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integer1, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integer1, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integer1, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integer1, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integer1, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integer1, result);
-
-  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integer2, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integer2, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integer2, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integer2, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integer2, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integer2, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integer2, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integer2, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integer2, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integer2, result);
-
-  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integer3, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integer3, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integer3, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integer3, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integer3, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integer3, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integer3, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integer3, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integer3, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integer3, result);
-
-  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integer4, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integer4, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integer4, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integer4, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integer4, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integer4, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integer4, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integer4, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integer4, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integer4, result);
-
-  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integer5, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integer5, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integer5, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integer5, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integer5, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integer5, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integer5, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integer5, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integer5, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integer5, result);
-
-  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integer6, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integer6, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integer6, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integer6, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integer6, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integer6, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integer6, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integer6, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integer6, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integer6, result);
-
-  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integer7, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integer7, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integer7, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integer7, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integer7, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integer7, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integer7, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integer7, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integer7, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integer7, result);
-
-  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integer8, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integer8, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integer8, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integer8, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integer8, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integer8, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integer8, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integer8, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integer8, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integer8, result);
-
-  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integer9, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integer9, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integer9, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integer9, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integer9, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integer9, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integer9, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integer9, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integer9, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integer9, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integer, result);
 
   // friend range operatorOP(const range& rhs)
   UNARY_INDEX_KERNEL_TEST(+, range, result);
@@ -393,6 +134,63 @@ void test_range_kernels(
   // friend range operatorOP(range& lhs, int)
   POSTFIX_INDEX_KERNEL_TEST(++, range, result);
   POSTFIX_INDEX_KERNEL_TEST(--, range, result);
+}
+
+template <int dims, typename TYPE>
+void test_range_kernels_integral_overload(
+    sycl::range<dims> range,
+    sycl::accessor<int, 1, sycl::access_mode::read_write, sycl::target::device>
+        error_ptr,
+    int m_iteration) {
+  // scratch value to test the operators
+  sycl::range<dims> result(range);
+
+  // non-zero value to test the operators
+  TYPE integral_type_var = 23;
+  sycl::range<dims> range_two(range * 2);
+  for (int j = 0; j < dims; j++) {
+    if (range_two.get(j) == 0) {
+      range_two[j] = 1;
+    }
+  }
+
+  const sycl::range<dims> range_two_const(range_two);
+  const sycl::range<dims> range_const(range);
+
+  // make sure bitwise shift rhs is smaller than number of bits in size_t.
+  sycl::range<dims> range_quarter(range / 4);
+  const sycl::range<dims> range_quarter_const(range_quarter);
+
+  // friend range operatorOP(const range& lhs, <integral type>& rhs)
+  // friend range operatorOP(const <integral type>& lhs, const range& rhs)
+  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range_quarter, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range_quarter, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integral_type_var, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integral_type_var, result);
+
+  // friend range& operatorOP(range& lhs, const <integral type>& rhs)
+  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integral_type_var, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integral_type_var, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integral_type_var, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integral_type_var, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integral_type_var, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integral_type_var, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integral_type_var, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integral_type_var, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integral_type_var, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integral_type_var, result);
 }
 
 template <int dims>
@@ -465,6 +263,54 @@ class test_range {
                                    m_iteration);  // test all in the kernel
         });
         cgh.parallel_for<class test_range_kernel<dims>>(my_range, my_kernel);
+      });
+
+      q.submit([&](sycl::handler &cgh) {
+        auto my_range = sycl::nd_range<dims>(global, local);
+
+        auto error_ptr =
+            error_buffer.get_access<sycl::access_mode::read_write>(cgh);
+
+        auto my_kernel_1 = ([=](sycl::nd_item<dims> item) {
+          int m_iteration = 0;
+
+          // create check table
+          sycl::range<dims> range = item.get_nd_range().get_global_range();
+
+          size_t check[] = {m_x, m_y, m_z};
+
+          if (dims == 1) {
+            if (range.size() != m_x) {
+              // report an error
+              error_ptr[m_iteration] = __LINE__;
+              m_iteration++;
+            }
+          } else if (dims == 2) {
+            if (range.size() != m_x * m_y) {
+              // report an error
+              error_ptr[m_iteration] = __LINE__;
+              m_iteration++;
+            }
+          } else if (dims == 3) {
+            if (range.size() != m_x * m_y * m_z) {
+              // report an error
+              error_ptr[m_iteration] = __LINE__;
+              m_iteration++;
+            }
+          }
+
+          for (int i = 0; i < dims; i++) {
+            if (range.get(i) > check[i] || range[i] > check[i]) {
+              // report an error
+              error_ptr[m_iteration] = __LINE__;
+              m_iteration++;
+            }
+          }
+
+          test_range_kernels_integral_overload<dims, long>(range, error_ptr,
+                                   m_iteration);  // test integral overloads
+        });
+        cgh.parallel_for<class test_range_kernel_1<dims>>(my_range, my_kernel_1);
       });
 
       q.wait_and_throw();
