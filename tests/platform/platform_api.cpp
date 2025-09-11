@@ -21,8 +21,6 @@
 
 #include "../common/common.h"
 
-#include <set>
-
 #define TEST_NAME platform_api
 
 namespace platform_api__ {
@@ -37,9 +35,11 @@ struct DeviceHashLessT {
 };
 
 // Checks that all devices in a vector are unique.
-inline bool AllDevicesUnique(const std::vector<sycl::device> &devices) {
-  return std::set<sycl::device>{devices.begin(), devices.end()}.size() ==
-         devices.size();
+inline bool AllDevicesUnique(const std::vector<sycl::device>& devices) {
+  std::vector<sycl::device> devicesCopy = devices;
+  std::sort(devicesCopy.begin(), devicesCopy.end(), DeviceHashLessT{});
+  return std::unique(devicesCopy.begin(), devicesCopy.end()) ==
+         devicesCopy.end();
 }
 
 // Checks that all devices are in the list devices returned by the platform.
