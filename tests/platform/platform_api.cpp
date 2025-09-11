@@ -67,7 +67,7 @@ inline bool AllDevicesHaveType(const std::vector<sycl::device>& devices,
 inline size_t CountPlatformDevicesWithType(const sycl::platform& platform,
                                            sycl::info::device_type devType) {
   std::vector<sycl::device> allDevices = platform.get_devices();
-  return std::all_of(
+  return std::count_if(
       allDevices.begin(), allDevices.end(),
       [devType](const sycl::device& device) {
         return device.get_info<sycl::info::device::device_type>() == devType;
