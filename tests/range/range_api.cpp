@@ -41,7 +41,7 @@ void test_range_kernels(
   // scratch value to test the operators
   sycl::range<dims> result(range);
 
-  // non-zero value to test the operators
+  // non-zero values to test the operators
   size_t integer = 16;
   sycl::range<dims> range_two(range * 2);
   for (int j = 0; j < dims; j++) {
@@ -81,6 +81,7 @@ void test_range_kernels(
   INDEX_KERNEL_TEST(<=, range, range_two_const, result);
   INDEX_KERNEL_TEST(>=, range, range_two_const, result);
 
+  // friend range operatorOP(const range& lhs, const size_t& rhs)
   // friend range operatorOP(const size_t& lhs, const range& rhs)
   DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer, result);
   DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer, result);
@@ -146,20 +147,10 @@ void test_range_kernels_integral_overload(
   sycl::range<dims> result(range);
 
   // non-zero value to test the operators
-  TYPE integral_type_var = 23;
-  sycl::range<dims> range_two(range * 2);
-  for (int j = 0; j < dims; j++) {
-    if (range_two.get(j) == 0) {
-      range_two[j] = 1;
-    }
-  }
-
-  const sycl::range<dims> range_two_const(range_two);
-  const sycl::range<dims> range_const(range);
+  TYPE integral_type_var = 42;
 
   // make sure bitwise shift rhs is smaller than number of bits in size_t.
   sycl::range<dims> range_quarter(range / 4);
-  const sycl::range<dims> range_quarter_const(range_quarter);
 
   // friend range operatorOP(const range& lhs, <integral type>& rhs)
   // friend range operatorOP(const <integral type>& lhs, const range& rhs)
