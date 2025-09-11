@@ -36,7 +36,8 @@ struct DeviceHashLessT {
 
 // Checks that all devices in a vector are unique.
 inline bool AllDevicesUnique(const std::vector<sycl::device> &devices) {
-  return std::set{devices.begin(), devices.end()}.size() == devices.size();
+  return std::set<sycl::device>{devices.begin(), devices.end()}.size() ==
+         devices.size();
 }
 
 // Checks that all devices are in the list devices returned by the platform.
