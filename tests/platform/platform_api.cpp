@@ -21,6 +21,8 @@
 
 #include "../common/common.h"
 
+#include <set>
+
 #define TEST_NAME platform_api
 
 namespace platform_api__ {
