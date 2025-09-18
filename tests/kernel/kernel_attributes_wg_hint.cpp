@@ -25,12 +25,15 @@
 using namespace kernel_attributes;
 
 static constexpr int size = 4;
-static auto dev = sycl_cts::util::get_cts_object::device();
-static auto max_wg_size = pow(size * 2, 3);
-static bool max_wg_size_info =
-    dev.get_info<sycl::info::device::max_work_group_size>() < max_wg_size
-        ? false
-        : true;
+static auto test_max_wg_size = pow(size * 2, 3);
+
+bool device_supports_test_max_wg_size() {
+  static bool result =
+      sycl_cts::util::get_cts_object::device()
+          .get_info<sycl::info::device::max_work_group_size>() >=
+      test_max_wg_size;
+  return result;
+}
 
 template <int Dimensions, int Size>
 class functor {
@@ -246,7 +249,7 @@ void run_tests_for_lambda() {
           });
     });
 
-    if (max_wg_size_info) {
+    if (device_supports_test_max_wg_size()) {
       queue.submit([&](sycl::handler& cgh) {
         auto acc_3d = sycl::accessor(buf_3d, cgh, sycl::write_only);
         cgh.parallel_for<kernel_lambda<3, buffer_size_3d>>(
@@ -264,7 +267,7 @@ void run_tests_for_lambda() {
             });
       });
     } else {
-      WARN("Device does not support work group size " << max_wg_size);
+      WARN("Device does not support work group size " << test_max_wg_size);
     }
     queue.wait_and_throw();
   }
@@ -275,7 +278,7 @@ void run_tests_for_lambda() {
   verify<1>(data_wg_1d, "lambda with group 1 dim");
   verify<2>(data_wg_2d, "lambda with group 2 dims");
 
-  if (max_wg_size_info) {
+  if (device_supports_test_max_wg_size()) {
     verify<3>(data_wg_3d, "lambda with group 3 dims");
     verify<3>(data_3d, "lambda with nd_item 3 dims");
   }
@@ -286,10 +289,10 @@ void run_tests_for_dim() {
   check_functor_and_sep_lambda<functor<dims, size>>();
   check_functor_and_sep_lambda<functor<dims, size / 2>>();
 
-  if (max_wg_size_info) {
+  if (device_supports_test_max_wg_size()) {
     check_functor_and_sep_lambda<functor<dims, size * 2>>();
   } else {
-    WARN("Device does not support work group size " << max_wg_size);
+    WARN("Device does not support work group size " << test_max_wg_size);
   }
 }
 
