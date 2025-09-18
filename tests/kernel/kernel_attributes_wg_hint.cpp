@@ -27,7 +27,7 @@ using namespace kernel_attributes;
 static constexpr int size = 4;
 static auto test_max_wg_size = pow(size * 2, 3);
 
-bool device_supports_test_max_wg_size() {
+static bool device_supports_test_max_wg_size() {
   static bool result =
       sycl_cts::util::get_cts_object::device()
           .get_info<sycl::info::device::max_work_group_size>() >=
