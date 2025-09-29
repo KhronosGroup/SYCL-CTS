@@ -40,7 +40,7 @@ message(STATUS "DPC++ compiler flags: `${DPCPP_FLAGS}`")
 
 # Explicitly set fp-model to precise to produce reliable results for floating
 # point operations.
-if(WIN32)
+if(MSVC)
     set(DPCPP_FP_FLAG "/fp:precise")
 else()
     set(DPCPP_FP_FLAG "-ffp-model=precise")
