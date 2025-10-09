@@ -183,10 +183,12 @@ class bundle_factory {
              "At least one kernel should be available");
       auto it = std::find_if(
           all_kernels.begin(), all_kernels.end(),
-          [](const sycl::kernel_id& kernel_id) {
-            return std::string(kernel_id.get_name())
-                       .find("specialization_constants_via_kernel_bundle") !=
-                   std::string::npos;
+          [&](const sycl::kernel_id& kernel_id) {
+            return sycl::is_compatible({kernel_id}, device) &&
+                   std::string(kernel_id.get_name())
+                           .find(
+                               "specialization_constants_via_kernel_bundle") !=
+                       std::string::npos;
           });
       // Use the first kernel if no such kernel found.
       if (it == all_kernels.end()) {
