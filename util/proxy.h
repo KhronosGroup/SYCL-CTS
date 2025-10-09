@@ -40,16 +40,16 @@ template <typename T>
 class test_proxy {
  public:
   test_proxy() {
-    test_base::info info;
-    T{}.get_info_legacy(info);
+    T{}.get_info_legacy(m_info);
 
     Catch::AutoReg(
-        Catch::makeTestInvoker<T>(&T::run_legacy), {__FILE__, __LINE__},
+        Catch::makeTestInvoker<T>(&T::run_legacy), {m_info.m_file.c_str(), /*.line=*/0},
         "__SYCL_CTS_LEGACY_TEST__" + std::to_string(next_legacy_test_id++),
-        {info.m_name, "[legacy]"});
+        {m_info.m_name, "[legacy]"});
   }
 
  private:
+  test_base::info m_info;
   inline static size_t next_legacy_test_id = 0;
 };
 
