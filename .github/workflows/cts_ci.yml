@@ -86,23 +86,24 @@ jobs:
 
   check-clang-format:
     if: github.event_name == 'pull_request'
-
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
+    runs-on: "ubuntu-22.04"
     steps:
-      - uses: actions/checkout@v5
-      - uses: cpp-linter/cpp-linter-action@v2
-        id: linter
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
-          style: file
-          version: '21'
-          tidy-checks: '-*' # Disable all clang-tidy checks for now. Enable checks as needed.
-          step-summary: true
-          lines-changed-only: true
+          fetch-depth: 0 # Need to check out base branch as well
+      - name: Run clang-format on changed files
+        run: |
+          set -o errexit -o pipefail -o noclobber -o nounset
+          DIFF=$( git diff -U0 --no-color ${{ github.event.pull_request.base.sha }} | clang-format-diff-14 -p1 )
+          if [ ! -z "$DIFF" ]; then
+            echo 'The following changes are not formatted according to `clang-format`:' >> $GITHUB_STEP_SUMMARY
+            echo '```diff' >> $GITHUB_STEP_SUMMARY
+            echo "$DIFF" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "Not all files are formatted according to clang-format. See workflow summary for details."
+            exit 1 # Fail CI run
+          fi
 
   compile-cts:
     needs: build-image-for-sycl-impl
