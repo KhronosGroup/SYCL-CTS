@@ -29,8 +29,7 @@ using namespace queue_shortcuts_usm;
 TEST_CASE("queue shortcuts unified shared memory fp16", "[queue]") {
   auto queue = util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp16)) {
-    SKIP(
-        "Device does not support half precision floating point operations.");
+    SKIP("Device does not support half precision floating point operations.");
   }
 
   check_queue_shortcuts_usm_for_type<sycl::half>{}(queue, "sycl::half");

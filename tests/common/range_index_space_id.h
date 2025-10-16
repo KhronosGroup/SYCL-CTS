@@ -140,4 +140,4 @@ inline sycl::id<3> unlinearize(sycl::range<3> range, size_t id) {
   return {id0, id1, id2};
 }
 
-#endif // __SYCLCTS_TESTS_COMMON_RANGE_INDEX_SPACE_ID_H
+#endif  // __SYCLCTS_TESTS_COMMON_RANGE_INDEX_SPACE_ID_H

@@ -29,8 +29,7 @@ using namespace queue_shortcuts_explict;
 TEST_CASE("queue shortcuts explicit copy fp16", "[queue]") {
   auto queue = util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp16)) {
-    SKIP(
-        "Device does not support half precision floating point operations.");
+    SKIP("Device does not support half precision floating point operations.");
   }
 
   check_queue_shortcuts_explicit_for_type<sycl::half>{}(queue, "sycl::half");

@@ -43,7 +43,8 @@ class test_proxy {
     T{}.get_info_legacy(m_info);
 
     Catch::AutoReg(
-        Catch::makeTestInvoker<T>(&T::run_legacy), {m_info.m_file.c_str(), /*.line=*/0},
+        Catch::makeTestInvoker<T>(&T::run_legacy),
+        {m_info.m_file.c_str(), /*.line=*/0},
         "__SYCL_CTS_LEGACY_TEST__" + std::to_string(next_legacy_test_id++),
         {m_info.m_name, "[legacy]"});
   }

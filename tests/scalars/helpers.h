@@ -83,4 +83,4 @@ void check_type_min_size_sign_log(sycl_cts::util::logger& log, size_t minSize,
   check_type_min_size_sign_log<T>(minSize, expected_sign, typeName);
 }
 
-#endif // __SYCLCTS_TESTS_SCALARS_HELPERS_H
+#endif  // __SYCLCTS_TESTS_SCALARS_HELPERS_H

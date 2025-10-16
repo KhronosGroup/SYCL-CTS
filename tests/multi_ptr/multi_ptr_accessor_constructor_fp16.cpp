@@ -33,8 +33,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     auto queue = util::get_cts_object::queue();
 
     if (!queue.get_device().has(sycl::aspect::fp16)) {
-      SKIP(
-          "Device does not support half precision floating point operations");
+      SKIP("Device does not support half precision floating point operations");
     }
 
     check_multi_ptr_accessor_constructor_for_type<sycl::half>{}(log,

@@ -150,7 +150,7 @@ class TEST_NAME : public util::test_base {
         auto plt = util::get_cts_object::platform(cts_selector);
         auto devs = plt.get_devices(devType);
         check_return_type<std::vector<sycl::device>>(
-            log, devs, "platform::get_devices("+ devTypeName + ")");
+            log, devs, "platform::get_devices(" + devTypeName + ")");
         CHECK(AllDevicesAreInPlatform(devs, plt));
         CHECK(AllDevicesHaveType(devs, devType));
         CHECK(devs.size() == CountPlatformDevicesWithType(plt, devType));
