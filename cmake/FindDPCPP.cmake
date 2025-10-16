@@ -7,6 +7,12 @@ else()
     # Remove /machine: option which is not supported by clang-cl
     string(REPLACE "/machine:x64" "" CMAKE_EXE_LINKER_FLAGS
         "${CMAKE_EXE_LINKER_FLAGS}")
+    # Remove /debug: option which is not supported by clang-cl
+    string(REPLACE "/debug" "" CMAKE_EXE_LINKER_FLAGS_DEBUG
+        "${CMAKE_EXE_LINKER_FLAGS_DEBUG}")
+    # Remove /INCREMENTAL: option which is not supported by clang-cl
+    string(REPLACE "/INCREMENTAL" "" CMAKE_EXE_LINKER_FLAGS_DEBUG
+        "${CMAKE_EXE_LINKER_FLAGS_DEBUG}")
     # Remove /subsystem option which is not supported by clang-cl
     string(REPLACE "/subsystem:console" "" CMAKE_CREATE_CONSOLE_EXE
         "${CMAKE_CREATE_CONSOLE_EXE}")
