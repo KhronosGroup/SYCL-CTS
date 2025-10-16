@@ -89,20 +89,20 @@ jobs:
 
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write
+      contents: read
+      pull-requests: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: cpp-linter/cpp-linter-action@main
+      - uses: actions/checkout@v5
+      - uses: cpp-linter/cpp-linter-action@v2
         id: linter
-        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           style: file
+          version: '21'
           tidy-checks: '-*' # Disable all clang-tidy checks for now. Enable checks as needed.
+          step-summary: true
           lines-changed-only: true
-          format-review: true
-          passive-reviews: true
 
   compile-cts:
     needs: build-image-for-sycl-impl
