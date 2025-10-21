@@ -178,8 +178,10 @@ void test_range_kernels_integral_overload(
   INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integral_type_var, result);
   INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integral_type_var, result);
   INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integral_type_var, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integral_type_var, result);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integral_type_var, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range_quarter, integral_type_var,
+                                 result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range_quarter, integral_type_var,
+                                 result);
   INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integral_type_var, result);
   INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integral_type_var, result);
   INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integral_type_var, result);
@@ -189,12 +191,12 @@ template <int dims>
 class test_range {
  public:
   // golden values
-  static const int m_x = 16;
-  static const int m_y = 32;
-  static const int m_z = 64;
-  static const int m_local = 2;
+  static constexpr int m_x = 16;
+  static constexpr int m_y = 32;
+  static constexpr int m_z = 64;
+  static constexpr int m_local = 2;
   // maximum amount of errors that the kernel can produce
-  static const int error_size =
+  static constexpr int error_size =
       96 * 3 + 2 +  // for operator checks, 3 from maximum dimension
       4;            // from other checks
   int m_error[error_size];
@@ -202,9 +204,7 @@ class test_range {
   void operator()(util::logger &log, sycl::range<dims> global,
                   sycl::range<dims> local, sycl::queue q) {
     // for testing get()
-    for (int i = 0; i < error_size; i++) {
-      m_error[i] = 0;  // no error
-    }
+    std::fill(std::begin(m_error), std::end(m_error), 0);  // no error
 
     {
       sycl::buffer<int, 1> error_buffer(m_error, sycl::range<1>(error_size));
@@ -269,32 +269,30 @@ template <int dims, typename TYPE>
 class test_range_integral_overload {
  public:
   // golden values
-  static const int m_x = 16;
-  static const int m_y = 32;
-  static const int m_z = 64;
-  static const int m_local = 2;
+  static constexpr int m_x = 16;
+  static constexpr int m_y = 32;
+  static constexpr int m_z = 64;
+  static constexpr int m_local = 2;
   // maximum amount of errors that the kernel can produce
-  static const int error_size =
+  static constexpr int error_size =
       96 * 3 + 2 +  // for operator checks, 3 from maximum dimension
       4;            // from other checks
   int m_error[error_size];
 
-  void operator()(util::logger &log, sycl::range<dims> global,
+  void operator()(util::logger& log, sycl::range<dims> global,
                   sycl::range<dims> local, sycl::queue q) {
     // for testing get()
-    for (int i = 0; i < error_size; i++) {
-      m_error[i] = 0;  // no error
-    }
+    std::fill(std::begin(m_error), std::end(m_error), 0);  // no error
 
     {
       sycl::buffer<int, 1> error_buffer(m_error, sycl::range<1>(error_size));
 
-      q.submit([&](sycl::handler &cgh) {
+      q.submit([&](sycl::handler& cgh) {
         auto my_range = sycl::nd_range<dims>(global, local);
 
         auto error_ptr =
             error_buffer.get_access<sycl::access_mode::read_write>(cgh);
-        
+
         auto my_kernel_other_integral_types = ([=](sycl::nd_item<dims> item) {
           int m_iteration = 0;
 
@@ -331,10 +329,12 @@ class test_range_integral_overload {
             }
           }
 
-          test_range_kernels_integral_overload<dims, TYPE>(range, error_ptr,
-                                   m_iteration);  // test integral overloads
+          test_range_kernels_integral_overload<dims, TYPE>(
+              range, error_ptr,
+              m_iteration);  // test integral overloads
         });
-        cgh.parallel_for<class test_range_kernel_integral_overload<dims>>(my_range, my_kernel_other_integral_types);
+        cgh.parallel_for<class test_range_kernel_integral_overload<dims>>(
+            my_range, my_kernel_other_integral_types);
       });
 
       q.wait_and_throw();
@@ -360,11 +360,12 @@ void test_launch_kernel_1d_range(std::size_t N, sycl::queue q) {
   sycl::free(a, q);
 }
 
-// Helper classes to run the integral overload tests using the for_all_types utility
+// Helper classes to run the integral overload tests using the for_all_types
+// utility
 template <typename TYPE>
 class integral_overload_test_helper_1d {
  public:
-  void operator()(util::logger &log, sycl::queue &my_queue) {
+  void operator()(util::logger& log, sycl::queue& my_queue) {
     sycl::range<1> range_1d_g(test_range<1>::m_x);
     sycl::range<1> range_1d_l(test_range<1>::m_local);
     test_range_integral_overload<1, long> test1d_overload;
@@ -375,7 +376,7 @@ class integral_overload_test_helper_1d {
 template <typename TYPE>
 class integral_overload_test_helper_2d {
  public:
-  void operator()(util::logger &log, sycl::queue &my_queue) {
+  void operator()(util::logger& log, sycl::queue& my_queue) {
     sycl::range<2> range_2d_g(test_range<2>::m_x, test_range<2>::m_y);
     sycl::range<2> range_2d_l(test_range<2>::m_local, test_range<2>::m_local);
     test_range_integral_overload<2, long> test2d_overload;
@@ -386,9 +387,9 @@ class integral_overload_test_helper_2d {
 template <typename TYPE>
 class integral_overload_test_helper_3d {
  public:
-  void operator()(util::logger &log, sycl::queue &my_queue) {
+  void operator()(util::logger& log, sycl::queue& my_queue) {
     sycl::range<3> range_3d_g(test_range<3>::m_x, test_range<3>::m_y,
-                                test_range<3>::m_z);
+                              test_range<3>::m_z);
     sycl::range<3> range_3d_l(test_range<3>::m_local, test_range<3>::m_local,
                               test_range<3>::m_local);
     test_range_integral_overload<3, long> test3d_overload;
@@ -430,9 +431,18 @@ class TEST_NAME : public util::test_base {
       test_range<3> test3d;
       test3d(log, range_3d_g, range_3d_l, my_queue);
 
-      for_all_types<integral_overload_test_helper_1d>(type_pack<bool, char, char16_t, char32_t, wchar_t, short, int, long, long long>{}, log, my_queue);
-      for_all_types<integral_overload_test_helper_2d>(type_pack<bool, char, char16_t, char32_t, wchar_t, short, int, long, long long>{}, log, my_queue);
-      for_all_types<integral_overload_test_helper_3d>(type_pack<bool, char, char16_t, char32_t, wchar_t, short, int, long, long long>{}, log, my_queue);
+      for_all_types<integral_overload_test_helper_1d>(
+          type_pack<bool, char, char16_t, char32_t, wchar_t, short, int, long,
+                    long long>{},
+          log, my_queue);
+      for_all_types<integral_overload_test_helper_2d>(
+          type_pack<bool, char, char16_t, char32_t, wchar_t, short, int, long,
+                    long long>{},
+          log, my_queue);
+      for_all_types<integral_overload_test_helper_3d>(
+          type_pack<bool, char, char16_t, char32_t, wchar_t, short, int, long,
+                    long long>{},
+          log, my_queue);
 
 // The tests are using unnamed lambda
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
