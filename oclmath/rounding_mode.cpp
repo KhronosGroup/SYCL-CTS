@@ -16,8 +16,8 @@
 #include "rounding_mode.h"
 
 #if (defined(__arm__) || defined(__aarch64__))
-#define FPSCR_FZ (1 << 24) // Flush-To-Zero mode
-#define FPSCR_ROUND_MASK (3 << 22) // Rounding mode:
+#define FPSCR_FZ (1 << 24)          // Flush-To-Zero mode
+#define FPSCR_ROUND_MASK (3 << 22)  // Rounding mode:
 
 #define _ARM_FE_FTZ 0x1000000
 #define _ARM_FE_NFTZ 0x0
@@ -35,133 +35,126 @@
 #define _ARM_FE_UPWARD 0x400000
 #define _ARM_FE_DOWNWARD 0x800000
 #define _ARM_FE_TOWARDZERO 0xc00000
-RoundingMode set_round(RoundingMode r, Type outType)
-{
-    static const int flt_rounds[kRoundingModeCount] = {
-        _ARM_FE_TONEAREST, _ARM_FE_TONEAREST, _ARM_FE_UPWARD, _ARM_FE_DOWNWARD,
-        _ARM_FE_TOWARDZERO
-    };
-    static const int int_rounds[kRoundingModeCount] = {
-        _ARM_FE_TOWARDZERO, _ARM_FE_TONEAREST, _ARM_FE_UPWARD, _ARM_FE_DOWNWARD,
-        _ARM_FE_TOWARDZERO
-    };
-    const int *p = int_rounds;
-    if (outType == kfloat || outType == kdouble) p = flt_rounds;
+RoundingMode set_round(RoundingMode r, Type outType) {
+  static const int flt_rounds[kRoundingModeCount] = {
+      _ARM_FE_TONEAREST, _ARM_FE_TONEAREST, _ARM_FE_UPWARD, _ARM_FE_DOWNWARD,
+      _ARM_FE_TOWARDZERO};
+  static const int int_rounds[kRoundingModeCount] = {
+      _ARM_FE_TOWARDZERO, _ARM_FE_TONEAREST, _ARM_FE_UPWARD, _ARM_FE_DOWNWARD,
+      _ARM_FE_TOWARDZERO};
+  const int* p = int_rounds;
+  if (outType == kfloat || outType == kdouble) p = flt_rounds;
 
-    int64_t fpscr = 0;
-    RoundingMode oldRound = get_round();
+  int64_t fpscr = 0;
+  RoundingMode oldRound = get_round();
 
-    _FPU_GETCW(fpscr);
-    _FPU_SETCW(p[r] | (fpscr & ~FPSCR_ROUND_MASK));
+  _FPU_GETCW(fpscr);
+  _FPU_SETCW(p[r] | (fpscr & ~FPSCR_ROUND_MASK));
 
-    return oldRound;
+  return oldRound;
 }
 
-RoundingMode get_round(void)
-{
-    int64_t fpscr;
-    int oldRound;
+RoundingMode get_round(void) {
+  int64_t fpscr;
+  int oldRound;
 
-    _FPU_GETCW(fpscr);
-    oldRound = (fpscr & FPSCR_ROUND_MASK);
+  _FPU_GETCW(fpscr);
+  oldRound = (fpscr & FPSCR_ROUND_MASK);
 
-    switch (oldRound)
-    {
-        case _ARM_FE_TONEAREST: return kRoundToNearestEven;
-        case _ARM_FE_UPWARD: return kRoundUp;
-        case _ARM_FE_DOWNWARD: return kRoundDown;
-        case _ARM_FE_TOWARDZERO: return kRoundTowardZero;
-    }
+  switch (oldRound) {
+    case _ARM_FE_TONEAREST:
+      return kRoundToNearestEven;
+    case _ARM_FE_UPWARD:
+      return kRoundUp;
+    case _ARM_FE_DOWNWARD:
+      return kRoundDown;
+    case _ARM_FE_TOWARDZERO:
+      return kRoundTowardZero;
+  }
 
-    return kDefaultRoundingMode;
+  return kDefaultRoundingMode;
 }
 
 #elif !(defined(_WIN32) && defined(_MSC_VER))
-RoundingMode set_round(RoundingMode r, Type outType)
-{
-    static const int flt_rounds[kRoundingModeCount] = {
-        FE_TONEAREST, FE_TONEAREST, FE_UPWARD, FE_DOWNWARD, FE_TOWARDZERO
-    };
-    static const int int_rounds[kRoundingModeCount] = {
-        FE_TOWARDZERO, FE_TONEAREST, FE_UPWARD, FE_DOWNWARD, FE_TOWARDZERO
-    };
-    const int *p = int_rounds;
-    if (outType == kfloat || outType == kdouble) p = flt_rounds;
-    int oldRound = fegetround();
-    fesetround(p[r]);
+RoundingMode set_round(RoundingMode r, Type outType) {
+  static const int flt_rounds[kRoundingModeCount] = {
+      FE_TONEAREST, FE_TONEAREST, FE_UPWARD, FE_DOWNWARD, FE_TOWARDZERO};
+  static const int int_rounds[kRoundingModeCount] = {
+      FE_TOWARDZERO, FE_TONEAREST, FE_UPWARD, FE_DOWNWARD, FE_TOWARDZERO};
+  const int* p = int_rounds;
+  if (outType == kfloat || outType == kdouble) p = flt_rounds;
+  int oldRound = fegetround();
+  fesetround(p[r]);
 
-    switch (oldRound)
-    {
-        case FE_TONEAREST: return kRoundToNearestEven;
-        case FE_UPWARD: return kRoundUp;
-        case FE_DOWNWARD: return kRoundDown;
-        case FE_TOWARDZERO: return kRoundTowardZero;
-        default: abort(); // ??!
-    }
-    return kDefaultRoundingMode; // never happens
+  switch (oldRound) {
+    case FE_TONEAREST:
+      return kRoundToNearestEven;
+    case FE_UPWARD:
+      return kRoundUp;
+    case FE_DOWNWARD:
+      return kRoundDown;
+    case FE_TOWARDZERO:
+      return kRoundTowardZero;
+    default:
+      abort();  // ??!
+  }
+  return kDefaultRoundingMode;  // never happens
 }
 
-RoundingMode get_round(void)
-{
-    int oldRound = fegetround();
+RoundingMode get_round(void) {
+  int oldRound = fegetround();
 
-    switch (oldRound)
-    {
-        case FE_TONEAREST: return kRoundToNearestEven;
-        case FE_UPWARD: return kRoundUp;
-        case FE_DOWNWARD: return kRoundDown;
-        case FE_TOWARDZERO: return kRoundTowardZero;
-    }
+  switch (oldRound) {
+    case FE_TONEAREST:
+      return kRoundToNearestEven;
+    case FE_UPWARD:
+      return kRoundUp;
+    case FE_DOWNWARD:
+      return kRoundDown;
+    case FE_TOWARDZERO:
+      return kRoundTowardZero;
+  }
 
-    return kDefaultRoundingMode;
+  return kDefaultRoundingMode;
 }
 
 #else
-RoundingMode set_round(RoundingMode r, Type outType)
-{
-    static const int flt_rounds[kRoundingModeCount] = { _RC_NEAR, _RC_NEAR,
-                                                        _RC_UP, _RC_DOWN,
-                                                        _RC_CHOP };
-    static const int int_rounds[kRoundingModeCount] = { _RC_CHOP, _RC_NEAR,
-                                                        _RC_UP, _RC_DOWN,
-                                                        _RC_CHOP };
-    const int *p =
-        (outType == kfloat || outType == kdouble) ? flt_rounds : int_rounds;
-    unsigned int oldRound;
+RoundingMode set_round(RoundingMode r, Type outType) {
+  static const int flt_rounds[kRoundingModeCount] = {_RC_NEAR, _RC_NEAR, _RC_UP,
+                                                     _RC_DOWN, _RC_CHOP};
+  static const int int_rounds[kRoundingModeCount] = {_RC_CHOP, _RC_NEAR, _RC_UP,
+                                                     _RC_DOWN, _RC_CHOP};
+  const int* p =
+      (outType == kfloat || outType == kdouble) ? flt_rounds : int_rounds;
+  unsigned int oldRound;
 
-    int err = _controlfp_s(&oldRound, 0, 0); // get rounding mode into oldRound
-    if (err)
-    {
-        return kDefaultRoundingMode; // what else never happens
-    }
+  int err = _controlfp_s(&oldRound, 0, 0);  // get rounding mode into oldRound
+  if (err) {
+    return kDefaultRoundingMode;  // what else never happens
+  }
 
-    oldRound &= _MCW_RC;
+  oldRound &= _MCW_RC;
 
-    RoundingMode old = (oldRound == _RC_NEAR)
-        ? kRoundToNearestEven
-        : (oldRound == _RC_UP) ? kRoundUp
-                               : (oldRound == _RC_DOWN)
-                ? kRoundDown
-                : (oldRound == _RC_CHOP) ? kRoundTowardZero
-                                         : kDefaultRoundingMode;
+  RoundingMode old = (oldRound == _RC_NEAR)   ? kRoundToNearestEven
+                     : (oldRound == _RC_UP)   ? kRoundUp
+                     : (oldRound == _RC_DOWN) ? kRoundDown
+                     : (oldRound == _RC_CHOP) ? kRoundTowardZero
+                                              : kDefaultRoundingMode;
 
-    _controlfp_s(&oldRound, p[r], _MCW_RC); // setting new rounding mode
-    return old; // returning old rounding mode
+  _controlfp_s(&oldRound, p[r], _MCW_RC);  // setting new rounding mode
+  return old;                              // returning old rounding mode
 }
 
-RoundingMode get_round(void)
-{
-    unsigned int oldRound;
+RoundingMode get_round(void) {
+  unsigned int oldRound;
 
-    int err = _controlfp_s(&oldRound, 0, 0); // get rounding mode into oldRound
-    oldRound &= _MCW_RC;
-    return (oldRound == _RC_NEAR)
-        ? kRoundToNearestEven
-        : (oldRound == _RC_UP) ? kRoundUp
-                               : (oldRound == _RC_DOWN)
-                ? kRoundDown
-                : (oldRound == _RC_CHOP) ? kRoundTowardZero
-                                         : kDefaultRoundingMode;
+  int err = _controlfp_s(&oldRound, 0, 0);  // get rounding mode into oldRound
+  oldRound &= _MCW_RC;
+  return (oldRound == _RC_NEAR)   ? kRoundToNearestEven
+         : (oldRound == _RC_UP)   ? kRoundUp
+         : (oldRound == _RC_DOWN) ? kRoundDown
+         : (oldRound == _RC_CHOP) ? kRoundTowardZero
+                                  : kDefaultRoundingMode;
 }
 
 #endif
@@ -191,44 +184,43 @@ RoundingMode get_round(void)
 //          basic_test_conversions.c in which case, these function are at
 //          liberty to do nothing.
 //
-#if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86)               \
-    || defined(_M_X64)
+#if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || \
+    defined(_M_X64)
 #include <xmmintrin.h>
 #elif defined(__PPC__)
 #include <fpu_control.h>
 #elif defined(__mips__)
 #include "mips/m32c1.h"
 #endif
-void *FlushToZero(void)
-{
+void* FlushToZero(void) {
 #if defined(__APPLE__) || defined(__linux__) || defined(_WIN32)
-#if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86)               \
-    || defined(_M_X64)
-    union {
-        unsigned int i;
-        void *p;
-    } u = { _mm_getcsr() };
-    _mm_setcsr(u.i | 0x8040);
-    return u.p;
-#elif defined(__arm__) || defined(__aarch64__) // Clang
-    int64_t fpscr;
-    _FPU_GETCW(fpscr);
-    _FPU_SETCW(fpscr | FPSCR_FZ);
-    return NULL;
-#elif defined(_M_ARM64) // Visual Studio
-    uint64_t fpscr;
-    fpscr = _ReadStatusReg(ARM64_FPSR);
-    _WriteStatusReg(ARM64_FPCR, fpscr | (1U << 24));
-    return NULL;
+#if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || \
+    defined(_M_X64)
+  union {
+    unsigned int i;
+    void* p;
+  } u = {_mm_getcsr()};
+  _mm_setcsr(u.i | 0x8040);
+  return u.p;
+#elif defined(__arm__) || defined(__aarch64__)  // Clang
+  int64_t fpscr;
+  _FPU_GETCW(fpscr);
+  _FPU_SETCW(fpscr | FPSCR_FZ);
+  return NULL;
+#elif defined(_M_ARM64)                         // Visual Studio
+  uint64_t fpscr;
+  fpscr = _ReadStatusReg(ARM64_FPSR);
+  _WriteStatusReg(ARM64_FPCR, fpscr | (1U << 24));
+  return NULL;
 #elif defined(__PPC__)
-    fpu_control_t flags = 0;
-    _FPU_GETCW(flags);
-    flags |= _FPU_MASK_NI;
-    _FPU_SETCW(flags);
-    return NULL;
+  fpu_control_t flags = 0;
+  _FPU_GETCW(flags);
+  flags |= _FPU_MASK_NI;
+  _FPU_SETCW(flags);
+  return NULL;
 #elif defined(__mips__)
-    fpa_bissr(FPA_CSR_FS);
-    return NULL;
+  fpa_bissr(FPA_CSR_FS);
+  return NULL;
 #else
 #error Unknown arch
 #endif
@@ -239,31 +231,30 @@ void *FlushToZero(void)
 
 // Undo the effects of FlushToZero above, restoring the host to default
 // behavior, using the information passed in p.
-void UnFlushToZero(void *p)
-{
+void UnFlushToZero(void* p) {
 #if defined(__APPLE__) || defined(__linux__) || defined(_WIN32)
-#if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86)               \
-    || defined(_M_X64)
-    union {
-        void *p;
-        unsigned int i;
-    } u = { p };
-    _mm_setcsr(u.i);
-#elif defined(__arm__) || defined(__aarch64__) // Clang
-    int64_t fpscr;
-    _FPU_GETCW(fpscr);
-    _FPU_SETCW(fpscr & ~FPSCR_FZ);
-#elif defined(_M_ARM64) // Visual Studio
-    uint64_t fpscr;
-    fpscr = _ReadStatusReg(ARM64_FPSR);
-    _WriteStatusReg(ARM64_FPCR, fpscr & ~(1U << 24));
+#if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || \
+    defined(_M_X64)
+  union {
+    void* p;
+    unsigned int i;
+  } u = {p};
+  _mm_setcsr(u.i);
+#elif defined(__arm__) || defined(__aarch64__)  // Clang
+  int64_t fpscr;
+  _FPU_GETCW(fpscr);
+  _FPU_SETCW(fpscr & ~FPSCR_FZ);
+#elif defined(_M_ARM64)                         // Visual Studio
+  uint64_t fpscr;
+  fpscr = _ReadStatusReg(ARM64_FPSR);
+  _WriteStatusReg(ARM64_FPCR, fpscr & ~(1U << 24));
 #elif defined(__PPC__)
-    fpu_control_t flags = 0;
-    _FPU_GETCW(flags);
-    flags &= ~_FPU_MASK_NI;
-    _FPU_SETCW(flags);
+  fpu_control_t flags = 0;
+  _FPU_GETCW(flags);
+  flags &= ~_FPU_MASK_NI;
+  _FPU_SETCW(flags);
 #elif defined(__mips__)
-    fpa_bicsr(FPA_CSR_FS);
+  fpa_bicsr(FPA_CSR_FS);
 #else
 #error Unknown arch
 #endif
