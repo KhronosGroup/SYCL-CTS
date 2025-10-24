@@ -28,22 +28,18 @@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
 // clang-format on
 
-// FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #include "../accessor_basic/accessor_common.h"
 #include "generic_accessor_zero_dim_constructor.h"
 
 using namespace generic_accessor_zero_dim_constructor;
-#endif
 
 #include "../common/disabled_for_test_case.h"
 
 namespace generic_accessor_zero_dim_constructor_core {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
-(CTS_TYPE_NAME + " Generic sycl::accessor zero-dim constructors.", "[accessor]",
- test_combinations)({
+TEMPLATE_LIST_TEST_CASE(CTS_TYPE_NAME + " Generic sycl::accessor zero-dim constructors.", "[accessor]",
+ test_combinations){
   auto queue = sycl_cts::util::get_cts_object::queue();
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
@@ -66,6 +62,6 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 #else
   run_generic_zero_dim_constructor_test<CTS_TYPE, TestType>{}(CTS_TYPE_NAME);
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
-});
+}
 
 }  // namespace generic_accessor_zero_dim_constructor_core
