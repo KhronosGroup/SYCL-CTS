@@ -132,8 +132,6 @@ RoundingMode set_round(RoundingMode r, Type outType)
     int err = _controlfp_s(&oldRound, 0, 0); // get rounding mode into oldRound
     if (err)
     {
-        vlog_error("\t\tERROR: -- cannot get rounding mode in %s:%d\n",
-                   __FILE__, __LINE__);
         return kDefaultRoundingMode; // what else never happens
     }
 
