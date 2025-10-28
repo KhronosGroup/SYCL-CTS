@@ -115,9 +115,10 @@ inline auto fill_errors(std::tuple<ConstructAcc, GetIterator> ftuple) {
   return errors;
 }
 
-TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::accessor "
- "iterator",
- "[accessor]"){
+TEST_CASE(
+    "LegacyRandomAccessIterator requirement verification for sycl::accessor "
+    "iterator",
+    "[accessor]") {
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -130,9 +131,10 @@ TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::accesso
   print_errors(errors);
 }
 
-TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::accessor "
- "const iterator",
- "[accessor]"){
+TEST_CASE(
+    "LegacyRandomAccessIterator requirement verification for sycl::accessor "
+    "const iterator",
+    "[accessor]") {
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -145,9 +147,10 @@ TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::accesso
   print_errors(errors);
 }
 
-TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::accessor "
- "reverse iterator",
- "[accessor]"){
+TEST_CASE(
+    "LegacyRandomAccessIterator requirement verification for sycl::accessor "
+    "reverse iterator",
+    "[accessor]") {
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -160,9 +163,10 @@ TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::accesso
   print_errors(errors);
 }
 
-TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::accessor "
- "const reverse iterator",
- "[accessor]"){
+TEST_CASE(
+    "LegacyRandomAccessIterator requirement verification for sycl::accessor "
+    "const reverse iterator",
+    "[accessor]") {
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -175,9 +179,11 @@ TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::accesso
   print_errors(errors);
 }
 
-TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
- "iterator",
- "[accessor]"){
+TEST_CASE(
+    "LegacyRandomAccessIterator requirement verification for "
+    "sycl::local_accessor "
+    "iterator",
+    "[accessor]") {
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -191,9 +197,11 @@ TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::local_a
   print_errors(errors);
 }
 
-TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
- "const iterator",
- "[accessor]"){
+TEST_CASE(
+    "LegacyRandomAccessIterator requirement verification for "
+    "sycl::local_accessor "
+    "const iterator",
+    "[accessor]") {
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -207,9 +215,11 @@ TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::local_a
   print_errors(errors);
 }
 
-TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
- "reverse iterator",
- "[accessor]"){
+TEST_CASE(
+    "LegacyRandomAccessIterator requirement verification for "
+    "sycl::local_accessor "
+    "reverse iterator",
+    "[accessor]") {
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -223,9 +233,11 @@ TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::local_a
   print_errors(errors);
 }
 
-TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
- "const reverse iterator",
- "[accessor]"){
+TEST_CASE(
+    "LegacyRandomAccessIterator requirement verification for "
+    "sycl::local_accessor "
+    "const reverse iterator",
+    "[accessor]") {
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -239,9 +251,11 @@ TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::local_a
   print_errors(errors);
 }
 
-TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
- "iterator",
- "[accessor]"){
+TEST_CASE(
+    "LegacyRandomAccessIterator requirement verification for "
+    "sycl::host_accessor "
+    "iterator",
+    "[accessor]") {
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -255,9 +269,11 @@ TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::host_ac
   print_errors(errors);
 }
 
-TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
- "const iterator",
- "[accessor]"){
+TEST_CASE(
+    "LegacyRandomAccessIterator requirement verification for "
+    "sycl::host_accessor "
+    "const iterator",
+    "[accessor]") {
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -271,9 +287,11 @@ TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::host_ac
   print_errors(errors);
 }
 
-TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
- "reverse iterator",
- "[accessor]"){
+TEST_CASE(
+    "LegacyRandomAccessIterator requirement verification for "
+    "sycl::host_accessor "
+    "reverse iterator",
+    "[accessor]") {
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 
@@ -287,9 +305,11 @@ TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::host_ac
   print_errors(errors);
 }
 
-TEST_CASE("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
- "const reverse iterator",
- "[accessor]"){
+TEST_CASE(
+    "LegacyRandomAccessIterator requirement verification for "
+    "sycl::host_accessor "
+    "const reverse iterator",
+    "[accessor]") {
   using namespace sycl_cts;
   using namespace named_requirement_verification;
 

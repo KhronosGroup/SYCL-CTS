@@ -169,7 +169,8 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
   }
 });
 
-TEST_CASE("generic accessor common reference semantics (kernel)", "[accessor]"){
+TEST_CASE("generic accessor common reference semantics (kernel)",
+          "[accessor]") {
   sycl::buffer<int> buffer{sycl::range<1>{1}};
   using type =
       sycl::accessor<int, 1, sycl::access_mode::read_write,
@@ -187,7 +188,7 @@ template <int TestCase>
 class kernel_name_generic;
 
 TEST_CASE("generic accessor common reference semantics, mutation (kernel)",
- "[accessor]"){
+          "[accessor]") {
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   int result = 0;
 

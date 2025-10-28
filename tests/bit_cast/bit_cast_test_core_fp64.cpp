@@ -24,10 +24,9 @@
 
 #include "bit_cast_test.h"
 
-
 namespace bit_cast::tests::fp64 {
 
-TEST_CASE("Test sycl::bit_cast, fp64 type", "[bit_cast]"){
+TEST_CASE("Test sycl::bit_cast, fp64 type", "[bit_cast]") {
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     SKIP(

@@ -259,7 +259,7 @@ class run_api_tests {
                     }
                   }
                 });
-#endif // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
               } else {
                 using kname =
                     kernel_buffer_accessor<T, AccessT, DimensionT, TargetT>;
@@ -402,7 +402,7 @@ class run_api_tests {
                       value_operations::assign(acc_ref2, expected_val);
                     }
                   });
-#endif // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
                 } else {
                   using kname = kernel_offset<T, AccessT, DimensionT, TargetT>;
                   sycl::accessor res_acc(res_buf, cgh);
@@ -473,7 +473,7 @@ class run_api_tests {
                     value_operations::assign(acc_ref2, changed_val);
                   }
                 });
-#endif // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
               } else {
                 using kname = kernel_swap<T, AccessT, DimensionT, TargetT>;
                 sycl::accessor res_acc(res_buf, cgh);

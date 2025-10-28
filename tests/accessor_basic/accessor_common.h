@@ -27,9 +27,9 @@
 #include "../common/common.h"
 #include "../common/once_per_unit.h"
 #include "../common/section_name_builder.h"
+#include "../common/type_coverage.h"
 #include "../common/type_list.h"
 #include "../common/value_operations.h"
-#include "../common/type_coverage.h"
 
 #include <catch2/matchers/catch_matchers.hpp>
 
@@ -239,8 +239,7 @@ using all_dimensions_pack = integer_pack<0, 1, 2, 3>;
 using targets_pack =
     value_pack<sycl::target, sycl::target::device, sycl::target::host_task>;
 #else
-using targets_pack =
-    value_pack<sycl::target, sycl::target::device>;
+using targets_pack = value_pack<sycl::target, sycl::target::device>;
 #endif
 
 /**
@@ -1149,7 +1148,7 @@ void check_has_property_member_func(GetAccFunctorT construct_acc) {
     compare_res = acc.template has_property<sycl::property::no_init>();
   }
   CHECK(compare_res);
-#endif // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 }
 
 /**
@@ -1183,7 +1182,7 @@ void check_has_property_member_without_no_init(GetAccFunctorT construct_acc) {
     compare_res = acc.template has_property<sycl::property::no_init>();
   }
   CHECK(!compare_res);
-#endif // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 }
 
 /**
@@ -1217,7 +1216,7 @@ void check_get_property_member_func(GetAccFunctorT construct_acc) {
     auto acc_prop = acc.template get_property<PropT>();
     CHECK(std::is_same_v<PropT, decltype(acc_prop)>);
   }
-#endif // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 }
 
 /**
@@ -1256,7 +1255,7 @@ void check_get_property_member_without_no_init(GetAccFunctorT construct_acc) {
     CHECK_THROWS_MATCHES(action(), sycl::exception,
                          sycl_cts::util::equals_exception(sycl::errc::invalid));
   }
-#endif // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 }
 /**
  * @brief Function checks common buffer and local accessor member types

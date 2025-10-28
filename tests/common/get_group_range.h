@@ -63,7 +63,7 @@ sycl::range<Dimensions> work_group_range(
   {
     sycl::id<3> sizes =
         queue.get_device()
-            .get_info<sycl::info::device::max_work_item_sizes<3> >();
+            .get_info<sycl::info::device::max_work_item_sizes<3>>();
     for (int i = 0; i < Dimensions; ++i) {
       max_work_item_sizes[i] = sizes.get(i);
     }

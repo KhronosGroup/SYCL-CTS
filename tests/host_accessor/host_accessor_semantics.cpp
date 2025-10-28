@@ -54,7 +54,7 @@ struct storage {
   }
 };
 
-TEST_CASE("host_accessor common reference semantics", "[host_accessor]"){
+TEST_CASE("host_accessor common reference semantics", "[host_accessor]") {
   sycl::buffer<int> buffer_0{sycl::range<1>{1}};
   sycl::host_accessor<int> host_accessor_0{buffer_0};
 
@@ -64,7 +64,8 @@ TEST_CASE("host_accessor common reference semantics", "[host_accessor]"){
       host_accessor_0, host_accessor_1, "host_accessor");
 }
 
-TEST_CASE("host_accessor common reference semantics, mutation", "[host_accessor]"){
+TEST_CASE("host_accessor common reference semantics, mutation",
+          "[host_accessor]") {
   constexpr int val = 1;
   constexpr int new_val = 2;
   sycl::buffer<int> buffer{sycl::range<1>{1}};

@@ -57,8 +57,6 @@ struct type_name_string<sycl::vec<T, nElements>> {
   }
 };
 
-// FIXME: re-enable when marray is implemented in adaptivecpp
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Specialization of type name retrieve for sycl::marray class
  * @param T Type of the data stored in marray
@@ -70,7 +68,6 @@ struct type_name_string<sycl::marray<T, nElements>> {
     return "sycl::marray<" + dataType + "," + std::to_string(nElements) + ">";
   }
 };
-#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 /**
  * @brief Specialization of type name retrieve for std::array class
@@ -457,8 +454,6 @@ void for_all_types_and_vectors(const named_type_pack<types...> &typeList,
   assert((typeNameIndex == sizeof...(types)) && "Pack expansion failed");
 }
 
-// FIXME: re-enable when marray is implemented in adaptivecpp
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Run action for type, vectors and marrays of this type
  * @tparam action Functor template for action to run
@@ -540,10 +535,7 @@ void for_type_vectors_marray_reduced(argsT&&... args) {
         std::forward<argsT>(args)...);
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
-// FIXME: re-enable when marray is implemented in adaptivecpp
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Run action for each of types, vectors and marrays of types given by
  *        named_type_pack instance
@@ -571,10 +563,7 @@ void for_all_types_vectors_marray(const named_type_pack<types...> &typeList,
   // Ensure there is no silent miss for coverage
   assert((typeNameIndex == sizeof...(types)) && "Pack expansion failed");
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
-// FIXME: re-enable when marray is implemented in adaptivecpp
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Run action for type and marrays of this type
  * @tparam action Functor template for action to run
@@ -592,10 +581,7 @@ void for_type_and_marrays(argsT &&...args) {
                 typename sycl::template marray<T, 10>>{},
       std::forward<argsT>(args)...);
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
-// FIXME: re-enable when marray is implemented in adaptivecpp
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Run action for marrays of type T
  * @tparam action Functor template for action to run
@@ -613,10 +599,7 @@ void for_marrays_of_type(argsT&&... args) {
                 typename sycl::template marray<T, 10>>{},
       std::forward<argsT>(args)...);
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
-// FIXME: re-enable when marray is implemented in adaptivecpp
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Run action for each of types and marrays of types given by
  *        named_type_pack instance
@@ -641,10 +624,7 @@ void for_all_types_and_marrays(const named_type_pack<types...> &typeList,
     ++typeNameIndex),
    ...);
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
-// FIXME: re-enable when marray is implemented in adaptivecpp
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Run action for marrays of each type of types given by
  *        named_type_pack instance
@@ -669,5 +649,4 @@ void for_marrays_of_all_types(const named_type_pack<types...>& typeList,
     ++typeNameIndex),
    ...);
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #endif  // __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H
