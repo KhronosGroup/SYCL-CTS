@@ -235,11 +235,11 @@ using all_dimensions_pack = integer_pack<0, 1, 2, 3>;
  * @brief Alias for a value pack containing all tested targets.
  */
 // FIXME: re-enable when host_task is implemented in adaptivecpp
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+#ifdef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+using targets_pack = value_pack<sycl::target, sycl::target::device>;
+#else
 using targets_pack =
     value_pack<sycl::target, sycl::target::device, sycl::target::host_task>;
-#else
-using targets_pack = value_pack<sycl::target, sycl::target::device>;
 #endif
 
 /**
