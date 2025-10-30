@@ -21,6 +21,13 @@ macro(add_submodule_directory RELPATH)
     add_subdirectory("${RELPATH}")
 endmacro()
 
+# Disable STL iterator checking for debug builds on Windows -- SYCL device code doesn't work with it.
+# Disable it for the entire project, because the _ITERATOR_DEBUG_LEVEL symbol is ABI-breaking --
+# it needs to be the same for the Catch2 library and the sycl_cts executables.
+if(WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+  add_compile_options(-D_ITERATOR_DEBUG_LEVEL=0)
+endif()
+
 # Disable page fault handler feature, due to its implementation not respecting page fault handler chain
 if(WIN32)
     set(CATCH_CONFIG_NO_WINDOWS_SEH ON CACHE BOOL "" FORCE)
