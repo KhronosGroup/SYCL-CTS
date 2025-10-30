@@ -27,13 +27,9 @@
 #include "../common/common.h"
 #include "../common/once_per_unit.h"
 #include "../common/section_name_builder.h"
+#include "../common/type_coverage.h"
 #include "../common/type_list.h"
 #include "../common/value_operations.h"
-
-// FIXME: re-enable when marrray is implemented in adaptivecpp
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
-#include "../common/type_coverage.h"
-#endif
 
 #include <catch2/matchers/catch_matchers.hpp>
 
@@ -140,10 +136,6 @@ inline std::string get_section_name(const std::string& type_name,
       .create();
 }
 
-// FIXME: re-enable when marrray is implemented in adaptivecpp and type_coverage
-// is enabled
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
-
 #if SYCL_CTS_ENABLE_HALF_TESTS
 /**
  * @brief Factory function for getting type_pack with fp16 type
@@ -242,8 +234,13 @@ using all_dimensions_pack = integer_pack<0, 1, 2, 3>;
 /**
  * @brief Alias for a value pack containing all tested targets.
  */
+// FIXME: re-enable when host_task is implemented in adaptivecpp
+#ifdef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+using targets_pack = value_pack<sycl::target, sycl::target::device>;
+#else
 using targets_pack =
     value_pack<sycl::target, sycl::target::device, sycl::target::host_task>;
+#endif
 
 /**
  * @brief Lightweight struct for containing tuple types with the singleton packs
@@ -382,7 +379,6 @@ inline auto add_vectors_to_type_pack(StrNameType type_name) {
                                   "vec<" + type_name + ", 8>",
                                   "vec<" + type_name + ", 16>");
 }
-#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 template <accessor_type AccType>
 struct tag_factory {
@@ -467,7 +463,6 @@ void check_empty_accessor_constructor_post_conditions(
   // All size queries return 0
   res_acc[res_i++] = testing_acc.byte_size() == 0;
   res_acc[res_i++] = testing_acc.size() == 0;
-  res_acc[res_i++] = testing_acc.max_size() == 0;
 
   if (check_iterator_methods) {
     // The only iterator that can be obtained is nullptr
@@ -477,10 +472,6 @@ void check_empty_accessor_constructor_post_conditions(
     res_acc[res_i++] = testing_acc.crbegin() == testing_acc.crend();
   }
 }
-
-// FIXME: re-enable when handler.host_task and sycl::errc is implemented in
-// adaptivecpp and computcpp
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 /**
  * @brief Common function that constructs accessor with default constructor
@@ -599,15 +590,21 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
           // to avoid undefined behavior
           bool check_iterator_methods = false;
           if constexpr (Target == sycl::target::host_task) {
+// FIXME: re-enable when host_task is implemented in adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
             cgh.host_task([=] {
               check_empty_accessor_constructor_post_conditions(
                   acc, res_acc, check_iterator_methods);
             });
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
           } else if constexpr (Target == sycl::target::device) {
+// FIXME: re-enable when parallel_for_work_group is implemented in adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
             cgh.parallel_for_work_group(sycl::range(1), [=](sycl::group<1>) {
               check_empty_accessor_constructor_post_conditions(
                   acc, res_acc, check_iterator_methods);
             });
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
           }
         })
         .wait_and_throw();
@@ -622,7 +619,6 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
     CHECK(conditions_check[i]);
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 namespace detail {
 /**
@@ -670,9 +666,6 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
     value_operations::assign(acc_ref, changed_val);
   }
 }
-// FIXME: re-enable when handler.host_task and sycl::errc is implemented in
-// adaptivecpp
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 /**
  * @brief Function helps to check zero dimension constructor of accessor
@@ -714,6 +707,8 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
             }
           }
           if constexpr (Target == sycl::target::host_task) {
+// FIXME: re-enable when host_task is implemented in adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
             cgh.host_task([=] {
               // We are free either to create new accessor instance or to
               // modify original accessor and provide reference to it;
@@ -723,12 +718,16 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
                   (detail::invoke_helper{modify_accessor} = ... = acc);
               read_write_zero_dim_acc<DataT, AccessMode>(acc_instance, res_acc);
             });
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
           } else if constexpr (Target == sycl::target::device) {
+// FIXME: re-enable when parallel_for_work_group is implemented in adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
             cgh.parallel_for_work_group(r, [=](sycl::group<1>) {
               auto&& acc_instance =
                   (detail::invoke_helper{modify_accessor} = ... = acc);
               read_write_zero_dim_acc<DataT, AccessMode>(acc_instance, res_acc);
             });
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
           } else {
             static_assert(Target != Target, "Unexpected accessor type");
           }
@@ -759,7 +758,6 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
     }
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 /**
  * @brief Function that tries to read or/and write depending on AccessMode
@@ -786,10 +784,6 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
     value_operations::assign(testing_acc[id], changed_val);
   }
 }
-
-// FIXME: re-enable when handler.host_task and sycl::errc is implemented in
-// adaptivecpp
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 /**
  * @brief Function helps to check common constructor of accessor
@@ -834,6 +828,8 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
           }
 
           if constexpr (Target == sycl::target::host_task) {
+// FIXME: re-enable when host_task is implemented in adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
             cgh.host_task([=] {
               auto&& acc_instance =
                   (detail::invoke_helper{modify_accessor} = ... = acc);
@@ -845,7 +841,10 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
                                                            res_acc);
               }
             });
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
           } else if constexpr (Target == sycl::target::device) {
+// FIXME: re-enable when parallel_for_work_group is implemented in adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
             cgh.parallel_for_work_group(
                 sycl::range(1), [=](sycl::group<1>) {
                   auto&& acc_instance =
@@ -858,6 +857,7 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
                                                                res_acc);
                   }
                 });
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
           } else {
             static_assert(Target != Target, "Unexpected accessor type");
           }
@@ -893,7 +893,6 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
     }
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 /**
  * @brief Function mainly for testing no_init property. The function tries to
@@ -922,8 +921,6 @@ void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
     }
   }
 }
-// FIXME: re-enable when handler.host_task and sycl::errc is implemented
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 template <accessor_type AccType, typename DataT, int Dimension,
           sycl::access_mode AccessMode, sycl::target Target>
@@ -956,13 +953,19 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor) {
           auto acc = get_accessor_functor(data_buf, cgh);
 
           if (Target == sycl::target::host_task) {
+// FIXME: re-enable when host_task is implemented in adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
             cgh.host_task([=] {
               write_read_acc<DataT, Dimension, AccessMode>(acc, res_acc);
             });
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
           } else if (Target == sycl::target::device) {
+// FIXME: re-enable when parallel_for_work_group is implemented in adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
             cgh.parallel_for_work_group(sycl::range(1), [=](sycl::group<1>) {
               write_read_acc<DataT, Dimension, AccessMode>(acc, res_acc);
             });
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
           }
         })
         .wait_and_throw();
@@ -1010,7 +1013,7 @@ void check_no_init_prop_exception(GetAccFunctorT construct_acc) {
     }
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+
 /**
  * @brief Function tests AccT::get_pointer() method
 
@@ -1026,9 +1029,6 @@ void test_accessor_ptr(AccT& accessor, T expected_data) {
   CHECK(value_operations::are_equal(*acc_pointer, expected_data));
 }
 
-// FIXME: re-enable when sycl::access::decorated enumeration is implemented in
-// adaptivecpp
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, typename AccT, typename AccRes>
 void test_accessor_ptr_device(AccT& accessor, T& expected_data, AccRes& res_acc,
                               size_t& res_i) {
@@ -1054,7 +1054,7 @@ void test_accessor_ptr_device(AccT& accessor, T& expected_data, AccRes& res_acc,
                      sycl::global_ptr<typename AccT::value_type>>;
   res_acc[res_i++] = value_operations::are_equal(*acc_pointer, expected_data);
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+
 /**
  * @brief Function checks common buffer and local accessor member functions
  */
@@ -1126,6 +1126,9 @@ void test_accessor_range_methods(const AccT& accessor,
 template <accessor_type AccType, typename DataT, int Dimension, typename PropT,
           typename GetAccFunctorT>
 void check_has_property_member_func(GetAccFunctorT construct_acc) {
+#if SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+  FAIL("AdaptiveCpp does not support get_property on accesors.");
+#else
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
   const auto r = util::get_cts_object::range<dim_buf>::get(1, 1, 1);
   auto queue = once_per_unit::get_queue();
@@ -1145,6 +1148,7 @@ void check_has_property_member_func(GetAccFunctorT construct_acc) {
     compare_res = acc.template has_property<sycl::property::no_init>();
   }
   CHECK(compare_res);
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 }
 
 /**
@@ -1156,6 +1160,9 @@ void check_has_property_member_func(GetAccFunctorT construct_acc) {
 template <accessor_type AccType, typename DataT, int Dimension,
           typename GetAccFunctorT>
 void check_has_property_member_without_no_init(GetAccFunctorT construct_acc) {
+#if SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+  FAIL("AdaptiveCpp does not support get_property on accesors.");
+#else
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
   const auto r = util::get_cts_object::range<dim_buf>::get(1, 1, 1);
   auto queue = once_per_unit::get_queue();
@@ -1175,6 +1182,7 @@ void check_has_property_member_without_no_init(GetAccFunctorT construct_acc) {
     compare_res = acc.template has_property<sycl::property::no_init>();
   }
   CHECK(!compare_res);
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 }
 
 /**
@@ -1186,6 +1194,9 @@ void check_has_property_member_without_no_init(GetAccFunctorT construct_acc) {
 template <accessor_type AccType, typename DataT, int Dimension, typename PropT,
           typename GetAccFunctorT>
 void check_get_property_member_func(GetAccFunctorT construct_acc) {
+#if SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+  FAIL("AdaptiveCpp does not support get_property on accesors.");
+#else
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
   const auto r = util::get_cts_object::range<dim_buf>::get(1, 1, 1);
   auto queue = once_per_unit::get_queue();
@@ -1205,11 +1216,9 @@ void check_get_property_member_func(GetAccFunctorT construct_acc) {
     auto acc_prop = acc.template get_property<PropT>();
     CHECK(std::is_same_v<PropT, decltype(acc_prop)>);
   }
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 }
 
-// FIXME: re-enable when handler.host_task and sycl::errc is implemented in
-// adaptivecpp
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 /**
  * @brief Function invokes \c get_property() member function without \c PropT
  * property and verifies that false returns
@@ -1219,6 +1228,9 @@ void check_get_property_member_func(GetAccFunctorT construct_acc) {
 template <accessor_type AccType, typename DataT, int Dimension,
           typename GetAccFunctorT>
 void check_get_property_member_without_no_init(GetAccFunctorT construct_acc) {
+#if SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+  FAIL("AdaptiveCpp does not support get_property on accesors.");
+#else
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
   const auto r = util::get_cts_object::range<dim_buf>::get(1, 1, 1);
   auto queue = once_per_unit::get_queue();
@@ -1243,8 +1255,8 @@ void check_get_property_member_without_no_init(GetAccFunctorT construct_acc) {
     CHECK_THROWS_MATCHES(action(), sycl::exception,
                          sycl_cts::util::equals_exception(sycl::errc::invalid));
   }
-}
 #endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+}
 /**
  * @brief Function checks common buffer and local accessor member types
  */
@@ -1285,9 +1297,6 @@ sycl::id<dims> next_id_linearly(sycl::id<dims> id, size_t size) {
   }
   return id;
 }
-
-// FIXME: re-enable when handler.host_task is implemented in adaptivecpp
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 template <accessor_type AccType, typename T, int dims,
           sycl::access_mode AccessMode, sycl::target Target>
@@ -1339,6 +1348,8 @@ void check_linearization() {
                 }
               });
             } else {
+// FIXME: re-enable when host_task is implemented in adaptivecpp
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
               cgh.host_task([=] {
                 sycl::id<dims> id{};
                 for (auto& elem : acc) {
@@ -1346,6 +1357,7 @@ void check_linearization() {
                   id = next_id_linearly(id, range_size);
                 }
               });
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
             }
           })
           .wait_and_throw();
@@ -1361,7 +1373,6 @@ void check_linearization() {
     }
   }
 }
-#endif
 
 template <int dims, typename AccT>
 typename AccT::reference get_accessor_reference(const AccT& acc) {

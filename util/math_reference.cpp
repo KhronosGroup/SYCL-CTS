@@ -456,8 +456,6 @@ sycl::vec<T, N> cross_t(sycl::vec<T, N> a, sycl::vec<T, N> b) {
 sycl::float4 cross(sycl::float4 p0, sycl::float4 p1) { return cross_t(p0, p1); }
 sycl::float3 cross(sycl::float3 p0, sycl::float3 p1) { return cross_t(p0, p1); }
 
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 sycl::marray<T, N> cross_t(sycl::marray<T, N> a, sycl::marray<T, N> b) {
   sycl::marray<T, N> res;
@@ -478,7 +476,6 @@ sycl::mfloat4 cross(sycl::mfloat4 p0, sycl::mfloat4 p1) {
 sycl::mfloat3 cross(sycl::mfloat3 p0, sycl::mfloat3 p1) {
   return cross_t(p0, p1);
 }
-#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #if SYCL_CTS_ENABLE_HALF_TESTS
 
@@ -516,9 +513,6 @@ sycl::half fma(sycl::half a, sycl::half b, sycl::half c) {
   return reference_fma(a, b, c, 0);
 }
 
-// AdaptiveCpp does not yet support sycl::bit_cast, which is used in
-// `nextafter`.
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 sycl::half fdim(sycl::half a, sycl::half b) {
   if (a > b) {
     // to get rounding to nearest even
@@ -535,7 +529,6 @@ sycl::half fdim(sycl::half a, sycl::half b) {
   }
   return +0;
 }
-#endif
 
 sycl::half fract(sycl::half a, sycl::half* b) {
   *b = std::floor(a);
@@ -551,8 +544,6 @@ sycl::half modf(sycl::half a, sycl::half* b) {
   return res;
 }
 
-// AdaptiveCpp does not yet support sycl::bit_cast
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 sycl::half nextafter(sycl::half x, sycl::half y) {
   if (std::isnan(x)) return x;
 
@@ -578,7 +569,6 @@ sycl::half nextafter(sycl::half x, sycl::half y) {
 
   return sycl::bit_cast<sycl::half>(a);
 }
-#endif
 
 sycl::half sinpi(sycl::half a) { return reference_sinpi(a); }
 sycl::half tanpi(sycl::half a) { return reference_tanpi(a); }
@@ -594,8 +584,6 @@ sycl::half fast_dot(sycl::float4 p0) {
   return std::pow(p0.x(), 2) + std::pow(p0.y(), 2) + std::pow(p0.z(), 2) +
          std::pow(p0.w(), 2);
 }
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 sycl::half fast_dot(sycl::mfloat2 p0) {
   return std::pow(p0[0], 2) + std::pow(p0[1], 2);
 }
@@ -606,7 +594,6 @@ sycl::half fast_dot(sycl::mfloat4 p0) {
   return std::pow(p0[0], 2) + std::pow(p0[1], 2) + std::pow(p0[2], 2) +
          std::pow(p0[3], 2);
 }
-#endif
 
 #endif  // SYCL_CTS_ENABLE_HALF_TESTS
 
@@ -655,15 +642,12 @@ sycl::double4 cross(sycl::double4 p0, sycl::double4 p1) {
 sycl::double3 cross(sycl::double3 p0, sycl::double3 p1) {
   return cross_t(p0, p1);
 }
-
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 sycl::mdouble4 cross(sycl::mdouble4 p0, sycl::mdouble4 p1) {
   return cross_t(p0, p1);
 }
 sycl::mdouble3 cross(sycl::mdouble3 p0, sycl::mdouble3 p1) {
   return cross_t(p0, p1);
 }
-#endif
 
 #endif  // SYCL_CTS_ENABLE_DOUBLE_TESTS
 

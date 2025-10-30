@@ -221,6 +221,8 @@ class run_api_tests {
               }
 
               if constexpr (Target == sycl::target::host_task) {
+// FIXME: re-enable when host_task is implemented in adaptivecpp
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
                 cgh.host_task([=] {
                   test_accessor_ptr_host(acc, expected_val);
                   test_begin_end_host(acc, expected_val, expected_val, false);
@@ -257,6 +259,7 @@ class run_api_tests {
                     }
                   }
                 });
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
               } else {
                 using kname =
                     kernel_buffer_accessor<T, AccessT, DimensionT, TargetT>;
@@ -382,6 +385,8 @@ class run_api_tests {
                                             offset_id /*&expected_offset*/);
 
                 if constexpr (Target == sycl::target::host_task) {
+// FIXME: re-enable when host_task is implemented in adaptivecpp
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
                   cgh.host_task([=] {
                     test_accessor_ptr_host(acc, T());
                     test_begin_end_host(
@@ -397,6 +402,7 @@ class run_api_tests {
                       value_operations::assign(acc_ref2, expected_val);
                     }
                   });
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
                 } else {
                   using kname = kernel_offset<T, AccessT, DimensionT, TargetT>;
                   sycl::accessor res_acc(res_buf, cgh);
@@ -453,6 +459,8 @@ class run_api_tests {
               AccT acc2(data_buf2, cgh);
               acc1.swap(acc2);
               if constexpr (Target == sycl::target::host_task) {
+// FIXME: re-enable when host_task is implemented in adaptivecpp
+#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
                 cgh.host_task([=] {
                   typename AccT::reference acc_ref1 =
                       get_accessor_reference<dims>(acc1);
@@ -465,6 +473,7 @@ class run_api_tests {
                     value_operations::assign(acc_ref2, changed_val);
                   }
                 });
+#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
               } else {
                 using kname = kernel_swap<T, AccessT, DimensionT, TargetT>;
                 sycl::accessor res_acc(res_buf, cgh);

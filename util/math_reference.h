@@ -665,11 +665,8 @@ T divide(T a, T b) {
 sycl::float4 cross(sycl::float4 p0, sycl::float4 p1);
 sycl::float3 cross(sycl::float3 p0, sycl::float3 p1);
 
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 sycl::mfloat4 cross(sycl::mfloat4 p0, sycl::mfloat4 p1);
 sycl::mfloat3 cross(sycl::mfloat3 p0, sycl::mfloat3 p1);
-#endif
 
 template <typename T>
 T dot(T p0, T p1) {
@@ -715,32 +712,25 @@ sycl::vec<sycl::half, N> nan(sycl::vec<unsigned short, N> a) {
       [](unsigned short x) { return nan(x); }, a);
 }
 
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <size_t N>
 sycl::marray<sycl::half, N> nan(sycl::marray<unsigned short, N> a) {
   return sycl_cts::math::run_func_on_marray<sycl::half, unsigned short, N>(
       [](unsigned short x) { return nan(x); }, a);
 }
-#endif
 
 sycl::half nextafter(sycl::half a, sycl::half b);
 sycl::half sinpi(sycl::half a);
 sycl::half tanpi(sycl::half a);
+#endif  // SYCL_CTS_ENABLE_HALF_TESTS
 
 sycl::half fast_dot(float p0);
 sycl::half fast_dot(sycl::float2 p0);
 sycl::half fast_dot(sycl::float3 p0);
 sycl::half fast_dot(sycl::float4 p0);
 
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 sycl::half fast_dot(sycl::mfloat2 p0);
 sycl::half fast_dot(sycl::mfloat3 p0);
 sycl::half fast_dot(sycl::mfloat4 p0);
-#endif
-
-#endif  // SYCL_CTS_ENABLE_HALF_TESTS
 
 #if SYCL_CTS_ENABLE_DOUBLE_TESTS
 
@@ -776,8 +766,6 @@ nan(sycl::vec<T, N> a) {
       [](T x) { return nan(x); }, a);
 }
 
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <typename T, size_t N>
 std::enable_if_t<std::is_same_v<unsigned long, T> ||
                      std::is_same_v<unsigned long long, T>,
@@ -786,7 +774,6 @@ nan(sycl::marray<T, N> a) {
   return sycl_cts::math::run_func_on_marray<double, T, N>(
       [](T x) { return nan(x); }, a);
 }
-#endif
 
 double sinpi(double a);
 double tanpi(double a);
@@ -794,11 +781,8 @@ double tanpi(double a);
 sycl::double4 cross(sycl::double4 p0, sycl::double4 p1);
 sycl::double3 cross(sycl::double3 p0, sycl::double3 p1);
 
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 sycl::mdouble4 cross(sycl::mdouble4 p0, sycl::mdouble4 p1);
 sycl::mdouble3 cross(sycl::mdouble3 p0, sycl::mdouble3 p1);
-#endif
 
 #endif  // SYCL_CTS_ENABLE_DOUBLE_TESTS
 
@@ -1238,10 +1222,6 @@ T dot(sycl::vec<T, N> a, sycl::vec<T, N> b) {
   return res;
 }
 
-// sycl::marray overloads of the above. Not supported by AdaptiveCpp.
-// Again, like for sycl::vec, these must be defined after all scalar overloads.
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
-
 #define MAKE_MARRAY_VERSION(func)                       \
   template <typename T, size_t N>                       \
   sycl::marray<T, N> func(sycl::marray<T, N> a) {       \
@@ -1676,8 +1656,6 @@ T dot(sycl::marray<T, N> a, sycl::marray<T, N> b) {
   return res;
 }
 
-#endif  // SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
-
 // Generic functions over both scalars and vec / marray types.
 // These need to be defined last.
 
@@ -1699,8 +1677,7 @@ sycl::vec<T, N> normalize(sycl::vec<T, N> a) {
   for (int i = 0; i < N; i++) res[i] = a[i] / len_a;
   return res;
 }
-// FIXME: AdaptiveCpp does not support marray
-#ifndef SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+
 template <typename T, size_t N>
 sycl::marray<T, N> normalize(sycl::marray<T, N> a) {
   sycl::marray<T, N> res;
@@ -1709,7 +1686,6 @@ sycl::marray<T, N> normalize(sycl::marray<T, N> a) {
   for (size_t i = 0; i < N; i++) res[i] = a[i] / len_a;
   return res;
 }
-#endif
 
 template <typename T>
 float fast_length(T p0) {
