@@ -286,7 +286,7 @@ static void test_copy_usm_pointers_impl() {
     std::iota(src, src + N, 0);
 
     {
-      q.submit([&](sycl::handler& h) { sycl::khr::copy(h, dst, src, N); });
+      q.submit([&](sycl::handler& h) { sycl::khr::copy(h, src, dst, N); });
       q.wait();
       for (int i = 0; i < N; ++i) {
         CHECK(src[i] == dst[i]);
@@ -294,7 +294,7 @@ static void test_copy_usm_pointers_impl() {
       }
     }
     {
-      sycl::khr::copy(q, dst, src, N);
+      sycl::khr::copy(q, src, dst, N);
       q.wait();
       for (int i = 0; i < N; ++i) CHECK(src[i] == dst[i]);
     }
