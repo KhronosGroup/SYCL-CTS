@@ -231,6 +231,9 @@ TEST_CASE("event::wait does not report asynchronous errors", "[event]") {
   }
 
   CHECK(teh.count() == 0);
+
+  // Consume all unconsumed exceptions to avoid them bleeding into other cases.
+  e.wait_and_throw();
 }
 
 TEST_CASE("event::wait_and_throw reports asynchronous errors", "[event]") {
