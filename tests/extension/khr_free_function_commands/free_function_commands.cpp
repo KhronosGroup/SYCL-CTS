@@ -257,7 +257,7 @@ static void test_memcpy() {
       q.wait();
 
       for (int i = 0; i < N; ++i) {
-        CHECK(src[i] == dst[i]);
+        CHECK(dst[i] == i);
         dst[i] = 0;
       }
     }
@@ -266,7 +266,7 @@ static void test_memcpy() {
       q.wait();
 
       for (int i = 0; i < N; ++i) {
-        CHECK(src[i] == dst[i]);
+        CHECK(dst[i] == i);
         dst[i] = 0;
       }
     }
@@ -289,14 +289,14 @@ static void test_copy_usm_pointers_impl() {
       q.submit([&](sycl::handler& h) { sycl::khr::copy(h, src, dst, N); });
       q.wait();
       for (int i = 0; i < N; ++i) {
-        CHECK(src[i] == dst[i]);
+        CHECK(dst[i] == i);
         dst[i] = 0;
       }
     }
     {
       sycl::khr::copy(q, src, dst, N);
       q.wait();
-      for (int i = 0; i < N; ++i) CHECK(src[i] == dst[i]);
+      for (int i = 0; i < N; ++i) CHECK(dst[i] == i);
     }
 
     sycl::free(src, q);
@@ -333,7 +333,7 @@ static void test_copy_accessors_host_to_device_impl() {
       }
     }
 
-    for (size_t i = 0; i < N; ++i) CHECK(src[i] == dst[i]);
+    for (size_t i = 0; i < N; ++i) CHECK(dst[i] == i);
   };
 
   T src[N] = {0};
@@ -378,7 +378,7 @@ static void test_copy_accessors_device_to_host_impl() {
       }
     }
 
-    for (size_t i = 0; i < N; ++i) CHECK(src[i] == dst[i]);
+    for (size_t i = 0; i < N; ++i) CHECK(dst[i] == i);
   };
 
   T dst[N] = {0};
@@ -427,7 +427,7 @@ static void test_copy_accessors_device_to_device_impl() {
     }
 
     for (size_t i = 0; i < N; ++i) {
-      CHECK(src[i] == dst[i]);
+      CHECK(dst[i] == i);
     }
   };
 
