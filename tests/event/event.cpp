@@ -231,6 +231,9 @@ TEST_CASE("event::wait does not report asynchronous errors", "[event]") {
   }
 
   CHECK(teh.count() == 0);
+
+  // Queue destruction does not flush unconsumed exceptions so do it manually.
+  e.wait_and_throw();
 }
 
 TEST_CASE("event::wait_and_throw reports asynchronous errors", "[event]") {
