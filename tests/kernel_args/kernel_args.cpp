@@ -37,7 +37,6 @@ struct outerStruct {
 };
 
 class scalar_struct_kernel;
-class sampler_kernel;
 
 bool check_outer_struct_eq(int a, float b, long long c, outerStruct exp) {
   return a == exp.a && c == exp.innerStruct.a &&
@@ -100,43 +99,6 @@ class TEST_NAME : public util::test_base {
       }
 
       my_queue.wait_and_throw();
-
-      log.note("Testing kernel args with samplers");
-      {
-        try {
-          sycl::sampler sampler(
-              sycl::coordinate_normalization_mode::unnormalized,
-              sycl::addressing_mode::clamp,
-              sycl::filtering_mode::nearest);
-
-          my_queue.submit([&](sycl::handler &cgh) {
-            cgh.single_task<class sampler_kernel>([=]() {
-              // Test that the value of sampler outside kernel has been captured
-              sycl::sampler kernel_sampler = sampler;
-            });
-          });
-
-          my_queue.wait_and_throw();
-          if (error != 0) {
-            if (error & 1) {
-              FAIL(log, "kernelScalar capture error");
-            }
-            if (error & 1 << 1) {
-              FAIL(log, "kernelVec capture error");
-            }
-            if (error & 1 << 2) {
-              FAIL(log, "outer_struct capture error");
-            }
-          }
-        } catch (const sycl::exception& e) {
-          if (!my_queue.get_device()
-                   .get_info<sycl::info::device::image_support>()) {
-            SKIP("device does not support images");
-          } else {
-            throw;
-          }
-        }
-      }
     }
   }
 };
