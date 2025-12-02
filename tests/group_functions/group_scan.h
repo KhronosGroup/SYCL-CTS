@@ -38,8 +38,6 @@ auto joint_inclusive_scan_helper(Group group, T* v_begin, T* v_end,
     return sycl::joint_inclusive_scan(group, v_begin, v_end, r_i_begin, op,
                                       I(init));
   }
-  assert((std::is_same_v<I, U> &&
-          "Without init value I and U should be the same type."));
   return (U*)sycl::joint_inclusive_scan(group, v_begin, v_end, (I*)r_i_begin,
                                         op);
 }
@@ -51,8 +49,6 @@ auto joint_exclusive_scan_helper(Group group, T* v_begin, T* v_end,
     return sycl::joint_exclusive_scan(group, v_begin, v_end, r_e_begin, I(init),
                                       op);
   }
-  assert((std::is_same_v<I, U> &&
-          "Without init value I and U should be the same type."));
   return (U*)sycl::joint_exclusive_scan(group, v_begin, v_end, (I*)r_e_begin,
                                         op);
 }
@@ -148,6 +144,9 @@ void check_scan(sycl::queue& queue, size_t size,
     sycl::buffer<U, 1> res_sycl = host_data.create_res_buffer();
     sycl::buffer<bool, 1> end_sycl = host_data.create_end_buffer();
     sycl::buffer<bool, 1> ret_type_sycl = host_data.create_ret_type_buffer();
+
+    assert((with_init || std::is_same_v<I, U>) &&
+           "Without init value I and U must be the same type.");
 
     queue
         .submit([&](sycl::handler& cgh) {
@@ -315,8 +314,6 @@ auto inclusive_scan_over_group_helper(Group group, U x, OpT op,
   if (with_init) {
     return sycl::inclusive_scan_over_group(group, x, op, T(init));
   }
-  assert((std::is_same_v<T, U> &&
-          "Without init value T and U should be the same type."));
   return sycl::inclusive_scan_over_group(group, T(x), op);
 }
 
@@ -326,8 +323,6 @@ auto exclusive_scan_over_group_helper(Group group, U x, OpT op,
   if (with_init) {
     return sycl::exclusive_scan_over_group(group, x, T(init), op);
   }
-  assert((std::is_same_v<T, U> &&
-          "Without init value T and U should be the same type."));
   return sycl::exclusive_scan_over_group(group, T(x), op);
 }
 
@@ -456,6 +451,9 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op,
     auto ret_type_sycl = host_data.create_ret_type_buffer();
     auto local_id_sycl = host_data.create_local_id_buffer();
     auto sub_group_id_sycl = host_data.create_sub_group_id_buffer();
+
+    assert((with_init || std::is_same_v<T, U>) &&
+           "Without init value T and U must be the same type.");
 
     queue
         .submit([&](sycl::handler& cgh) {

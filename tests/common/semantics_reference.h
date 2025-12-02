@@ -466,9 +466,10 @@ void check_kernel(InitFunc init_func, const std::string& type_name,
   std::size_t result_count = test_traits::result_count +
                              test_copy::result_count + test_move::result_count;
 
-  std::vector<int> results(result_count, false);
+  std::size_t result_size = result_count + 1;
+  std::vector<int> results(result_size, false);
   {
-    sycl::buffer<int> buffer(results.data(), sycl::range<1>{result_count});
+    sycl::buffer<int> buffer(results.data(), sycl::range<1>{result_size});
 
     queue.submit([&](sycl::handler& cgh) {
       auto accessor = buffer.template get_access<sycl::access_mode::write>(cgh);
@@ -484,8 +485,8 @@ void check_kernel(InitFunc init_func, const std::string& type_name,
             ptr += test_copy::result_count;
             test_move::run<storage>(ptr, t);  // last since invalidates instance
             ptr += test_move::result_count;
-            assert(static_cast<std::ptrdiff_t>(result_count) ==
-                   ptr - accessor.begin());
+            *ptr = static_cast<std::ptrdiff_t>(result_count) ==
+                   ptr - accessor.begin();
           });
     });
   }
@@ -497,7 +498,7 @@ void check_kernel(InitFunc init_func, const std::string& type_name,
   ptr += test_copy::result_count;
   test_move::evaluate(ptr);
   ptr += test_move::result_count;
-  assert(static_cast<std::ptrdiff_t>(result_count) == ptr - results.data());
+  assert(*ptr);
 }
 
 }  // namespace common_reference_semantics
