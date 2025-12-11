@@ -284,6 +284,54 @@ using is_not_a_type_pack =
  * @tparam ArgsT Parameter pack with types of arguments for functor
  * @param head The first non-pack argument to pass into the functor
  * @param args The rest of the arguments to pass into the functor
+ *
+ * @warning When using this function with an `Action` that contains Catch2 SECTIONs,
+ * be aware that any expensive operations (such as memory allocations, data
+ * initialization, or device setup) performed before or between SECTIONs will
+ * be re-executed multiple times due to Catch2's execution model.
+ *
+ * Catch2 re-runs the entire test case once for each leaf SECTION, executing
+ * only one SECTION path per run. SECTIONs can be thought of as conditional
+ * blocks that additionally trigger test case re-execution. For example:
+ *
+ * \code
+ * TEST_CASE() {
+ *   // common setup code
+ *   SECTION("A") {
+ *     SECTION("A1") { ... }
+ *     SECTION("A2") { ... }
+ *   }
+ *   SECTION("B") { ... }
+ *   // common teardown code
+ * }
+ * \endcode
+ *
+ * This is conceptually executed as:
+ * \code
+ * void run_one_section(int leaf) {
+ *   // common setup code
+ *   if (leaf == 0 || leaf == 1) { // SECTION A
+ *     if (leaf == 0) { ... }      // SECTION A1
+ *     if (leaf == 1) { ... }      // SECTION A2
+ *   }
+ *   if (leaf == 2) { ... }        // SECTION B
+ *   // common teardown code
+ * }
+ * void run_testcase() {
+ *   for (int leaf = 0; leaf < 3; ++leaf)
+ *     run_one_section(leaf);
+ * }
+ * \endcode
+ *
+ * When `for_all_combinations` iterates over multiple type combinations, each
+ * combination's setup code runs on every test case re-execution, even though
+ * only one combination's SECTION will actually execute per run. For example,
+ * if each combination performs an allocation, all allocations for all
+ * combinations are performed repeatedly, making the test suite slower.
+ *
+ * To mitigate this, wrap each combination's code (including its setup) in an
+ * outer SECTION. This ensures that expensive setup operations only execute
+ * when their corresponding inner SECTIONs are about to run.
  */
 template <template <typename...> class Action, typename... ActionArgsT,
           typename HeadT, typename... ArgsT,
