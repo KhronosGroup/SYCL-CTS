@@ -285,10 +285,10 @@ using is_not_a_type_pack =
  * @param head The first non-pack argument to pass into the functor
  * @param args The rest of the arguments to pass into the functor
  *
- * @warning When using this function with an `Action` that contains Catch2 SECTIONs,
- * be aware that any expensive operations (such as memory allocations, data
- * initialization, or device setup) performed before or between SECTIONs will
- * be re-executed multiple times due to Catch2's execution model.
+ * @warning When using this function with an `Action` that contains Catch2
+ * SECTIONs, be aware that any expensive operations (such as memory allocations,
+ * data initialization, or device setup) performed before or between SECTIONs
+ * will be re-executed multiple times due to Catch2's execution model.
  *
  * Catch2 re-runs the entire test case once for each leaf SECTION, executing
  * only one SECTION path per run. SECTIONs can be thought of as conditional

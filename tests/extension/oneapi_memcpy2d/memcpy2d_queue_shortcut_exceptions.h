@@ -65,8 +65,8 @@ class run_queue_shortcut_exceptions_tests {
 
  private:
   void run_tests(sycl::queue& queue, const std::string& t_name,
-                  const std::string& src_ptr_type_name,
-                  const std::string& dest_ptr_type_name) {
+                 const std::string& src_ptr_type_name,
+                 const std::string& dest_ptr_type_name) {
     if (!check_device_aspect_allocations<SrcPtrType, DestPtrType>(queue)) {
       SKIP(
           "Device does not support USM device allocations. "
