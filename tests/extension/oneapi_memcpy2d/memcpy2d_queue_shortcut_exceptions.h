@@ -48,6 +48,25 @@ class run_queue_shortcut_exceptions_tests {
   void operator()(sycl::queue& queue, const std::string& t_name,
                   const std::string& src_ptr_type_name,
                   const std::string& dest_ptr_type_name) {
+    // Wrap test code in an outer SECTION to avoid re-executing expensive setup
+    // operations (memory allocations, initialization) on every test case
+    // re-execution, making the test faster. See the warning in the
+    // documentation of `for_all_combinations` for more details.
+    SECTION(sycl_cts::section_name(
+                std::string("Check queue shortcut exceptions with T = ") +
+                t_name + " src_ptr_type = " + src_ptr_type_name +
+                " and"
+                " dest_ptr_type = " +
+                dest_ptr_type_name)
+                .create()) {
+      run_tests(queue, t_name, src_ptr_type_name, dest_ptr_type_name);
+    }
+  }
+
+ private:
+  void run_tests(sycl::queue& queue, const std::string& t_name,
+                 const std::string& src_ptr_type_name,
+                 const std::string& dest_ptr_type_name) {
     if (!check_device_aspect_allocations<SrcPtrType, DestPtrType>(queue)) {
       SKIP(
           "Device does not support USM device allocations. "
