@@ -35,8 +35,10 @@ class TEST_NAME : public util::test_base {
 #else
     {
       using namespace sycl::ext::oneapi::experimental;
-      properties P1{implement_in_csr<true>, device_image_scope};
-      properties P2{device_image_scope, implement_in_csr<true>};
+      properties P1{host_access<host_access_enum::read_write>,
+                    device_image_scope};
+      properties P2{device_image_scope,
+                    host_access<host_access_enum::read_write>};
       if (!std::is_same_v<decltype(P1), decltype(P2)>)
         FAIL(log,
              "property lists initialized with different order are not the same "

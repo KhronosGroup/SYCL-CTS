@@ -38,27 +38,23 @@ class TEST_NAME : public util::test_base {
       constexpr auto prop_value_device_image_scope =
           props.get_property<device_image_scope_key>();
 
-      properties props2{implement_in_csr<true>};
-      constexpr auto prop_value_implement_in_csr_true =
-          props2.get_property<implement_in_csr_key>();
+      properties props2{host_access<host_access_enum::read>};
+      constexpr auto prop_value_host_access_read =
+          props2.get_property<host_access_key>();
 
-      properties props3{implement_in_csr<false>};
-      constexpr auto prop_value_implement_in_csr_false =
-          props3.get_property<implement_in_csr_key>();
+      properties props3{host_access<host_access_enum::write>};
+      constexpr auto prop_value_host_access_write =
+          props3.get_property<host_access_key>();
 
       CHECK(prop_value_device_image_scope == prop_value_device_image_scope);
       CHECK_FALSE(prop_value_device_image_scope !=
                   prop_value_device_image_scope);
 
-      CHECK(prop_value_implement_in_csr_true ==
-            prop_value_implement_in_csr_true);
-      CHECK_FALSE(prop_value_implement_in_csr_true !=
-                  prop_value_implement_in_csr_true);
+      CHECK(prop_value_host_access_read == prop_value_host_access_read);
+      CHECK_FALSE(prop_value_host_access_read != prop_value_host_access_read);
 
-      CHECK_FALSE(prop_value_implement_in_csr_true ==
-                  prop_value_implement_in_csr_false);
-      CHECK(prop_value_implement_in_csr_true !=
-            prop_value_implement_in_csr_false);
+      CHECK_FALSE(prop_value_host_access_read == prop_value_host_access_write);
+      CHECK(prop_value_host_access_read != prop_value_host_access_write);
     }
 #endif
   }
