@@ -65,7 +65,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     test_types<std::uint64_t>(log);
 #endif
 
-#ifdef SYCL_CTS_SYCL_NEXT_TESTS
+#if SYCL_CTS_SYCL_NEXT_TESTS
 #if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP && \
     !SYCL_CTS_COMPILING_WITH_SIMSYCL && !SYCL_CTS_COMPILING_WITH_DPCPP
     // Tests are disabled because none of the implementations support them yet.
