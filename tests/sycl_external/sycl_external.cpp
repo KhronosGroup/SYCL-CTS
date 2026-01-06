@@ -87,11 +87,11 @@ class kernel_before_aspect {
 };
 
 template <sycl::aspect aspect>
-[[sycl::device_has(aspect)]] SYCL_EXTERNAL [[noreturn]] void
-between_aspects_device(const accT& acc);
+[[sycl::device_has(aspect)]] SYCL_EXTERNAL void between_aspects_device(
+    const accT& acc);
 template <sycl::aspect aspect>
-[[sycl::device_has(aspect)]] SYCL_EXTERNAL [[noreturn]] void
-between_aspects_host(hostAccT& acc);
+[[sycl::device_has(aspect)]] SYCL_EXTERNAL void between_aspects_host(
+    hostAccT& acc);
 template <int TestCase, sycl::aspect aspect>
 class kernel_between_aspects {
   accT acc;
