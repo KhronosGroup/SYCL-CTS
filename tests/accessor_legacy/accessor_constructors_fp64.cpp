@@ -23,7 +23,6 @@
 
 #include "../common/common.h"
 #include "accessor_constructors_buffer_utility.h"
-#include "accessor_constructors_image_utility.h"
 #include "accessor_constructors_local_utility.h"
 #include "accessor_types_fp64.h"
 
