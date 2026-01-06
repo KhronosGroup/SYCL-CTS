@@ -55,25 +55,25 @@ inline void precalculate<1>(sycl::range<1>& rangeIn, sycl::range<1>& rangeOut,
                             size_t elementsOut) {
   rangeIn = sycl::range<1>(elementsIn);
   rangeOut = sycl::range<1>(elementsOut);
-  elementsCount = elementsOut;
+  elementsCount = rangeOut.size();
 }
 
 template <>
 inline void precalculate<2>(sycl::range<2>& rangeIn, sycl::range<2>& rangeOut,
                             size_t& elementsCount, size_t elementsIn,
                             size_t elementsOut) {
-  rangeIn = sycl::range<2>(elementsIn, elementsIn);
-  rangeOut = sycl::range<2>(elementsOut, elementsIn);
-  elementsCount = (elementsOut * elementsIn);
+  rangeIn = sycl::range<2>(elementsIn / 2, 2);
+  rangeOut = sycl::range<2>(elementsOut / 2, 2);
+  elementsCount = rangeOut.size();
 }
 
 template <>
 inline void precalculate<3>(sycl::range<3>& rangeIn, sycl::range<3>& rangeOut,
                             size_t& elementsCount, size_t elementsIn,
                             size_t elementsOut) {
-  rangeIn = sycl::range<3>(elementsIn, elementsIn, elementsIn);
-  rangeOut = sycl::range<3>(elementsOut, elementsIn, elementsIn);
-  elementsCount = (elementsOut * elementsIn * elementsIn);
+  rangeIn = sycl::range<3>(elementsIn / 4, 2, 2);
+  rangeOut = sycl::range<3>(elementsOut / 4, 2, 2);
+  elementsCount = rangeOut.size();
 }
 
 template <typename prop, typename buffer_t>
