@@ -153,7 +153,7 @@ class TEST_NAME : public util::test_base {
           (const platform&, async_handler, const property_list&) constructors
        */
       {
-	cts_async_handler asyncHandler;
+        cts_async_handler asyncHandler;
         auto platform = util::get_cts_object::platform(cts_selector);
         sycl::context context(platform, asyncHandler);
         sycl::context context_prop(platform, asyncHandler, property_list);
@@ -196,12 +196,11 @@ class TEST_NAME : public util::test_base {
       /** Check throw when empty devices vector
        */
       {
-	 std::vector<sycl::device> deviceList;
-         CHECK_THROWS_MATCHES(sycl::context(deviceList),
-           sycl::exception,
-           sycl_cts::util::equals_exception(sycl::errc::invalid));
+        std::vector<sycl::device> deviceList;
+        CHECK_THROWS_MATCHES(
+            sycl::context(deviceList), sycl::exception,
+            sycl_cts::util::equals_exception(sycl::errc::invalid));
       }
-
     }
   }
 };
