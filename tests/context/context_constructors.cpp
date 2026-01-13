@@ -19,6 +19,7 @@
 //
 *******************************************************************************/
 
+#include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 
 #define TEST_NAME context_constructors
@@ -191,6 +192,16 @@ class TEST_NAME : public util::test_base {
         }
 #endif
       }
+
+      /** Check throw when empty devices vector
+       */
+      {
+	 std::vector<sycl::device> deviceList;
+         CHECK_THROWS_MATCHES(sycl::context(deviceList),
+           sycl::exception,
+           sycl_cts::util::equals_exception(sycl::errc::invalid));
+      }
+
     }
   }
 };
