@@ -139,6 +139,25 @@ class TEST_NAME : public util::test_base {
         check_context_after_ctor(context_prop, deviceList, log);
       }
 
+      /** check (const platform&) and
+          (const platform&, const property_list&) constructors
+       */
+      {
+        auto platform = util::get_cts_object::platform(cts_selector);
+        sycl::context context(deviceList);
+        sycl::context context_prop(deviceList, property_list);
+      }
+
+      /** check (const platform&, async_handler) and
+          (const platform&, async_handler, const property_list&) constructors
+       */
+      {
+	cts_async_handler asyncHandler;
+        auto platform = util::get_cts_object::platform(cts_selector);
+        sycl::context context(deviceList, asyncHandler);
+        sycl::context context_prop(deviceList, asyncHandler, property_list);
+      }
+
       /** check copy constructor
        */
       {
