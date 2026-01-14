@@ -145,8 +145,12 @@ class TEST_NAME : public util::test_base {
        */
       {
         auto platform = util::get_cts_object::platform(cts_selector);
+        auto deviceList = platform.get_devices();
         sycl::context context(platform);
         sycl::context context_prop(platform, property_list);
+
+        check_context_after_ctor(context, deviceList, log);
+        check_context_after_ctor(context_prop, deviceList, log);
       }
 
       /** check (const platform&, async_handler) and
@@ -155,8 +159,12 @@ class TEST_NAME : public util::test_base {
       {
         cts_async_handler asyncHandler;
         auto platform = util::get_cts_object::platform(cts_selector);
+        auto deviceList = platform.get_devices();
         sycl::context context(platform, asyncHandler);
         sycl::context context_prop(platform, asyncHandler, property_list);
+
+        check_context_after_ctor(context, deviceList, log);
+        check_context_after_ctor(context_prop, deviceList, log);
       }
 
       /** check copy constructor
