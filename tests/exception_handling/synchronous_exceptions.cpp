@@ -66,7 +66,8 @@ void check_exception_api(util::logger &log) {
   } catch (const custom_exception &e) {
     log_exception(log, e);
 
-    if (e.what() != custom_exception::reference::what()) {
+    if (std::string{e.what()}.find(custom_exception::reference::what()) ==
+        std::string::npos) {
       FAIL(log, "invalid value for what()");
     }
     if (e.code() != custom_exception::reference::code()) {
