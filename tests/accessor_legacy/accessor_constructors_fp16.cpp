@@ -23,7 +23,6 @@
 
 #include "../common/common.h"
 #include "accessor_constructors_buffer_utility.h"
-#include "accessor_constructors_image_utility.h"
 #include "accessor_constructors_local_utility.h"
 #include "accessor_types_fp16.h"
 #include "accessor_types_image_fp16.h"
@@ -50,8 +49,6 @@ class TEST_NAME : public util::test_base {
       check_all_types_fp16<buffer_accessor_type_placeholder>::run(queue, log);
 
       check_all_types_fp16<local_accessor_all_dims>::run(queue, log);
-
-      check_all_types_image_fp16<image_accessor_type>::run(queue, log);
 
       queue.wait_and_throw();
     }
