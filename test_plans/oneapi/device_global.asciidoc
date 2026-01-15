@@ -116,10 +116,6 @@ This check is run for `device_global` with following properites:
 * `host_access(write)`
 * `host_access(read_write)`
 * `host_access(none)`
-* `init_mode(reprogram)`
-* `init_mode(reset)`
-* `implement_in_csr(true)`
-* `implement_in_csr(false)`
 
 Steps:
 

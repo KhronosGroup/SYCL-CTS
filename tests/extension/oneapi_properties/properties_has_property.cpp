@@ -34,18 +34,12 @@ class TEST_NAME : public util::test_base {
 #else
     {
       using namespace sycl::ext::oneapi::experimental;
-      properties prop_list{device_image_scope, implement_in_csr<true>,
-                           host_access<host_access_enum::read>};
+      properties prop_list{device_image_scope};
 
       if (!prop_list.has_property<device_image_scope_key>())
         FAIL(log, "properties should have device_image_scope property");
-      if (!prop_list.has_property<implement_in_csr_key>())
-        FAIL(log, "properties should have implement_in_csr property");
-      if (!prop_list.has_property<host_access_key>())
-        FAIL(log, "properties should have host_access property");
-
-      if (prop_list.has_property<init_mode_key>())
-        FAIL(log, "properties shouldn't have init_mode property");
+      if (prop_list.has_property<host_access_key>())
+        FAIL(log, "properties shouldn't have host_access property");
     }
 #endif
   }

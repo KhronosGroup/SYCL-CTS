@@ -416,8 +416,7 @@ void run_tests(sycl_cts::util::logger& log, const std::string& type_name) {
   {
     using prop_key = host_access_key;
     using prop_value = host_access_key::value_t<host_access_enum::read>;
-    using other_props =
-        type_pack<device_image_scope_key, init_mode_key, implement_in_csr_key>;
+    using other_props = type_pack<device_image_scope_key>;
 
     has_property_method::run_test<T, prop_key, prop_value, other_props>(
         log, type_name);
@@ -425,26 +424,7 @@ void run_tests(sycl_cts::util::logger& log, const std::string& type_name) {
   {
     using prop_key = device_image_scope_key;
     using prop_value = device_image_scope_key::value_t;
-    using other_props =
-        type_pack<host_access_key, init_mode_key, implement_in_csr_key>;
-
-    has_property_method::run_test<T, prop_key, prop_value, other_props>(
-        log, type_name);
-  }
-  {
-    using prop_key = init_mode_key;
-    using prop_value = init_mode_key::value_t<init_mode_enum::reprogram>;
-    using other_props = type_pack<host_access_key, device_image_scope_key,
-                                  implement_in_csr_key>;
-
-    has_property_method::run_test<T, prop_key, prop_value, other_props>(
-        log, type_name);
-  }
-  {
-    using prop_key = implement_in_csr_key;
-    using prop_value = implement_in_csr_key::value_t<true>;
-    using other_props =
-        type_pack<host_access_key, device_image_scope_key, init_mode_key>;
+    using other_props = type_pack<host_access_key>;
 
     has_property_method::run_test<T, prop_key, prop_value, other_props>(
         log, type_name);
@@ -458,13 +438,8 @@ void run_tests(sycl_cts::util::logger& log, const std::string& type_name) {
     get_property_method::run_test<T, prop_key, prop_value>(log, type_name);
   }
   {
-    using prop_key = init_mode_key;
-    using prop_value = init_mode_key::value_t<init_mode_enum::reprogram>;
-    get_property_method::run_test<T, prop_key, prop_value>(log, type_name);
-  }
-  {
-    using prop_key = implement_in_csr_key;
-    using prop_value = implement_in_csr_key::value_t<true>;
+    using prop_key = device_image_scope_key;
+    using prop_value = device_image_scope_key::value_t;
     get_property_method::run_test<T, prop_key, prop_value>(log, type_name);
   }
 

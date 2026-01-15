@@ -179,31 +179,6 @@ void run_tests_with_properties(sycl_cts::util::logger& log,
                  host_access<host_access_enum::none>}),
              property_tag::host_access_none>(log, type_name);
   }
-
-  {
-    using oneapi::experimental::init_mode;
-    using oneapi::experimental::init_mode_enum;
-    // Run with different init_mode properies
-    run_test<T,
-             decltype(oneapi::experimental::properties{
-                 init_mode<init_mode_enum::reprogram>}),
-             property_tag::init_mode_trig_reprogram>(log, type_name);
-    run_test<T,
-             decltype(oneapi::experimental::properties{
-                 init_mode<init_mode_enum::reset>}),
-             property_tag::init_mode_trig_reset>(log, type_name);
-  }
-
-  {
-    using oneapi::experimental::implement_in_csr;
-    // Run with different implement_in_csr properies
-    run_test<T,
-             decltype(oneapi::experimental::properties{implement_in_csr<true>}),
-             property_tag::impl_in_csr_true>(log, type_name);
-    run_test<
-        T, decltype(oneapi::experimental::properties{implement_in_csr<false>}),
-        property_tag::impl_in_csr_false>(log, type_name);
-  }
 }
 
 }  // namespace one_kernel_multiple_times

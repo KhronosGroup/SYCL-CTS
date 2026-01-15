@@ -28,34 +28,34 @@ because of it test should be skipped if `SYCL_EXT_ONEAPI_DEVICE_GLOBAL` is not d
 
 Get prop_values from prop_lists:
 
-`property_list props1{device_image_scope_v};`
+`property_list props1{device_image_scope};`
 
-`auto prop_value1 = props.get_property<device_image_scope>();`
+`auto prop_value1 = props.get_property<device_image_scope_key>();`
 
-`property_list props2{host_access_v<A>};`
-where `A = host_access::access::read, host_access::access::write, host_access::access::read_write, host_access::access::none`
+`property_list props2{host_access<A>};`
+where `A = host_access_enum::read, host_access_enum::write, host_access_enum::read_write, host_access_enum::none`
 
-`auto prop_value_A = props.get_property<host_access>();`
+`auto prop_value_A = props.get_property<host_access_key>();`
 
 Check that for `prop_value1` members `value` and `value_t` are not available.
 
-Check that for every `A` `prop_value_A` member `value` is `A` and member `value_t` is `host_access::access`.
+Check that for every `A` `prop_value_A` member `value` is `A` and member `value_t` is `host_access_enum`.
 
 === Tests for equality and inequality operators for properties
 
 Get prop_values from prop_lists:
 
-`property_list props1{device_image_scope_v};`
+`property_list props1{device_image_scope};`
 
-`auto prop_value_device_image_scope = props.get_property<device_image_scope>();`
+`auto prop_value_device_image_scope = props.get_property<device_image_scope_key>();`
 
-`property_list props2{implement_in_csr_v<true>};`
+`property_list props2{host_access<host_access_enum::read>};`
 
-`auto prop_value_implement_in_csr_true = props.get_property<implement_in_csr_v>();`
+`auto prop_value_host_access_read = props2.get_property<host_access_key>();`
 
-`property_list props3{implement_in_csr_v<false>};`
+`property_list props3{host_access<host_access_enum::write>};`
 
-`auto prop_value_implement_in_csr_false = props.get_property<implement_in_csr_v>();`
+`auto prop_value_host_access_write = props3.get_property<host_access_key>();`
 
 Check constexpr correctness if required and result for operators:
 
@@ -73,33 +73,33 @@ constexpr bool operator==(property_value<Prop, A...> V1, property_value<Prop, B.
 | `true`
 
 |`template <class Prop, class...A, class...B>
+constexpr bool operator!=(property_value<Prop, A...> V1, property_value<Prop, B...> V2)`
+|`prop_value_device_image_scope`
+|`prop_value_device_image_scope`
+| `false`
+
+|`template <class Prop, class...A, class...B>
 constexpr bool operator==(property_value<Prop, A...> V1, property_value<Prop, B...> V2)`
-|`prop_value_implement_in_csr_true`
-|`prop_value_implement_in_csr_true`
+|`prop_value_host_access_read`
+|`prop_value_host_access_read`
 | `true`
 
 |`template <class Prop, class...A, class...B>
+constexpr bool operator!=(property_value<Prop, A...> V1, property_value<Prop, B...> V2)`
+|`prop_value_host_access_read`
+|`prop_value_host_access_read`
+| `false`
+
+|`template <class Prop, class...A, class...B>
 constexpr bool operator==(property_value<Prop, A...> V1, property_value<Prop, B...> V2)`
-|`prop_value_implement_in_csr_true`
-|`prop_value_implement_in_csr_false`
+|`prop_value_host_access_read`
+|`prop_value_host_access_write`
 | `false`
 
 |`template <class Prop, class...A, class...B>
 constexpr bool operator!=(property_value<Prop, A...> V1, property_value<Prop, B...> V2)`
-|`prop_value_device_image_scope`
-|`prop_value_device_image_scope`
-| `false`
-
-|`template <class Prop, class...A, class...B>
-constexpr bool operator!=(property_value<Prop, A...> V1, property_value<Prop, B...> V2)`
-|`prop_value_implement_in_csr_false`
-|`prop_value_implement_in_csr_false`
-| `false`
-
-|`template <class Prop, class...A, class...B>
-constexpr bool operator!=(property_value<Prop, A...> V1, property_value<Prop, B...> V2)`
-|`prop_value_implement_in_csr_true`
-|`prop_value_implement_in_csr_false`
+|`prop_value_host_access_read`
+|`prop_value_host_access_write`
 | `true`
 
 |===
@@ -108,17 +108,15 @@ constexpr bool operator!=(property_value<Prop, A...> V1, property_value<Prop, B.
 
 ==== has_property
 
-Create property_list with `property_list P1{device_image_scope_v, implement_in_csr_v<true>, host_access_v<access:read>}`
+Create property_list with `property_list P1{device_image_scope}`
 and check P1.has_property<T> returns:
 
-* `true` for `T = device_image_scope`
-* `true` for `T = implement_in_csr`
-* `true` for `T = host_access`
-* `false` for `T = init_mode`
+* `true` for `T = device_image_scope_key`
+* `false` for `T = host_access_key`
 
 === Tests for is_property_list
 
-* Create property_list with `property_list props{device_image_scope_v, implement_in_csr_v<true>}`
+* Create property_list with `property_list props{device_image_scope, host_access<host_access_enum::read_write>}`
 * Check that `is_property_list<decltype(props)>` is `std::true_type`
 * Check that `is_property_list_v<decltype(props)>` is `true`
 
@@ -128,30 +126,24 @@ and check P1.has_property<T> returns:
 
 === Different order
 
-* Call property_list constructor `property_list P1{implement_in_csr_v<true>, device_image_scope_v}`
-* Call property_list constructor `property_list P2{device_image_scope_v, implement_in_csr_v<true>}`
+* Call property_list constructor `property_list P1{host_access<host_access_enum::read_write>, device_image_scope}`
+* Call property_list constructor `property_list P2{device_image_scope, host_access<host_access_enum::read_write>}`
 * Check that `std::is_same_v<decltype(P1), decltype(P2)>` is `true`.
 
 === is_property
 
 * Check that `is_property<device_image_scope>` is `std::true_type`
 * Check that `is_property<host_access>` is `std::true_type`
-* Check that `is_property<init_mode>` is `std::true_type`
-* Check that `is_property<device_image_scope>` is `std::true_type`
 
 === is_device_copyable
 
 ==== is_device_copyable for compile-time-constant properties
 
 * Check that `is_device_copyable<device_image_scope::value_t>` is `std::true_type`
-* Check that `is_device_copyable<host_access::value_t<access::read>>` is `std::true_type`
-* Check that `is_device_copyable<host_access::value_t<access::write>>` is `std::true_type`
-* Check that `is_device_copyable<host_access::value_t<access::read_write>>` is `std::true_type`
-* Check that `is_device_copyable<host_access::value_t<access::none>>` is `std::true_type`
-* Check that `is_device_copyable<init_mode::value_t<trigger::reprogram>>` is `std::true_type`
-* Check that `is_device_copyable<init_mode::value_t<trigger::reset>>` is `std::true_type`
-* Check that `is_device_copyable<implement_in_csr::value_t<true>>` is `std::true_type`
-* Check that `is_device_copyable<implement_in_csr::value_t<false>>` is `std::true_type`
+* Check that `is_device_copyable<host_access::value_t<host_access_enum::read>>` is `std::true_type`
+* Check that `is_device_copyable<host_access::value_t<host_access_enum::write>>` is `std::true_type`
+* Check that `is_device_copyable<host_access::value_t<host_access_enum::read_write>>` is `std::true_type`
+* Check that `is_device_copyable<host_access::value_t<host_access_enum::none>>` is `std::true_type`
 
 ==== is_device_copyable for empty property_list
 
@@ -160,5 +152,5 @@ and check P1.has_property<T> returns:
 
 ==== is_device_copyable for property_list with only compile-time-constant properties
 
-* Create property_list `property_list P2{implement_in_csr_v<true>, device_image_scope_v}`
+* Create property_list `property_list P2{host_access<host_access_enum::read_write>, device_image_scope}`
 * Check that `is_device_copyable<decltype(P2)>` is `std::true_type`
