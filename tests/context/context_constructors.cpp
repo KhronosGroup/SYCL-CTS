@@ -19,6 +19,7 @@
 //
 *******************************************************************************/
 
+#include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 
 #define TEST_NAME context_constructors
@@ -33,6 +34,20 @@ class TEST_NAME : public util::test_base {
    */
   void get_info(test_base::info& out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
+  }
+
+  void check_device_list_before_ctor(std::vector<sycl::device>& deviceList) {
+    if (deviceList.size() == 0) {
+      SKIP(
+          "Context constructor using deviceList assume a non-empty device "
+          "list");
+    }
+  }
+
+  void check_platform_before_ctor(sycl::platform& platform) {
+    if (platform.get_devices().size() == 0) {
+      SKIP("Context constructor using platform assume a non-empty platform");
+    }
   }
 
   void check_context_after_ctor(sycl::context& context,
@@ -117,6 +132,9 @@ class TEST_NAME : public util::test_base {
       {
         auto platform = util::get_cts_object::platform(cts_selector);
         auto deviceList = platform.get_devices();
+
+        check_device_list_before_ctor(deviceList);
+
         sycl::context context(deviceList);
         sycl::context context_prop(deviceList, property_list);
 
@@ -132,8 +150,44 @@ class TEST_NAME : public util::test_base {
         cts_async_handler asyncHandler;
         auto platform = util::get_cts_object::platform(cts_selector);
         auto deviceList = platform.get_devices();
+
+        check_device_list_before_ctor(deviceList);
+
         sycl::context context(deviceList, asyncHandler);
         sycl::context context_prop(deviceList, asyncHandler, property_list);
+
+        check_context_after_ctor(context, deviceList, log);
+        check_context_after_ctor(context_prop, deviceList, log);
+      }
+
+      /** check (const platform&) and
+          (const platform&, const property_list&) constructors
+       */
+      {
+        auto platform = util::get_cts_object::platform(cts_selector);
+        auto deviceList = platform.get_devices();
+
+        check_platform_before_ctor(platform);
+
+        sycl::context context(platform);
+        sycl::context context_prop(platform, property_list);
+
+        check_context_after_ctor(context, deviceList, log);
+        check_context_after_ctor(context_prop, deviceList, log);
+      }
+
+      /** check (const platform&, async_handler) and
+          (const platform&, async_handler, const property_list&) constructors
+       */
+      {
+        cts_async_handler asyncHandler;
+        auto platform = util::get_cts_object::platform(cts_selector);
+        auto deviceList = platform.get_devices();
+
+        check_platform_before_ctor(platform);
+
+        sycl::context context(platform, asyncHandler);
+        sycl::context context_prop(platform, asyncHandler, property_list);
 
         check_context_after_ctor(context, deviceList, log);
         check_context_after_ctor(context_prop, deviceList, log);
@@ -171,6 +225,15 @@ class TEST_NAME : public util::test_base {
           }
         }
 #endif
+      }
+
+      /** Check throw when empty devices vector
+       */
+      {
+        std::vector<sycl::device> deviceList;
+        CHECK_THROWS_MATCHES(
+            sycl::context(deviceList), sycl::exception,
+            sycl_cts::util::equals_exception(sycl::errc::invalid));
       }
     }
   }
