@@ -36,7 +36,8 @@ class TEST_NAME : public util::test_base {
 #else
     {
       using namespace sycl::ext::oneapi::experimental;
-      properties prop_list{device_image_scope, implement_in_csr<true>};
+      properties prop_list{device_image_scope,
+                           host_access<host_access_enum::read_write>};
 
       if (!std::is_base_of_v<std::true_type,
                              is_property_list<decltype(prop_list)>>)

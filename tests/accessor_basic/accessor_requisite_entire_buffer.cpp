@@ -73,7 +73,7 @@ TEST_CASE("requisite for the entire underlying buffer for sycl::accessor ",
           data_buf, cgh, sycl::range<1>(1), sycl::id<1>(offset_size));
       cgh.single_task<class kernel_check>([=] {
         *check_data = accessor_tests_common::changed_val;
-        auto v = acc[offset_size];
+        auto v = acc[0];
       });
     });
     q.wait_and_throw();

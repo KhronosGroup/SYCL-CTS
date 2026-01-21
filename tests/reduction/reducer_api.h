@@ -175,13 +175,13 @@ struct check_reducer_subscript {
                 auto& res_combine = reducer[0].combine(val);
                 acc_results[i++] = std::is_same_v<
                     std::remove_reference_t<decltype(res_combine)>,
-                    decltype(reducer[0])>;
+                    std::remove_reference_t<decltype(reducer[0])>>;
                 // OperatorT is sycl::plus, so checking the result of += member
                 // function
                 auto& res_plus = reducer[0] += val;
-                acc_results[i++] =
-                    std::is_same_v<std::remove_reference_t<decltype(res_plus)>,
-                                   decltype(reducer[0])>;
+                acc_results[i++] = std::is_same_v<
+                    std::remove_reference_t<decltype(res_plus)>,
+                    std::remove_reference_t<decltype(reducer[0])>>;
               }
 
               assert(i == result_count);
