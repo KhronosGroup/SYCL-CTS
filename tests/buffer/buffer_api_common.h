@@ -62,6 +62,9 @@ template <>
 inline void precalculate<2>(sycl::range<2>& rangeIn, sycl::range<2>& rangeOut,
                             size_t& elementsCount, size_t elementsIn,
                             size_t elementsOut) {
+  assert((elementsIn % 2 == 0) && (elementsOut % 2 == 0) &&
+         "elementsIn and elementsOut must be even "
+         "numbers for 2D buffer precalculation");
   rangeIn = sycl::range<2>(elementsIn / 2, 2);
   rangeOut = sycl::range<2>(elementsOut / 2, 2);
   elementsCount = rangeOut.size();
@@ -71,6 +74,9 @@ template <>
 inline void precalculate<3>(sycl::range<3>& rangeIn, sycl::range<3>& rangeOut,
                             size_t& elementsCount, size_t elementsIn,
                             size_t elementsOut) {
+  assert((elementsIn % 4 == 0) && (elementsOut % 4 == 0) &&
+         "elementsIn and elementsOut must be multiples of 4 "
+         "numbers for 3D buffer precalculation");
   rangeIn = sycl::range<3>(elementsIn / 4, 2, 2);
   rangeOut = sycl::range<3>(elementsOut / 4, 2, 2);
   elementsCount = rangeOut.size();
