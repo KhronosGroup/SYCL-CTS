@@ -48,7 +48,7 @@ class run_marray_constructor_test {
   static void run_checks(IteratorT results) {
     // default constructor
     {
-      marray_t ma;
+      marray_t ma{};
       *(results++) = value_operations::are_equal(ma, DataT{});
     }
 

@@ -170,7 +170,7 @@ private_multi_ptr_load_store_test_template = Template(
             sycl::local_accessor<${type}> swizzleInLocalPtr${type_as_str}${size}(${size}, cgh);
             sycl::local_accessor<${type}> swizzleOutLocalPtr${type_as_str}${size}(${size}, cgh);
 
-            cgh.single_task<class ${kernelName}>([=]() {
+            cgh.parallel_for<class ${kernelName}>(sycl::nd_range<1>(sycl::range<1>(1), sycl::range<1>(1)), [=](sycl::nd_item<1>) {
               ${type} inPrivatePtr${type_as_str}${size}[${size}];
               ${type} outPrivatePtr${type_as_str}${size}[${size}];
 

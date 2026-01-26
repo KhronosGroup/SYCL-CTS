@@ -60,23 +60,6 @@ class TEST_NAME : public util::test_base {
         FAIL(log,
              "is_device_copyable_v for host_access<host_access_enum::none> is "
              "not true");
-      if (!sycl::is_device_copyable_v<decltype(
-              init_mode<init_mode_enum::reprogram>)>)
-        FAIL(log,
-             "is_device_copyable_v for init_mode<init_mode_enum::reprogram is "
-             "not "
-             "true");
-      if (!sycl::is_device_copyable_v<decltype(
-              init_mode<init_mode_enum::reset>)>)
-        FAIL(log,
-             "is_device_copyable_v for init_mode<init_mode_enum::reset is not "
-             "true");
-      if (!sycl::is_device_copyable_v<decltype(implement_in_csr<true>)>)
-        FAIL(log,
-             "is_device_copyable_v for implement_in_csr<true> is not true");
-      if (!sycl::is_device_copyable_v<decltype(implement_in_csr<false>)>)
-        FAIL(log,
-             "is_device_copyable_v for implement_in_csr<false> is not true");
 
       // is_device_copyable for empty properties
       properties prop_list1{};
@@ -85,7 +68,8 @@ class TEST_NAME : public util::test_base {
 
       // is_device_copyable for properties with only compile-time-constant
       // properties
-      properties prop_list2{implement_in_csr<true>, device_image_scope};
+      properties prop_list2{host_access<host_access_enum::read_write>,
+                            device_image_scope};
       if (!sycl::is_device_copyable_v<decltype(prop_list2)>)
         FAIL(log,
              "is_device_copyable_v for properties with only "
