@@ -89,7 +89,9 @@ set_target_properties(DPCPP::Runtime PROPERTIES
 
 set(CMAKE_CXX_COMPILER ${DPCPP_CXX_EXECUTABLE})
 # Use DPC++ compiler instead of default linker for building SYCL application
-set(CMAKE_CXX_LINK_EXECUTABLE "${DPCPP_CXX_EXECUTABLE} <FLAGS> <OBJECTS> -o <TARGET> \
+# Using the placeholder syntax as otherwise cmake won't expand this as a placeholder.
+# Which in the case of cross-compilation would bypass setting --target or --sysroot.
+set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> <FLAGS> <OBJECTS> -o <TARGET> \
     <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <LINK_LIBRARIES>")
 
 function(add_sycl_to_target)
