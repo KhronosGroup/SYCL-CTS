@@ -225,6 +225,7 @@ static test_exception_handler teh1;
 static test_exception_handler teh2;
 
 TEST_CASE("event::wait does not report asynchronous errors", "[event]") {
+  teh1.clear();
   auto e = make_throwing_host_event(teh1.get_queue(), "some-error");
 
   SECTION("event::wait") { e.wait(); }
@@ -235,10 +236,10 @@ TEST_CASE("event::wait does not report asynchronous errors", "[event]") {
   CHECK(teh1.count() == 0);
   // Queue destruction does not flush unconsumed exceptions so do it manually.
   e.wait_and_throw();
-  teh1.clear();
 }
 
 TEST_CASE("event::wait_and_throw reports asynchronous errors", "[event]") {
+  teh1.clear();
   auto e = make_throwing_host_event(teh1.get_queue(), "some-error");
 
   SECTION("event::wait_and_throw") { e.wait_and_throw(); }
@@ -248,12 +249,12 @@ TEST_CASE("event::wait_and_throw reports asynchronous errors", "[event]") {
 
   CHECK(teh1.count() == 1);
   CHECK(teh1.has("some-error"));
-  teh1.clear();
 }
 
 TEST_CASE(
     "event::wait_and_throw reports asynchronous errors from related events",
     "[event]") {
+  teh1.clear();
   auto e1 = make_throwing_host_event(teh1.get_queue(), "some-error");
   auto e2 = make_throwing_host_event(teh1.get_queue(), "another-error", {e1});
 
@@ -268,7 +269,6 @@ TEST_CASE(
   CHECK(teh1.count() == 2);
   CHECK(teh1.has("some-error"));
   CHECK(teh1.has("another-error"));
-  teh1.clear();
 }
 
 // TODO SPEC: It is unclear what "any unconsumed error [...] will be passed to
@@ -282,7 +282,8 @@ TEST_CASE(
     "corresponding queues",
     "[event][todo-spec][!mayfail]") {
   REQUIRE(teh1.get_queue() != teh2.get_queue());
-
+  teh1.clear();
+  teh2.clear();
   auto e1 = make_throwing_host_event(teh1.get_queue(), "some-error");
   auto e2 = make_throwing_host_event(teh2.get_queue(), "another-error", {e1});
 
@@ -296,12 +297,11 @@ TEST_CASE(
 
   CHECK(teh1.count() == 1);
   CHECK(teh1.has("some-error"));
-  teh1.clear();
-  teh2.clear();
 }
 
 TEST_CASE("event::wait_and_throw only reports unconsumed asynchronous errors",
           "[event]") {
+  teh1.clear();
   make_throwing_host_event(teh1.get_queue(), "some-error").wait_and_throw();
   teh1.clear();
 
@@ -314,7 +314,6 @@ TEST_CASE("event::wait_and_throw only reports unconsumed asynchronous errors",
 
   CHECK(teh1.count() == 1);
   CHECK(teh1.has("another-error"));
-  teh1.clear();
 }
 
 TEST_CASE("event::get_info returns correct command execution status",
