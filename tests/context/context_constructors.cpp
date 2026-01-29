@@ -19,6 +19,7 @@
 //
 *******************************************************************************/
 
+#include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 
 #define TEST_NAME context_constructors
@@ -117,6 +118,7 @@ class TEST_NAME : public util::test_base {
       {
         auto platform = util::get_cts_object::platform(cts_selector);
         auto deviceList = platform.get_devices();
+
         sycl::context context(deviceList);
         sycl::context context_prop(deviceList, property_list);
 
@@ -132,8 +134,38 @@ class TEST_NAME : public util::test_base {
         cts_async_handler asyncHandler;
         auto platform = util::get_cts_object::platform(cts_selector);
         auto deviceList = platform.get_devices();
+
         sycl::context context(deviceList, asyncHandler);
         sycl::context context_prop(deviceList, asyncHandler, property_list);
+
+        check_context_after_ctor(context, deviceList, log);
+        check_context_after_ctor(context_prop, deviceList, log);
+      }
+
+      /** check (const platform&) and
+          (const platform&, const property_list&) constructors
+       */
+      {
+        auto platform = util::get_cts_object::platform(cts_selector);
+        auto deviceList = platform.get_devices();
+
+        sycl::context context(platform);
+        sycl::context context_prop(platform, property_list);
+
+        check_context_after_ctor(context, deviceList, log);
+        check_context_after_ctor(context_prop, deviceList, log);
+      }
+
+      /** check (const platform&, async_handler) and
+          (const platform&, async_handler, const property_list&) constructors
+       */
+      {
+        cts_async_handler asyncHandler;
+        auto platform = util::get_cts_object::platform(cts_selector);
+        auto deviceList = platform.get_devices();
+
+        sycl::context context(platform, asyncHandler);
+        sycl::context context_prop(platform, asyncHandler, property_list);
 
         check_context_after_ctor(context, deviceList, log);
         check_context_after_ctor(context_prop, deviceList, log);
@@ -171,6 +203,15 @@ class TEST_NAME : public util::test_base {
           }
         }
 #endif
+      }
+
+      /** Check throw when empty devices vector
+       */
+      {
+        std::vector<sycl::device> deviceList;
+        CHECK_THROWS_MATCHES(
+            sycl::context(deviceList), sycl::exception,
+            sycl_cts::util::equals_exception(sycl::errc::invalid));
       }
     }
   }
