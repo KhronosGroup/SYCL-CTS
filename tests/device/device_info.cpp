@@ -110,8 +110,10 @@ TEST_CASE("device info", "[device]") {
                          uint32_t>(dev);
     check_get_info_param<sycl::info::device::preferred_vector_width_long,
                          uint32_t>(dev);
+#if !SYCL_CTS_COMPILING_WITH_SIMSYCL && !SYCL_CTS_COMPILING_WITH_DPCPP
     check_get_info_param<sycl::info::device::preferred_vector_width_long_long,
                          uint32_t>(dev);
+#endif
     check_get_info_param<sycl::info::device::preferred_vector_width_float,
                          uint32_t>(dev);
     check_get_info_param<sycl::info::device::preferred_vector_width_double,
@@ -126,8 +128,10 @@ TEST_CASE("device info", "[device]") {
         dev);
     check_get_info_param<sycl::info::device::native_vector_width_long,
                          uint32_t>(dev);
+#if !SYCL_CTS_COMPILING_WITH_SIMSYCL && !SYCL_CTS_COMPILING_WITH_DPCPP
     check_get_info_param<sycl::info::device::native_vector_width_long_long,
                          uint32_t>(dev);
+#endif
     check_get_info_param<sycl::info::device::native_vector_width_float,
                          uint32_t>(dev);
     check_get_info_param<sycl::info::device::native_vector_width_double,
