@@ -11,6 +11,7 @@
 *******************************************************************************/
 
 #include "../../common/common.h"
+#include "../../common/cts_selector.h"
 #include "../../common/type_coverage.h"
 #include "device_global_common.h"
 #include "type_pack.h"
@@ -134,6 +135,8 @@ void run_test(util::logger& log, const std::string& type_name) {
   for (auto& platform : platforms) {
     auto cur_platform_devices = platform.get_devices();
     for (const auto& device : cur_platform_devices) {
+      // Respect the device filter
+      if (cts_selector(device) < 0) continue;
       // Try to partition device into subdevices
       auto subdevices = try_to_get_sub_devices(device);
       if (subdevices.size() > 1) {
