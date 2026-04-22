@@ -56,7 +56,7 @@ jobs:
       matrix:
         include:
           - sycl-impl: dpcpp
-            version: 2025-05-01
+            version: 2026-04-22
           - sycl-impl: adaptivecpp
             version: fcd26a61b600cd4b653724e59e72d4f7d1da259c
           - sycl-impl: simsycl
@@ -116,7 +116,7 @@ jobs:
       matrix:
         include:
           - sycl-impl: dpcpp
-            version: 2025-05-01
+            version: 2026-04-22
           - sycl-impl: adaptivecpp
             version: fcd26a61b600cd4b653724e59e72d4f7d1da259c
           - sycl-impl: simsycl
