@@ -162,8 +162,6 @@ template <typename T>
 void test_unified_shared_memory(sycl::queue q, unsigned int element_count) {
   const bool has_usm_device_allocations =
       q.get_device().has(sycl::aspect::usm_device_allocations);
-  const bool has_usm_shared_allocations =
-      q.get_device().has(sycl::aspect::usm_shared_allocations);
 
   runner_memcpy<T> runner(q, element_count);
 
@@ -234,10 +232,16 @@ void test_unified_shared_memory(sycl::queue q, unsigned int element_count) {
         "Device does not support USM device allocations. "
         "Skipping the test case.");
   }
+}
 
-  // prefetch
+template <typename T>
+void test_prefetch(sycl::queue q, unsigned int element_count) {
+  const bool has_usm_shared_allocations =
+      q.get_device().has(sycl::aspect::usm_shared_allocations);
+
   if (has_usm_shared_allocations) {
-    T* ptr = sycl::malloc_shared<T>(element_count, q);
+    const T* ptr =
+        static_cast<const T*>(sycl::malloc_shared<T>(element_count, q));
     sycl::event prefetch_no_events = q.prefetch(ptr, element_count * sizeof(T));
     sycl::event prefetch_single_event =
         q.prefetch(ptr, element_count * sizeof(T), prefetch_no_events);
@@ -246,16 +250,22 @@ void test_unified_shared_memory(sycl::queue q, unsigned int element_count) {
                    {prefetch_no_events, prefetch_single_event});
     prefetch_multiple_events.wait();
     prefetch_no_events.wait();
-    sycl::free(ptr, q);
+    sycl::free(const_cast<T*>(ptr), q);
   } else {
     WARN(
         "Device does not support USM shared allocations. "
         "Skipping the test case.");
   }
+}
 
-  // advise
+template <typename T>
+void test_mem_advise(sycl::queue q, unsigned int element_count) {
+  const bool has_usm_device_allocations =
+      q.get_device().has(sycl::aspect::usm_device_allocations);
+
   if (has_usm_device_allocations) {
-    T* ptr = sycl::malloc_device<T>(element_count, q);
+    const T* ptr =
+        static_cast<const T*>(sycl::malloc_device<T>(element_count, q));
     constexpr int advice = 0;
     sycl::event advise_no_events =
         q.mem_advise(ptr, element_count * sizeof(T), advice);
@@ -266,7 +276,7 @@ void test_unified_shared_memory(sycl::queue q, unsigned int element_count) {
                      {advise_no_events, advise_single_event});
     advise_multiple_events.wait();
     advise_no_events.wait();
-    sycl::free(ptr, q);
+    sycl::free(const_cast<T*>(ptr), q);
   } else {
     WARN(
         "Device does not support USM device allocations. "
@@ -283,6 +293,10 @@ class check_queue_shortcuts_usm_for_type {
     INFO("for type \"" << type_name << "\": ");
 
     test_unified_shared_memory<T>(queue, element_count);
+#if !SYCL_CTS_COMPILING_WITH_SIMSYCL
+    test_prefetch<T>(queue, element_count);
+    test_mem_advise<T>(queue, element_count);
+#endif
   }
 };
 

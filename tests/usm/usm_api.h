@@ -416,7 +416,7 @@ class prefetch : public detail::noAdditionalDeviceRequirements {
   }
 
   template <typename parentT, typename... depEventsT>
-  auto call(parentT &parent, T *ptr, depEventsT &&... events) const {
+  auto call(parentT& parent, const T* ptr, depEventsT&&... events) const {
     return parent.prefetch(ptr, size, std::forward<depEventsT>(events)...);
   }
 
@@ -444,7 +444,7 @@ class mem_advise : public detail::noAdditionalDeviceRequirements {
   }
 
   template <typename parentT, typename... depEventsT>
-  auto call(parentT &parent, T *ptr, depEventsT &&... events) const {
+  auto call(parentT& parent, const T* ptr, depEventsT&&... events) const {
     const int advice = 0;  // Reset to defaults according to the SYCL 2020 spec
     return parent.mem_advise(ptr, size, advice,
                              std::forward<depEventsT>(events)...);
