@@ -2,9 +2,10 @@
 set -o errexit -o pipefail -o noclobber -o nounset
 cmake . -G Ninja -B build \
     -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-    -DSYCL_IMPLEMENTATION=ProtoSYCL \
-    -DCMAKE_PREFIX_PATH=/sycl \
+    -DCMAKE_CXX_COMPILER=/ProtoSYCL/build/sycl++ \
+    -DCMAKE_CXX_STANDARD=23 \
     -DCMAKE_BUILD_TYPE=Release \
+    -DSYCL_IMPLEMENTATION=ProtoSYCL \
     -DSYCL_CTS_ENABLE_FULL_CONFORMANCE=OFF \
     -DSYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS=OFF \
     -DSYCL_CTS_ENABLE_CUDA_INTEROP_TESTS=OFF \
