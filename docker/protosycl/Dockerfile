@@ -4,14 +4,16 @@ ARG IMPL_VERSION
 RUN test -n "$IMPL_VERSION" || ( echo "Error: IMPL_VERSION is not set"; exit 1 )
 
 # Install dependencies.
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    software-properties-common && \
+    add-apt-repository ppa:ubuntu-toolchain-r/test && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
     wget \
     gnupg \
     lsb-release \
     g++-15 \
-    software-properties-common && \
     rm -rf /var/lib/apt/lists/*
 
 # Install LLVM 22.
