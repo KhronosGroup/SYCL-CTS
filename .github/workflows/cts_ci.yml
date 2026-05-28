@@ -62,7 +62,7 @@ jobs:
           - sycl-impl: simsycl
             version: 960c155109b066b26c1ecb6b2348ff9f6b69704d
           - sycl-impl: protosycl
-            version: c57f50ceb66d33376d141de45fce6b1e7826f8ac
+            version: 6e0e5b2c7b7ba94bded686dda34ca707294d394a
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -124,7 +124,7 @@ jobs:
           - sycl-impl: simsycl
             version: 960c155109b066b26c1ecb6b2348ff9f6b69704d
           - sycl-impl: protosycl
-            version: c57f50ceb66d33376d141de45fce6b1e7826f8ac
+            version: 6e0e5b2c7b7ba94bded686dda34ca707294d394a
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
       parallel-build-jobs: 2
