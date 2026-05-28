@@ -13,7 +13,7 @@ RUN apt-get update && \
     wget \
     gnupg \
     lsb-release \
-    g++-15 \
+    g++-15 && \
     rm -rf /var/lib/apt/lists/*
 
 # Install LLVM 22.
