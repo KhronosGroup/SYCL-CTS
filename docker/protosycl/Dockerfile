@@ -3,13 +3,14 @@ FROM khronosgroup/sycl-cts-ci:common
 ARG IMPL_VERSION
 RUN test -n "$IMPL_VERSION" || ( echo "Error: IMPL_VERSION is not set"; exit 1 )
 
-# Install LLVM script dependencies.
-RUN apt-get update && \
+# Install dependencies.
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
     wget \
     gnupg \
     lsb-release \
-    g++-14 \
+    g++-15 \
     software-properties-common && \
     rm -rf /var/lib/apt/lists/*
 
