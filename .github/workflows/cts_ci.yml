@@ -221,6 +221,7 @@ jobs:
       - name: Run the tests
         working-directory: ${{ env.container-workspace }}
         run: |
+          chmod -R +x bin/
           find bin/ -type f -executable | while read -r binary; do
             echo "=== Running test category: $binary ==="
             "$binary"
