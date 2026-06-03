@@ -127,7 +127,7 @@ jobs:
             version: f48ad43d9c1f85d6ac5cc3abb00ee764d7f1edbd
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
-      parallel-build-jobs: 2
+      parallel-build-jobs: 4
     container:
       image: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
     steps:
@@ -210,7 +210,6 @@ jobs:
             version: f48ad43d9c1f85d6ac5cc3abb00ee764d7f1edbd
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
-      parallel-build-jobs: 2
     container:
       image: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
     steps:
