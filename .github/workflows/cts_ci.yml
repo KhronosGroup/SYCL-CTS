@@ -176,6 +176,11 @@ jobs:
         with:
           name: build-times-${{ matrix.sycl-impl }}
           path: ${{ env.container-workspace }}/build/build_times.log
+      - name: Upload test binaries artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-binaries-${{ matrix.sycl-impl }}
+          path: ${{ env.container-workspace }}/build/bin
 
   # This job simply summarizes the results of the "compile-cts" matrix build job above.
   # It can then be used in a branch protection rule instead of having to enumerate all
@@ -190,5 +195,49 @@ jobs:
           if [[ "${{ needs.compile-cts.result }}" == "success" ]]; then
             exit 0
           else
+            exit 1
+          fi
+
+  run-cts:
+    needs: cts-compiles-for-all-implementations
+    if: needs.cts-compiles-for-all-implementations.result == 'success'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - sycl-impl: protosycl
+            version: f48ad43d9c1f85d6ac5cc3abb00ee764d7f1edbd
+    env:
+      container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+      parallel-build-jobs: 2
+    container:
+      image: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
+    steps:
+      - name: Download test binaries artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: test-binaries-${{ matrix.sycl-impl }}
+          path: ${{ env.container-workspace }}/bin
+      - name: Run the tests
+        working-directory: ${{ env.container-workspace }}
+        run: |
+          find bin/ -type f -executable | while read -r binary; do
+            echo "=== Running test category: $binary ==="
+            "$binary"
+          done
+
+  cts-passes-for-all-implementations:
+    needs: run-cts
+    if: always()
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Summarize matrix test results
+        run: |
+          if [[ "${{ needs.run-cts.result }}" == "success" ]]; then
+            echo "CTS tests succeeded for all implementations. Ready to run tests in separate workflow."
+            exit 0
+          else
+            echo "CTS tests failed for at least one implementation. Please check the 'run-cts' job for details."
             exit 1
           fi
