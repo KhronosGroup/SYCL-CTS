@@ -519,8 +519,7 @@ sycl::half fdim(sycl::half a, sycl::half b) {
     double resd = static_cast<double>(a) - static_cast<double>(b);
     sycl::half res = static_cast<sycl::half>(resd);
     double diff = resd - static_cast<double>(res);
-    sycl::half next =
-        reference::nextafter(res, static_cast<sycl::half>(DBL_MAX * diff));
+    sycl::half next = nextafter(res, static_cast<sycl::half>(DBL_MAX * diff));
     if (static_cast<double>(next) - resd == diff) {
       int16_t rep;
       type_punn(next, rep);
@@ -533,8 +532,7 @@ sycl::half fdim(sycl::half a, sycl::half b) {
 
 sycl::half fract(sycl::half a, sycl::half* b) {
   *b = std::floor(a);
-  return std::fmin(a - *b,
-                   reference::nextafter(sycl::half(1.0), sycl::half(0.0)));
+  return std::fmin(a - *b, nextafter(sycl::half(1.0), sycl::half(0.0)));
 }
 
 sycl::half nan(unsigned short a) { return nan(unsigned(a)); }
