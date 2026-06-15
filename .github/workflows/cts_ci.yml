@@ -142,7 +142,7 @@ jobs:
             -DSYCL_CTS_EXCLUDE_TEST_CATEGORIES="${{ env.container-workspace }}/ci/${{ matrix.sycl-impl }}.filter" \
             -DSYCL_CTS_MEASURE_BUILD_TIMES=ON
       - name: Set up ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: ${{ env.container-workspace }}/.ccache
           key: ${{ matrix.sycl-impl }}-ccache-${{ github.sha }}
@@ -152,11 +152,16 @@ jobs:
       # This is a workaround for the fact that ccache's default mode (i.e. "preprocessor mode") introduces significant overhead in case of the cache miss.
       # This requires compilation with -MD, which is enabled because we use the Ninja generator.
       # Using this mode should not have any practical disadvantages.
+      # CCACHE_COMPILERCHECK=content hashes the contents of files passed via
+      # -fplugin=/-fpass-plugin= rather than their mtimes. Required for ProtoSYCL,
+      # whose plugin .so files are rebuilt on every CI run (via FetchContent),
+      # so mtime-based checks would invalidate every cache entry.
       - name: Set ccache environment variables
         run: |
           echo "CCACHE_DEPEND=1" >> "$GITHUB_ENV"
           echo "CCACHE_DIR=${{ env.container-workspace }}/.ccache" >> "$GITHUB_ENV"
           echo "CCACHE_COMPILER_TYPE=clang" >> "$GITHUB_ENV"
+          echo "CCACHE_COMPILERCHECK=content" >> "$GITHUB_ENV"
       - name: Build 'oclmath'
         working-directory: ${{ env.container-workspace }}/build
         run: cmake --build . --target oclmath
