@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           submodules: true
       - name: Set up Docker Buildx
@@ -65,7 +65,7 @@ jobs:
             version: f48ad43d9c1f85d6ac5cc3abb00ee764d7f1edbd
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           submodules: true
       - name: Set up Docker Buildx
@@ -91,7 +91,7 @@ jobs:
     runs-on: "ubuntu-24.04"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Need to check out base branch as well
       - name: Run clang-format on changed files
@@ -132,7 +132,7 @@ jobs:
       image: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           submodules: true
       - name: Configure CMake
@@ -142,7 +142,7 @@ jobs:
             -DSYCL_CTS_EXCLUDE_TEST_CATEGORIES="${{ env.container-workspace }}/ci/${{ matrix.sycl-impl }}.filter" \
             -DSYCL_CTS_MEASURE_BUILD_TIMES=ON
       - name: Set up ccache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ env.container-workspace }}/.ccache
           key: ${{ matrix.sycl-impl }}-ccache-${{ github.sha }}
@@ -183,7 +183,7 @@ jobs:
           name: build-times-${{ matrix.sycl-impl }}
           path: ${{ env.container-workspace }}/build/build_times.log
       - name: Upload test binaries artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-binaries-${{ matrix.sycl-impl }}
           path: ${{ env.container-workspace }}/build/bin
