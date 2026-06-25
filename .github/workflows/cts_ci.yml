@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           submodules: true
       - name: Set up Docker Buildx
@@ -59,9 +59,11 @@ jobs:
             version: 2026-04-22
           - sycl-impl: adaptivecpp
             version: fcd26a61b600cd4b653724e59e72d4f7d1da259c
+          - sycl-impl: protosycl
+            version: 8d20b3b84e99c5a99da30d09c3464e2a090a5f25
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           submodules: true
       - name: Set up Docker Buildx
@@ -87,7 +89,7 @@ jobs:
     runs-on: "ubuntu-24.04"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Need to check out base branch as well
       - name: Run clang-format on changed files
@@ -117,14 +119,16 @@ jobs:
             version: 2026-04-22
           - sycl-impl: adaptivecpp
             version: fcd26a61b600cd4b653724e59e72d4f7d1da259c
+          - sycl-impl: protosycl
+            version: 8d20b3b84e99c5a99da30d09c3464e2a090a5f25
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
-      parallel-build-jobs: 2
+      parallel-build-jobs: 4
     container:
       image: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           submodules: true
       - name: Configure CMake
@@ -134,7 +138,7 @@ jobs:
             -DSYCL_CTS_EXCLUDE_TEST_CATEGORIES="${{ env.container-workspace }}/ci/${{ matrix.sycl-impl }}.filter" \
             -DSYCL_CTS_MEASURE_BUILD_TIMES=ON
       - name: Set up ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ${{ env.container-workspace }}/.ccache
           key: ${{ matrix.sycl-impl }}-ccache-${{ github.sha }}
@@ -144,10 +148,16 @@ jobs:
       # This is a workaround for the fact that ccache's default mode (i.e. "preprocessor mode") introduces significant overhead in case of the cache miss.
       # This requires compilation with -MD, which is enabled because we use the Ninja generator.
       # Using this mode should not have any practical disadvantages.
+      # CCACHE_COMPILERCHECK=content hashes the contents of files passed via
+      # -fplugin=/-fpass-plugin= rather than their mtimes. Required for ProtoSYCL,
+      # whose plugin .so files are rebuilt on every CI run (via FetchContent),
+      # so mtime-based checks would invalidate every cache entry.
       - name: Set ccache environment variables
         run: |
           echo "CCACHE_DEPEND=1" >> "$GITHUB_ENV"
           echo "CCACHE_DIR=${{ env.container-workspace }}/.ccache" >> "$GITHUB_ENV"
+          echo "CCACHE_COMPILER_TYPE=clang" >> "$GITHUB_ENV"
+          echo "CCACHE_COMPILERCHECK=content" >> "$GITHUB_ENV"
       - name: Build 'oclmath'
         working-directory: ${{ env.container-workspace }}/build
         run: cmake --build . --target oclmath
@@ -168,6 +178,11 @@ jobs:
         with:
           name: build-times-${{ matrix.sycl-impl }}
           path: ${{ env.container-workspace }}/build/build_times.log
+      - name: Upload test binaries artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-binaries-${{ matrix.sycl-impl }}
+          path: ${{ env.container-workspace }}/build/bin
 
   # This job simply summarizes the results of the "compile-cts" matrix build job above.
   # It can then be used in a branch protection rule instead of having to enumerate all
@@ -175,12 +190,56 @@ jobs:
   cts-compiles-for-all-implementations:
     needs: [compile-cts]
     if: always()
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Summarize matrix build results
         run: |
           if [[ "${{ needs.compile-cts.result }}" == "success" ]]; then
             exit 0
           else
+            exit 1
+          fi
+
+  run-cts:
+    needs: cts-compiles-for-all-implementations
+    if: needs.cts-compiles-for-all-implementations.result == 'success'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - sycl-impl: protosycl
+            version: 8d20b3b84e99c5a99da30d09c3464e2a090a5f25
+    env:
+      container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+    container:
+      image: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
+    steps:
+      - name: Download test binaries artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: test-binaries-${{ matrix.sycl-impl }}
+          path: ${{ env.container-workspace }}/bin
+      - name: Run the tests
+        working-directory: ${{ env.container-workspace }}
+        run: |
+          chmod -R +x bin/
+          find bin/ -type f -executable | while read -r binary; do
+            echo "=== Running test category: $binary ==="
+            "$binary"
+          done
+
+  cts-passes-for-all-implementations:
+    needs: run-cts
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summarize matrix test results
+        run: |
+          if [[ "${{ needs.run-cts.result }}" == "success" ]]; then
+            echo "CTS tests succeeded for all implementations. Ready to run tests in separate workflow."
+            exit 0
+          else
+            echo "CTS tests failed for at least one implementation. Please check the 'run-cts' job for details."
             exit 1
           fi
