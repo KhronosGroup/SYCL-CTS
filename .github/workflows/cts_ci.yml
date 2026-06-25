@@ -194,7 +194,7 @@ jobs:
   cts-compiles-for-all-implementations:
     needs: [compile-cts]
     if: always()
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Summarize matrix build results
         run: |
@@ -236,7 +236,7 @@ jobs:
   cts-passes-for-all-implementations:
     needs: run-cts
     if: always()
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Summarize matrix test results
         run: |
