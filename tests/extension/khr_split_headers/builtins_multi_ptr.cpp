@@ -36,14 +36,13 @@ namespace khr_split_headers::tests {
 
 // A multi_ptr to T in the global address space (a writeable address space).
 template <typename T>
-using global_ptr =
-    sycl::multi_ptr<T, sycl::access::address_space::global_space,
-                    sycl::access::decorated::no>;
+using global_ptr = sycl::multi_ptr<T, sycl::access::address_space::global_space,
+                                   sycl::access::decorated::no>;
 
 TEST_CASE("builtins compose with multi_ptr: frexp",
           "[khr_split_headers][builtins_multi_ptr]") {
-  using return_t =
-      decltype(sycl::frexp(std::declval<float>(), std::declval<global_ptr<int>>()));
+  using return_t = decltype(sycl::frexp(std::declval<float>(),
+                                        std::declval<global_ptr<int>>()));
   STATIC_REQUIRE(std::is_same_v<return_t, float>);
 }
 
@@ -70,16 +69,16 @@ TEST_CASE("builtins compose with multi_ptr: fract",
 
 TEST_CASE("builtins compose with multi_ptr: lgamma_r",
           "[khr_split_headers][builtins_multi_ptr]") {
-  using return_t = decltype(sycl::lgamma_r(
-      std::declval<float>(), std::declval<global_ptr<int>>()));
+  using return_t = decltype(sycl::lgamma_r(std::declval<float>(),
+                                           std::declval<global_ptr<int>>()));
   STATIC_REQUIRE(std::is_same_v<return_t, float>);
 }
 
 TEST_CASE("builtins compose with multi_ptr: remquo",
           "[khr_split_headers][builtins_multi_ptr]") {
-  using return_t = decltype(sycl::remquo(std::declval<float>(),
-                                         std::declval<float>(),
-                                         std::declval<global_ptr<int>>()));
+  using return_t =
+      decltype(sycl::remquo(std::declval<float>(), std::declval<float>(),
+                            std::declval<global_ptr<int>>()));
   STATIC_REQUIRE(std::is_same_v<return_t, float>);
 }
 

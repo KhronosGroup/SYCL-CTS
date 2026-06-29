@@ -20,13 +20,13 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+#include <cstdint>
 #include <sycl/khr/split_headers/builtins_common.hpp>
 #include <sycl/khr/split_headers/builtins_geometric.hpp>
 #include <sycl/khr/split_headers/builtins_integer.hpp>
 #include <sycl/khr/split_headers/builtins_math.hpp>
 #include <sycl/khr/split_headers/builtins_relational.hpp>
 #include <sycl/khr/split_headers/marray.hpp>
-#include <cstdint>
 #include <type_traits>
 #include <utility>
 
@@ -62,14 +62,12 @@ TEST_CASE("builtins compose with marray: upsample widens element type",
 
 TEST_CASE("builtins compose with marray: common functions",
           "[khr_split_headers][builtins_marray]") {
-  using clamp_t =
-      decltype(sycl::clamp(std::declval<m<float, 4>>(),
-                           std::declval<m<float, 4>>(),
-                           std::declval<m<float, 4>>()));
-  using mix_t =
-      decltype(sycl::mix(std::declval<m<float, 4>>(),
-                         std::declval<m<float, 4>>(),
-                         std::declval<m<float, 4>>()));
+  using clamp_t = decltype(sycl::clamp(std::declval<m<float, 4>>(),
+                                       std::declval<m<float, 4>>(),
+                                       std::declval<m<float, 4>>()));
+  using mix_t = decltype(sycl::mix(std::declval<m<float, 4>>(),
+                                   std::declval<m<float, 4>>(),
+                                   std::declval<m<float, 4>>()));
   STATIC_REQUIRE(std::is_same_v<clamp_t, m<float, 4>>);
   STATIC_REQUIRE(std::is_same_v<mix_t, m<float, 4>>);
 }
@@ -90,8 +88,9 @@ TEST_CASE("builtins compose with marray: math function with pointer output",
   STATIC_REQUIRE(std::is_same_v<frexp_t, m<float, 4>>);
 }
 
-TEST_CASE("builtins compose with marray: relational functions return bool marray",
-          "[khr_split_headers][builtins_marray]") {
+TEST_CASE(
+    "builtins compose with marray: relational functions return bool marray",
+    "[khr_split_headers][builtins_marray]") {
   using iseq_t = decltype(sycl::isequal(std::declval<m<float, 4>>(),
                                         std::declval<m<float, 4>>()));
   using isnan_t = decltype(sycl::isnan(std::declval<m<float, 4>>()));

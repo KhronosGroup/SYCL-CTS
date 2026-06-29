@@ -20,8 +20,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
-#include <sycl/khr/split_headers/builtins_integer.hpp>
 #include <cstdint>
+#include <sycl/khr/split_headers/builtins_integer.hpp>
 #include <type_traits>
 #include <utility>
 
@@ -33,8 +33,9 @@
 
 namespace khr_split_headers::tests {
 
-TEST_CASE("the builtins_integer header defines the SYCL_KHR_SPLIT_HEADERS macro",
-          "[khr_split_headers][builtins_integer]") {
+TEST_CASE(
+    "the builtins_integer header defines the SYCL_KHR_SPLIT_HEADERS macro",
+    "[khr_split_headers][builtins_integer]") {
 #ifdef SYCL_KHR_SPLIT_HEADERS
   constexpr bool macro_is_defined = true;
 #else

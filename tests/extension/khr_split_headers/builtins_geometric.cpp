@@ -90,9 +90,8 @@ TEST_CASE("the builtins_geometric header defines the fast_normalize function",
   STATIC_REQUIRE(std::is_same_v<return_t, float>);
 }
 
-TEST_CASE(
-    "the builtins_geometric header provides functions for double scalars",
-    "[khr_split_headers][builtins_geometric]") {
+TEST_CASE("the builtins_geometric header provides functions for double scalars",
+          "[khr_split_headers][builtins_geometric]") {
   using length_t = decltype(sycl::length(std::declval<double>()));
   using dot_t =
       decltype(sycl::dot(std::declval<double>(), std::declval<double>()));

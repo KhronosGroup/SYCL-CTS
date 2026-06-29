@@ -20,13 +20,13 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+#include <cstdint>
 #include <sycl/khr/split_headers/builtins_common.hpp>
 #include <sycl/khr/split_headers/builtins_geometric.hpp>
 #include <sycl/khr/split_headers/builtins_integer.hpp>
 #include <sycl/khr/split_headers/builtins_math.hpp>
 #include <sycl/khr/split_headers/builtins_relational.hpp>
 #include <sycl/khr/split_headers/vec.hpp>
-#include <cstdint>
 #include <type_traits>
 #include <utility>
 
@@ -61,14 +61,12 @@ TEST_CASE("builtins compose with vec: upsample widens element type",
 
 TEST_CASE("builtins compose with vec: common functions",
           "[khr_split_headers][builtins_vec]") {
-  using clamp_t =
-      decltype(sycl::clamp(std::declval<v<float, 4>>(),
-                           std::declval<v<float, 4>>(),
-                           std::declval<v<float, 4>>()));
-  using mix_t =
-      decltype(sycl::mix(std::declval<v<float, 4>>(),
-                         std::declval<v<float, 4>>(),
-                         std::declval<v<float, 4>>()));
+  using clamp_t = decltype(sycl::clamp(std::declval<v<float, 4>>(),
+                                       std::declval<v<float, 4>>(),
+                                       std::declval<v<float, 4>>()));
+  using mix_t = decltype(sycl::mix(std::declval<v<float, 4>>(),
+                                   std::declval<v<float, 4>>(),
+                                   std::declval<v<float, 4>>()));
   STATIC_REQUIRE(std::is_same_v<clamp_t, v<float, 4>>);
   STATIC_REQUIRE(std::is_same_v<mix_t, v<float, 4>>);
 }

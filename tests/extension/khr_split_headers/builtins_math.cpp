@@ -20,8 +20,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
-#include <sycl/khr/split_headers/builtins_math.hpp>
 #include <cstdint>
+#include <sycl/khr/split_headers/builtins_math.hpp>
 #include <type_traits>
 #include <utility>
 
@@ -45,19 +45,19 @@ TEST_CASE("the builtins_math header defines the SYCL_KHR_SPLIT_HEADERS macro",
 }
 
 // Helper: assert f(float...) returns float.
-#define CHECK_UNARY_FLOAT(FN)                                          \
-  TEST_CASE("the builtins_math header defines the " #FN " function",   \
-            "[khr_split_headers][builtins_math]") {                    \
-    using return_t = decltype(sycl::FN(std::declval<float>()));        \
-    STATIC_REQUIRE(std::is_same_v<return_t, float>);                   \
+#define CHECK_UNARY_FLOAT(FN)                                        \
+  TEST_CASE("the builtins_math header defines the " #FN " function", \
+            "[khr_split_headers][builtins_math]") {                  \
+    using return_t = decltype(sycl::FN(std::declval<float>()));      \
+    STATIC_REQUIRE(std::is_same_v<return_t, float>);                 \
   }
 
-#define CHECK_BINARY_FLOAT(FN)                                              \
-  TEST_CASE("the builtins_math header defines the " #FN " function",        \
-            "[khr_split_headers][builtins_math]") {                         \
-    using return_t =                                                        \
-        decltype(sycl::FN(std::declval<float>(), std::declval<float>()));   \
-    STATIC_REQUIRE(std::is_same_v<return_t, float>);                        \
+#define CHECK_BINARY_FLOAT(FN)                                            \
+  TEST_CASE("the builtins_math header defines the " #FN " function",      \
+            "[khr_split_headers][builtins_math]") {                       \
+    using return_t =                                                      \
+        decltype(sycl::FN(std::declval<float>(), std::declval<float>())); \
+    STATIC_REQUIRE(std::is_same_v<return_t, float>);                      \
   }
 
 // --- Unary float -> float math functions ---
@@ -228,11 +228,11 @@ TEST_CASE("the builtins_math header provides functions for double scalars",
 }
 
 // --- native:: variants ---
-#define CHECK_NATIVE_UNARY(FN)                                                 \
-  TEST_CASE("the builtins_math header defines the native::" #FN " function",   \
-            "[khr_split_headers][builtins_math]") {                            \
-    using return_t = decltype(sycl::native::FN(std::declval<float>()));        \
-    STATIC_REQUIRE(std::is_same_v<return_t, float>);                           \
+#define CHECK_NATIVE_UNARY(FN)                                               \
+  TEST_CASE("the builtins_math header defines the native::" #FN " function", \
+            "[khr_split_headers][builtins_math]") {                          \
+    using return_t = decltype(sycl::native::FN(std::declval<float>()));      \
+    STATIC_REQUIRE(std::is_same_v<return_t, float>);                         \
   }
 
 CHECK_NATIVE_UNARY(cos)
@@ -259,8 +259,8 @@ TEST_CASE("the builtins_math header defines the native::divide function",
 
 TEST_CASE("the builtins_math header defines the native::powr function",
           "[khr_split_headers][builtins_math]") {
-  using return_t =
-      decltype(sycl::native::powr(std::declval<float>(), std::declval<float>()));
+  using return_t = decltype(sycl::native::powr(std::declval<float>(),
+                                               std::declval<float>()));
   STATIC_REQUIRE(std::is_same_v<return_t, float>);
 }
 
@@ -289,8 +289,9 @@ CHECK_HALF_UNARY(tan)
 
 #undef CHECK_HALF_UNARY
 
-TEST_CASE("the builtins_math header defines the half_precision::divide function",
-          "[khr_split_headers][builtins_math]") {
+TEST_CASE(
+    "the builtins_math header defines the half_precision::divide function",
+    "[khr_split_headers][builtins_math]") {
   using return_t = decltype(sycl::half_precision::divide(
       std::declval<float>(), std::declval<float>()));
   STATIC_REQUIRE(std::is_same_v<return_t, float>);
@@ -298,8 +299,8 @@ TEST_CASE("the builtins_math header defines the half_precision::divide function"
 
 TEST_CASE("the builtins_math header defines the half_precision::powr function",
           "[khr_split_headers][builtins_math]") {
-  using return_t = decltype(sycl::half_precision::powr(
-      std::declval<float>(), std::declval<float>()));
+  using return_t = decltype(sycl::half_precision::powr(std::declval<float>(),
+                                                       std::declval<float>()));
   STATIC_REQUIRE(std::is_same_v<return_t, float>);
 }
 
