@@ -152,6 +152,5 @@ TEST_CASE("the multi_ptr header defines the decorated_generic_ptr alias",
   STATIC_REQUIRE(std::is_same_v<sycl::decorated_generic_ptr<int>,
                                 mp<space::generic_space, deco::yes>>);
 }
-#endif
 
 }  // namespace khr_split_headers::tests
