@@ -20,7 +20,19 @@ find_file(SYCL_IMPLEMENTATION_ADAPTER
   Adapt${SYCL_IMPLEMENTATION}.cmake
   PATHS ${CMAKE_MODULE_PATH}
 )
+set(SYCL_IMPLEMENTATION_CXX_STANDARD "" CACHE INTERNAL "")
 include("${SYCL_IMPLEMENTATION_ADAPTER}")
+
+if (NOT SYCL_IMPLEMENTATION_CXX_STANDARD MATCHES "^[0-9]+$")
+    message(FATAL_ERROR
+        "The SYCL CTS requires the SYCL implementation to set the C++ standard "
+        "to be used for compiling SYCL code. The CMake variable "
+        "SYCL_IMPLEMENTATION_CXX_STANDARD should be set to a valid CMake "
+        "CXX_STANDARD value (e.g. 17, 20, etc.)"
+    )
+endif()
+set(CMAKE_CXX_STANDARD ${SYCL_IMPLEMENTATION_CXX_STANDARD})
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(NOT TARGET SYCL::SYCL)
     message(FATAL_ERROR
