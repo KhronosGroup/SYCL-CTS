@@ -76,8 +76,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
    */
   void run(util::logger &log) override {
     // Execute tests for all sycl::bundle_states
-    run_verification<sycl::bundle_state::input>(log);
-    run_verification<sycl::bundle_state::object>(log);
+    if (util::get_cts_object::device().has(sycl::aspect::online_compiler))
+      run_verification<sycl::bundle_state::input>(log);
+    if (util::get_cts_object::device().has(sycl::aspect::online_linker))
+      run_verification<sycl::bundle_state::object>(log);
     run_verification<sycl::bundle_state::executable>(log);
   }
 };

@@ -40,6 +40,10 @@ void invoke_kernel_and_verify_invocation(util::logger& log,
   sycl::queue queue(ctx, ctx.get_devices()[0]);
   bool flags[] = {false, false};
 
+  if (!queue.get_device().has(sycl::aspect::online_compiler)) {
+    SKIP("Device does not support online compiler aspect");
+  }
+
   {
     sycl::buffer<bool> flag_buffer{flags, sycl::range<1>{2}};
     queue.submit([&](sycl::handler& cgh) {
