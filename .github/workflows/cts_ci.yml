@@ -206,7 +206,7 @@ jobs:
 
   run-cts:
     needs: cts-compiles-for-all-implementations
-    if: needs.cts-compiles-for-all-implementations.result == 'success'
+    if: always() && !cancelled() && needs.cts-compiles-for-all-implementations.result == 'success'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
