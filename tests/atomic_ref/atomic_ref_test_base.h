@@ -34,10 +34,12 @@ class atomic_ref_test {
   static constexpr sycl::memory_order memory_orders[] = {
       sycl::memory_order::relaxed, sycl::memory_order::acq_rel,
       sycl::memory_order::seq_cst};
+  // Note: sycl::memory_scope::work_item is intentionally excluded — the SYCL
+  // working group clarified that using it with any sycl::atomic_ref
+  // operation is undefined behaviour.
   static constexpr sycl::memory_scope memory_scopes[] = {
-      sycl::memory_scope::work_item, sycl::memory_scope::sub_group,
-      sycl::memory_scope::work_group, sycl::memory_scope::device,
-      sycl::memory_scope::system};
+      sycl::memory_scope::sub_group, sycl::memory_scope::work_group,
+      sycl::memory_scope::device, sycl::memory_scope::system};
   static constexpr sycl::memory_order memory_order_for_atomic_ref_obj =
       MemoryOrderT::value;
   static constexpr sycl::memory_scope memory_scope_for_atomic_ref_obj =
