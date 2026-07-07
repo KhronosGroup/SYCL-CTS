@@ -31,32 +31,34 @@ namespace kernel_features_reqd_work_group_size {
 using namespace sycl_cts;
 using namespace kernel_features_common;
 
-template <size_t N, int Dimensions>
+template <size_t N0, size_t N1, size_t N2, int Dimensions>
 class Functor {
  public:
-  [[sycl::reqd_work_group_size(N)]] void operator()(sycl::nd_item<1>) const {}
-  [[sycl::reqd_work_group_size(N)]] void operator()(sycl::group<1>) const {}
+  [[sycl::reqd_work_group_size(N0)]] void operator()(sycl::nd_item<1>) const {}
+  [[sycl::reqd_work_group_size(N0)]] void operator()(sycl::group<1>) const {}
 
-  [[sycl::reqd_work_group_size(N, N)]] void operator()(sycl::nd_item<2>) const {
-  }
-  [[sycl::reqd_work_group_size(N, N)]] void operator()(sycl::group<2>) const {}
+  [[sycl::reqd_work_group_size(N0, N1)]] void operator()(
+      sycl::nd_item<2>) const {}
+  [[sycl::reqd_work_group_size(N0, N1)]] void operator()(
+      sycl::group<2>) const {}
 
-  [[sycl::reqd_work_group_size(N, N, N)]] void operator()(
+  [[sycl::reqd_work_group_size(N0, N1, N2)]] void operator()(
       sycl::nd_item<3>) const {}
-  [[sycl::reqd_work_group_size(N, N, N)]] void operator()(
+  [[sycl::reqd_work_group_size(N0, N1, N2)]] void operator()(
       sycl::group<3>) const {}
 };
 
-template <size_t N, int Dimensions>
+template <size_t N0, size_t N1, size_t N2, int Dimensions>
 class kernel_reqd_wg_size;
 
 // FIXME: re-enable when max_work_item_sizes is implemented in adaptivecpp and
 // computcpp
 #if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
-template <size_t N, int Dimensions>
+template <size_t N0, size_t N1, size_t N2, int Dimensions>
 void test_size() {
-  INFO("N = " + std::to_string(N));
-  using kname = kernel_reqd_wg_size<N, Dimensions>;
+  INFO("N0 = " + std::to_string(N0) + ", N1 = " + std::to_string(N1) +
+       ", N2 = " + std::to_string(N2));
+  using kname = kernel_reqd_wg_size<N0, N1, N2, Dimensions>;
   auto queue = util::get_cts_object::queue();
   auto max_wg_size =
       queue.get_device().get_info<sycl::info::device::max_work_group_size>();
@@ -64,10 +66,12 @@ void test_size() {
       queue.get_device()
           .get_info<sycl::info::device::max_work_item_sizes<Dimensions>>();
 
-  bool is_exception_expected = (std::pow(N, Dimensions) > max_wg_size);
+  const size_t sizes[3] = {N0, N1, N2};
+
+  bool is_exception_expected = (N0 * N1 * N2 > max_wg_size);
 
   for (int i = 0; i < Dimensions; i++)
-    if (max_work_item_sizes[i] < N) is_exception_expected |= true;
+    if (max_work_item_sizes[i] < sizes[i]) is_exception_expected |= true;
 
   // Set expected error code
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
@@ -75,47 +79,47 @@ void test_size() {
   {
     if constexpr (Dimensions == 1) {
       const auto lambda_nd_item_arg_1D =
-          [](sycl::nd_item<1>) [[sycl::reqd_work_group_size(N)]] {};
+          [](sycl::nd_item<1>) [[sycl::reqd_work_group_size(N0)]] {};
       const auto lambda_group_arg_1D = [](sycl::group<1>)
-                                           [[sycl::reqd_work_group_size(N)]] {};
-      run_separate_lambda_nd_range<kname, N, Dimensions>(
+                                           [[sycl::reqd_work_group_size(N0)]] {};
+      run_separate_lambda_nd_range<kname, N0, Dimensions>(
           is_exception_expected, expected_errc, queue, lambda_nd_item_arg_1D,
           lambda_group_arg_1D);
     } else if constexpr (Dimensions == 2) {
       const auto lambda_nd_item_arg_2D =
-          [](sycl::nd_item<2>) [[sycl::reqd_work_group_size(N, N)]] {};
+          [](sycl::nd_item<2>) [[sycl::reqd_work_group_size(N0, N1)]] {};
       const auto lambda_group_arg_2D =
-          [](sycl::group<2>) [[sycl::reqd_work_group_size(N, N)]] {};
-      run_separate_lambda_nd_range<kname, N, Dimensions>(
+          [](sycl::group<2>) [[sycl::reqd_work_group_size(N0, N1)]] {};
+      run_separate_lambda_nd_range<kname, N0, Dimensions>(
           is_exception_expected, expected_errc, queue, lambda_nd_item_arg_2D,
           lambda_group_arg_2D);
     } else {
       const auto lambda_nd_item_arg_3D =
-          [](sycl::nd_item<3>) [[sycl::reqd_work_group_size(N, N, N)]] {};
+          [](sycl::nd_item<3>) [[sycl::reqd_work_group_size(N0, N1, N2)]] {};
       const auto lambda_group_arg_3D =
-          [](sycl::group<3>) [[sycl::reqd_work_group_size(N, N, N)]] {};
-      run_separate_lambda_nd_range<kname, N, Dimensions>(
+          [](sycl::group<3>) [[sycl::reqd_work_group_size(N0, N1, N2)]] {};
+      run_separate_lambda_nd_range<kname, N0, Dimensions>(
           is_exception_expected, expected_errc, queue, lambda_nd_item_arg_3D,
           lambda_group_arg_3D);
     }
   }
   {
-    run_functor_nd_range<Functor<N, Dimensions>, N, Dimensions>(
+    run_functor_nd_range<Functor<N0, N1, N2, Dimensions>, N0, Dimensions>(
         is_exception_expected, expected_errc, queue);
   }
   {
     if constexpr (Dimensions == 1) {
       RUN_SUBMISSION_CALL_ND_RANGE(
-          N, Dimensions, is_exception_expected, expected_errc, queue,
-          [[sycl::reqd_work_group_size(N)]], kname, NO_KERNEL_BODY);
+          N0, Dimensions, is_exception_expected, expected_errc, queue,
+          [[sycl::reqd_work_group_size(N0)]], kname, NO_KERNEL_BODY);
     } else if constexpr (Dimensions == 2) {
       RUN_SUBMISSION_CALL_ND_RANGE(
-          N, Dimensions, is_exception_expected, expected_errc, queue,
-          [[sycl::reqd_work_group_size(N, N)]], kname, NO_KERNEL_BODY);
+          N0, Dimensions, is_exception_expected, expected_errc, queue,
+          [[sycl::reqd_work_group_size(N0, N1)]], kname, NO_KERNEL_BODY);
     } else {
       RUN_SUBMISSION_CALL_ND_RANGE(
-          N, Dimensions, is_exception_expected, expected_errc, queue,
-          [[sycl::reqd_work_group_size(N, N, N)]], kname, NO_KERNEL_BODY);
+          N0, Dimensions, is_exception_expected, expected_errc, queue,
+          [[sycl::reqd_work_group_size(N0, N1, N2)]], kname, NO_KERNEL_BODY);
     }
   }
 }
@@ -124,8 +128,10 @@ void test_size() {
 DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("Exceptions thrown by [[reqd_work_group_size(N)]] with unsupported size",
  "[kernel_features]", ((int Dimensions), Dimensions), 1, 2, 3)({
-  test_size<4, Dimensions>();
-  test_size<4294967295, Dimensions>();
+  test_size<4, 4, 4, Dimensions>();
+  // Product of reqd_work_group_size elements should fit in range::size() return
+  // type size_t.
+  test_size<4294967295, 1, 1, Dimensions>();
 });
 
 }  // namespace kernel_features_reqd_work_group_size
