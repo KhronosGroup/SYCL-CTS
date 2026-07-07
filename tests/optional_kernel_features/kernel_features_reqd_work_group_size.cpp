@@ -39,8 +39,8 @@ class Functor {
 
   [[sycl::reqd_work_group_size(N0, N1)]] void operator()(
       sycl::nd_item<2>) const {}
-  [[sycl::reqd_work_group_size(N0, N1)]] void operator()(
-      sycl::group<2>) const {}
+  [[sycl::reqd_work_group_size(N0, N1)]] void operator()(sycl::group<2>) const {
+  }
 
   [[sycl::reqd_work_group_size(N0, N1, N2)]] void operator()(
       sycl::nd_item<3>) const {}
@@ -80,8 +80,8 @@ void test_size() {
     if constexpr (Dimensions == 1) {
       const auto lambda_nd_item_arg_1D =
           [](sycl::nd_item<1>) [[sycl::reqd_work_group_size(N0)]] {};
-      const auto lambda_group_arg_1D = [](sycl::group<1>)
-                                           [[sycl::reqd_work_group_size(N0)]] {};
+      const auto lambda_group_arg_1D =
+          [](sycl::group<1>) [[sycl::reqd_work_group_size(N0)]] {};
       run_separate_lambda_nd_range<kname, N0, Dimensions>(
           is_exception_expected, expected_errc, queue, lambda_nd_item_arg_1D,
           lambda_group_arg_1D);
