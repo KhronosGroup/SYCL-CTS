@@ -26,6 +26,7 @@
 #include "catch2/catch_template_test_macros.hpp"
 #include "kernel_features_common.h"
 #include <cmath>
+#include <limits>
 
 namespace kernel_features_reqd_work_group_size {
 using namespace sycl_cts;
@@ -131,7 +132,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
   test_size<4, 4, 4, Dimensions>();
   // Product of reqd_work_group_size elements should fit in range::size() return
   // type size_t.
-  test_size<4294967295, 1, 1, Dimensions>();
+  test_size<std::numeric_limits<std::size_t>::max(), 1, 1, Dimensions>();
 });
 
 }  // namespace kernel_features_reqd_work_group_size
