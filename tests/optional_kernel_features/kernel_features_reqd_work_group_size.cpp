@@ -57,6 +57,9 @@ class kernel_reqd_wg_size;
 #if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 template <size_t N0, size_t N1, size_t N2, int Dimensions>
 void test_size() {
+  // Product of reqd_work_group_size elements must fit in size_t.
+  static_assert(N0 <= std::numeric_limits<size_t>::max() / (N1 * N2),
+                "N0 * N1 * N2 must not overflow size_t");
   INFO("N0 = " + std::to_string(N0) + ", N1 = " + std::to_string(N1) +
        ", N2 = " + std::to_string(N2));
   using kname = kernel_reqd_wg_size<N0, N1, N2, Dimensions>;
@@ -131,8 +134,11 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
  "[kernel_features]", ((int Dimensions), Dimensions), 1, 2, 3)({
   test_size<4, 4, 4, Dimensions>();
   // Product of reqd_work_group_size elements should fit in range::size() return
-  // type size_t.
-  test_size<std::numeric_limits<std::size_t>::max(), 1, 1, Dimensions>();
+  // type size_t. Avoid large n0 in case backend takes long time to run.
+  constexpr size_t n0 = sizeof(size_t) == 8
+                            ? size_t{4294967296ull}
+                            : std::numeric_limits<size_t>::max();
+  test_size<n0, 1, 1, Dimensions>();
 });
 
 }  // namespace kernel_features_reqd_work_group_size
