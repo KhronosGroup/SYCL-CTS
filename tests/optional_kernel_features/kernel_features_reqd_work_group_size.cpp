@@ -72,7 +72,9 @@ void test_size() {
 
   const size_t sizes[3] = {N0, N1, N2};
 
-  bool is_exception_expected = (N0 * N1 * N2 > max_wg_size);
+  bool is_exception_expected =
+      std::accumulate(sizes, sizes + Dimensions, (size_t)1,
+                      std::multiplies<size_t>()) > max_wg_size;
 
   for (int i = 0; i < Dimensions; i++)
     if (max_work_item_sizes[i] < sizes[i]) is_exception_expected |= true;
