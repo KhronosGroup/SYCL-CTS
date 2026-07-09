@@ -42,8 +42,8 @@ def parse_arguments():
         configuration-time test category filters for all failing targets.""")
 
     parser.add_argument('sycl_implementation', metavar="SYCL-Implementation",
-                        choices=['DPCPP', 'AdaptiveCpp', 'SimSYCL'], type=str,
-                        help="The SYCL implementation to use")
+                        choices=['DPCPP', 'AdaptiveCpp', 'SimSYCL', 'ProtoSYCL'],
+                        type=str, help="The SYCL implementation to use")
     parser.add_argument('--cmake-args', type=str,
                         help="Arguments to pass on to CMake during configuration")
     parser.add_argument('-j', type=int, default=0, dest='parallel_jobs',

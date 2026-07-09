@@ -54,6 +54,8 @@
 #define INTERNAL_CTS_SYCL_IMPL_AdaptiveCpp ()
 #elif SYCL_CTS_COMPILING_WITH_SIMSYCL
 #define INTERNAL_CTS_SYCL_IMPL_SimSYCL ()
+#elif SYCL_CTS_COMPILING_WITH_PROTOSYCL
+#define INTERNAL_CTS_SYCL_IMPL_ProtoSYCL ()
 #else
 #error Unknown SYCL implementation
 #endif
