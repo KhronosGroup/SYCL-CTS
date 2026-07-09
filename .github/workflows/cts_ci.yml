@@ -202,7 +202,8 @@ jobs:
 
   run-cts:
     needs: cts-compiles-for-all-implementations
-    if: needs.cts-compiles-for-all-implementations.result == 'success'
+    # This expression ensures the job runs even when other jobs are skipped.
+    if: always() && !cancelled() && needs.cts-compiles-for-all-implementations.result == 'success'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

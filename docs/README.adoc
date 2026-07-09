@@ -162,24 +162,35 @@ Each file in the SYCL CTS should be prefaced by the Khronos copyright header:
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) <YEAR> The Khronos Group Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
+//  Copyright <YEAR> The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
 //
 *******************************************************************************/
 ----
 
 where `<YEAR>` refers to the current year when creating a new file, or a range (e.g. `2020 - 2022`) when updating an existing file.
+
+== Contributing
+
+This project welcomes contributions and suggestions. Contributions require you
+to agree to a
+[Contributor License Agreement (CLA)](https://cla-assistant.io/KhronosGroup/SYCL-CTS)
+declaring that you have the right to, and actually do, grant the rights to use
+your contribution.
+
+When you submit a pull request, a CLA bot will determine whether you need to
+sign a CLA. Simply follow the instructions provided.
+
+== AI-Assisted Contributions
+
+By submitting a Contribution to this repository, you additionally represent
+that, to the extent any of Your Contributions were developed with the
+assistance of artificial intelligence tools or AI-generated code, You have
+exercised sufficient review, judgment, and creative direction over such tools
+and resulting material to reasonably consider it Your original creation, and
+You are not aware of any third-party license, intellectual property claim, or
+other restriction arising from such use that is associated with any part of
+Your Contribution or use thereof.
 
 == Writing Tests
 
