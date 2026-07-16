@@ -55,16 +55,15 @@ TEST_CASE("the type_traits header defines the SYCL_KHR_SPLIT_HEADERS macro",
 TEST_CASE("the type_traits header defines the is_property trait",
           "[khr_split_headers][type_traits]") {
   // A type that is not a property yields a well-formed false value.
-  STATIC_REQUIRE(std::is_same_v<decltype(sycl::is_property<int>::value),
-                                const bool>);
+  STATIC_REQUIRE(
+      std::is_same_v<decltype(sycl::is_property<int>::value), const bool>);
   STATIC_REQUIRE(sycl::is_property_v<int> == false);
 }
 
 TEST_CASE("the type_traits header defines the is_property_of trait",
           "[khr_split_headers][type_traits]") {
-  STATIC_REQUIRE(
-      std::is_same_v<decltype(sycl::is_property_of<int, int>::value),
-                     const bool>);
+  STATIC_REQUIRE(std::is_same_v<decltype(sycl::is_property_of<int, int>::value),
+                                const bool>);
   STATIC_REQUIRE(sycl::is_property_of_v<int, int> == false);
 }
 
@@ -78,16 +77,15 @@ TEST_CASE("the type_traits header defines the is_group trait",
 TEST_CASE("the type_traits header defines the is_device_copyable trait",
           "[khr_split_headers][type_traits]") {
   STATIC_REQUIRE(sycl::is_device_copyable_v<int> == true);
-  STATIC_REQUIRE(
-      std::is_same_v<decltype(sycl::is_device_copyable<int>::value),
-                     const bool>);
+  STATIC_REQUIRE(std::is_same_v<decltype(sycl::is_device_copyable<int>::value),
+                                const bool>);
 }
 
 TEST_CASE("the type_traits header defines the any_device_has trait",
           "[khr_split_headers][type_traits]") {
-  STATIC_REQUIRE(std::is_same_v<
-                 decltype(sycl::any_device_has<sycl::aspect::cpu>::value),
-                 const bool>);
+  STATIC_REQUIRE(
+      std::is_same_v<decltype(sycl::any_device_has<sycl::aspect::cpu>::value),
+                     const bool>);
   constexpr bool v = sycl::any_device_has_v<sycl::aspect::cpu>;
   (void)v;
   SUCCEED();
@@ -95,9 +93,9 @@ TEST_CASE("the type_traits header defines the any_device_has trait",
 
 TEST_CASE("the type_traits header defines the all_devices_have trait",
           "[khr_split_headers][type_traits]") {
-  STATIC_REQUIRE(std::is_same_v<
-                 decltype(sycl::all_devices_have<sycl::aspect::cpu>::value),
-                 const bool>);
+  STATIC_REQUIRE(
+      std::is_same_v<decltype(sycl::all_devices_have<sycl::aspect::cpu>::value),
+                     const bool>);
   constexpr bool v = sycl::all_devices_have_v<sycl::aspect::cpu>;
   (void)v;
   SUCCEED();
@@ -106,8 +104,7 @@ TEST_CASE("the type_traits header defines the all_devices_have trait",
 TEST_CASE("the type_traits header defines the remove_decoration trait",
           "[khr_split_headers][type_traits]") {
   // For a non-decorated pointer the trait yields the same pointer type.
-  STATIC_REQUIRE(
-      std::is_same_v<sycl::remove_decoration<int*>::type, int*>);
+  STATIC_REQUIRE(std::is_same_v<sycl::remove_decoration<int*>::type, int*>);
   STATIC_REQUIRE(std::is_same_v<sycl::remove_decoration_t<int*>, int*>);
 }
 
@@ -115,17 +112,18 @@ TEST_CASE("the type_traits header defines the known_identity trait",
           "[khr_split_headers][type_traits]") {
   // plus has a known identity of 0 for arithmetic accumulator types.
   STATIC_REQUIRE(sycl::known_identity_v<sycl::plus<int>, int> == 0);
-  STATIC_REQUIRE(
-      std::is_same_v<decltype(sycl::known_identity<sycl::plus<int>, int>::value),
-                     const int>);
+  STATIC_REQUIRE(std::is_same_v<
+                 decltype(sycl::known_identity<sycl::plus<int>, int>::value),
+                 const int>);
 }
 
 TEST_CASE("the type_traits header defines the has_known_identity trait",
           "[khr_split_headers][type_traits]") {
   STATIC_REQUIRE(sycl::has_known_identity_v<sycl::plus<int>, int> == true);
-  STATIC_REQUIRE(std::is_same_v<
-                 decltype(sycl::has_known_identity<sycl::plus<int>, int>::value),
-                 const bool>);
+  STATIC_REQUIRE(
+      std::is_same_v<
+          decltype(sycl::has_known_identity<sycl::plus<int>, int>::value),
+          const bool>);
 }
 
 }  // namespace khr_split_headers::tests

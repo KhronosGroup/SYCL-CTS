@@ -60,9 +60,8 @@ TEST_CASE(
 
 #else
 
-TEST_CASE(
-    "max_work_group_queries split_headers coexistence is not applicable",
-    "[khr_split_headers][max_work_group_queries]") {
+TEST_CASE("max_work_group_queries split_headers coexistence is not applicable",
+          "[khr_split_headers][max_work_group_queries]") {
   SUCCEED(
       "SYCL_KHR_SPLIT_HEADERS and/or SYCL_KHR_MAX_WORK_GROUP_QUERIES not "
       "implemented");

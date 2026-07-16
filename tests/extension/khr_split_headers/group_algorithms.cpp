@@ -52,8 +52,9 @@ struct int_predicate {
   bool operator()(int) const;
 };
 
-TEST_CASE("the group_algorithms header defines the SYCL_KHR_SPLIT_HEADERS macro",
-          "[khr_split_headers][group_algorithms]") {
+TEST_CASE(
+    "the group_algorithms header defines the SYCL_KHR_SPLIT_HEADERS macro",
+    "[khr_split_headers][group_algorithms]") {
 #ifdef SYCL_KHR_SPLIT_HEADERS
   constexpr bool macro_is_defined = true;
 #else
@@ -125,9 +126,9 @@ TEST_CASE("the group_algorithms header defines reduce_over_group",
 
 TEST_CASE("the group_algorithms header defines joint_reduce",
           "[khr_split_headers][group_algorithms]") {
-  using return_t = decltype(sycl::joint_reduce(
-      std::declval<group_t>(), std::declval<int*>(), std::declval<int*>(),
-      std::declval<op_t>()));
+  using return_t =
+      decltype(sycl::joint_reduce(std::declval<group_t>(), std::declval<int*>(),
+                                  std::declval<int*>(), std::declval<op_t>()));
   STATIC_REQUIRE(std::is_same_v<return_t, int>);
 }
 

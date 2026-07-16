@@ -20,8 +20,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
-#include <sycl/khr/split_headers/math.hpp>
 #include <cstdint>
+#include <sycl/khr/split_headers/math.hpp>
 #include <type_traits>
 #include <utility>
 
@@ -50,8 +50,8 @@ TEST_CASE("the math header provides math functions",
   using sin_t = decltype(sycl::sin(std::declval<float>()));
   using pow_t =
       decltype(sycl::pow(std::declval<float>(), std::declval<float>()));
-  using fma_t = decltype(sycl::fma(
-      std::declval<float>(), std::declval<float>(), std::declval<float>()));
+  using fma_t = decltype(sycl::fma(std::declval<float>(), std::declval<float>(),
+                                   std::declval<float>()));
   STATIC_REQUIRE(std::is_same_v<sin_t, float>);
   STATIC_REQUIRE(std::is_same_v<pow_t, float>);
   STATIC_REQUIRE(std::is_same_v<fma_t, float>);
@@ -78,9 +78,8 @@ TEST_CASE("the math header provides integer functions",
           "[khr_split_headers][math]") {
   using abs_t = decltype(sycl::abs(std::declval<int>()));
   using clz_t = decltype(sycl::clz(std::declval<int>()));
-  using mul24_t =
-      decltype(sycl::mul24(std::declval<std::int32_t>(),
-                           std::declval<std::int32_t>()));
+  using mul24_t = decltype(sycl::mul24(std::declval<std::int32_t>(),
+                                       std::declval<std::int32_t>()));
   STATIC_REQUIRE(std::is_same_v<abs_t, int>);
   STATIC_REQUIRE(std::is_same_v<clz_t, int>);
   STATIC_REQUIRE(std::is_same_v<mul24_t, std::int32_t>);
@@ -90,8 +89,8 @@ TEST_CASE("the math header provides common functions",
           "[khr_split_headers][math]") {
   using clamp_t = decltype(sycl::clamp(
       std::declval<float>(), std::declval<float>(), std::declval<float>()));
-  using mix_t = decltype(sycl::mix(
-      std::declval<float>(), std::declval<float>(), std::declval<float>()));
+  using mix_t = decltype(sycl::mix(std::declval<float>(), std::declval<float>(),
+                                   std::declval<float>()));
   STATIC_REQUIRE(std::is_same_v<clamp_t, float>);
   STATIC_REQUIRE(std::is_same_v<mix_t, float>);
 }

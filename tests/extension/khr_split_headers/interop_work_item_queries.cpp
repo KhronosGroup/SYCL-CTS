@@ -62,9 +62,8 @@ TEST_CASE(
 
 #else
 
-TEST_CASE(
-    "work_item_queries split_headers coexistence is not applicable",
-    "[khr_split_headers][work_item_queries]") {
+TEST_CASE("work_item_queries split_headers coexistence is not applicable",
+          "[khr_split_headers][work_item_queries]") {
   SUCCEED(
       "SYCL_KHR_SPLIT_HEADERS and/or SYCL_KHR_WORK_ITEM_QUERIES not "
       "implemented");

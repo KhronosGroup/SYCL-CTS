@@ -61,7 +61,8 @@ TEST_CASE("the exception header defines the errc enumeration",
 TEST_CASE("the exception header defines the async_handler alias",
           "[khr_split_headers][exception]") {
   // async_handler is a callable accepting an exception_list.
-  STATIC_REQUIRE(std::is_invocable_v<sycl::async_handler, sycl::exception_list>);
+  STATIC_REQUIRE(
+      std::is_invocable_v<sycl::async_handler, sycl::exception_list>);
 }
 
 TEST_CASE("the exception header defines the make_error_code function",

@@ -24,7 +24,8 @@
 // <sycl/khr/group_interface.hpp>, and the feature test macro is additionally
 // provided by <sycl/khr/split_headers/version.hpp>. These tests verify that
 // coexistence. They are only meaningful when both extensions are implemented,
-// so they are guarded on both SYCL_KHR_SPLIT_HEADERS and SYCL_KHR_GROUP_INTERFACE.
+// so they are guarded on both SYCL_KHR_SPLIT_HEADERS and
+// SYCL_KHR_GROUP_INTERFACE.
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
@@ -41,7 +42,8 @@
 namespace khr_split_headers::tests {
 
 TEST_CASE(
-    "the group_interface APIs are provided through <sycl/khr/group_interface.hpp>"
+    "the group_interface APIs are provided through "
+    "<sycl/khr/group_interface.hpp>"
     " when split_headers is implemented",
     "[khr_split_headers][group_interface]") {
   // The sycl::khr::work_group group-interface wrapper is available.
@@ -63,9 +65,8 @@ TEST_CASE(
 // When either extension is not implemented the coexistence requirement does not
 // apply; keep at least one always-present test case so the translation unit is
 // not empty.
-TEST_CASE(
-    "group_interface split_headers coexistence is not applicable",
-    "[khr_split_headers][group_interface]") {
+TEST_CASE("group_interface split_headers coexistence is not applicable",
+          "[khr_split_headers][group_interface]") {
   SUCCEED(
       "SYCL_KHR_SPLIT_HEADERS and/or SYCL_KHR_GROUP_INTERFACE not implemented");
 }

@@ -68,9 +68,8 @@ TEST_CASE(
 
 #else
 
-TEST_CASE(
-    "dynamic_addrspace_cast split_headers coexistence is not applicable",
-    "[khr_split_headers][dynamic_addrspace_cast]") {
+TEST_CASE("dynamic_addrspace_cast split_headers coexistence is not applicable",
+          "[khr_split_headers][dynamic_addrspace_cast]") {
   SUCCEED(
       "SYCL_KHR_SPLIT_HEADERS and/or SYCL_KHR_DYNAMIC_ADDRSPACE_CAST not "
       "implemented");

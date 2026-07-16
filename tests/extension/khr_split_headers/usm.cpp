@@ -20,8 +20,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
-#include <sycl/khr/split_headers/usm.hpp>
 #include <cstddef>
+#include <sycl/khr/split_headers/usm.hpp>
 #include <type_traits>
 #include <utility>
 
@@ -135,8 +135,8 @@ TEST_CASE("the usm header defines the typed malloc_shared function",
 
 TEST_CASE("the usm header defines the free function",
           "[khr_split_headers][usm]") {
-  using return_t = decltype(sycl::free(std::declval<void*>(),
-                                       std::declval<sycl::queue>()));
+  using return_t =
+      decltype(sycl::free(std::declval<void*>(), std::declval<sycl::queue>()));
   STATIC_REQUIRE(std::is_void_v<return_t>);
 }
 

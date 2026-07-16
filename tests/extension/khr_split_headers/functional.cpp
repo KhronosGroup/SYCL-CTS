@@ -37,15 +37,15 @@ namespace khr_split_headers::tests {
 
 // Check that FO<int> is complete, FO<int>{}(int, int) returns int, and the
 // transparent FO<void> form is callable.
-#define CHECK_FUNCTION_OBJECT(FO)                                              \
-  TEST_CASE("the functional header defines the " #FO " function object",       \
-            "[khr_split_headers][functional]") {                               \
-    STATIC_REQUIRE(sycl_cts::util::is_complete_v<sycl::FO<int>>);              \
-    using ret_t = decltype(std::declval<sycl::FO<int>>()(                      \
-        std::declval<int>(), std::declval<int>()));                            \
-    STATIC_REQUIRE(std::is_same_v<ret_t, int>);                               \
-    STATIC_REQUIRE(sycl_cts::util::is_complete_v<sycl::FO<>>);                 \
-    STATIC_REQUIRE(std::is_invocable_v<sycl::FO<>, int, int>);                 \
+#define CHECK_FUNCTION_OBJECT(FO)                                        \
+  TEST_CASE("the functional header defines the " #FO " function object", \
+            "[khr_split_headers][functional]") {                         \
+    STATIC_REQUIRE(sycl_cts::util::is_complete_v<sycl::FO<int>>);        \
+    using ret_t = decltype(std::declval<sycl::FO<int>>()(                \
+        std::declval<int>(), std::declval<int>()));                      \
+    STATIC_REQUIRE(std::is_same_v<ret_t, int>);                          \
+    STATIC_REQUIRE(sycl_cts::util::is_complete_v<sycl::FO<>>);           \
+    STATIC_REQUIRE(std::is_invocable_v<sycl::FO<>, int, int>);           \
   }
 
 TEST_CASE("the functional header defines the SYCL_KHR_SPLIT_HEADERS macro",
@@ -70,15 +70,15 @@ CHECK_FUNCTION_OBJECT(maximum)
 
 // logical_and and logical_or implement && and ||, which yield bool rather than
 // the operand type, so they are checked separately.
-#define CHECK_LOGICAL_FUNCTION_OBJECT(FO)                                      \
-  TEST_CASE("the functional header defines the " #FO " function object",       \
-            "[khr_split_headers][functional]") {                               \
-    STATIC_REQUIRE(sycl_cts::util::is_complete_v<sycl::FO<int>>);              \
-    using ret_t = decltype(std::declval<sycl::FO<int>>()(                      \
-        std::declval<int>(), std::declval<int>()));                            \
-    STATIC_REQUIRE(std::is_same_v<ret_t, bool>);                              \
-    STATIC_REQUIRE(sycl_cts::util::is_complete_v<sycl::FO<>>);                 \
-    STATIC_REQUIRE(std::is_invocable_v<sycl::FO<>, int, int>);                 \
+#define CHECK_LOGICAL_FUNCTION_OBJECT(FO)                                \
+  TEST_CASE("the functional header defines the " #FO " function object", \
+            "[khr_split_headers][functional]") {                         \
+    STATIC_REQUIRE(sycl_cts::util::is_complete_v<sycl::FO<int>>);        \
+    using ret_t = decltype(std::declval<sycl::FO<int>>()(                \
+        std::declval<int>(), std::declval<int>()));                      \
+    STATIC_REQUIRE(std::is_same_v<ret_t, bool>);                         \
+    STATIC_REQUIRE(sycl_cts::util::is_complete_v<sycl::FO<>>);           \
+    STATIC_REQUIRE(std::is_invocable_v<sycl::FO<>, int, int>);           \
   }
 
 CHECK_LOGICAL_FUNCTION_OBJECT(logical_and)
