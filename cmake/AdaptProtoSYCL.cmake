@@ -1,4 +1,4 @@
-set(SYCL_IMPLEMENTATION_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 23)
 add_library(SYCL::SYCL INTERFACE IMPORTED GLOBAL)
 target_link_libraries(SYCL::SYCL INTERFACE ProtoSYCL)
 # add_sycl_executable_implementation function
