@@ -22,6 +22,12 @@ find_file(SYCL_IMPLEMENTATION_ADAPTER
 )
 include("${SYCL_IMPLEMENTATION_ADAPTER}")
 
+# Default to C++17 if the SYCL implementation does not specify a C++ standard version.
+if(NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 17)
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if(NOT TARGET SYCL::SYCL)
     message(FATAL_ERROR
         "The SYCL CTS requires a CMake Target with the name `SYCL::SYCL` to be"
