@@ -10,6 +10,7 @@
 #include "../common/common.h"
 
 #ifdef SYCL_BACKEND_OPENCL
+#include <CL/cl.h>
 #include <sycl/backend/opencl.hpp>
 #endif  // SYCL_BACKEND_OPENCL
 

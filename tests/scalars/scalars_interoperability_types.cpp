@@ -57,7 +57,7 @@ class TEST_NAME : public util::test_base {
       bool device_supports_fp64 = device.has(sycl::aspect::fp64);
 
       // Integral Interop Data Types
-      if (!check_type_min_size<cl_bool>(1)) {
+      if (!check_type_min_size<sycl::opencl::cl_bool>(1)) {
         FAIL(log,
              "The following host type does not have the correct size: cl_bool");
       }
