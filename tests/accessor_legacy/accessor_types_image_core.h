@@ -42,7 +42,7 @@ class check_all_types_image_core {
     if (!availability::check(queue, log)) return;
 
     const auto types =
-        named_type_pack<sycl::cl_int4, sycl::cl_uint4, sycl::cl_float4,
+        named_type_pack<sycl::int4, sycl::uint4, sycl::float4,
                         user_alias>::generate("sycl::opencl::cl_int",
                                               "sycl::opencl::cl_uint",
                                               "sycl::opencl::cl_float",
