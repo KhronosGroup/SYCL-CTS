@@ -1,5 +1,8 @@
 /*******************************************************************************
 //
+//  SPDX-FileCopyrightText: 2022 The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
+//
 //  SYCL 2020 Conformance Test Suite
 //
 //  Provide common code for image accessor verification with core types
