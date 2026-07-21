@@ -5,7 +5,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-// Provides buffer storage methods tests for sycl::half and
+// Provides buffer storage methods tests for sycl::half and sycl::opencl::cl_half.
 //
 *******************************************************************************/
 
