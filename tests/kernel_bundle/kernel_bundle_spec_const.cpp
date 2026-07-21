@@ -36,6 +36,10 @@ TEST_CASE(
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   sycl::context ctx = queue.get_context();
 
+  if (!device.has(sycl::aspect::online_compiler)) {
+    SKIP("Device does not support online compilation");
+  }
+
   using KernelName = class simple_kernel;
 
   queue.submit([&](sycl::handler& cgh) {
