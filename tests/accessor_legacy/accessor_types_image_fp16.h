@@ -44,7 +44,8 @@ public:
     if (!availability::check(queue, log))
       return;
 
-    check_type<sycl::cl_half4>()(log, queue, "sycl::opencl::cl_half");
+    check_type<sycl::vec<sycl::opencl::cl_half, 4>>()(log, queue,
+                                                      "sycl::opencl::cl_half");
 
     queue.wait_and_throw();
   }
