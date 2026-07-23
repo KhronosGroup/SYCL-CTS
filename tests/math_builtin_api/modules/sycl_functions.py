@@ -1,3 +1,12 @@
+################################################################################
+#
+#   SPDX-FileCopyrightText: 2019 The Khronos Group Inc.
+#   SPDX-License-Identifier: Apache-2.0
+#
+#   SYCL 2020 Conformance Test Suite
+#
+################################################################################
+
 """Represents a function signature."""
 class funsig:
     def __init__(self, namespace, ret_type, name, arg_types=[], accuracy="", comment="", pntr_indx=[], mutations=[], template_arg_map=[], accuracy_mode="ULP"):

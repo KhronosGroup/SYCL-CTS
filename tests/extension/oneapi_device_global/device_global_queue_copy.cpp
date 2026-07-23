@@ -1,5 +1,8 @@
 /*******************************************************************************
 //
+//  SPDX-FileCopyrightText: 2022 The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
+//
 //  SYCL 2020 Conformance Test Suite
 //
 //  Provides functional test for overloads for queue::copy for device_global

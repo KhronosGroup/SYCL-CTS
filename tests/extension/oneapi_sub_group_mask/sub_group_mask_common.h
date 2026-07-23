@@ -1,5 +1,8 @@
 /*******************************************************************************
 //
+//  SPDX-FileCopyrightText: 2021 The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
+//
 //  SYCL 2020 Extension Conformance Test
 //
 //  Provides common methods for sub_group_mask tests
