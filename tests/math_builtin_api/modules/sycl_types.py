@@ -1,3 +1,12 @@
+################################################################################
+#
+#   SPDX-FileCopyrightText: 2019 The Khronos Group Inc.
+#   SPDX-License-Identifier: Apache-2.0
+#
+#   SYCL 2020 Conformance Test Suite
+#
+################################################################################
+
 """Represents an argument or return type. The type may be generic."""
 class argtype:
     def __init__(self, name, var_type, base_type, dim, child_types):

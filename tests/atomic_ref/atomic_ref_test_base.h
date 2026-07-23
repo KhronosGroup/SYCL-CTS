@@ -1,20 +1,9 @@
 /*******************************************************************************
 //
+//  SPDX-FileCopyrightText: 2023 The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
+//
 //  SYCL 2020 Conformance Test Suite
-//
-//  Copyright (c) 2023 The Khronos Group Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
 //
 //  Provides base test class for sycl::atomic_ref api tests
 //
@@ -34,10 +23,12 @@ class atomic_ref_test {
   static constexpr sycl::memory_order memory_orders[] = {
       sycl::memory_order::relaxed, sycl::memory_order::acq_rel,
       sycl::memory_order::seq_cst};
+  // Note: sycl::memory_scope::work_item is intentionally excluded — the SYCL
+  // working group clarified that using it with any sycl::atomic_ref
+  // operation is undefined behaviour.
   static constexpr sycl::memory_scope memory_scopes[] = {
-      sycl::memory_scope::work_item, sycl::memory_scope::sub_group,
-      sycl::memory_scope::work_group, sycl::memory_scope::device,
-      sycl::memory_scope::system};
+      sycl::memory_scope::sub_group, sycl::memory_scope::work_group,
+      sycl::memory_scope::device, sycl::memory_scope::system};
   static constexpr sycl::memory_order memory_order_for_atomic_ref_obj =
       MemoryOrderT::value;
   static constexpr sycl::memory_scope memory_scope_for_atomic_ref_obj =
