@@ -9,7 +9,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "helpers.h"
+#include "../common/helper_scalers.h"
 
 #define TEST_NAME scalars_interopability_types
 
@@ -38,6 +38,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
+#ifdef SYCL_BACKEND_OPENCL
     {
       auto myQueue = util::get_cts_object::queue();
 
@@ -46,7 +47,7 @@ class TEST_NAME : public util::test_base {
       bool device_supports_fp64 = device.has(sycl::aspect::fp64);
 
       // Integral Interop Data Types
-      if (!check_type_min_size<cl_bool>(1)) {
+      if (!check_type_min_size<sycl::opencl::cl_bool>(1)) {
         FAIL(log,
              "The following host type does not have the correct size: cl_bool");
       }
@@ -239,6 +240,9 @@ class TEST_NAME : public util::test_base {
 
       myQueue.wait_and_throw();
     }
+#else
+    SKIP("OpenCL backend is not supported");
+#endif  // SYCL_BACKEND_OPENCL
   }
 };
 

@@ -125,7 +125,7 @@ void testStruct(sycl::queue& q, const sycl::kernel& kernel) {
   // This definition must match the one used in the kernel.
   struct S {
     std::int32_t i;
-    cl_float f;
+    sycl::opencl::cl_float f;
     std::int32_t* p;
     struct Inner {
       std::int32_t i;
