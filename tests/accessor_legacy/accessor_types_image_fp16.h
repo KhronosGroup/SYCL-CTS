@@ -41,10 +41,10 @@ public:
     // Skip tests in case extension is not available
     using availability =
         sycl_cts::util::extensions::availability<extension_tag_t>;
-    if (!availability::check(queue, log))
-      return;
+    if (!availability::check(queue, log)) return;
 
-    check_type<sycl::half4>()(log, queue, "sycl::opencl::cl_half");
+    check_type<sycl::vec<sycl::opencl::cl_half, 4>>()(log, queue,
+                                                      "sycl::opencl::cl_half");
 
     queue.wait_and_throw();
   }
@@ -52,4 +52,4 @@ public:
 
 }  // namespace TEST_NAMESPACE
 
-#endif // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_TYPES_IMAGE_FP16_H
+#endif  // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_TYPES_IMAGE_FP16_H

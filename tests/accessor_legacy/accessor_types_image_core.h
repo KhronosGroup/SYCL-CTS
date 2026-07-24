@@ -41,12 +41,11 @@ class check_all_types_image_core {
         sycl_cts::util::extensions::availability<extensionTagT>;
     if (!availability::check(queue, log)) return;
 
-    const auto types =
-        named_type_pack<sycl::int4, sycl::uint4, sycl::float4,
-                        user_alias>::generate("sycl::opencl::cl_int",
-                                              "sycl::opencl::cl_uint",
-                                              "sycl::opencl::cl_float",
-                                              "user_alias");
+    const auto types = named_type_pack<
+        sycl::vec<sycl::opencl::cl_int, 4>, sycl::vec<sycl::opencl::cl_uint, 4>,
+        sycl::vec<sycl::opencl::cl_float, 4>,
+        user_alias>::generate("sycl::opencl::cl_int", "sycl::opencl::cl_uint",
+                              "sycl::opencl::cl_float", "user_alias");
 
     for_all_types<check_type>(types, log, queue);
 
