@@ -25,7 +25,7 @@ TEST_CASE("the backend header defines the SYCL_KHR_SPLIT_HEADERS macro",
 
 TEST_CASE("the backend header defines the backend enum",
           "[khr_split_headers][backend]") {
-  STATIC_REQUIRE(sycl_cts::util::is_complete_v<sycl::backend>);
+  STATIC_REQUIRE(std::is_enum_v<sycl::backend>);
 }
 
 }  // namespace khr_split_headers::tests
