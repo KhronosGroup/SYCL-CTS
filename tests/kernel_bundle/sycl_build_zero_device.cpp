@@ -1,5 +1,8 @@
 /*******************************************************************************
 //
+//  SPDX-FileCopyrightText: 2022 The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
+//
 //  SYCL 2020 Conformance Test Suite
 //
 //  This test calls sycl::build(kernel_bundle<>, std::vector<device>,
@@ -35,6 +38,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
    */
   void run(util::logger &log) override {
     auto q = util::get_cts_object::queue();
+
+    if (!q.get_device().has(sycl::aspect::online_compiler)) {
+      SKIP("Device does not support online compilation");
+    }
 
     std::vector<sycl::device> zero_device;
     const auto first_simple_kernel_id =

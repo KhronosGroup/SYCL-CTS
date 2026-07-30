@@ -1,8 +1,9 @@
 /*******************************************************************************
 //
-//  SYCL 2020 Conformance Test Suite
+//  SPDX-FileCopyrightText: 2022 The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
 //
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  SYCL 2020 Conformance Test Suite
 //
 *******************************************************************************/
 

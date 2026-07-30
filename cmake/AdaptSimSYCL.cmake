@@ -1,3 +1,4 @@
+set(CMAKE_CXX_STANDARD 20)
 add_library(SYCL::SYCL INTERFACE IMPORTED GLOBAL)
 target_link_libraries(SYCL::SYCL INTERFACE SimSYCL::simsycl)
 # add_sycl_executable_implementation function

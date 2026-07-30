@@ -1,21 +1,10 @@
 /*******************************************************************************
 //
+//  SPDX-FileCopyrightText: 2017-2022 Codeplay Software LTD.
+//  SPDX-FileCopyrightText: 2022 The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
+//
 //  SYCL 2020 Conformance Test Suite
-//
-//  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
 //
 *******************************************************************************/
 
@@ -794,29 +783,29 @@ sycl::mdouble3 cross(sycl::mdouble3 p0, sycl::mdouble3 p1);
   template <typename T, int N>                          \
   sycl::vec<T, N> func(sycl::vec<T, N> a) {             \
     return sycl_cts::math::run_func_on_vector<T, T, N>( \
-        [](T x) { return func(x); }, a);                \
+        [](T x) { return reference::func(x); }, a);     \
   }
 
 #define MAKE_VEC_VERSION_2ARGS(func)                           \
   template <typename T, int N>                                 \
   sycl::vec<T, N> func(sycl::vec<T, N> a, sycl::vec<T, N> b) { \
     return sycl_cts::math::run_func_on_vector<T, T, N>(        \
-        [](T x, T y) { return func(x, y); }, a, b);            \
+        [](T x, T y) { return reference::func(x, y); }, a, b); \
   }
 
-#define MAKE_VEC_VERSION_3ARGS(func)                           \
+#define MAKE_VEC_VERSION_3ARGS(func)                                      \
+  template <typename T, int N>                                            \
+  sycl::vec<T, N> func(sycl::vec<T, N> a, sycl::vec<T, N> b,              \
+                       sycl::vec<T, N> c) {                               \
+    return sycl_cts::math::run_func_on_vector<T, T, N>(                   \
+        [](T x, T y, T z) { return reference::func(x, y, z); }, a, b, c); \
+  }
+
+#define MAKE_VEC_VERSION_WITH_SCALAR(func)                     \
   template <typename T, int N>                                 \
-  sycl::vec<T, N> func(sycl::vec<T, N> a, sycl::vec<T, N> b,   \
-                       sycl::vec<T, N> c) {                    \
+  sycl::vec<T, N> func(sycl::vec<T, N> a, T b) {               \
     return sycl_cts::math::run_func_on_vector<T, T, N>(        \
-        [](T x, T y, T z) { return func(x, y, z); }, a, b, c); \
-  }
-
-#define MAKE_VEC_VERSION_WITH_SCALAR(func)              \
-  template <typename T, int N>                          \
-  sycl::vec<T, N> func(sycl::vec<T, N> a, T b) {        \
-    return sycl_cts::math::run_func_on_vector<T, T, N>( \
-        [](T x, T y) { return func(x, y); }, a, b);     \
+        [](T x, T y) { return reference::func(x, y); }, a, b); \
   }
 
 // Common functions
@@ -1226,29 +1215,29 @@ T dot(sycl::vec<T, N> a, sycl::vec<T, N> b) {
   template <typename T, size_t N>                       \
   sycl::marray<T, N> func(sycl::marray<T, N> a) {       \
     return sycl_cts::math::run_func_on_marray<T, T, N>( \
-        [](T x) { return func(x); }, a);                \
+        [](T x) { return reference::func(x); }, a);     \
   }
 
 #define MAKE_MARRAY_VERSION_2ARGS(func)                                 \
   template <typename T, size_t N>                                       \
   sycl::marray<T, N> func(sycl::marray<T, N> a, sycl::marray<T, N> b) { \
     return sycl_cts::math::run_func_on_marray<T, T, N>(                 \
-        [](T x, T y) { return func(x, y); }, a, b);                     \
+        [](T x, T y) { return reference::func(x, y); }, a, b);          \
   }
 
-#define MAKE_MARRAY_VERSION_3ARGS(func)                               \
-  template <typename T, size_t N>                                     \
-  sycl::marray<T, N> func(sycl::marray<T, N> a, sycl::marray<T, N> b, \
-                          sycl::marray<T, N> c) {                     \
-    return sycl_cts::math::run_func_on_marray<T, T, N>(               \
-        [](T x, T y, T z) { return func(x, y, z); }, a, b, c);        \
+#define MAKE_MARRAY_VERSION_3ARGS(func)                                   \
+  template <typename T, size_t N>                                         \
+  sycl::marray<T, N> func(sycl::marray<T, N> a, sycl::marray<T, N> b,     \
+                          sycl::marray<T, N> c) {                         \
+    return sycl_cts::math::run_func_on_marray<T, T, N>(                   \
+        [](T x, T y, T z) { return reference::func(x, y, z); }, a, b, c); \
   }
 
-#define MAKE_MARRAY_VERSION_WITH_SCALAR(func)           \
-  template <typename T, size_t N>                       \
-  sycl::marray<T, N> func(sycl::marray<T, N> a, T b) {  \
-    return sycl_cts::math::run_func_on_marray<T, T, N>( \
-        [](T x, T y) { return func(x, y); }, a, b);     \
+#define MAKE_MARRAY_VERSION_WITH_SCALAR(func)                  \
+  template <typename T, size_t N>                              \
+  sycl::marray<T, N> func(sycl::marray<T, N> a, T b) {         \
+    return sycl_cts::math::run_func_on_marray<T, T, N>(        \
+        [](T x, T y) { return reference::func(x, y); }, a, b); \
   }
 
 // Common functions.
@@ -1256,7 +1245,7 @@ T dot(sycl::vec<T, N> a, sycl::vec<T, N> b) {
 template <typename T, size_t N>
 bool any(sycl::marray<T, N> a) {
   for (size_t i = 0; i < N; i++) {
-    if (any(a[i]) == 1) return true;
+    if (reference::any(a[i]) == 1) return true;
   }
   return false;
 }

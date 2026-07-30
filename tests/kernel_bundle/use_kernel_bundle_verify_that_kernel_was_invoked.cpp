@@ -1,5 +1,8 @@
 /*******************************************************************************
 //
+//  SPDX-FileCopyrightText: 2021 The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
+//
 //  SYCL 2020 Conformance Test Suite
 //
 //  This test obtain kernel bundle in bundle_state::input, then for this kernel
@@ -39,6 +42,10 @@ void invoke_kernel_and_verify_invocation(util::logger& log,
                                          const sycl::context& ctx) {
   sycl::queue queue(ctx, ctx.get_devices()[0]);
   bool flags[] = {false, false};
+
+  if (!queue.get_device().has(sycl::aspect::online_compiler)) {
+    SKIP("Device does not support online compiler aspect");
+  }
 
   {
     sycl::buffer<bool> flag_buffer{flags, sycl::range<1>{2}};

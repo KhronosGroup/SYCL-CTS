@@ -1,3 +1,12 @@
+################################################################################
+#
+#   SPDX-FileCopyrightText: 2025 The Khronos Group Inc.
+#   SPDX-License-Identifier: Apache-2.0
+#
+#   SYCL 2020 Conformance Test Suite
+#
+################################################################################
+
 import random
 
 typelist = ["bool", "char", "char16_t", "char32_t", "wchar_t", "short", "int", "long", "long long"]

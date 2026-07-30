@@ -1,5 +1,8 @@
 /*******************************************************************************
 //
+//  SPDX-FileCopyrightText: 2024 The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
+//
 //  SYCL 2020 Conformance Test Suite
 //
 //  Provides verifications that property list can be passed or omitted for
@@ -32,6 +35,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
    */
   void run(util::logger &log) override {
     auto q = util::get_cts_object::queue();
+
+    if (!q.get_device().has(sycl::aspect::online_linker)) {
+      SKIP("Device does not support online linker aspect");
+    }
 
     const auto first_simple_kernel_id =
         sycl::get_kernel_id<first_simple_kernel>();

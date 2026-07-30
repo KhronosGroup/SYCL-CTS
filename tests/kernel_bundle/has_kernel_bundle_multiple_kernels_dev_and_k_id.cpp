@@ -1,5 +1,8 @@
 /*******************************************************************************
 //
+//  SPDX-FileCopyrightText: 2021 The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
+//
 //  SYCL 2020 Conformance Test Suite
 //
 //  This test calls sycl::has_kernel_bundle<all bundle_states>(ctx, devices,
@@ -8,8 +11,8 @@
 //    1) Call sycl::has_kernel_bundle only with one kernel: with kernel_cpu,
 //  kernel_gpu and kernel_accelerator.
 //    2) Reduce call results for two kernels, for example call result for
-//  kernel_cpu and kernel_gpu (reducing with && operator). Save reduced result to
-//  variable with name "expected"
+//  kernel_cpu and kernel_gpu (reducing with && operator). Save reduced result
+//  to variable with name "expected"
 //    3) Call sycl::has_kernel_bundle with combination of these kernels:
 //  kernel_cpu and kernel_gpu, kernel_cpu and kernel_gpu, kernel_gpu and
 //  kernel_accelerator, kernel_cpu and second_kernel_cpu etc.

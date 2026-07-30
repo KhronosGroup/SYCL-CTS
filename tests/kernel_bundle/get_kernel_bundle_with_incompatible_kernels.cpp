@@ -1,5 +1,8 @@
 /*******************************************************************************
 //
+//  SPDX-FileCopyrightText: 2021 The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
+//
 //  SYCL 2020 Conformance Test Suite
 //
 //  This test calls these sycl::get_kernel_bundle overloads:
@@ -7,7 +10,7 @@
 //    2) sycl::get_kernel_bundle<BundleState>(context, devices, kernelIds)
 //    3) get_kernel_bundle<KernelName, BundleState>(const context& ctxt)
 //    4) get_kernel_bundle<KernelName, BundleState>(const context& ctxt,
-                                       const std::vector<device>& devs)
+//                                     const std::vector<device>& devs)
 //  For kernels that are incompatible with current device.
 //
 //  The test verifies that the exceptions with sycl::errc::invalid are thrown.

@@ -1,26 +1,15 @@
 /*******************************************************************************
 //
+//  SPDX-FileCopyrightText: 2017-2022 Codeplay Software LTD.
+//  SPDX-FileCopyrightText: 2022 The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
+//
 //  SYCL 2020 Conformance Test Suite
-//
-//  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
 //
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "helpers.h"
+#include "../common/helper_scalers.h"
 
 #define TEST_NAME scalars_interopability_types
 
@@ -49,6 +38,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
+#ifdef SYCL_BACKEND_OPENCL
     {
       auto myQueue = util::get_cts_object::queue();
 
@@ -57,7 +47,7 @@ class TEST_NAME : public util::test_base {
       bool device_supports_fp64 = device.has(sycl::aspect::fp64);
 
       // Integral Interop Data Types
-      if (!check_type_min_size<cl_bool>(1)) {
+      if (!check_type_min_size<sycl::opencl::cl_bool>(1)) {
         FAIL(log,
              "The following host type does not have the correct size: cl_bool");
       }
@@ -250,6 +240,9 @@ class TEST_NAME : public util::test_base {
 
       myQueue.wait_and_throw();
     }
+#else
+    SKIP("OpenCL backend is not supported");
+#endif  // SYCL_BACKEND_OPENCL
   }
 };
 

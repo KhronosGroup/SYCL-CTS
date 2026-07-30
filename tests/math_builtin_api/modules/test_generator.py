@@ -1,3 +1,12 @@
+################################################################################
+#
+#   SPDX-FileCopyrightText: 2019 The Khronos Group Inc.
+#   SPDX-License-Identifier: Apache-2.0
+#
+#   SYCL 2020 Conformance Test Suite
+#
+################################################################################
+
 from . import sycl_functions
 from . import sycl_types
 import random

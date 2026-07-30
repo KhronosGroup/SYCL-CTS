@@ -1,5 +1,8 @@
 /*******************************************************************************
 //
+//  SPDX-FileCopyrightText: 2021 The Khronos Group Inc.
+//  SPDX-License-Identifier: Apache-2.0
+//
 //  SYCL 2020 Conformance Test Suite
 //
 //  Provide verification for sycl::interop_handle::get_native functions
@@ -10,6 +13,7 @@
 #include "../common/common.h"
 
 #ifdef SYCL_BACKEND_OPENCL
+#include <CL/cl.h>
 #include <sycl/backend/opencl.hpp>
 #endif  // SYCL_BACKEND_OPENCL
 
