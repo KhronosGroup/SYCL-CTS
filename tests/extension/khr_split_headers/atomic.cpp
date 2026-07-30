@@ -24,6 +24,8 @@ TEST_CASE("the atomic header defines the SYCL_KHR_SPLIT_HEADERS macro",
   STATIC_REQUIRE(macro_is_defined);
 }
 
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+
 TEST_CASE("the atomic header defines the memory_order enum",
           "[khr_split_headers][atomic]") {
   STATIC_REQUIRE(sycl_cts::util::is_complete_v<sycl::memory_order>);
@@ -132,5 +134,7 @@ TEST_CASE("the atomic header defines the atomic_fetch_max function template",
       decltype(sycl::atomic_fetch_max(std::declval<sycl::atomic<int>>(), 0));
   STATIC_REQUIRE(std::is_same_v<return_t, int>);
 }
+
+#endif  // SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
 
 }  // namespace khr_split_headers::tests
