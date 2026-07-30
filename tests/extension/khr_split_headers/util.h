@@ -7,8 +7,8 @@
 //
 *******************************************************************************/
 
-#ifndef __SYCLCTS_TESTS_EXTENSION_KHR_INCLUDES_UTIL_H
-#define __SYCLCTS_TESTS_EXTENSION_KHR_INCLUDES_UTIL_H
+#ifndef __SYCLCTS_TESTS_EXTENSION_KHR_SPLIT_HEADERS_UTIL_H
+#define __SYCLCTS_TESTS_EXTENSION_KHR_SPLIT_HEADERS_UTIL_H
 
 #include <type_traits>
 
@@ -25,4 +25,4 @@ inline constexpr bool is_complete_v = is_complete<T>::value;
 
 }  // namespace sycl_cts::util
 
-#endif  // __SYCLCTS_TESTS_EXTENSION_KHR_INCLUDES_UTIL_H
+#endif  // __SYCLCTS_TESTS_EXTENSION_KHR_SPLIT_HEADERS_UTIL_H
