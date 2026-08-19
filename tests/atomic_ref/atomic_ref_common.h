@@ -204,11 +204,19 @@ inline auto get_memory_orders() {
 }
 
 /**
+ * @brief The memory_scope values that are valid for sycl::atomic_ref.
+ *
+ * Note: sycl::memory_scope::work_item is intentionally excluded — the SYCL
+ * working group clarified that using it with any sycl::atomic_ref operation
+ * is undefined behaviour.
+ */
+constexpr sycl::memory_scope memory_scopes[] = {
+    sycl::memory_scope::sub_group, sycl::memory_scope::work_group,
+    sycl::memory_scope::device, sycl::memory_scope::system};
+
+/**
  * @brief Factory function for getting type_pack with memory_scope values
  */
-// Note: sycl::memory_scope::work_item is intentionally excluded — the SYCL
-// working group clarified that using it with any sycl::atomic_ref operation
-// is undefined behaviour.
 inline auto get_memory_scopes() {
   static const auto memory_scopes =
       value_pack<sycl::memory_scope, sycl::memory_scope::sub_group,

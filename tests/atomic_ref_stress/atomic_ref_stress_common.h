@@ -21,6 +21,48 @@ constexpr size_t max_size = 32768;
 namespace atomic_ref_stress_test {
 using namespace sycl_cts;
 
+/**
+ * @brief Position of a memory scope in the narrowest-to-widest ordering given
+ * in the SYCL specification.
+ *
+ * The underlying values of sycl::memory_scope are unspecified, so the
+ * enumerators cannot be compared directly.
+ */
+constexpr int scope_rank(sycl::memory_scope scope) {
+  switch (scope) {
+    case sycl::memory_scope::work_item:
+      return 0;
+    case sycl::memory_scope::sub_group:
+      return 1;
+    case sycl::memory_scope::work_group:
+      return 2;
+    case sycl::memory_scope::device:
+      return 3;
+    case sycl::memory_scope::system:
+      return 4;
+  }
+  return -1;
+}
+
+/**
+ * @brief Scopes that a second atomic operation on the same memory location may
+ * use alongside an operation with scope @p scope.
+ *
+ * Two atomic operations on the same location must have inclusive scope.
+ * SYCL 2020 restricts the two scopes to be equal.
+ */
+inline std::vector<sycl::memory_scope> get_partner_scopes(
+    sycl::queue& queue, sycl::memory_scope scope) {
+  std::vector<sycl::memory_scope> partners;
+  for (auto candidate : atomic_ref::tests::common::memory_scopes) {
+    if (!SYCL_CTS_SYCL_NEXT_TESTS && candidate != scope) continue;
+    if (scope_rank(candidate) < scope_rank(scope)) continue;
+    if (atomic_ref::tests::common::memory_scope_is_supported(queue, candidate))
+      partners.push_back(candidate);
+  }
+  return partners;
+}
+
 template <typename T, typename MemoryOrderT, typename MemoryScopeT,
           typename AddressSpaceT>
 class atomicity_device_scope {
@@ -41,27 +83,37 @@ class atomicity_device_scope {
     if (!atomic_ref::tests::common::memory_order_and_scope_are_supported(
             queue, MemoryOrder, MemoryScope))
       return;
-    T val{};
     const size_t size = std::min<size_t>(
         queue.get_device().get_info<sycl::info::device::max_compute_units>(),
         max_size);
-    {
-      sycl::buffer buf{&val, {1}};
-      queue.submit([&](sycl::handler& cgh) {
-        sycl::accessor acc{buf, cgh};
-        cgh.parallel_for({size}, [=](auto i) {
-          sycl::atomic_ref<T, MemoryOrder, MemoryScope, AddressSpace> a_r{
-              acc[0]};
-          a_r.fetch_add(2);
+    // Half of the work-items use the scope of the atomic_ref and half the
+    // scope of the partner, so the result is only correct if operations
+    // issued under the two scopes are atomic with respect to each other.
+    for (auto partner_scope : get_partner_scopes(queue, MemoryScope)) {
+      INFO("partner memory_scope: " +
+           Catch::StringMaker<sycl::memory_scope>::convert(partner_scope));
+      T val{};
+      {
+        sycl::buffer buf{&val, {1}};
+        queue.submit([&](sycl::handler& cgh) {
+          sycl::accessor acc{buf, cgh};
+          cgh.parallel_for({size}, [=](sycl::item<1> i) {
+            sycl::atomic_ref<T, MemoryOrder, MemoryScope, AddressSpace> a_r{
+                acc[0]};
+            if (i.get_linear_id() % 2 == 0)
+              a_r.fetch_add(2, MemoryOrder, MemoryScope);
+            else
+              a_r.fetch_add(2, MemoryOrder, partner_scope);
+          });
         });
-      });
+      }
+      bool res;
+      if constexpr (std::is_floating_point_v<T>)
+        res = atomic_ref::tests::common::compare_floats<T>(val, size * 2);
+      else
+        res = (val == size * 2);
+      CHECK(res);
     }
-    bool res;
-    if constexpr (std::is_floating_point_v<T>)
-      res = atomic_ref::tests::common::compare_floats<T>(val, size * 2);
-    else
-      res = (val == size * 2);
-    CHECK(res);
   }
 };
 
@@ -89,35 +141,47 @@ class atomicity_work_group_scope {
     const size_t local_range = std::min<size_t>(
         queue.get_device().get_info<sycl::info::device::max_work_group_size>(),
         max_size);
-    std::array<T, group_range> vals;
-    vals.fill(0);
-    {
-      sycl::buffer buf{vals.data(), {group_range}};
-      queue
-          .submit([&](sycl::handler& cgh) {
-            sycl::accessor acc{buf, cgh};
-            sycl::local_accessor<T> lacc{{1}, cgh};
-            cgh.parallel_for(
-                sycl::nd_range<1>(group_range * local_range, local_range),
-                [=](auto item) {
-                  sycl::atomic_ref<T, MemoryOrder, MemoryScope, AddressSpace>
-                      a_r{lacc[0]};
-                  a_r.store(0);
-                  sycl::group_barrier(item.get_group());
-                  if (a_r.fetch_sub(T(2)) - T(2) == -T(local_range * 2)) {
-                    acc[item.get_group_linear_id()] = a_r.load();
-                  }
-                });
-          })
-          .wait_and_throw();
+    // Half of the work-items use the scope of the atomic_ref and half the
+    // scope of the partner, so the result is only correct if operations
+    // issued under the two scopes are atomic with respect to each other.
+    for (auto partner_scope : get_partner_scopes(queue, MemoryScope)) {
+      INFO("partner memory_scope: " +
+           Catch::StringMaker<sycl::memory_scope>::convert(partner_scope));
+      std::array<T, group_range> vals;
+      vals.fill(0);
+      {
+        sycl::buffer buf{vals.data(), {group_range}};
+        queue
+            .submit([&](sycl::handler& cgh) {
+              sycl::accessor acc{buf, cgh};
+              sycl::local_accessor<T> lacc{{1}, cgh};
+              cgh.parallel_for(
+                  sycl::nd_range<1>(group_range * local_range, local_range),
+                  [=](auto item) {
+                    sycl::atomic_ref<T, MemoryOrder, MemoryScope, AddressSpace>
+                        a_r{lacc[0]};
+                    a_r.store(0);
+                    sycl::group_barrier(item.get_group());
+                    T res;
+                    if (item.get_local_linear_id() % 2 == 0)
+                      res = a_r.fetch_sub(T(2), MemoryOrder, MemoryScope);
+                    else
+                      res = a_r.fetch_sub(T(2), MemoryOrder, partner_scope);
+                    if (res - T(2) == -T(local_range * 2)) {
+                      acc[item.get_group_linear_id()] = a_r.load();
+                    }
+                  });
+            })
+            .wait_and_throw();
+      }
+      CHECK(std::all_of(vals.cbegin(), vals.cend(), [=](T i) {
+        if constexpr (std::is_floating_point_v<T>)
+          return atomic_ref::tests::common::compare_floats(i,
+                                                           -T(local_range * 2));
+        else
+          return i == -T(local_range * 2);
+      }));
     }
-    CHECK(std::all_of(vals.cbegin(), vals.cend(), [=](T i) {
-      if constexpr (std::is_floating_point_v<T>)
-        return atomic_ref::tests::common::compare_floats(i,
-                                                         -T(local_range * 2));
-      else
-        return i == -T(local_range * 2);
-    }));
   }
 };
 
