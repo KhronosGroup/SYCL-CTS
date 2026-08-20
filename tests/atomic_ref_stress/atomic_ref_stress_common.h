@@ -107,12 +107,10 @@ class atomicity_device_scope {
           });
         });
       }
-      bool res;
       if constexpr (std::is_floating_point_v<T>)
-        res = atomic_ref::tests::common::compare_floats<T>(val, size * 2);
+        CHECK(atomic_ref::tests::common::compare_floats<T>(val, size * 2));
       else
-        res = (val == size * 2);
-      CHECK(res);
+        CHECK(val == size * 2);
     }
   }
 };
