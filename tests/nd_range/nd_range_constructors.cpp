@@ -18,6 +18,8 @@ enum class op_codes : size_t {
   ctor_move = 2,
   assign_copy = 3,
   assign_move = 4,
+  ctor_default = 5,
+  assign_to_default = 6,
   code_count
 };
 
@@ -31,6 +33,8 @@ static const std::array<std::string, error_count> error_strings{
     "nd_range with nd_range was not move constructed correctly",
     "nd_range with nd_range was not copy assigned correctly",
     "nd_range with nd_range was not move assigned correctly",
+    "nd_range was not default constructed correctly",
+    "default constructed nd_range was not assigned correctly",
 };
 
 template <op_codes Code, typename ResultArray>
@@ -93,6 +97,54 @@ void check_by_value_semantics(ResultArray& result, sycl::range<dim>& ls,
   if constexpr (with_offset) {
     offset = get_offset<dim>();
   }
+
+#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP && !SYCL_CTS_COMPILING_WITH_PROTOSYCL
+  static_assert(std::is_default_constructible_v<sycl::nd_range<dim>>,
+                "nd_range must be default constructible");
+
+  // A default constructed nd_range has the value 0 for each component of its
+  // global range, local range and offset. Note that get_group_range() is
+  // deliberately not queried, it would divide the global range by a local
+  // range of zeros.
+  const sycl::range<dim> zero_range =
+      sycl_cts::util::get_cts_object::range<dim>::get(0, 0, 0);
+  sycl::nd_range<dim> default_constructed;
+  for (int i = 0; i < dim; i++) {
+    set_success_operation<op_codes::ctor_default>(
+        result, default_constructed.get_global_range()[i] == 0);
+    set_success_operation<op_codes::ctor_default>(
+        result, default_constructed.get_local_range()[i] == 0);
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+    set_success_operation<op_codes::ctor_default>(
+        result, default_constructed.get_offset()[i] == 0);
+#endif
+  }
+  set_success_operation<op_codes::ctor_default>(
+      result,
+      default_constructed == sycl::nd_range<dim>(zero_range, zero_range));
+  set_success_operation<op_codes::ctor_default>(
+      result, default_constructed != sycl::nd_range<dim>(gs, ls));
+
+  // The default constructor allows an nd_range to be declared before the
+  // global and local ranges are known, so it has to be possible to assign a
+  // fully specified nd_range to a default constructed one afterwards.
+  sycl::nd_range<dim> assigned_to_default;
+  assigned_to_default = get_nd_range<dim, with_offset>(ls, gs);
+  for (int i = 0; i < dim; i++) {
+    set_success_operation<op_codes::assign_to_default>(
+        result, assigned_to_default.get_global_range()[i] == gs[i]);
+    set_success_operation<op_codes::assign_to_default>(
+        result, assigned_to_default.get_local_range()[i] == ls[i]);
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+    set_success_operation<op_codes::assign_to_default>(
+        result, assigned_to_default.get_offset()[i] == offset[i]);
+#endif
+    set_success_operation<op_codes::assign_to_default>(
+        result, assigned_to_default.get_group_range()[i] == gs[i] / ls[i]);
+  }
+#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP &&
+        // !SYCL_CTS_COMPILING_WITH_PROTOSYCL
+
   sycl::nd_range<dim> nd_range = get_nd_range<dim, with_offset>(ls, gs);
   for (int i = 0; i < dim; i++) {
     set_success_operation<op_codes::ctor_range>(
