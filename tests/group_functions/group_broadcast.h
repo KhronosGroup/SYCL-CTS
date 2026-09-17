@@ -26,7 +26,8 @@ void broadcast_group(sycl::queue& queue) {
       "T group_broadcast(group g, T x, group::linear_id_type local_linear_id)",
       "T group_broadcast(group g, T x, group::id_type local_id)"};
 
-  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range =
+      sycl_cts::util::work_group_range_for_kernel<D, broadcast_group_kernel<D, T>>(queue);
   size_t work_group_size = work_group_range.size();
 
   // array to return results
