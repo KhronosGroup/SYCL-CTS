@@ -36,15 +36,18 @@ inline sycl::range<3> get_default_range() {
   return sycl::range<3>{1, 1, 1};
 }
 
-namespace detail {
 /**
- * @brief Returns the largest hypercube range constrained by max_work_group_size
- *        and the device's max_work_item_sizes.
+ * @brief Provides range for maximal size work-group
+ *        supported by device of a given queue.
+ *        Multidimensional work-group range is made
+ *        as hypercybic as possible
  * @tparam Dimensions Dimension to use for group instance
  */
 template <int Dimensions>
-sycl::range<Dimensions> make_hypercubic_range(sycl::queue& queue,
-                                              size_t max_work_group_size) {
+sycl::range<Dimensions> work_group_range(
+    sycl::queue queue,
+    size_t work_items_limit = std::numeric_limits<size_t>::max()) {
+  // query device for work-group sizes
   size_t max_work_item_sizes[Dimensions];
   {
     sycl::id<3> sizes =
@@ -54,6 +57,9 @@ sycl::range<Dimensions> make_hypercubic_range(sycl::queue& queue,
       max_work_item_sizes[i] = sizes.get(i);
     }
   }
+  size_t max_work_group_size = std::min(
+      queue.get_device().get_info<sycl::info::device::max_work_group_size>(),
+      work_items_limit);
 
   // make work-group size as much square/cubic as possible
   size_t work_group_sizes[Dimensions] = {
@@ -80,48 +86,24 @@ sycl::range<Dimensions> make_hypercubic_range(sycl::queue& queue,
 
   return work_group_range;
 }
-}  // namespace detail
 
 /**
- * @brief Provides range for maximal size work-group
- *        supported by device of a given queue.
- *        Multidimensional work-group range is made
- *        as hypercubic as possible.
- * @tparam Dimensions Dimension to use for group instance
+ * @brief Provides maximal work-group size supported for a specific kernel
+ *        on the device of a given queue. Some devices do not support the
+ *        device-wide maximal work-group size for every kernel, so this value
+ *        may be lower than sycl::info::device::max_work_group_size.
+ *        Intended to be passed as the \p work_items_limit argument of
+ *        \p work_group_range.
+ * @tparam KernelName SYCL Kernel name (must be defined in the same TU)
  */
-template <int Dimensions>
-sycl::range<Dimensions> work_group_range(
-    sycl::queue queue,
-    size_t work_items_limit = std::numeric_limits<size_t>::max()) {
-  size_t max_work_group_size = std::min(
-      queue.get_device().get_info<sycl::info::device::max_work_group_size>(),
-      work_items_limit);
-  return detail::make_hypercubic_range<Dimensions>(queue, max_work_group_size);
-}
-
-/**
- * @brief Provides range for maximal size work-group allowed for a specific
- *        kernel on the device of a given queue.  Queries the per-kernel
- *        work-group size limit (kernel_device_specific::work_group_size)
- *        rather than the device-wide maximum, so the returned range is
- *        guaranteed not to exceed the hardware limit for KernelName.
- * @tparam Dimensions  Dimension to use for group instance
- * @tparam KernelName  SYCL Kernel name (must be defined in the same TU)
- */
-template <int Dimensions, typename KernelName>
-sycl::range<Dimensions> work_group_range_for_kernel(
-    sycl::queue queue,
-    size_t work_items_limit = std::numeric_limits<size_t>::max()) {
-  auto kid = sycl::get_kernel_id<KernelName>();
+template <typename KernelName>
+size_t max_work_group_size_for_kernel(sycl::queue queue) {
+  auto kernel_id = sycl::get_kernel_id<KernelName>();
   auto bundle = sycl::get_kernel_bundle<sycl::bundle_state::executable>(
-      queue.get_context(), {queue.get_device()}, {kid});
-  auto kernel = bundle.get_kernel(kid);
-  size_t kernel_max_wg =
-      kernel.template get_info<
-          sycl::info::kernel_device_specific::work_group_size>(
+      queue.get_context(), {queue.get_device()}, {kernel_id});
+  return bundle.get_kernel(kernel_id)
+      .get_info<sycl::info::kernel_device_specific::work_group_size>(
           queue.get_device());
-  size_t max_work_group_size = std::min(kernel_max_wg, work_items_limit);
-  return detail::make_hypercubic_range<Dimensions>(queue, max_work_group_size);
 }
 
 /**
