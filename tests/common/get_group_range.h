@@ -93,17 +93,25 @@ sycl::range<Dimensions> work_group_range(
  *        device-wide maximal work-group size for every kernel, so this value
  *        may be lower than sycl::info::device::max_work_group_size.
  *        Intended to be passed as the \p work_items_limit argument of
- *        \p work_group_range.
+ *        \p work_group_range. Implementations that cannot query the
+ *        per-kernel limit return the device-wide maximum instead.
  * @tparam KernelName SYCL Kernel name (must be defined in the same TU)
  */
 template <typename KernelName>
 size_t max_work_group_size_for_kernel(sycl::queue queue) {
+#if SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
+  // AdaptiveCpp does not support sycl::get_kernel_bundle, so the per-kernel
+  // limit cannot be queried. Fall back to the device-wide maximum, which
+  // leaves work_group_range unconstrained by this helper.
+  return queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+#else
   auto kernel_id = sycl::get_kernel_id<KernelName>();
   auto bundle = sycl::get_kernel_bundle<sycl::bundle_state::executable>(
       queue.get_context(), {queue.get_device()}, {kernel_id});
-  return bundle.get_kernel(kernel_id)
-      .get_info<sycl::info::kernel_device_specific::work_group_size>(
-          queue.get_device());
+  auto kernel = bundle.get_kernel(kernel_id);
+  return kernel.template get_info<
+      sycl::info::kernel_device_specific::work_group_size>(queue.get_device());
+#endif
 }
 
 /**
