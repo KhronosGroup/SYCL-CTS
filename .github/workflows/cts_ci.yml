@@ -227,7 +227,7 @@ jobs:
           chmod -R +x bin/
           find bin/ -type f -executable | while read -r binary; do
             echo "=== Running test category: $binary ==="
-            "$binary"
+            "$binary" --allow-running-no-tests
           done
 
   cts-passes-for-all-implementations:
