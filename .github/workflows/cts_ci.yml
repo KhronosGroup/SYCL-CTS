@@ -60,7 +60,7 @@ jobs:
           - sycl-impl: adaptivecpp
             version: fcd26a61b600cd4b653724e59e72d4f7d1da259c
           - sycl-impl: protosycl
-            version: 8d20b3b84e99c5a99da30d09c3464e2a090a5f25
+            version: 43ea0b3c2b87688ded9d9eef596818b3833c3a67
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -120,7 +120,7 @@ jobs:
           - sycl-impl: adaptivecpp
             version: fcd26a61b600cd4b653724e59e72d4f7d1da259c
           - sycl-impl: protosycl
-            version: 8d20b3b84e99c5a99da30d09c3464e2a090a5f25
+            version: 43ea0b3c2b87688ded9d9eef596818b3833c3a67
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
       parallel-build-jobs: 4
@@ -210,7 +210,7 @@ jobs:
       matrix:
         include:
           - sycl-impl: protosycl
-            version: 8d20b3b84e99c5a99da30d09c3464e2a090a5f25
+            version: 43ea0b3c2b87688ded9d9eef596818b3833c3a67
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
     container:
