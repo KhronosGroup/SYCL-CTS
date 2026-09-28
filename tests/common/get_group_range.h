@@ -109,8 +109,9 @@ size_t max_work_group_size_for_kernel(sycl::queue queue) {
   auto bundle = sycl::get_kernel_bundle<sycl::bundle_state::executable>(
       queue.get_context(), {queue.get_device()}, {kernel_id});
   auto kernel = bundle.get_kernel(kernel_id);
-  return kernel.template get_info<
-      sycl::info::kernel_device_specific::work_group_size>(queue.get_device());
+  return kernel
+      .template get_info<sycl::info::kernel_device_specific::work_group_size>(
+          queue.get_device());
 #endif
 }
 
