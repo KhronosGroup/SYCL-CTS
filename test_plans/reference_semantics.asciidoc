@@ -106,6 +106,8 @@ For class `T`, check that the following statements evaluate to `true`.
 - `std::is_destructible_v<T>`
 - `std::is_move_constructible_v<T>`
 - `std::is_move_assignable_v<T>`
+- `std::is_nothrow_move_constructible_v<T>`
+- `std::is_nothrow_move_assignable_v<T>`
 
 ==== Copy
 

@@ -53,6 +53,9 @@ class TEST_NAME : public util::test_base {
     {
       using item_t = sycl::item<numDims>;
 
+      // Check that move construction/assignment are noexcept
+      common_by_value_semantics::check_move_noexcept<item_t>();
+
       // item is not default constructible, store two objects
       static constexpr size_t numItems = 2;
       using item_array_t = std::array<item_t, numItems>;

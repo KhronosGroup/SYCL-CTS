@@ -159,6 +159,9 @@ TEMPLATE_TEST_CASE_SIG("id provides common by-value semantics", "[id]",
     CHECK(std::is_trivially_move_constructible_v<id<D>>);
     KCHECK(EVAL_D(std::is_trivially_move_constructible_v<id<D>>));
 
+    CHECK(std::is_nothrow_move_constructible_v<id<D>>);
+    KCHECK(EVAL_D(std::is_nothrow_move_constructible_v<id<D>>));
+
     const auto move = [] {
       auto a = idh<D>::get(5, 8, 3);
       id<D> b{std::move(a)};
@@ -171,6 +174,9 @@ TEMPLATE_TEST_CASE_SIG("id provides common by-value semantics", "[id]",
   SECTION("move assignment operator") {
     CHECK(std::is_trivially_move_assignable_v<id<D>>);
     KCHECK(EVAL_D(std::is_trivially_move_assignable_v<id<D>>));
+
+    CHECK(std::is_nothrow_move_assignable_v<id<D>>);
+    KCHECK(EVAL_D(std::is_nothrow_move_assignable_v<id<D>>));
 
     const auto move = [] {
       auto a = idh<D>::get(5, 8, 3);

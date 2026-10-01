@@ -78,6 +78,11 @@ void check_by_value_semantics(sycl::sub_group& sub_group, ResultArray& result) {
       result, check_equality_by_id(move_assigned, expected_ids));
 }
 
+TEST_CASE("sub_group move construction/assignment are noexcept",
+          "[sub_group]") {
+  common_by_value_semantics::check_move_noexcept<sycl::sub_group>();
+}
+
 TEST_CASE("sub_group by-value semantics", "[sub_group]") {
   bool result[error_count];
   std::fill(result, result + error_count, false);

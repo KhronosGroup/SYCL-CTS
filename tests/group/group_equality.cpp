@@ -38,6 +38,9 @@ class TEST_NAME : public util::test_base {
     {
       using item_t = sycl::group<numDims>;
 
+      // Check that move construction/assignment are noexcept
+      common_by_value_semantics::check_move_noexcept<item_t>();
+
       // group is not default constructible, store two objects into the array
       static constexpr size_t numItems = 2;
       using setup_kernel_t = group_setup_kernel<numDims>;

@@ -1,0 +1,121 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for common by-value semantics
+
+This is a test plan for the common by-value semantics as described in
+Section 4.5.3. of the SYCL 2020 specification.
+
+== Testing scope
+
+No negative tests are included.
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for
+any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the
+tests described below are performed once for that test device.
+
+== Tests
+
+The common by-value semantics are defined for the following classes in the
+`sycl` namespace (Section 4.5.3.):
+
+`range`, `nd_range`, `id`, `item`, `nd_item`, `h_item`, `group`, `sub_group`.
+
+Of these, `range`, `nd_range` and `id` can be constructed by a host
+application. The remaining classes (`item`, `nd_item`, `h_item`, `group`,
+`sub_group`) can only be obtained from within a kernel function (e.g. as a
+kernel parameter, or via a member function such as
+`nd_item::get_sub_group()`).
+
+=== Type traits
+
+For class `T`, check that the following statements evaluate to `true`. This
+is a compile-time check that does not require an instance of `T`, and is
+therefore performed identically for classes that can and cannot be
+constructed by a host application.
+
+- `std::is_nothrow_move_constructible_v<T>`
+- `std::is_nothrow_move_assignable_v<T>`
+
+Implemented via `common_by_value_semantics::check_move_noexcept<T>()` in
+`tests/common/semantics_by_value.h`, called once per type from the type's
+respective test file. As this uses Catch2 assertion macros, it must only be
+invoked from host-side code, never from within a kernel function.
+
+=== Equality via copy, symmetry
+
+This test is repeated for the copy constructor and for copy assignment
+(where available; classes without a copy constructor accessible outside a
+kernel are exercised on the device instead). For class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Create a copy of `t0`, `t1`.
+3. Check that `t0 == t1` and `t1 == t0`.
+
+=== Non-equality via copy, symmetry
+
+For class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Create an instance `t1` of `T`, which is distinct from `t0`.
+3. Check that `t0 != t1` and `t1 != t0`.
+
+=== Reflexivity
+
+For class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Check that `t0 == t0`.
+3. Check that `!(t0 != t0)`.
+
+=== Transitivity
+
+For class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Create a copy of `t0`, `t1`.
+3. Create a copy of `t1`, `t2`.
+4. Check that `t0 == t2` and `t2 == t0`.
+
+Implemented via `common_by_value_semantics::check_equality()` /
+`check_on_host()` / `on_device_checker` in `tests/common/semantics_by_value.h`,
+called from each type's `*_equality.cpp` file.
+
+=== Copy
+
+This test is repeated for the copy constructor and for copy assignment. For
+class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Store the state of `t0`.
+3. Create a copy of `t0`, `t1`.
+4. Check that the state of `t1` is the same as the state stored in Step 2.
+
+=== Move
+
+This test is repeated for the move constructor and for move assignment. For
+class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Store the state of `t0`.
+3. Move `t0` to `t1`.
+4. Check that the state of `t1` is the same as the state stored in Step 2.
+
+Copy and move behaviour are implemented ad hoc per type (not via a shared
+header) in each type's `*_constructors.cpp` file, since the state that must
+be observed differs per class (e.g. `range` and `id` store dimension sizes,
+while `nd_range` combines a global and local `range` plus an offset `id`).
+
+=== Implementation notes
+
+Unlike xref:reference_semantics.asciidoc[common reference semantics], no
+shared header exists for the copy/move behavioural checks, as the
+constructibility and observable state differ per type. Only the equality
+checks (`tests/common/semantics_by_value.h`) and, as of this plan, the
+noexcept move type-trait check are shared across all eight types.

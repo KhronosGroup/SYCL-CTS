@@ -39,6 +39,9 @@ std::array<sycl::nd_range<numDims>, 3> get_nd_ranges() {
 
 template <int numDims>
 void test_equality_on_host() {
+  // Check that move construction/assignment are noexcept
+  common_by_value_semantics::check_move_noexcept<sycl::nd_range<numDims>>();
+
   auto nd_ranges = get_nd_ranges<numDims>();
   // Perform comparisons on the stored nd_range objects
   const auto& object0 = nd_ranges[0];

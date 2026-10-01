@@ -24,7 +24,7 @@ namespace common_reference_semantics {
  Tests the copy/move constructible/assignable and destructible traits using
  the standard library. */
 struct test_traits {
-  static constexpr std::size_t result_count = 5;
+  static constexpr std::size_t result_count = 7;
 
   /** Performs the check, can be run on host side or kernel side. */
   template <typename T, typename VectorType>
@@ -35,6 +35,8 @@ struct test_traits {
     vec[i++] = std::is_destructible_v<T>;
     vec[i++] = std::is_move_constructible_v<T>;
     vec[i++] = std::is_move_assignable_v<T>;
+    vec[i++] = std::is_nothrow_move_constructible_v<T>;
+    vec[i++] = std::is_nothrow_move_assignable_v<T>;
 
     assert(result_count == i);
   }
@@ -54,6 +56,10 @@ struct test_traits {
     UNSCOPED_INFO("is_move_constructible_v");
     CHECK(vec[i++]);
     UNSCOPED_INFO("is_move_assignable_v");
+    CHECK(vec[i++]);
+    UNSCOPED_INFO("is_nothrow_move_constructible_v");
+    CHECK(vec[i++]);
+    UNSCOPED_INFO("is_nothrow_move_assignable_v");
     CHECK(vec[i++]);
 
     assert(result_count == i);

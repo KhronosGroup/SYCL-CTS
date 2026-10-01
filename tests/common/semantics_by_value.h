@@ -55,6 +55,18 @@ static const std::array<std::string, to_integral(current_check::size)>
 
 inline std::string get_error_string(int code) { return error_strings[code]; }
 
+/**
+ * @brief Check that the move constructor and move assignment operator of T
+ *        are declared noexcept, as required by common by-value semantics
+ *        (SYCL 2020 specification, Section 4.5.3). This is a compile-time
+ *        check and must only be called from host code.
+ */
+template <typename T>
+void check_move_noexcept() {
+  STATIC_CHECK(std::is_nothrow_move_constructible_v<T>);
+  STATIC_CHECK(std::is_nothrow_move_assignable_v<T>);
+}
+
 template <typename T, typename ResultArr>
 void check_equality(const T& a, ResultArr& result) {
   /** check for reflexivity

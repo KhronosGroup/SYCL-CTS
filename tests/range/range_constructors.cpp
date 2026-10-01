@@ -271,6 +271,7 @@ TEST_CASE("sycl::range constructors. copy by value semantics on host",
   bool result[error_count];
   bool result_equalty[equality_error_count];
   SECTION("Checking for dim 1 on host") {
+    common_by_value_semantics::check_move_noexcept<sycl::range<1>>();
     check_by_value_semantics<1>(result);
     for (int i = 0; i < error_count; ++i) {
       INFO(get_error_string(i));
@@ -283,6 +284,7 @@ TEST_CASE("sycl::range constructors. copy by value semantics on host",
     }
   }
   SECTION("Checking for dim 2 on host") {
+    common_by_value_semantics::check_move_noexcept<sycl::range<2>>();
     check_by_value_semantics<2>(result);
     for (int i = 0; i < error_count; ++i) {
       INFO(get_error_string(i));
@@ -295,6 +297,7 @@ TEST_CASE("sycl::range constructors. copy by value semantics on host",
     }
   }
   SECTION("Checking for dim 3 on host") {
+    common_by_value_semantics::check_move_noexcept<sycl::range<3>>();
     check_by_value_semantics<3>(result);
     for (int i = 0; i < error_count; ++i) {
       INFO(get_error_string(i));

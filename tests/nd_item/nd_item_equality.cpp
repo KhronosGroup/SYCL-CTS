@@ -35,6 +35,9 @@ class TEST_NAME : public util::test_base {
     using item_t = sycl::nd_item<numDims>;
     using kernel_t = nd_item_equality_kernel<numDims>;
 
+    // Check that move construction/assignment are noexcept
+    common_by_value_semantics::check_move_noexcept<item_t>();
+
     // Store comparison results from kernel into a success array
     std::array<bool,
                to_integral(common_by_value_semantics::current_check::size)>
