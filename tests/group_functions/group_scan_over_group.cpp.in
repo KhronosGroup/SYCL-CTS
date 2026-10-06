@@ -14,16 +14,16 @@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
 // clang-format on
 
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 #include "group_scan.h"
 
 using TestType = unnamed_type_pack<CTS_TYPE>;
 using ScanTypes = Types;
 
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
-#endif  // !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
-// FIXME: known_identity is not impemented yet for AdaptiveCpp.
+// FIXME: re-enable when AdaptiveCpp implements sycl::known_identity. Without
+// it exclusive_scan_over_group returns a zero-initialized value instead of the
+// operator's identity (e.g. 0 rather than -inf for sycl::maximum on float).
 DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 (CTS_TYPE_NAME + " group and sub-group scan functions",
  "[group_func][type_list][dim]")({
@@ -45,11 +45,8 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
   for_all_combinations<invoke_scan_over_group>(Dims, TestType{}, queue);
 });
 
-// FIXME: AdaptiveCpp has wrong arguments order for inclusive_scan_over_group: init
-// and op are interchanged. known_identity is not implemented yet.
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-(CTS_TYPE_NAME + " group and sub-group scan functions with init",
- "[group_func][type_list][dim]")({
+TEST_CASE(CTS_TYPE_NAME + " group and sub-group scan functions with init",
+ "[group_func][type_list][dim]") {
   auto queue = once_per_unit::get_queue();
 #if SYCL_CTS_ENABLE_HALF_TESTS
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
@@ -67,4 +64,4 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
   }
   for_all_combinations<invoke_init_scan_over_group>(Dims, TestType{},
                                                     ScanTypes{}, queue);
-});
+}
