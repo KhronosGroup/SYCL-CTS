@@ -58,7 +58,7 @@ jobs:
           - sycl-impl: dpcpp
             version: 2026-04-22
           - sycl-impl: adaptivecpp
-            version: fcd26a61b600cd4b653724e59e72d4f7d1da259c
+            version: 5f94ef59c1a6fb56946996fc5c2b539e61a9e7fe
           - sycl-impl: protosycl
             version: 43ea0b3c2b87688ded9d9eef596818b3833c3a67
     steps:
@@ -118,7 +118,7 @@ jobs:
           - sycl-impl: dpcpp
             version: 2026-04-22
           - sycl-impl: adaptivecpp
-            version: fcd26a61b600cd4b653724e59e72d4f7d1da259c
+            version: 5f94ef59c1a6fb56946996fc5c2b539e61a9e7fe
           - sycl-impl: protosycl
             version: 43ea0b3c2b87688ded9d9eef596818b3833c3a67
     env:
