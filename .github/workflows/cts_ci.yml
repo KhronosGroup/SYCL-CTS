@@ -52,8 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      # NB: Don't forget to update versions in compile-cts step as well
-      matrix:
+      matrix: &sycl-matrix-impl
         include:
           - sycl-impl: dpcpp
             version: 2026-04-22
@@ -112,15 +111,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      # NB: Don't forget to update versions in build-image-for-sycl-impl step as well
-      matrix:
-        include:
-          - sycl-impl: dpcpp
-            version: 2026-04-22
-          - sycl-impl: adaptivecpp
-            version: fcd26a61b600cd4b653724e59e72d4f7d1da259c
-          - sycl-impl: protosycl
-            version: 43ea0b3c2b87688ded9d9eef596818b3833c3a67
+      matrix: *sycl-matrix-impl
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
       parallel-build-jobs: 4
