@@ -21,13 +21,8 @@ using ScanTypes = Types;
 
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
 
-// FIXME: known_identity is not impemented yet for AdaptiveCpp.
 TEST_CASE(CTS_TYPE_NAME + " group and sub-group joint scan functions",
  "[group_func][type_list][dim]") {
-#if defined(SYCL_CTS_COMPILING_WITH_ADAPTIVECPP)
-  WARN("AdaptiveCpp does not support sycl::known_identity_v yet.");
-#endif
-
   auto queue = once_per_unit::get_queue();
 #if SYCL_CTS_ENABLE_HALF_TESTS
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
@@ -48,7 +43,6 @@ TEST_CASE(CTS_TYPE_NAME + " group and sub-group joint scan functions",
                                                 queue);
 }
 
-// FIXME: known_identity is not impemented yet for AdaptiveCpp.
 TEST_CASE(CTS_TYPE_NAME + " group and sub-group joint scan functions with init",
  "[group_func][type_list][dim]") {
   auto queue = once_per_unit::get_queue();

@@ -311,9 +311,7 @@ TEMPLATE_TEST_CASE_SIG(
 template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
 class kernel_use_another_feature;
 
-// FIXME: re-enable when AdaptiveCpp supports the [[sycl::device_has()]]
-// kernel attribute. It is currently parsed but ignored, so the required
-// sycl::exception is never thrown.
+// FIXME: [[sycl::device_has()]] is parsed but ignored by AdaptiveCpp.
 DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("Kernel with tested feature but with attribute [[sycl::device_has()]] "
  "for another feature.",
@@ -364,9 +362,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
 class kernel_use_feature_function_external_decorated_with_attr;
 
-// FIXME: re-enable when AdaptiveCpp supports the [[sycl::device_has()]]
-// kernel attribute. It is currently parsed but ignored, so the required
-// sycl::exception is never thrown.
+// FIXME: [[sycl::device_has()]] is parsed but ignored by AdaptiveCpp.
 DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(AdaptiveCpp)
 ("Kernel with attribute [[sycl::device_has()]] for not currently tested "
  "feature but with SYCL_EXTERNAL function with tested feature and "

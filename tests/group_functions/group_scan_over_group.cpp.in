@@ -21,9 +21,7 @@ using ScanTypes = Types;
 
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
 
-// FIXME: re-enable when AdaptiveCpp implements sycl::known_identity. Without
-// it exclusive_scan_over_group returns a zero-initialized value instead of the
-// operator's identity (e.g. 0 rather than -inf for sycl::maximum on float).
+// FIXME: known_identity is not impemented yet for AdaptiveCpp.
 DISABLED_FOR_TEST_CASE(AdaptiveCpp)
 (CTS_TYPE_NAME + " group and sub-group scan functions",
  "[group_func][type_list][dim]")({
