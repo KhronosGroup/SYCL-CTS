@@ -33,7 +33,11 @@ TEST_CASE(
     "[khr_split_headers][max_work_group_queries]") {
   // The khr::info::device descriptors introduced by the extension are complete.
   STATIC_REQUIRE(sycl_cts::util::is_complete_v<
-                 sycl::khr::info::device::max_work_group_range>);
+                 sycl::khr::info::device::max_work_group_range<1>>);
+  STATIC_REQUIRE(sycl_cts::util::is_complete_v<
+                 sycl::khr::info::device::max_work_group_range<2>>);
+  STATIC_REQUIRE(sycl_cts::util::is_complete_v<
+                 sycl::khr::info::device::max_work_group_range<3>>);
   STATIC_REQUIRE(sycl_cts::util::is_complete_v<
                  sycl::khr::info::device::max_work_group_range_size>);
 }
