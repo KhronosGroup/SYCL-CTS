@@ -16,20 +16,16 @@
 #cmakedefine CTS_TYPE_NAME std::string("@CTS_TYPE_NAME@")
 // clang-format on
 
-// FIXME: re-enable when sycl::local_accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_ADAPTIVECPP
 
 #include "../accessor_basic/accessor_common.h"
 #include "local_accessor_linearization.h"
 
 using namespace local_accessor_linearization;
-#endif
 
 namespace local_accessor_liniarization_core {
 
-DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
-(CTS_TYPE_NAME + " sycl::local_accessor linearization.", "[accessor]",
- test_combinations)({
+TEMPLATE_LIST_TEST_CASE(CTS_TYPE_NAME + " sycl::local_accessor linearization.",
+                        "[accessor]", test_combinations) {
   auto queue = sycl_cts::util::get_cts_object::queue();
   if constexpr (std::is_same_v<std::remove_cv_t<CTS_TYPE>, sycl::half>) {
     if (!queue.get_device().has(sycl::aspect::fp16))
@@ -52,6 +48,6 @@ DISABLED_FOR_TEMPLATE_LIST_TEST_CASE(AdaptiveCpp)
 #else
   run_local_linearization_for_type<CTS_TYPE, TestType>{}(CTS_TYPE_NAME);
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
-});
+}
 
 }  // namespace local_accessor_liniarization_core
