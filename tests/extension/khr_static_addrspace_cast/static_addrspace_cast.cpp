@@ -50,7 +50,8 @@ static void check_global_ptr_cast() {
     cgh.parallel_for(range, [=](sycl::item<dimensions> item) {
       // Get a raw pointer to the global buffer
       T raw_global_ptr{
-          global_acc.template get_multi_ptr<sycl::access::decorated::no>().get_raw()};
+          global_acc.template get_multi_ptr<sycl::access::decorated::no>()
+              .get_raw()};
 
       // Cast the raw pointer to a global address space pointer
       auto global_ptr = sycl::khr::static_addrspace_cast<
