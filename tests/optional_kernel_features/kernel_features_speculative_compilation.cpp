@@ -45,8 +45,8 @@ using AtomicRefT =
 template <int Case>
 class kernel_speculative;
 
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("Speculative compilation with supported feature", "[kernel_features]")({
+TEST_CASE("Speculative compilation with supported feature",
+          "[kernel_features]") {
   auto queue = util::get_cts_object::queue();
   const sycl::errc errc_expected = sycl::errc::success;
   constexpr bool is_exception_expected = false;
@@ -283,5 +283,5 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp)
           kernel_speculative<8>, NO_KERNEL_BODY);
     }
   }
-});
+}
 }  // namespace kernel_features_speculative_compilation

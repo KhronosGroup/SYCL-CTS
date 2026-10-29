@@ -73,9 +73,7 @@ class check_vec_deduction {
   }
 };
 
-// FIXME: re-enable when vec deduction is implemented in AdaptiveCpp
-DISABLED_FOR_TEST_CASE(AdaptiveCpp)
-("vec deduction guides", "[vec_deduction]")({
+TEST_CASE("vec deduction guides", "[vec_deduction]") {
   for_all_types<check_vec_deduction>(deduction::vector_types);
-});
+}
 }  // namespace vec_deduction_guides
