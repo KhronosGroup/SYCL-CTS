@@ -3,307 +3,156 @@
 
 = Test plan for SYCL extension KHR properties
 
-This is a test plan for the APIs described in
+This is a test plan for an extension that defines a new properties interface
+described in
 https://github.com/KhronosGroup/SYCL-Docs/blob/main/adoc/extensions/sycl_khr_properties.adoc[sycl_khr_properties].
-The plan is derived only from the extension specification and from the core
-SYCL 2020 sections that the extension refers to ("the same effect as the
-corresponding core overload").
 
 == Testing scope
 
 === Device coverage
 
-All of the runtime tests described below are performed only on the device that
-is selected on the CTS command line (`cts_selector`). Tests that need an
-optional device feature check the corresponding aspect and use `SKIP` when it
-is missing:
-
-* `aspect::queue_profiling` for the `enable_profiling` tests;
-* `aspect::usm_device_allocations`, `aspect::usm_host_allocations` and
-  `aspect::usm_shared_allocations` for the USM and reduction tests;
-* `aspect::online_compiler` and `aspect::online_linker` for the `compile`,
-  `link` and `build` tests.
-
-=== Build configuration
-
-The tests are in the `khr_properties` category and are only built when the
-CMake option `SYCL_CTS_ENABLE_KHR_PROPERTIES_TESTS` is enabled (it is forced on
-by `SYCL_CTS_ENABLE_KHR_TESTS`).
-
-=== Header files
-
-The extension's APIs are provided by `<sycl/sycl.hpp>` and, if the
-implementation supports `sycl_khr_split_headers`, also by the headers in its
-header file table. The tests are split by whether they need a device:
-
-* One compile-time test file per header in the table. If
-  `<sycl/khr/split_headers/version.hpp>` exists and defines
-  `SYCL_KHR_SPLIT_HEADERS`, the file includes only `<sycl/khr/properties.hpp>`,
-  the queue header (every test uses the queue properties) and the split
-  headers for the classes it uses. Otherwise it includes `<sycl/sycl.hpp>`.
-  These files don't use the CTS helpers that include `<sycl/sycl.hpp>`, so a
-  header that lacks one of its APIs makes the test fail to compile. The
-  `version.hpp` row is covered by every file.
-* One runtime test file, `runtime.cpp`, for everything that needs a device.
-  It uses the CTS helpers and `<sycl/sycl.hpp>`.
-
-=== Properties that tests can use
-
-The extension states that "there is no facility to allow an application to
-define their own properties" and that "if the program adds specializations
-for any of the traits defined in this section, the behavior is undefined".
-So tests cannot legally define a property for `context`, `stream`, the USM
-tags or the kernel bundle tags. For these APIs the tests use:
-
-* the empty properties list (`khr::empty_properties_t`), which
-  `is_property_list_for` accepts for every class, for the positive tests;
-* the queue properties (`in_order`, `enable_profiling`), lists of them,
-  property keys and an unrelated type for the negative (constraint) tests.
-  The queue and reduction tests also use the property of the other one.
-
-=== Constraints and Mandates
-
-The "Constraints:" clauses are SFINAE requirements. They are tested with
-`std::is_constructible`, `std::is_convertible` and detection-idiom traits
-(`std::void_t<decltype(expr)>`), checked with `STATIC_CHECK`. No test relies
-on code that must fail to compile.
-
-"Mandates:" clauses make a program ill-formed and can't be tested by the CTS
-(see <<untestable>>).
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line. Tests that need an optional feature
+(`aspect::queue_profiling`, the USM allocation aspects, `aspect::online_compiler`
+and `aspect::online_linker`) are skipped if the device does not support it.
 
 === Feature test macro
 
-`properties.cpp` uses `#ifndef SYCL_KHR_PROPERTIES` and `static_assert` to
-check that the macro is defined, and checks that it has the value `1`.
+The tests should statically check that the `SYCL_KHR_PROPERTIES` macro is
+defined and equal to `1`.
+
+=== Test organization
+
+The tests are split into compile-time and runtime test files:
+
+* One compile-time test file per header in the extension's header file table
+  (`properties.cpp`, `context.cpp`, `queue.cpp`, `usm.cpp`, `reduction.cpp`,
+  `kernel_bundle.cpp` and `stream.cpp`). If the implementation supports
+  `sycl_khr_split_headers`, each file includes only the split headers it
+  needs; otherwise it includes `<sycl/sycl.hpp>`.
+* One runtime test file, `runtime.cpp`, for all tests that need a device. It
+  includes `<sycl/sycl.hpp>`.
+
+The extension requires its APIs to be available through `<sycl/sycl.hpp>` and,
+with `sycl_khr_split_headers`, also through the split headers. A test can only
+show that a split header provides an API if `<sycl/sycl.hpp>` is not included
+in the same translation unit. The CTS helpers that select the device include
+`<sycl/sycl.hpp>`, so tests that need a device cannot check the split headers.
+Splitting the tests this way:
+
+* checks each split header in its own translation unit, where a missing API
+  is a compilation error;
+* still checks the constraints and traits through `<sycl/sycl.hpp>` on
+  implementations without split headers;
+* tests each API once, instead of having one copy of each test for
+  `<sycl/sycl.hpp>` and another for the split headers.
+
+=== Properties used by the tests
+
+Applications cannot define their own properties, so the context, stream, USM
+and kernel bundle APIs should be tested with `khr::empty_properties_t`. The
+queue properties, lists of them, property keys and an unrelated type should be
+used to check that the constraints reject invalid arguments.
+
+Constraints should be checked with `std::is_constructible`,
+`std::is_convertible` and detection traits, without code that fails to
+compile.
 
 == Tests
 
-=== Properties class and traits (`properties.cpp`, `<sycl/khr/properties.hpp>`)
+=== `<sycl/khr/properties.hpp>`
 
-The properties class:
-
-* `SYCL_KHR_PROPERTIES` is defined and equal to `1`.
-* `empty_properties_t` is the same type as `decltype(properties{})`, is a
-  specialization of `khr::properties`, and `has_property` returns `false` for
-  every key.
-* CTAD from one property and from several properties produces a
-  specialization of `khr::properties`. `has_property` returns `true` for the
-  keys of the contained properties and `false` otherwise. `get_property`
-  returns the stored values, including values only known at runtime.
-* The constructor is `constexpr`: a `constexpr` properties object can be
-  declared and `get_property` can be called on it in a constant expression,
-  and a `constexpr` function constructs a list and calls `get_property` in a
-  constant expression.
-* Constructor constraint: `std::is_constructible` of a deduced properties type
-  is `true` from properties and `false` from `int`, an unrelated type and an
-  old-style property (`sycl::property::queue::in_order`).
-* `has_property` is a static constexpr member function that returns `bool`.
-  It can be called without an object and in `if constexpr` through an
+* Check that `empty_properties_t` is `decltype(properties{})`.
+* Check that CTAD from one or more properties produces a `khr::properties`
+  specialization, and that `has_property` and `get_property` report the
+  contained properties and their values.
+* Check that the constructor, `has_property` and `get_property` can be used in
+  constant expressions, and that `get_property` can be called on a `const`
   object.
-* `has_property` constraint: it can be called with property keys, but not with
-  `int`, an unrelated type or a property type.
-* `get_property` returns a copy whose type is the property's type. Modifying
-  the copy doesn't modify the list. The non-static overload (2) is `const`, so
-  it can be called through a `const` reference.
-* `get_property` constraints: the non-static overload (2) is available for the
-  keys of runtime properties in the list. The static overload (1) is not
-  available for those keys. Neither overload is available for a key that is
-  not in the list.
+* Check that `get_property` returns a copy of the property.
+* Check the constraints of the constructor, `has_property` and both
+  `get_property` overloads.
+* For each trait, check that it inherits from `std::true_type` or
+  `std::false_type` as specified for properties, keys, properties lists and
+  unrelated types, and that the `_v` variable equals `::value`.
+* Check that the old-style traits `sycl::is_property` and
+  `sycl::is_property_of` are `false` for the new properties.
+* For `enable_profiling`, `in_order` and `initialize_to_identity`, check that
+  the property and its key are trivially copyable, that the property has a
+  `bool value` member that defaults to `true`, and that its constructor from
+  `bool` is `constexpr` and `explicit`.
 
-The property traits. For each trait the test checks that the trait inherits from the expected
-`std::true_type` or `std::false_type` (`std::is_base_of`) and that the `_v`
-variable template equals `::value`.
+=== `<sycl/khr/split_headers/context.hpp>`
 
-* `is_property`: `true` for `enable_profiling`, `in_order` and
-  `initialize_to_identity`. `false` for their keys, `int`, an unrelated type,
-  properties lists and old-style properties.
-* `is_property_key`: `true` for the three keys. `false` for the properties,
-  `int`, an unrelated type and `empty_properties_t`.
-* `is_property_key_compile_time`: `false` for the three keys (their
-  properties hold a runtime `value`) and for `int`.
-* `is_property_for`: `true` for each pair that the spec lists. `false` for
-  the queue properties with the reduction tag, `initialize_to_identity` with
-  `queue`, and for keys, lists, `int` and old-style properties.
-* `is_property_key_for`: `true` for each pair that the spec lists. `false`
-  for the wrong class or tag, for properties and for `int`.
-* `is_property_list_for`: `true` for `empty_properties_t` with `queue` and the
-  reduction tag. `true` for a list whose properties all apply to the
-  class. `false` for a list that has one property that doesn't apply (mixed
-  queue and reduction properties), for a single property that is not a list,
-  for `int` and for `sycl::property_list`.
-* Old-style traits: `sycl::is_property` is `false` for the three properties,
-  a key, `empty_properties_t` and a properties list, and
-  `sycl::is_property_of` is `false` for the three properties with `queue`.
-* Each of the three properties and their keys is trivially copyable. Each
-  property has a `bool value` member, a `constexpr` default constructor that
-  sets `value` to `true` and a `constexpr explicit` constructor from `bool`
-  (so `bool` is not implicitly convertible to the property), and each key is
-  an empty, default-constructible struct.
-* The traits for `context`, `stream`, the USM tags and the kernel bundle tags
-  are checked in the files for those headers: the queue properties and their
-  keys don't apply, `empty_properties_t` does, and a list of queue properties
-  doesn't.
+* Check that the 8 new constructors accept `empty_properties_t`, reject
+  invalid arguments and are explicit.
+* Check that only `empty_properties_t` applies to `context`.
+* At runtime, check that each constructor has the effect of the matching core
+  constructor and that the context can run a kernel.
 
-=== Context (`context.cpp`, `<sycl/khr/split_headers/context.hpp>`)
+=== `<sycl/khr/split_headers/queue.hpp>`
 
-* Constraints of all 8 constructors: they accept `empty_properties_t`. They
-  reject queue properties, lists of them, keys and unrelated types. They are
-  explicit.
+* Check that the 10 new constructors accept the queue properties, lists of
+  them and `empty_properties_t`, reject invalid arguments and invalid device
+  selectors, and are explicit.
+* Check that `is_in_order` and `khr_is_profiling_enabled` are `const` and
+  return `bool`.
+* At runtime, for each constructor, with a single property and with a list,
+  check that:
+** `in_order{true}` makes an in-order queue, and `in_order{false}` has no
+   effect;
+** `enable_profiling{true}` enables profiling, and `enable_profiling{false}`
+   has no effect;
+** every combination of the two properties works;
+** the old-style `has_property` and `get_property` report
+   `property::queue::in_order` and `property::queue::enable_profiling` only
+   when the new property is `true`.
+* At runtime, check that `enable_profiling{true}` throws
+  `errc::feature_not_supported` on a device without `aspect::queue_profiling`.
 
-In `runtime.cpp`:
+=== `<sycl/khr/split_headers/usm.hpp>`
 
-* Each of the 8 constructors with `empty_properties_t` has the effect of the
-  matching core constructor: `context(dev, ...)` and `context(deviceList, ...)`
-  contain exactly those devices, `context(plt, ...)` contains the platform's
-  devices, and `context(props)` and `context(asyncHandler, props)` contain at
-  least one device.
-* A context made this way can run a kernel.
+* Check that the 32 new allocation overloads and both `usm_allocator`
+  constructors accept `empty_properties_t`, reject invalid arguments and have
+  the specified return types.
+* Check that only `empty_properties_t` applies to the USM tags.
+* At runtime, check that each overload allocates the requested kind of memory
+  with the requested alignment, and that `usm_allocator` allocates the right
+  kind of memory and compares equal to one made with the core constructor.
 
-=== Queue (`queue.cpp`, `<sycl/khr/split_headers/queue.hpp>`)
+=== `<sycl/khr/split_headers/reduction.hpp>`
 
-* Constraints of all 10 constructors: they accept `in_order`,
-  `enable_profiling`, `empty_properties_t` and lists of queue properties. They
-  reject `initialize_to_identity`, lists that have a non-queue property, keys
-  and unrelated types. A `DeviceSelector` that isn't a device selector is
-  rejected. The constructors are explicit.
-* `is_in_order()` and `khr_is_profiling_enabled()` are `const` and return
-  `bool`.
+* Check that the 4 new overloads accept `initialize_to_identity`, lists of it
+  and `empty_properties_t`, reject invalid arguments, and that the span
+  overloads are not available for `dynamic_extent`.
+* At runtime, check that `initialize_to_identity{true}` excludes the original
+  value from the reduction, and that `initialize_to_identity{false}` and
+  `empty_properties_t` include it.
+* At runtime, check that `initialize_to_identity{true}` with no known identity
+  throws `errc::invalid`.
 
-In `runtime.cpp`:
+=== `<sycl/khr/split_headers/kernel_bundle.hpp>`
 
-* A queue made without the new properties, with `property::queue::in_order` or
-  with `property::queue::enable_profiling`: `is_in_order()` is `true` only for
-  the in-order queue, and `khr_is_profiling_enabled()` is `true` only for the
-  queue with profiling enabled.
-* For each of the 10 constructors, used with a single property and with a
-  list:
-** `in_order{true}`: `is_in_order()` is `true`, and two dependent kernels
-   submitted without explicit dependencies give the in-order result. The queue
-   uses the given context and device.
-** `in_order{false}`: no effect (`is_in_order()` is `false`).
-** `enable_profiling{true}`: `khr_is_profiling_enabled()` is `true` and
-   `event::get_profiling_info` returns `command_start <= command_end`.
-** `enable_profiling{false}`: no effect. `khr_is_profiling_enabled()` is
-   `false` and `get_profiling_info` throws `errc::invalid`.
-** Every combination of `in_order{true/false}` and
-   `enable_profiling{true/false}` in one list.
-** `empty_properties_t`: no effect.
-* On a device without `aspect::queue_profiling`, `enable_profiling{true}`
-  throws `errc::feature_not_supported`, like the core property, and
-  `enable_profiling{false}` doesn't throw.
-* Interaction with the old-style properties interface, for a single property
-  and for a list: a queue made with `in_order{v}` or `enable_profiling{v}`
-  returns `v` from `has_property` for the corresponding old-style property
-  (`property::queue::in_order` or `property::queue::enable_profiling`).
-  When `v` is `true`, `get_property` returns the old-style property. When `v`
-  is `false`, `get_property` throws `errc::invalid`, like the core interface
-  for a property the queue doesn't contain. The other old-style queue
-  property and both old-style properties for `empty_properties_t` are not
-  reported.
+* Check that the new `compile`, `link` and `build` overloads accept
+  `empty_properties_t`, reject invalid arguments and have the specified return
+  types.
+* Check that only `empty_properties_t` applies to the kernel bundle tags.
+* At runtime, check that each overload produces a bundle with the expected
+  devices whose kernel can be run.
 
-=== USM (`usm.cpp`, `<sycl/khr/split_headers/usm.hpp>`)
+=== `<sycl/khr/split_headers/stream.hpp>`
 
-* Constraints of all 32 allocation overloads (device, host, shared and
-  parameterized; typed and untyped; device/context and queue forms; `malloc`
-  and `aligned_alloc`) and of both `usm_allocator` constructors for `host` and
-  `shared`: they accept `empty_properties_t`. They reject queue properties,
-  lists of them, keys and unrelated types.
-* Return types: `void*` for untyped and `T*` for typed overloads.
+* Check that the new constructor accepts `empty_properties_t` and rejects
+  invalid arguments.
+* Check that only `empty_properties_t` applies to `stream`.
+* At runtime, check that a stream made with `empty_properties_t` has the
+  requested sizes and prints its output.
 
-In `runtime.cpp`:
-
-* Each device, host and shared overload with `empty_properties_t` returns a
-  non-null pointer whose `get_pointer_type` matches the kind. The
-  `aligned_alloc_*` overloads return a pointer with the requested alignment.
-* Each parameterized overload with `empty_properties_t` and `kind` set to
-  `device`, `host` and `shared` returns the requested kind and doesn't throw.
-  The empty list applies to all three tags, so the `errc::invalid` clauses
-  can't apply.
-* `usm_allocator<int, host/shared>` made with `(ctx, dev, props)` and
-  `(q, props)` allocates the right kind of memory, works with `std::vector`,
-  and compares equal to an allocator made with the core constructor.
-
-=== Reduction (`reduction.cpp`, `<sycl/khr/split_headers/reduction.hpp>`)
-
-* Constraints of the 4 overloads (pointer and `span<T, 2>`, with and without
-  an identity): they accept `initialize_to_identity`, a list of it and
-  `empty_properties_t`. They reject queue properties, mixed lists, keys and
-  unrelated types.
-* The span overloads are not available for `span<T, dynamic_extent>`.
-
-In `runtime.cpp`:
-
-* For each overload, plus a pointer overload with an identity and a combiner
-  with no known identity (64 work-items, each combining `1`, or `1`/`2` per
-  span element, with an initial value of `100`):
-** `initialize_to_identity{true}`, `initialize_to_identity{}` and
-   `properties{initialize_to_identity{}}` don't include the original value.
-** `initialize_to_identity{false}` (as a property and in a list) and
-   `empty_properties_t` include the original value.
-* `initialize_to_identity{true}` with no identity value and a combiner whose
-  identity is unknown throws `errc::invalid`, like the core property. This is
-  tested for the pointer overload and for the span overload with a list. The
-  check covers both the reduction call and the kernel submission because the
-  spec doesn't say which one throws.
-* `initialize_to_identity{false}` with such a combiner has no effect and
-  includes the original value.
-
-=== Kernel bundle (`kernel_bundle.cpp`, `<sycl/khr/split_headers/kernel_bundle.hpp>`)
-
-* Constraints of the 2 `compile`, 4 `link` and 2 `build` overloads: they
-  accept `empty_properties_t`. They reject queue properties, lists of them
-  and unrelated types.
-* Return types: `kernel_bundle<bundle_state::object>` for `compile` and
-  `kernel_bundle<bundle_state::executable>` for `link` and `build`.
-
-In `runtime.cpp`:
-
-* With `empty_properties_t` and an input bundle that holds a test kernel:
-  every overload succeeds, the result has the given devices (or the input
-  bundle's devices) and contains the kernel, and the kernel runs through
-  `handler::use_kernel_bundle`.
-
-=== Stream (`stream.cpp`, `<sycl/khr/split_headers/stream.hpp>`)
-
-* Constraint: `stream(size_t, size_t, handler&, P)` can be constructed with
-  `empty_properties_t` but not with queue properties, lists of them or
-  unrelated types.
-
-In `runtime.cpp`:
-
-* A stream made with `empty_properties_t` reports the requested `get_size()`
-  and `get_work_item_buffer_size()`. On Linux, the test captures stdout and
-  checks that the text written in a kernel appears in it.
-
-[[untestable]]
 == Requirements that are not tested
 
-* "_Mandates:_ No two properties in `Properties` have the same associated
-  key." A Mandates violation is ill-formed, so the CTS can't observe it
-  without code that fails to compile.
-* `get_property` overload (1) (static, for compile-time keys) and
-  `is_property_key_compile_time` being `true`: the extension defines no
-  compile-time property, and applications can't define one.
-* The `errc::invalid` *Throws* clauses of the parameterized `malloc` and
-  `aligned_alloc` overloads. A throw needs a `PropertyOrList` that applies to
-  one USM tag but not to the tag for `kind`. The extension defines no USM
-  property, so the only valid argument (the empty list) applies to all three
-  tags.
-* Non-empty property lists for `context`, `stream`, USM and the kernel bundle
-  functions: no such properties exist (see above).
-* "If the program adds specializations for any of the traits [...] the
-  behavior is undefined": this is undefined behavior and can't be tested.
-* That a `properties{x}` deduction fails when `x` isn't a property: the
-  deduction guide is unspecified ("Implementations are expected to have a
-  deduction guide [...]"), so the test checks the constructor constraint with
-  `std::is_constructible` on deduced types instead.
-* `usm_allocator` with `usm::alloc::device`: the core spec says no
-  specialization exists, so it isn't tested.
-* The effect of the `async_handler` arguments of the new context and queue
-  constructors: these are only constructed, because no test triggers an
-  asynchronous error.
-
-== Specification ambiguities
-
-* The point at which `initialize_to_identity` without a known identity
-  throws (the `reduction` call or the kernel submission) is unspecified.
+* Mandates clauses, because violating them makes the program ill-formed.
+* The static `get_property` overload, because the extension defines no
+  compile-time property.
+* The `errc::invalid` throws of the parameterized USM functions, because no
+  USM property exists to trigger them.
+* The effect of the `async_handler` arguments.
