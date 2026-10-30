@@ -1,0 +1,158 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for SYCL extension KHR properties
+
+This is a test plan for an extension that defines a new properties interface
+described in
+https://github.com/KhronosGroup/SYCL-Docs/blob/main/adoc/extensions/sycl_khr_properties.adoc[sycl_khr_properties].
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line. Tests that need an optional feature
+(`aspect::queue_profiling`, the USM allocation aspects, `aspect::online_compiler`
+and `aspect::online_linker`) are skipped if the device does not support it.
+
+=== Feature test macro
+
+The tests should statically check that the `SYCL_KHR_PROPERTIES` macro is
+defined and equal to `1`.
+
+=== Test organization
+
+The tests are split into compile-time and runtime test files:
+
+* One compile-time test file per header in the extension's header file table
+  (`properties.cpp`, `context.cpp`, `queue.cpp`, `usm.cpp`, `reduction.cpp`,
+  `kernel_bundle.cpp` and `stream.cpp`). If the implementation supports
+  `sycl_khr_split_headers`, each file includes only the split headers it
+  needs; otherwise it includes `<sycl/sycl.hpp>`.
+* One runtime test file, `runtime.cpp`, for all tests that need a device. It
+  includes `<sycl/sycl.hpp>`.
+
+The extension requires its APIs to be available through `<sycl/sycl.hpp>` and,
+with `sycl_khr_split_headers`, also through the split headers. A test can only
+show that a split header provides an API if `<sycl/sycl.hpp>` is not included
+in the same translation unit. The CTS helpers that select the device include
+`<sycl/sycl.hpp>`, so tests that need a device cannot check the split headers.
+Splitting the tests this way:
+
+* checks each split header in its own translation unit, where a missing API
+  is a compilation error;
+* still checks the constraints and traits through `<sycl/sycl.hpp>` on
+  implementations without split headers;
+* tests each API once, instead of having one copy of each test for
+  `<sycl/sycl.hpp>` and another for the split headers.
+
+=== Properties used by the tests
+
+Applications cannot define their own properties, so the context, stream, USM
+and kernel bundle APIs should be tested with `khr::empty_properties_t`. The
+queue properties, lists of them, property keys and an unrelated type should be
+used to check that the constraints reject invalid arguments.
+
+Constraints should be checked with `std::is_constructible`,
+`std::is_convertible` and detection traits, without code that fails to
+compile.
+
+== Tests
+
+=== `<sycl/khr/properties.hpp>`
+
+* Check that `empty_properties_t` is `decltype(properties{})`.
+* Check that CTAD from one or more properties produces a `khr::properties`
+  specialization, and that `has_property` and `get_property` report the
+  contained properties and their values.
+* Check that the constructor, `has_property` and `get_property` can be used in
+  constant expressions, and that `get_property` can be called on a `const`
+  object.
+* Check that `get_property` returns a copy of the property.
+* Check the constraints of the constructor, `has_property` and both
+  `get_property` overloads.
+* For each trait, check that it inherits from `std::true_type` or
+  `std::false_type` as specified for properties, keys, properties lists and
+  unrelated types, and that the `_v` variable equals `::value`.
+* Check that the old-style traits `sycl::is_property` and
+  `sycl::is_property_of` are `false` for the new properties.
+* For `enable_profiling`, `in_order` and `initialize_to_identity`, check that
+  the property and its key are trivially copyable, that the property has a
+  `bool value` member that defaults to `true`, and that its constructor from
+  `bool` is `constexpr` and `explicit`.
+
+=== `<sycl/khr/split_headers/context.hpp>`
+
+* Check that the 8 new constructors accept `empty_properties_t`, reject
+  invalid arguments and are explicit.
+* Check that only `empty_properties_t` applies to `context`.
+* At runtime, check that each constructor has the effect of the matching core
+  constructor and that the context can run a kernel.
+
+=== `<sycl/khr/split_headers/queue.hpp>`
+
+* Check that the 10 new constructors accept the queue properties, lists of
+  them and `empty_properties_t`, reject invalid arguments and invalid device
+  selectors, and are explicit.
+* Check that `is_in_order` and `khr_is_profiling_enabled` are `const` and
+  return `bool`.
+* At runtime, for each constructor, with a single property and with a list,
+  check that:
+** `in_order{true}` makes an in-order queue, and `in_order{false}` has no
+   effect;
+** `enable_profiling{true}` enables profiling, and `enable_profiling{false}`
+   has no effect;
+** every combination of the two properties works;
+** the old-style `has_property` and `get_property` report
+   `property::queue::in_order` and `property::queue::enable_profiling` only
+   when the new property is `true`.
+* At runtime, check that `enable_profiling{true}` throws
+  `errc::feature_not_supported` on a device without `aspect::queue_profiling`.
+
+=== `<sycl/khr/split_headers/usm.hpp>`
+
+* Check that the 32 new allocation overloads and both `usm_allocator`
+  constructors accept `empty_properties_t`, reject invalid arguments and have
+  the specified return types.
+* Check that only `empty_properties_t` applies to the USM tags.
+* At runtime, check that each overload allocates the requested kind of memory
+  with the requested alignment, and that `usm_allocator` allocates the right
+  kind of memory and compares equal to one made with the core constructor.
+
+=== `<sycl/khr/split_headers/reduction.hpp>`
+
+* Check that the 4 new overloads accept `initialize_to_identity`, lists of it
+  and `empty_properties_t`, reject invalid arguments, and that the span
+  overloads are not available for `dynamic_extent`.
+* At runtime, check that `initialize_to_identity{true}` excludes the original
+  value from the reduction, and that `initialize_to_identity{false}` and
+  `empty_properties_t` include it.
+* At runtime, check that `initialize_to_identity{true}` with no known identity
+  throws `errc::invalid`.
+
+=== `<sycl/khr/split_headers/kernel_bundle.hpp>`
+
+* Check that the new `compile`, `link` and `build` overloads accept
+  `empty_properties_t`, reject invalid arguments and have the specified return
+  types.
+* Check that only `empty_properties_t` applies to the kernel bundle tags.
+* At runtime, check that each overload produces a bundle with the expected
+  devices whose kernel can be run.
+
+=== `<sycl/khr/split_headers/stream.hpp>`
+
+* Check that the new constructor accepts `empty_properties_t` and rejects
+  invalid arguments.
+* Check that only `empty_properties_t` applies to `stream`.
+* At runtime, check that a stream made with `empty_properties_t` has the
+  requested sizes and prints its output.
+
+== Requirements that are not tested
+
+* Mandates clauses, because violating them makes the program ill-formed.
+* The static `get_property` overload, because the extension defines no
+  compile-time property.
+* The `errc::invalid` throws of the parameterized USM functions, because no
+  USM property exists to trigger them.
+* The effect of the `async_handler` arguments.
