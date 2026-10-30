@@ -5,8 +5,9 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Tests for the compile, link and build overloads added by the
-//  sycl_khr_properties extension.
+//  Compile-time tests for the compile, link and build overloads added by the
+//  sycl_khr_properties extension. The runtime effects are tested in
+//  runtime.cpp.
 //
 //  The extension does not define any property that can be used with these
 //  functions and applications cannot define their own properties, so the only
@@ -17,11 +18,14 @@
 
 #include "khr_properties_common.h"
 
+#if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
+#include <sycl/khr/split_headers/device.hpp>
+#include <sycl/khr/split_headers/kernel_bundle.hpp>
+#endif
+
 #include <vector>
 
 namespace khr_properties::tests {
-
-class khr_props_kernel_bundle_kernel;
 
 using input_bundle_t = sycl::kernel_bundle<sycl::bundle_state::input>;
 using object_bundle_t = sycl::kernel_bundle<sycl::bundle_state::object>;
@@ -77,9 +81,7 @@ TEST_CASE("the new compile, link and build overloads are constrained",
   }
   SECTION("properties of other classes are rejected") {
     check_kernel_bundle_constraints<prop::in_order>(false);
-    check_kernel_bundle_constraints<prop::initialize_to_identity>(false);
     check_kernel_bundle_constraints<queue_props_t>(false);
-    check_kernel_bundle_constraints<reduction_props_t>(false);
   }
   SECTION("types that are neither properties nor lists are rejected") {
     check_kernel_bundle_constraints<not_a_property>(false);
@@ -118,93 +120,12 @@ TEST_CASE(
                      exe_bundle_t>);
 }
 
-/** Runs the test kernel from `bundle` on `q` and checks its result. */
-void check_bundle_runs(sycl::queue& q, const exe_bundle_t& bundle) {
-  const auto kid = sycl::get_kernel_id<khr_props_kernel_bundle_kernel>();
-  REQUIRE(bundle.has_kernel(kid));
-  sycl::buffer<int, 1> buf{sycl::range<1>{1}};
-  q.submit([&](sycl::handler& cgh) {
-    cgh.use_kernel_bundle(bundle);
-    sycl::accessor acc{buf, cgh, sycl::write_only};
-    cgh.single_task<khr_props_kernel_bundle_kernel>([=] { acc[0] = 42; });
-  });
-  sycl::host_accessor acc{buf, sycl::read_only};
-  CHECK(acc[0] == 42);
-}
-
-TEST_CASE("compile, link and build with an empty properties list",
-          "[khr_properties][kernel_bundle]") {
-  auto q = sycl_cts::util::get_cts_object::queue();
-  const auto dev = q.get_device();
-  const auto ctx = q.get_context();
-  const std::vector<sycl::device> devs{dev};
-  const auto kid = sycl::get_kernel_id<khr_props_kernel_bundle_kernel>();
-
-  if (!sycl::has_kernel_bundle<sycl::bundle_state::input>(ctx, devs, {kid})) {
-    SKIP("No kernel bundle in the input state for the test kernel");
-  }
-  const input_bundle_t input =
-      sycl::get_kernel_bundle<sycl::bundle_state::input>(ctx, devs, {kid});
-  const khr::empty_properties_t props{};
-
-  SECTION("compile(inputBundle, devs, props)") {
-    if (!dev.has(sycl::aspect::online_compiler)) {
-      SKIP("Device does not have aspect::online_compiler");
-    }
-    object_bundle_t obj = sycl::compile(input, devs, props);
-    CHECK(obj.get_devices() == devs);
-    CHECK(obj.has_kernel(kid));
-  }
-  SECTION("compile(inputBundle, props)") {
-    if (!dev.has(sycl::aspect::online_compiler)) {
-      SKIP("Device does not have aspect::online_compiler");
-    }
-    object_bundle_t obj = sycl::compile(input, props);
-    CHECK(obj.get_devices() == input.get_devices());
-    CHECK(obj.has_kernel(kid));
-  }
-  SECTION("link overloads") {
-    if (!dev.has(sycl::aspect::online_linker)) {
-      SKIP("Device does not have aspect::online_linker");
-    }
-    object_bundle_t obj = sycl::compile(input, devs);
-    const std::vector<object_bundle_t> objs{obj};
-
-    SECTION("link(objectBundles, devs, props)") {
-      exe_bundle_t exe = sycl::link(objs, devs, props);
-      CHECK(exe.get_devices() == devs);
-      check_bundle_runs(q, exe);
-    }
-    SECTION("link(objectBundle, devs, props)") {
-      exe_bundle_t exe = sycl::link(obj, devs, props);
-      CHECK(exe.get_devices() == devs);
-      check_bundle_runs(q, exe);
-    }
-    SECTION("link(objectBundles, props)") {
-      exe_bundle_t exe = sycl::link(objs, props);
-      check_bundle_runs(q, exe);
-    }
-    SECTION("link(objectBundle, props)") {
-      exe_bundle_t exe = sycl::link(obj, props);
-      CHECK(exe.get_devices() == obj.get_devices());
-      check_bundle_runs(q, exe);
-    }
-  }
-  SECTION("build overloads") {
-    if (!dev.has(sycl::aspect::online_linker)) {
-      SKIP("Device does not have aspect::online_linker");
-    }
-    SECTION("build(inputBundle, devs, props)") {
-      exe_bundle_t exe = sycl::build(input, devs, props);
-      CHECK(exe.get_devices() == devs);
-      check_bundle_runs(q, exe);
-    }
-    SECTION("build(inputBundle, props)") {
-      exe_bundle_t exe = sycl::build(input, props);
-      CHECK(exe.get_devices() == input.get_devices());
-      check_bundle_runs(q, exe);
-    }
-  }
+TEST_CASE("only the empty properties list applies to the kernel bundle tags",
+          "[khr_properties][kernel_bundle][traits]") {
+  namespace tag = sycl::khr::property::tag;
+  check_class_without_properties<tag::compile>();
+  check_class_without_properties<tag::link>();
+  check_class_without_properties<tag::build>();
 }
 
 }  // namespace khr_properties::tests

@@ -5,9 +5,10 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Tests for the USM additions of the sycl_khr_properties extension: the
-//  usm_allocator constructors and the device, host, shared and parameterized
-//  allocation function overloads.
+//  Compile-time tests for the USM additions of the sycl_khr_properties
+//  extension: the usm_allocator constructors and the device, host, shared and
+//  parameterized allocation function overloads. The runtime effects are
+//  tested in runtime.cpp.
 //
 //  The extension does not define any USM allocation property and applications
 //  cannot define their own properties, so the only PropertyOrList argument
@@ -19,12 +20,15 @@
 
 #include "khr_properties_common.h"
 
-#include <vector>
+#if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
+#include <sycl/khr/split_headers/context.hpp>
+#include <sycl/khr/split_headers/device.hpp>
+#include <sycl/khr/split_headers/usm.hpp>
+#endif
+
+#include <cstddef>
 
 namespace khr_properties::tests {
-
-constexpr std::size_t alloc_count = 16;
-constexpr std::size_t alloc_alignment = 64;
 
 using q_t = const sycl::queue&;
 using d_t = const sycl::device&;
@@ -214,12 +218,8 @@ TEST_CASE("the new USM overloads are constrained on PropertyOrList",
     check_usm_constraints<prop::in_order>(false);
     check_usm_constraints<prop::enable_profiling>(false);
   }
-  SECTION("reduction properties are rejected") {
-    check_usm_constraints<prop::initialize_to_identity>(false);
-  }
   SECTION("properties lists with properties of other classes are rejected") {
     check_usm_constraints<queue_props_t>(false);
-    check_usm_constraints<reduction_props_t>(false);
   }
   SECTION("types that are neither properties nor lists are rejected") {
     check_usm_constraints<not_a_property>(false);
@@ -252,180 +252,12 @@ TEST_CASE("the new USM allocation functions have the specified return types",
                      void*>);
 }
 
-/**
- * Checks that `ptr` is a non-null USM allocation of the expected kind, aligned
- * to `alignment` (if non-zero), and frees it.
- */
-void check_and_free(void* ptr, const sycl::context& ctx,
-                    sycl::usm::alloc expected, std::size_t alignment = 0) {
-  REQUIRE(ptr != nullptr);
-  CHECK(sycl::get_pointer_type(ptr, ctx) == expected);
-  if (alignment != 0) CHECK(is_aligned(ptr, alignment));
-  sycl::free(ptr, ctx);
-}
-
-constexpr std::size_t num_bytes = alloc_count * sizeof(int);
-
-TEST_CASE("the new device USM allocation functions allocate device USM",
-          "[khr_properties][usm]") {
-  auto q = sycl_cts::util::get_cts_object::queue();
-  const auto dev = q.get_device();
-  const auto ctx = q.get_context();
-  if (!dev.has(sycl::aspect::usm_device_allocations)) {
-    SKIP("Device does not have aspect::usm_device_allocations");
-  }
-  const khr::empty_properties_t props{};
-  const auto kind = sycl::usm::alloc::device;
-  const auto align = alloc_alignment;
-
-  check_and_free(sycl::malloc_device(num_bytes, dev, ctx, props), ctx, kind);
-  check_and_free(sycl::malloc_device<int>(alloc_count, dev, ctx, props), ctx,
-                 kind);
-  check_and_free(sycl::malloc_device(num_bytes, q, props), ctx, kind);
-  check_and_free(sycl::malloc_device<int>(alloc_count, q, props), ctx, kind);
-  check_and_free(sycl::aligned_alloc_device(align, num_bytes, dev, ctx, props),
-                 ctx, kind, align);
-  check_and_free(
-      sycl::aligned_alloc_device<int>(align, alloc_count, dev, ctx, props), ctx,
-      kind, align);
-  check_and_free(sycl::aligned_alloc_device(align, num_bytes, q, props), ctx,
-                 kind, align);
-  check_and_free(sycl::aligned_alloc_device<int>(align, alloc_count, q, props),
-                 ctx, kind, align);
-}
-
-TEST_CASE("the new host USM allocation functions allocate host USM",
-          "[khr_properties][usm]") {
-  auto q = sycl_cts::util::get_cts_object::queue();
-  const auto dev = q.get_device();
-  const auto ctx = q.get_context();
-  if (!dev.has(sycl::aspect::usm_host_allocations)) {
-    SKIP("Device does not have aspect::usm_host_allocations");
-  }
-  const khr::empty_properties_t props{};
-  const auto kind = sycl::usm::alloc::host;
-  const auto align = alloc_alignment;
-
-  check_and_free(sycl::malloc_host(num_bytes, ctx, props), ctx, kind);
-  check_and_free(sycl::malloc_host<int>(alloc_count, ctx, props), ctx, kind);
-  check_and_free(sycl::malloc_host(num_bytes, q, props), ctx, kind);
-  check_and_free(sycl::malloc_host<int>(alloc_count, q, props), ctx, kind);
-  check_and_free(sycl::aligned_alloc_host(align, num_bytes, ctx, props), ctx,
-                 kind, align);
-  check_and_free(sycl::aligned_alloc_host<int>(align, alloc_count, ctx, props),
-                 ctx, kind, align);
-  check_and_free(sycl::aligned_alloc_host(align, num_bytes, q, props), ctx,
-                 kind, align);
-  check_and_free(sycl::aligned_alloc_host<int>(align, alloc_count, q, props),
-                 ctx, kind, align);
-}
-
-TEST_CASE("the new shared USM allocation functions allocate shared USM",
-          "[khr_properties][usm]") {
-  auto q = sycl_cts::util::get_cts_object::queue();
-  const auto dev = q.get_device();
-  const auto ctx = q.get_context();
-  if (!dev.has(sycl::aspect::usm_shared_allocations)) {
-    SKIP("Device does not have aspect::usm_shared_allocations");
-  }
-  const khr::empty_properties_t props{};
-  const auto kind = sycl::usm::alloc::shared;
-  const auto align = alloc_alignment;
-
-  check_and_free(sycl::malloc_shared(num_bytes, dev, ctx, props), ctx, kind);
-  check_and_free(sycl::malloc_shared<int>(alloc_count, dev, ctx, props), ctx,
-                 kind);
-  check_and_free(sycl::malloc_shared(num_bytes, q, props), ctx, kind);
-  check_and_free(sycl::malloc_shared<int>(alloc_count, q, props), ctx, kind);
-  check_and_free(sycl::aligned_alloc_shared(align, num_bytes, dev, ctx, props),
-                 ctx, kind, align);
-  check_and_free(
-      sycl::aligned_alloc_shared<int>(align, alloc_count, dev, ctx, props), ctx,
-      kind, align);
-  check_and_free(sycl::aligned_alloc_shared(align, num_bytes, q, props), ctx,
-                 kind, align);
-  check_and_free(sycl::aligned_alloc_shared<int>(align, alloc_count, q, props),
-                 ctx, kind, align);
-}
-
-TEST_CASE(
-    "the new parameterized USM allocation functions allocate the requested "
-    "kind of USM",
-    "[khr_properties][usm]") {
-  auto q = sycl_cts::util::get_cts_object::queue();
-  const auto dev = q.get_device();
-  const auto ctx = q.get_context();
-  const khr::empty_properties_t props{};
-  const auto align = alloc_alignment;
-
-  const auto kind = GENERATE(sycl::usm::alloc::device, sycl::usm::alloc::host,
-                             sycl::usm::alloc::shared);
-  CAPTURE(kind);
-  if ((kind == sycl::usm::alloc::device &&
-       !dev.has(sycl::aspect::usm_device_allocations)) ||
-      (kind == sycl::usm::alloc::host &&
-       !dev.has(sycl::aspect::usm_host_allocations)) ||
-      (kind == sycl::usm::alloc::shared &&
-       !dev.has(sycl::aspect::usm_shared_allocations))) {
-    SKIP("Device does not support the requested kind of allocation");
-  }
-
-  // The empty properties list applies to all USM tags, so none of the
-  // functions may throw errc::invalid.
-  check_and_free(sycl::malloc(num_bytes, dev, ctx, kind, props), ctx, kind);
-  check_and_free(sycl::malloc<int>(alloc_count, dev, ctx, kind, props), ctx,
-                 kind);
-  check_and_free(sycl::malloc(num_bytes, q, kind, props), ctx, kind);
-  check_and_free(sycl::malloc<int>(alloc_count, q, kind, props), ctx, kind);
-  check_and_free(sycl::aligned_alloc(align, num_bytes, dev, ctx, kind, props),
-                 ctx, kind, align);
-  check_and_free(
-      sycl::aligned_alloc<int>(align, alloc_count, dev, ctx, kind, props), ctx,
-      kind, align);
-  check_and_free(sycl::aligned_alloc(align, num_bytes, q, kind, props), ctx,
-                 kind, align);
-  check_and_free(sycl::aligned_alloc<int>(align, alloc_count, q, kind, props),
-                 ctx, kind, align);
-}
-
-template <sycl::usm::alloc Kind>
-void check_usm_allocator(sycl::aspect required_aspect) {
-  auto q = sycl_cts::util::get_cts_object::queue();
-  const auto dev = q.get_device();
-  const auto ctx = q.get_context();
-  if (!dev.has(required_aspect)) {
-    SKIP("Device does not support the allocation kind");
-  }
-  const khr::empty_properties_t props{};
-
-  SECTION("usm_allocator(syclContext, syclDevice, props)") {
-    sycl::usm_allocator<int, Kind> allocator{ctx, dev, props};
-    int* ptr = allocator.allocate(alloc_count);
-    REQUIRE(ptr != nullptr);
-    CHECK(sycl::get_pointer_type(ptr, ctx) == Kind);
-    allocator.deallocate(ptr, alloc_count);
-    CHECK(allocator == sycl::usm_allocator<int, Kind>{ctx, dev});
-  }
-  SECTION("usm_allocator(syclQueue, props)") {
-    sycl::usm_allocator<int, Kind> allocator{q, props};
-    std::vector<int, sycl::usm_allocator<int, Kind>> vec(alloc_count, 7,
-                                                         allocator);
-    CHECK(sycl::get_pointer_type(vec.data(), ctx) == Kind);
-    CHECK(vec[alloc_count - 1] == 7);
-    CHECK(allocator == sycl::usm_allocator<int, Kind>{q});
-  }
-}
-
-TEST_CASE("usm_allocator constructed with an empty properties list",
-          "[khr_properties][usm]") {
-  SECTION("host") {
-    check_usm_allocator<sycl::usm::alloc::host>(
-        sycl::aspect::usm_host_allocations);
-  }
-  SECTION("shared") {
-    check_usm_allocator<sycl::usm::alloc::shared>(
-        sycl::aspect::usm_shared_allocations);
-  }
+TEST_CASE("only the empty properties list applies to the USM tags",
+          "[khr_properties][usm][traits]") {
+  namespace tag = sycl::khr::property::tag;
+  check_class_without_properties<tag::usm_device>();
+  check_class_without_properties<tag::usm_host>();
+  check_class_without_properties<tag::usm_shared>();
 }
 
 }  // namespace khr_properties::tests
