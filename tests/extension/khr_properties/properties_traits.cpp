@@ -221,6 +221,31 @@ TEST_CASE(
   }
 }
 
+TEST_CASE("the old-style property traits do not classify new-style properties",
+          "[khr_properties][traits]") {
+  check_unary_trait<sycl::is_property, prop::in_order, false>();
+  check_unary_trait<sycl::is_property, prop::enable_profiling, false>();
+  check_unary_trait<sycl::is_property, prop::initialize_to_identity, false>();
+  check_unary_trait<sycl::is_property, key::in_order, false>();
+  check_unary_trait<sycl::is_property, khr::empty_properties_t, false>();
+  check_unary_trait<sycl::is_property, queue_props_t, false>();
+  STATIC_CHECK_FALSE(sycl::is_property_v<prop::in_order>);
+  STATIC_CHECK_FALSE(sycl::is_property_v<prop::enable_profiling>);
+  STATIC_CHECK_FALSE(sycl::is_property_v<prop::initialize_to_identity>);
+
+  check_binary_trait<sycl::is_property_of, prop::in_order, sycl::queue,
+                     false>();
+  check_binary_trait<sycl::is_property_of, prop::enable_profiling, sycl::queue,
+                     false>();
+  check_binary_trait<sycl::is_property_of, prop::initialize_to_identity,
+                     sycl::queue, false>();
+  check_binary_trait<sycl::is_property_of, prop::in_order, sycl::context,
+                     false>();
+  STATIC_CHECK_FALSE(sycl::is_property_of_v<prop::in_order, sycl::queue>);
+  STATIC_CHECK_FALSE(
+      sycl::is_property_of_v<prop::enable_profiling, sycl::queue>);
+}
+
 template <typename Property, typename Key>
 void check_boolean_property() {
   STATIC_CHECK(std::is_trivially_copyable_v<Property>);
@@ -229,7 +254,6 @@ void check_boolean_property() {
   STATIC_CHECK(std::is_same_v<decltype(Property::value), bool>);
   STATIC_CHECK(std::is_default_constructible_v<Property>);
   STATIC_CHECK(std::is_constructible_v<Property, bool>);
-  STATIC_CHECK(std::is_convertible_v<bool, Property>);
   STATIC_CHECK(std::is_default_constructible_v<Key>);
   STATIC_CHECK(std::is_empty_v<Key>);
 
@@ -263,5 +287,15 @@ TEST_CASE(
   check_boolean_property<prop::initialize_to_identity,
                          key::initialize_to_identity>();
 }
+
+// DPC++ declares the constructors as constexpr X(bool v = true), which is not
+// explicit.
+DISABLED_FOR_TEST_CASE(DPCPP)
+("the constructors of the boolean properties from bool are explicit",
+ "[khr_properties][traits]")({
+  STATIC_CHECK_FALSE(std::is_convertible_v<bool, prop::enable_profiling>);
+  STATIC_CHECK_FALSE(std::is_convertible_v<bool, prop::in_order>);
+  STATIC_CHECK_FALSE(std::is_convertible_v<bool, prop::initialize_to_identity>);
+});
 
 }  // namespace khr_properties::tests

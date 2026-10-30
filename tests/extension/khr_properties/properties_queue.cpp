@@ -14,6 +14,7 @@
 
 #include "khr_properties_common.h"
 
+#include <optional>
 #include <vector>
 
 namespace khr_properties::tests {
@@ -371,6 +372,75 @@ TEST_CASE("queues constructed with an empty properties list",
                         CHECK_FALSE(q.is_in_order());
                         CHECK_FALSE(q.khr_is_profiling_enabled());
                       });
+}
+
+/**
+ * Checks that `q` "contains" the old-style property OldProperty only if
+ * `expected` is true. If it does not, get_property throws errc::invalid as
+ * described in the core specification.
+ */
+template <typename OldProperty>
+void check_old_style_property(const sycl::queue& q, bool expected) {
+  CHECK(q.has_property<OldProperty>() == expected);
+  if (expected) {
+    CHECK_NOTHROW(q.get_property<OldProperty>());
+    STATIC_CHECK(
+        std::is_same_v<decltype(q.get_property<OldProperty>()), OldProperty>);
+  } else {
+    CHECK_THROWS_MATCHES(q.get_property<OldProperty>(), sycl::exception,
+                         sycl_cts::util::equals_exception(sycl::errc::invalid));
+  }
+}
+
+TEST_CASE(
+    "queues constructed with khr::property::in_order report the old-style "
+    "property::queue::in_order property",
+    "[khr_properties][queue]") {
+  const sycl::device dev = sycl_cts::util::get_cts_object::device();
+  const bool value = GENERATE(true, false);
+  CAPTURE(value);
+  SECTION("as a property") {
+    sycl::queue q{dev, prop::in_order{value}};
+    check_old_style_property<sycl::property::queue::in_order>(q, value);
+    check_old_style_property<sycl::property::queue::enable_profiling>(q, false);
+  }
+  SECTION("in a properties list") {
+    sycl::queue q{dev, khr::properties{prop::in_order{value}}};
+    check_old_style_property<sycl::property::queue::in_order>(q, value);
+    check_old_style_property<sycl::property::queue::enable_profiling>(q, false);
+  }
+}
+
+TEST_CASE(
+    "queues constructed with khr::property::enable_profiling report the "
+    "old-style property::queue::enable_profiling property",
+    "[khr_properties][queue]") {
+  const sycl::device dev = sycl_cts::util::get_cts_object::device();
+  const bool value = GENERATE(true, false);
+  CAPTURE(value);
+  if (value && !dev.has(sycl::aspect::queue_profiling)) {
+    SKIP("Device does not have aspect::queue_profiling");
+  }
+  SECTION("as a property") {
+    sycl::queue q{dev, prop::enable_profiling{value}};
+    check_old_style_property<sycl::property::queue::enable_profiling>(q, value);
+    check_old_style_property<sycl::property::queue::in_order>(q, false);
+  }
+  SECTION("in a properties list") {
+    sycl::queue q{dev, khr::properties{prop::enable_profiling{value}}};
+    check_old_style_property<sycl::property::queue::enable_profiling>(q, value);
+    check_old_style_property<sycl::property::queue::in_order>(q, false);
+  }
+}
+
+TEST_CASE(
+    "queues constructed with an empty properties list do not report "
+    "old-style queue properties",
+    "[khr_properties][queue]") {
+  const sycl::device dev = sycl_cts::util::get_cts_object::device();
+  sycl::queue q{dev, khr::empty_properties_t{}};
+  check_old_style_property<sycl::property::queue::in_order>(q, false);
+  check_old_style_property<sycl::property::queue::enable_profiling>(q, false);
 }
 
 }  // namespace khr_properties::tests

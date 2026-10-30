@@ -75,8 +75,9 @@ the macro is defined, and check that it has the value `1`.
   keys of the contained properties and `false` otherwise. `get_property`
   returns the stored values, including values only known at runtime.
 * The constructor is `constexpr`: a `constexpr` properties object can be
-  declared, and a `constexpr` function constructs a list and calls
-  `get_property` in a constant expression.
+  declared and `get_property` can be called on it in a constant expression,
+  and a `constexpr` function constructs a list and calls `get_property` in a
+  constant expression.
 * Constructor constraint: `std::is_constructible` of a deduced properties type
   is `true` from properties and `false` from `int`, an unrelated type and an
   old-style property (`sycl::property::queue::in_order`).
@@ -86,7 +87,8 @@ the macro is defined, and check that it has the value `1`.
 * `has_property` constraint: it can be called with property keys, but not with
   `int`, an unrelated type or a property type.
 * `get_property` returns a copy whose type is the property's type. Modifying
-  the copy doesn't modify the list.
+  the copy doesn't modify the list. The non-static overload (2) is `const`, so
+  it can be called through a `const` reference.
 * `get_property` constraints: the non-static overload (2) is available for the
   keys of runtime properties in the list. The static overload (1) is not
   available for those keys. Neither overload is available for a key that is
@@ -116,10 +118,15 @@ variable template equals `::value`.
   class. `false` for a list that has one property that doesn't apply (mixed
   queue and reduction properties), for a single property that is not a list,
   for `int` and for `sycl::property_list`.
+* Old-style traits: `sycl::is_property` is `false` for the three properties,
+  a key, `empty_properties_t` and a properties list, and
+  `sycl::is_property_of` is `false` for the three properties with `queue`
+  and with `context`.
 * Each of the three properties and their keys is trivially copyable. Each
-  property has a `bool value` member and a `constexpr` constructor
-  `(bool v = true)` that isn't explicit (it follows the synopsis), and each key
-  is an empty, default-constructible struct.
+  property has a `bool value` member, a `constexpr` default constructor that
+  sets `value` to `true` and a `constexpr explicit` constructor from `bool`
+  (so `bool` is not implicitly convertible to the property), and each key is
+  an empty, default-constructible struct.
 
 === Context (`properties_context.cpp`)
 
@@ -162,6 +169,15 @@ variable template equals `::value`.
 * On a device without `aspect::queue_profiling`, `enable_profiling{true}`
   throws `errc::feature_not_supported`, like the core property, and
   `enable_profiling{false}` doesn't throw.
+* Interaction with the old-style properties interface, for a single property
+  and for a list: a queue made with `in_order{v}` or `enable_profiling{v}`
+  returns `v` from `has_property` for the corresponding old-style property
+  (`property::queue::in_order` or `property::queue::enable_profiling`).
+  When `v` is `true`, `get_property` returns the old-style property. When `v`
+  is `false`, `get_property` throws `errc::invalid`, like the core interface
+  for a property the queue doesn't contain. The other old-style queue
+  property and both old-style properties for `empty_properties_t` are not
+  reported.
 
 === USM (`properties_usm.cpp`)
 
@@ -276,16 +292,6 @@ checks the APIs from its table row at compile time:
 
 == Specification ambiguities
 
-* `get_property` overload (2) is declared `constexpr auto get_property();`
-  without `const`. As written, it can't be called on a `const` properties
-  object or a `constexpr` variable. The tests only call it on non-const
-  objects.
-* Whether `queue::has_property<property::queue::in_order>()` and
-  `get_property` return the old-style property for a queue made with
-  `khr::property::in_order{true}` is unspecified. The text says "the effect
-  is the same as if the queue was constructed with `property::queue::in_order`",
-  and the core `is_in_order` was defined in terms of `has_property`. This is
-  not tested.
 * The header table lists `<sycl/khr/properties.hpp>` outside the
   `sycl/khr/split_headers/` directory used by the other rows, and the whole
   table only applies when `sycl_khr_split_headers` is supported. The tests

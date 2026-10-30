@@ -105,6 +105,9 @@ TEST_CASE("the properties constructor is constexpr",
   constexpr khr::properties props{prop::in_order{}, prop::enable_profiling{}};
   STATIC_CHECK(decltype(props)::has_property<key::in_order>());
   STATIC_CHECK(decltype(props)::has_property<key::enable_profiling>());
+  // get_property (2) is const, so it can be called on a constexpr object.
+  STATIC_CHECK(props.get_property<key::in_order>().value);
+  STATIC_CHECK(props.get_property<key::enable_profiling>().value);
   STATIC_CHECK(get_in_order_value_in_constexpr(true));
   STATIC_CHECK_FALSE(get_in_order_value_in_constexpr(false));
 }
@@ -180,6 +183,11 @@ TEST_CASE("properties::get_property returns a copy of the property",
   // Modifying the returned copy does not modify the list.
   in_order.value = true;
   CHECK_FALSE(props.get_property<key::in_order>().value);
+
+  // get_property can be called through a const object.
+  const queue_props_t& const_props = props;
+  CHECK_FALSE(const_props.get_property<key::in_order>().value);
+  CHECK(const_props.get_property<key::enable_profiling>().value);
 }
 
 TEST_CASE("properties::get_property is constrained on the property key",
