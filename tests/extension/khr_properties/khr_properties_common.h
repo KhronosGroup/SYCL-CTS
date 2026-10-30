@@ -38,8 +38,6 @@
 #include <sycl/sycl.hpp>
 #endif
 
-#include "../../common/disabled_for_test_case.h"
-
 #include <catch2/catch_test_macros.hpp>
 
 #include <type_traits>

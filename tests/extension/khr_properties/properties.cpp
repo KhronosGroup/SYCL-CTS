@@ -150,16 +150,14 @@ TEST_CASE("properties can be deduced from and constructed with properties",
 // The deduction guide is unspecified, so deducing a properties type from a
 // non-property is not checked. The constructor constraint is checked through
 // std::is_constructible on deduced properties types instead.
-// DPC++ does not constrain the constructor.
-DISABLED_FOR_TEST_CASE(DPCPP)
-("the properties constructor requires each argument to be a property",
- "[khr_properties][properties]")({
+TEST_CASE("the properties constructor requires each argument to be a property",
+          "[khr_properties][properties]") {
   STATIC_CHECK_FALSE(std::is_constructible_v<queue_props_t, int>);
   STATIC_CHECK_FALSE(std::is_constructible_v<khr::empty_properties_t, int>);
   STATIC_CHECK_FALSE(std::is_constructible_v<queue_props_t, not_a_property>);
   STATIC_CHECK_FALSE(
       std::is_constructible_v<queue_props_t, sycl::property::queue::in_order>);
-});
+}
 
 TEST_CASE("properties::has_property is a static constexpr member function",
           "[khr_properties][properties]") {
@@ -186,14 +184,12 @@ TEST_CASE("properties::has_property accepts property keys",
   STATIC_CHECK(can_call_has_property_v<key::initialize_to_identity>);
 }
 
-// DPC++ does not constrain has_property on khr::is_property_key_v.
-DISABLED_FOR_TEST_CASE(DPCPP)
-("properties::has_property requires a property key",
- "[khr_properties][properties]")({
+TEST_CASE("properties::has_property requires a property key",
+          "[khr_properties][properties]") {
   STATIC_CHECK_FALSE(can_call_has_property_v<int>);
   STATIC_CHECK_FALSE(can_call_has_property_v<not_a_property>);
   STATIC_CHECK_FALSE(can_call_has_property_v<prop::in_order>);
-});
+}
 
 TEST_CASE("properties::get_property returns a copy of the property",
           "[khr_properties][properties]") {
@@ -228,16 +224,14 @@ TEST_CASE("properties::get_property is constrained on the property key",
   STATIC_CHECK_FALSE(can_call_static_get_property_v<key::enable_profiling>);
 }
 
-// DPC++ rejects the following with a hard error instead of removing
-// get_property from overload resolution.
-DISABLED_FOR_TEST_CASE(DPCPP)
-("properties::get_property is not available for a key that is not in the "
- "list",
- "[khr_properties][properties]")({
+TEST_CASE(
+    "properties::get_property is not available for a key that is not in the "
+    "list",
+    "[khr_properties][properties]") {
   STATIC_CHECK_FALSE(can_call_get_property_v<key::initialize_to_identity>);
   STATIC_CHECK_FALSE(
       can_call_static_get_property_v<key::initialize_to_identity>);
-});
+}
 
 TEST_CASE("the _v variable templates have the value of their traits",
           "[khr_properties][traits]") {
@@ -456,14 +450,11 @@ TEST_CASE(
                          key::initialize_to_identity>();
 }
 
-// DPC++ declares the constructors as constexpr X(bool v = true), which is not
-// explicit.
-DISABLED_FOR_TEST_CASE(DPCPP)
-("the constructors of the boolean properties from bool are explicit",
- "[khr_properties][traits]")({
+TEST_CASE("the constructors of the boolean properties from bool are explicit",
+          "[khr_properties][traits]") {
   STATIC_CHECK_FALSE(std::is_convertible_v<bool, prop::enable_profiling>);
   STATIC_CHECK_FALSE(std::is_convertible_v<bool, prop::in_order>);
   STATIC_CHECK_FALSE(std::is_convertible_v<bool, prop::initialize_to_identity>);
-});
+}
 
 }  // namespace khr_properties::tests
