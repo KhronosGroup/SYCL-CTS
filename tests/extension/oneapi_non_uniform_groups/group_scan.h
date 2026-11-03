@@ -21,7 +21,7 @@ class joint_scan_group_kernel;
 // char/int8_t, so it shouldn't be higher than 127.
 constexpr int init = 42;
 
-// Test size must be a multiple of all the used fixed_size_group sizes.
+// Test size must be a multiple of all the used chunk sizes.
 constexpr size_t test_size = 8;
 
 template <typename I, typename T, typename U, typename Group, typename OpT>
@@ -156,7 +156,7 @@ void check_scan(sycl::queue& queue, size_t size,
                           sub_group, test_case))
                     return;
 
-                  GroupT non_uniform_group =
+                  auto non_uniform_group =
                       NonUniformGroupHelper<GroupT>::create(sub_group,
                                                             test_case);
 
@@ -477,7 +477,7 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<1> range, OpT op,
                           sub_group, test_case))
                     return;
 
-                  GroupT non_uniform_group =
+                  auto non_uniform_group =
                       NonUniformGroupHelper<GroupT>::create(sub_group,
                                                             test_case);
 

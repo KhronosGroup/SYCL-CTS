@@ -119,7 +119,7 @@ struct non_uniform_group_barrier_test {
                                                                      test_case))
                 return;
 
-              GroupT non_uniform_group =
+              auto non_uniform_group =
                   NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
 
               size_t llid = non_uniform_group.get_local_linear_id();

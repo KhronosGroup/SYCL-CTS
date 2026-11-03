@@ -86,7 +86,7 @@ struct joint_of_group_test {
               return;
             }
 
-            GroupT non_uniform_group =
+            auto non_uniform_group =
                 NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
 
             T* v_begin = v_acc.get_pointer();
@@ -223,7 +223,7 @@ struct predicate_function_of_non_uniform_group_test {
                                                                  test_case))
             return;
 
-          GroupT non_uniform_group =
+          auto non_uniform_group =
               NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
 
           size_t size = non_uniform_group.get_local_linear_range();
@@ -383,7 +383,7 @@ struct bool_function_of_non_uniform_group_test {
                                                                  test_case))
             return;
 
-          GroupT non_uniform_group =
+          auto non_uniform_group =
               NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
 
           size_t size = non_uniform_group.get_local_linear_range();
