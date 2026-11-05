@@ -35,6 +35,13 @@ void joint_of_group(sycl::queue& queue) {
 
   sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
   size_t work_group_size = work_group_range.size();
+  // Note that the predicates 'one_true' and 'some_true' are in fact 'all_true'
+  // if the input vector, v, has a size of 1. Since one of the test cases uses
+  // size = (work_group_size / 2), we need to make sure that work_group_size is
+  // greater than 2.
+  assert(work_group_size > 2 &&
+         "Not all test checks hold when the work-group size is not greater "
+         "than 2");
 
   const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
   for (size_t size : sizes) {
