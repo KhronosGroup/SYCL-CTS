@@ -131,6 +131,8 @@ TEST_CASE("Interoperability between composite and component devices",
   });
 
   auto hostAcc = bufC.get_host_access();
+  sycl::free(ptrA, shared_context);
+  sycl::free(ptrB, shared_context);
   INFO("Verifying kernel (2 x vector add) results");
   for (size_t i = 0; i < count; ++i) {
     REQUIRE(2 * (i + i) == hostAcc[i]);
@@ -204,6 +206,8 @@ TEST_CASE("Sharing memory to a descendent device",
   });
 
   auto hostAcc = bufC.get_host_access();
+  sycl::free(ptrA, composite_context);
+  sycl::free(ptrB, composite_context);
   INFO("Verifying kernel (2 x vector add) results");
   for (size_t i = 0; i < count; ++i) {
     REQUIRE(2 * (i + i) == hostAcc[i]);

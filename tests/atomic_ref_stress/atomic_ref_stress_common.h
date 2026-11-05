@@ -336,6 +336,7 @@ class atomicity_with_host_code {
     for (int i = 0; i < count; i++) a_host.fetch_add(1);
     event.wait();
     CHECK(*pval == size + count);
+    sycl::free(pval, queue);
   }
 };
 #endif

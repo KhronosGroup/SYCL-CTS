@@ -73,6 +73,7 @@ void check_in_order_functionality(sycl::queue& queue) {
     });
     queue.wait_and_throw();
   }
+  sycl::free(data_changed, queue);
   CHECK(result);
 }
 

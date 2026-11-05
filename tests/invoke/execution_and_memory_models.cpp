@@ -191,6 +191,7 @@ DISABLED_FOR_TEST_CASE(AdaptiveCpp, SimSYCL)
         });
       });
       queue.wait_and_throw();
+      sycl::free(pflag, queue);
     }
 
     INFO(
@@ -230,6 +231,7 @@ TEST_CASE("Host accessor as a barrier", "[invoke]") {
           "Check that *pflag is equal to expected value, after host_acc "
           "creation");  // that means that host_accessor acts as barrier
       CHECK(*pflag == 42);
+      sycl::free(pflag, queue);
     }
   } else {
     SKIP("Device does not support USM atomic shared allocations");

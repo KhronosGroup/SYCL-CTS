@@ -67,6 +67,7 @@ TEST_CASE("requisite for the entire underlying buffer for sycl::accessor ",
     });
     q.wait_and_throw();
     CHECK(*check_data == accessor_tests_common::changed_val);
+    sycl::free(check_data, q);
   }
 }
 
