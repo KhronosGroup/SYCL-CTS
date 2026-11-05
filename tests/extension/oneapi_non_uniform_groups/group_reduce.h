@@ -14,7 +14,7 @@
 
 constexpr size_t init = 8;
 
-// Test size must be a multiple of all the used fixed_size_group sizes.
+// Test size must be a multiple of all the used chunk sizes.
 constexpr size_t test_size = 8;
 
 template <bool with_init, typename OpT, typename IteratorT>
@@ -145,7 +145,7 @@ void joint_reduce_group(sycl::queue& queue, const std::string& op_name) {
                         sub_group, test_case))
                   return;
 
-                GroupT non_uniform_group =
+                auto non_uniform_group =
                     NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
                 participating_acc[index] = 1;
 
@@ -269,7 +269,7 @@ void init_joint_reduce_group(sycl::queue& queue, const std::string& op_name) {
                         sub_group, test_case))
                   return;
 
-                GroupT non_uniform_group =
+                auto non_uniform_group =
                     NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
                 participating_acc[index] = 1;
 
@@ -396,7 +396,7 @@ void reduce_over_group(sycl::queue& queue, const std::string& op_name) {
                                                                      test_case))
                 return;
 
-              GroupT non_uniform_group =
+              auto non_uniform_group =
                   NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
 
               sg_id_acc[index] = sub_group.get_group_linear_id();
@@ -513,7 +513,7 @@ void init_reduce_over_group(sycl::queue& queue, const std::string& op_name) {
                                                                      test_case))
                 return;
 
-              GroupT non_uniform_group =
+              auto non_uniform_group =
                   NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
 
               sg_id_acc[index] = sub_group.get_group_linear_id();

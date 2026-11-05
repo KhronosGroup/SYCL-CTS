@@ -86,7 +86,7 @@ struct joint_of_group_test {
               return;
             }
 
-            GroupT non_uniform_group =
+            auto non_uniform_group =
                 NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
 
             T* v_begin = v_acc.get_pointer();
@@ -220,10 +220,15 @@ struct predicate_function_of_non_uniform_group_test {
 
           // If this item is not participating in the group, leave early.
           if (!NonUniformGroupHelper<GroupT>::should_participate(sub_group,
-                                                                 test_case))
+                                                                 test_case)) {
+            // If an item is not participating, its results are trivially
+            // correct.
+            for (unsigned i = 0; i < total_case_count; ++i)
+              res_acc[gid][i] = true;
             return;
+          }
 
-          GroupT non_uniform_group =
+          auto non_uniform_group =
               NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
 
           size_t size = non_uniform_group.get_local_linear_range();
@@ -380,10 +385,15 @@ struct bool_function_of_non_uniform_group_test {
 
           // If this item is not participating in the group, leave early.
           if (!NonUniformGroupHelper<GroupT>::should_participate(sub_group,
-                                                                 test_case))
+                                                                 test_case)) {
+            // If an item is not participating, its results are trivially
+            // correct.
+            for (unsigned i = 0; i < total_case_count; ++i)
+              res_acc[gid][i] = true;
             return;
+          }
 
-          GroupT non_uniform_group =
+          auto non_uniform_group =
               NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
 
           size_t size = non_uniform_group.get_local_linear_range();

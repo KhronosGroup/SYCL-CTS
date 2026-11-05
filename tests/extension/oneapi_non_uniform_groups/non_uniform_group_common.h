@@ -11,49 +11,60 @@
 
 namespace oneapi_ext = sycl::ext::oneapi::experimental;
 
-// Group packs to test for.
-using GroupPackTypes = std::tuple<
-    unnamed_type_pack<oneapi_ext::ballot_group<sycl::sub_group>>,
-    unnamed_type_pack<oneapi_ext::fixed_size_group<1, sycl::sub_group>,
-                      oneapi_ext::fixed_size_group<2, sycl::sub_group>,
-                      oneapi_ext::fixed_size_group<4, sycl::sub_group>,
-                      oneapi_ext::fixed_size_group<8, sycl::sub_group>>,
-    unnamed_type_pack<oneapi_ext::tangle_group<sycl::sub_group>>,
-    unnamed_type_pack<oneapi_ext::opportunistic_group>>;
+// A `fragment` can be created either by partitioning a group with
+// `binary_partition()` or opportunistically with `get_opportunistic_group()`.
+// Both produce the same type, so the group type alone cannot select the
+// creation path. These tags key `NonUniformGroupHelper` on the path instead.
+struct fragment_binary_partition {};
+struct fragment_opportunistic {};
 
-// Helper class for working with non-uniform group of type GroupT. If the
-// result is empty the work-item does not participate in the execution.
-template <typename GroupT>
+// Group packs to test for.
+using GroupPackTypes =
+    std::tuple<unnamed_type_pack<fragment_binary_partition>,
+               unnamed_type_pack<oneapi_ext::chunk<1, sycl::sub_group>,
+                                 oneapi_ext::chunk<2, sycl::sub_group>,
+                                 oneapi_ext::chunk<4, sycl::sub_group>,
+                                 oneapi_ext::chunk<8, sycl::sub_group>>,
+#ifdef SYCL_EXT_ONEAPI_TANGLE
+               unnamed_type_pack<oneapi_ext::tangle<sycl::sub_group>>,
+#endif
+               unnamed_type_pack<fragment_opportunistic>>;
+
+// Helper class for working with the non-uniform group selected by TagT, which
+// is either a group type or one of the fragment tags above. If the result is
+// empty the work-item does not participate in the execution.
+template <typename TagT>
 struct NonUniformGroupHelper;
 
 template <>
-struct NonUniformGroupHelper<oneapi_ext::ballot_group<sycl::sub_group>> {
+struct NonUniformGroupHelper<fragment_binary_partition> {
+  using group_type = oneapi_ext::fragment<sycl::sub_group>;
+
   static constexpr size_t num_test_cases = 4;
 
   static bool is_supported(const sycl::device& dev) {
-    return dev.has(sycl::aspect::ext_oneapi_ballot_group);
+    return dev.has(sycl::aspect::ext_oneapi_fragment);
   }
 
   static bool should_participate(sycl::sub_group sg, int test_case) {
     return true;
   }
 
-  static oneapi_ext::ballot_group<sycl::sub_group> create(sycl::sub_group sg,
-                                                          int test_case) {
+  static group_type create(sycl::sub_group sg, int test_case) {
     // Split it so that 1/3rd of the items are in the first "true" group and the
     // rest are in "false" group.
     switch (test_case) {
       case 0:
-        return oneapi_ext::get_ballot_group(
+        return oneapi_ext::binary_partition(
             sg, sg.get_local_linear_id() < sg.get_local_range().size() / 3);
       case 1:
-        return oneapi_ext::get_ballot_group(sg, sg.get_local_linear_id() & 1);
+        return oneapi_ext::binary_partition(sg, sg.get_local_linear_id() & 1);
       case 2:
-        return oneapi_ext::get_ballot_group(sg, true);
+        return oneapi_ext::binary_partition(sg, true);
       case 3:
-        return oneapi_ext::get_ballot_group(sg, false);
+        return oneapi_ext::binary_partition(sg, false);
     }
-    return oneapi_ext::get_ballot_group(sg, false);
+    return oneapi_ext::binary_partition(sg, false);
   }
 
   static size_t preferred_single_worker_group_id(int test_case) {
@@ -63,7 +74,9 @@ struct NonUniformGroupHelper<oneapi_ext::ballot_group<sycl::sub_group>> {
     return test_case == 2;
   }
 
-  static std::string get_name() { return "ballot_group<sycl::sub_group>"; }
+  static std::string get_name() {
+    return "fragment<sycl::sub_group> from binary_partition";
+  }
 
   static std::string get_test_case_name(int test_case) {
     assert(test_case < num_test_cases);
@@ -81,50 +94,49 @@ struct NonUniformGroupHelper<oneapi_ext::ballot_group<sycl::sub_group>> {
   }
 };
 
-template <size_t PartitionSize>
-struct NonUniformGroupHelper<
-    oneapi_ext::fixed_size_group<PartitionSize, sycl::sub_group>> {
-  // Fixed-size group testing have one case per size we test, but since the size
-  // is part of the type it will have to be specified further out.
+template <size_t ChunkSize>
+struct NonUniformGroupHelper<oneapi_ext::chunk<ChunkSize, sycl::sub_group>> {
+  using group_type = oneapi_ext::chunk<ChunkSize, sycl::sub_group>;
+
+  // Chunk testing has one case per size we test, but since the size is part of
+  // the type it will have to be specified further out.
   static constexpr size_t num_test_cases = 1;
 
   static bool is_supported(const sycl::device& dev) {
     // For these tests we consider them unsupported if the smallest supported
-    // sub-group size is less than the partition size.
+    // sub-group size is less than the chunk size.
     std::vector<size_t> sg_sizes =
         dev.get_info<sycl::info::device::sub_group_sizes>();
     size_t min_sg_size = *std::min_element(sg_sizes.cbegin(), sg_sizes.cend());
-    return min_sg_size >= PartitionSize &&
-           dev.has(sycl::aspect::ext_oneapi_fixed_size_group);
+    return min_sg_size >= ChunkSize && dev.has(sycl::aspect::ext_oneapi_chunk);
   }
 
   static bool should_participate(sycl::sub_group sg, int test_case) {
     return true;
   }
 
-  static oneapi_ext::fixed_size_group<PartitionSize, sycl::sub_group> create(
-      sycl::sub_group sg, int test_case) {
-    return oneapi_ext::get_fixed_size_group<PartitionSize>(sg);
+  static group_type create(sycl::sub_group sg, int test_case) {
+    return oneapi_ext::chunked_partition<ChunkSize>(sg);
   }
 
   static size_t preferred_single_worker_group_id(int) { return 0; }
 
   static std::string get_name() {
-    return "fixed_size_group<" + std::to_string(PartitionSize) +
-           ", sycl::sub_group>";
+    return "chunk<" + std::to_string(ChunkSize) + ", sycl::sub_group>";
   }
 
-  static std::string get_test_case_name(int) {
-    return "testing fixed_size_group";
-  }
+  static std::string get_test_case_name(int) { return "testing chunk"; }
 };
 
+#ifdef SYCL_EXT_ONEAPI_TANGLE
 template <>
-struct NonUniformGroupHelper<oneapi_ext::tangle_group<sycl::sub_group>> {
+struct NonUniformGroupHelper<oneapi_ext::tangle<sycl::sub_group>> {
+  using group_type = oneapi_ext::tangle<sycl::sub_group>;
+
   static constexpr size_t num_test_cases = 3;
 
   static bool is_supported(const sycl::device& dev) {
-    return dev.has(sycl::aspect::ext_oneapi_tangle_group);
+    return dev.has(sycl::aspect::ext_oneapi_tangle);
   }
 
   static bool should_participate(sycl::sub_group sg, int test_case) {
@@ -139,14 +151,13 @@ struct NonUniformGroupHelper<oneapi_ext::tangle_group<sycl::sub_group>> {
     return false;
   }
 
-  static oneapi_ext::tangle_group<sycl::sub_group> create(sycl::sub_group sg,
-                                                          int test_case) {
-    return oneapi_ext::get_tangle_group(sg);
+  static group_type create(sycl::sub_group sg, int test_case) {
+    return oneapi_ext::entangle(sg);
   }
 
   static size_t preferred_single_worker_group_id(int) { return 0; }
 
-  static std::string get_name() { return "tangle_group<sycl::sub_group>"; }
+  static std::string get_name() { return "tangle<sycl::sub_group>"; }
 
   static std::string get_test_case_name(int test_case) {
     assert(test_case < num_test_cases);
@@ -161,13 +172,16 @@ struct NonUniformGroupHelper<oneapi_ext::tangle_group<sycl::sub_group>> {
     return "";
   }
 };
+#endif
 
 template <>
-struct NonUniformGroupHelper<oneapi_ext::opportunistic_group> {
+struct NonUniformGroupHelper<fragment_opportunistic> {
+  using group_type = oneapi_ext::fragment<sycl::sub_group>;
+
   static constexpr size_t num_test_cases = 3;
 
   static bool is_supported(const sycl::device& dev) {
-    return dev.has(sycl::aspect::ext_oneapi_opportunistic_group);
+    return dev.has(sycl::aspect::ext_oneapi_fragment);
   }
 
   static bool should_participate(sycl::sub_group sg, int test_case) {
@@ -182,13 +196,15 @@ struct NonUniformGroupHelper<oneapi_ext::opportunistic_group> {
     return false;
   }
 
-  static oneapi_ext::opportunistic_group create(sycl::sub_group, int) {
-    return oneapi_ext::this_kernel::get_opportunistic_group();
+  static group_type create(sycl::sub_group, int) {
+    return oneapi_ext::this_work_item::get_opportunistic_group();
   }
 
   static size_t preferred_single_worker_group_id(int) { return 0; }
 
-  static std::string get_name() { return "opportunistic_group"; }
+  static std::string get_name() {
+    return "fragment<sycl::sub_group> from get_opportunistic_group";
+  }
 
   static std::string get_test_case_name(int test_case) {
     assert(test_case < num_test_cases);

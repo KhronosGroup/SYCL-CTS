@@ -79,7 +79,7 @@ struct broadcast_non_uniform_group_test {
                                                                    test_case))
               return;
 
-            GroupT non_uniform_group =
+            auto non_uniform_group =
                 NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
 
             // Each work-item computes a unique value

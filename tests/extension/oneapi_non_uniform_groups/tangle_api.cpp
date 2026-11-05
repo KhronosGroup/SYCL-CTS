@@ -26,12 +26,12 @@ struct checks {
   };
 };
 
-TEST_CASE("Test for tangle_group apis.", "[oneapi_non_uniform_groups]") {
-#ifndef SYCL_EXT_ONEAPI_NON_UNIFORM_GROUPS
-  SKIP("SYCL_EXT_ONEAPI_NON_UNIFORM_GROUPS is not defined");
+TEST_CASE("Test for tangle apis.", "[oneapi_non_uniform_groups]") {
+#ifndef SYCL_EXT_ONEAPI_TANGLE
+  SKIP("SYCL_EXT_ONEAPI_TANGLE is not defined");
 #else
   namespace oneapi_ext = sycl::ext::oneapi::experimental;
-  using tangle_group_t = oneapi_ext::tangle_group<sycl::sub_group>;
+  using tangle_t = oneapi_ext::tangle<sycl::sub_group>;
   using CheckResults = bool[checks::COUNT];
 
   constexpr size_t num_items = 64;
@@ -40,8 +40,8 @@ TEST_CASE("Test for tangle_group apis.", "[oneapi_non_uniform_groups]") {
 
   auto q = sycl_cts::util::get_cts_object::queue();
 
-  if (!q.get_device().has(sycl::aspect::ext_oneapi_tangle_group)) {
-    SKIP("Device does not support tangle_group.");
+  if (!q.get_device().has(sycl::aspect::ext_oneapi_tangle)) {
+    SKIP("Device does not support tangle.");
   }
 
   q.submit([&](sycl::handler& cgh) {
@@ -50,14 +50,14 @@ TEST_CASE("Test for tangle_group apis.", "[oneapi_non_uniform_groups]") {
     sycl::nd_range<1> nd_range{sycl::range<1>{num_items},
                                sycl::range<1>{num_items}};
 
-    cgh.parallel_for<struct TangleGroupAPI>(nd_range, [=](sycl::nd_item<1> it) {
+    cgh.parallel_for<struct TangleAPI>(nd_range, [=](sycl::nd_item<1> it) {
       auto& results = acc[it.get_global_id()];
 
       sycl::sub_group sg = it.get_sub_group();
       size_t sub_group_size = sg.get_local_range().size();
       size_t split = sub_group_size / 3;
 
-      auto run_checks = [&](tangle_group_t tangle, size_t expected_size) {
+      auto run_checks = [&](tangle_t tangle, size_t expected_size) {
         results[checks::get_group_id] = tangle.get_group_id() == 0;
         results[checks::get_local_id] = tangle.get_local_id() < expected_size;
         results[checks::get_group_range] = tangle.get_group_range().size() == 1;
@@ -76,12 +76,12 @@ TEST_CASE("Test for tangle_group apis.", "[oneapi_non_uniform_groups]") {
       };
 
       if (sg.get_local_linear_id() < split) {
-        auto tangle = oneapi_ext::get_tangle_group(sg);
-        static_assert(std::is_same_v<decltype(tangle), tangle_group_t>);
+        auto tangle = oneapi_ext::entangle(sg);
+        static_assert(std::is_same_v<decltype(tangle), tangle_t>);
         run_checks(tangle, split);
       } else {
-        auto tangle = oneapi_ext::get_tangle_group(sg);
-        static_assert(std::is_same_v<decltype(tangle), tangle_group_t>);
+        auto tangle = oneapi_ext::entangle(sg);
+        static_assert(std::is_same_v<decltype(tangle), tangle_t>);
         run_checks(tangle, sub_group_size - split);
       }
     });
@@ -94,71 +94,66 @@ TEST_CASE("Test for tangle_group apis.", "[oneapi_non_uniform_groups]") {
                                  [=](const auto& it) { return it[check]; });
 
   // Group-category traits.
-  STATIC_CHECK(sycl::is_group<tangle_group_t>::value);
-  STATIC_CHECK(sycl::is_group_v<tangle_group_t>);
-  STATIC_CHECK(oneapi_ext::is_user_constructed_group<tangle_group_t>::value);
-  STATIC_CHECK(oneapi_ext::is_user_constructed_group_v<tangle_group_t>);
-  STATIC_CHECK(!oneapi_ext::is_fixed_topology_group<tangle_group_t>::value);
-  STATIC_CHECK(!oneapi_ext::is_fixed_topology_group_v<tangle_group_t>);
+  STATIC_CHECK(sycl::is_group<tangle_t>::value);
+  STATIC_CHECK(sycl::is_group_v<tangle_t>);
+  STATIC_CHECK(oneapi_ext::is_user_constructed_group<tangle_t>::value);
+  STATIC_CHECK(oneapi_ext::is_user_constructed_group_v<tangle_t>);
+  STATIC_CHECK(!oneapi_ext::is_fixed_topology_group<tangle_t>::value);
+  STATIC_CHECK(!oneapi_ext::is_fixed_topology_group_v<tangle_t>);
 
   // Aliases.
-  STATIC_CHECK(std::is_same_v<tangle_group_t::id_type, sycl::id<1>>);
-  STATIC_CHECK(std::is_same_v<tangle_group_t::range_type, sycl::range<1>>);
-  STATIC_CHECK(std::is_same_v<tangle_group_t::linear_id_type, uint32_t>);
+  STATIC_CHECK(std::is_same_v<tangle_t::id_type, sycl::id<1>>);
+  STATIC_CHECK(std::is_same_v<tangle_t::range_type, sycl::range<1>>);
+  STATIC_CHECK(std::is_same_v<tangle_t::linear_id_type, uint32_t>);
 
   // Static constexpr members.
-  STATIC_CHECK(tangle_group_t::dimensions == 1);
-  STATIC_CHECK(tangle_group_t::fence_scope == sycl::sub_group::fence_scope);
+  STATIC_CHECK(tangle_t::dimensions == 1);
+  STATIC_CHECK(tangle_t::fence_scope == sycl::sub_group::fence_scope);
 
   // get_group_id
-  CHECK(std::is_same_v<decltype(std::declval<tangle_group_t>().get_group_id()),
-                       tangle_group_t::id_type>);
+  CHECK(std::is_same_v<decltype(std::declval<tangle_t>().get_group_id()),
+                       tangle_t::id_type>);
   CHECK(results[checks::get_group_id]);
 
   // get_local_id
-  CHECK(std::is_same_v<decltype(std::declval<tangle_group_t>().get_local_id()),
-                       tangle_group_t::id_type>);
+  CHECK(std::is_same_v<decltype(std::declval<tangle_t>().get_local_id()),
+                       tangle_t::id_type>);
   CHECK(results[checks::get_local_id]);
 
   // get_group_range
-  CHECK(
-      std::is_same_v<decltype(std::declval<tangle_group_t>().get_group_range()),
-                     tangle_group_t::range_type>);
+  CHECK(std::is_same_v<decltype(std::declval<tangle_t>().get_group_range()),
+                       tangle_t::range_type>);
   CHECK(results[checks::get_group_range]);
 
   // get_local_range
-  CHECK(
-      std::is_same_v<decltype(std::declval<tangle_group_t>().get_local_range()),
-                     tangle_group_t::range_type>);
+  CHECK(std::is_same_v<decltype(std::declval<tangle_t>().get_local_range()),
+                       tangle_t::range_type>);
   CHECK(results[checks::get_local_range]);
 
   // get_group_linear_id
-  CHECK(std::is_same_v<
-        decltype(std::declval<tangle_group_t>().get_group_linear_id()),
-        tangle_group_t::linear_id_type>);
+  CHECK(std::is_same_v<decltype(std::declval<tangle_t>().get_group_linear_id()),
+                       tangle_t::linear_id_type>);
   CHECK(results[checks::get_group_linear_id]);
 
   // get_local_linear_id
-  CHECK(std::is_same_v<
-        decltype(std::declval<tangle_group_t>().get_local_linear_id()),
-        tangle_group_t::linear_id_type>);
+  CHECK(std::is_same_v<decltype(std::declval<tangle_t>().get_local_linear_id()),
+                       tangle_t::linear_id_type>);
   CHECK(results[checks::get_local_linear_id]);
 
   // get_group_linear_range
   CHECK(std::is_same_v<
-        decltype(std::declval<tangle_group_t>().get_group_linear_range()),
-        tangle_group_t::linear_id_type>);
+        decltype(std::declval<tangle_t>().get_group_linear_range()),
+        tangle_t::linear_id_type>);
   CHECK(results[checks::get_group_linear_range]);
 
   // get_local_linear_range
   CHECK(std::is_same_v<
-        decltype(std::declval<tangle_group_t>().get_local_linear_range()),
-        tangle_group_t::linear_id_type>);
+        decltype(std::declval<tangle_t>().get_local_linear_range()),
+        tangle_t::linear_id_type>);
   CHECK(results[checks::get_local_linear_range]);
 
   // leader
-  CHECK(
-      std::is_same_v<decltype(std::declval<tangle_group_t>().leader()), bool>);
+  CHECK(std::is_same_v<decltype(std::declval<tangle_t>().leader()), bool>);
   CHECK(results[checks::leader]);
 #endif
 }

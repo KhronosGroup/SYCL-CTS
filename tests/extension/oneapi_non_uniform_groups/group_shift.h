@@ -72,9 +72,10 @@ struct shift_non_uniform_group_test {
               return;
             }
 
-            GroupT non_uniform_group =
+            auto non_uniform_group =
                 NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
-            const typename GroupT::linear_id_type llid =
+            const typename NonUniformGroupHelper<
+                GroupT>::group_type::linear_id_type llid =
                 non_uniform_group.get_local_linear_id();
 
             T local_var(splat_init<T>(llid + 1));
