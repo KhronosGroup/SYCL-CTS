@@ -220,8 +220,13 @@ struct predicate_function_of_non_uniform_group_test {
 
           // If this item is not participating in the group, leave early.
           if (!NonUniformGroupHelper<GroupT>::should_participate(sub_group,
-                                                                 test_case))
+                                                                 test_case)) {
+            // If an item is not participating, its results are trivially
+            // correct.
+            for (unsigned i = 0; i < total_case_count; ++i)
+              res_acc[gid][i] = true;
             return;
+          }
 
           auto non_uniform_group =
               NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
@@ -380,8 +385,13 @@ struct bool_function_of_non_uniform_group_test {
 
           // If this item is not participating in the group, leave early.
           if (!NonUniformGroupHelper<GroupT>::should_participate(sub_group,
-                                                                 test_case))
+                                                                 test_case)) {
+            // If an item is not participating, its results are trivially
+            // correct.
+            for (unsigned i = 0; i < total_case_count; ++i)
+              res_acc[gid][i] = true;
             return;
+          }
 
           auto non_uniform_group =
               NonUniformGroupHelper<GroupT>::create(sub_group, test_case);
