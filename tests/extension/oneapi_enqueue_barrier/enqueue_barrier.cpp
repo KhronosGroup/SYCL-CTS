@@ -18,22 +18,37 @@ inline void skip_if_dev_does_not_support_usm_alloc(
 }
 
 constexpr size_t buffer_size = 10;
-constexpr size_t ker_a_iter_num = 1000000;
-constexpr size_t ker_b_iter_num = 3000000;
+
+// The kernels below are single_task loops, so each one runs as a single
+// work-item. Unoptimized device code (O0/debug builds) runs these loops orders
+// of magnitude slower, so one kernel runs for many seconds. A GPU that can be
+// preempted only at work-group boundaries then cannot answer an OS preemption
+// request in time, and Windows resets the device (TDR). Keep the loops short
+// in unoptimized builds; the checks do not depend on the loop length.
+#ifdef __OPTIMIZE__
+constexpr size_t iter_num_divisor = 1;
+#else
+constexpr size_t iter_num_divisor = 1000;
+#endif
+constexpr size_t ker_a_iter_num = 1000000 / iter_num_divisor;
+constexpr size_t ker_b_iter_num = 3000000 / iter_num_divisor;
 
 class EnqueueBarrierTestBase {
-  template <size_t iter_num>
   class enqueue_barrier_kernel {
     using LoopArrAccT = sycl::accessor<int, 1, sycl::access_mode::write>;
     using ResBufAccT = sycl::accessor<bool, 1, sycl::access_mode::write>;
     LoopArrAccT loop_acc;
     ResBufAccT res_acc;
     bool* usm_ptr;
+    size_t iter_num;
 
    public:
     enqueue_barrier_kernel(LoopArrAccT loop_arr_acc, ResBufAccT res_buf_acc,
-                           bool* flags)
-        : loop_acc(loop_arr_acc), res_acc(res_buf_acc), usm_ptr(flags){};
+                           bool* flags, size_t n)
+        : loop_acc(loop_arr_acc),
+          res_acc(res_buf_acc),
+          usm_ptr(flags),
+          iter_num(n) {}
     void operator()() const {
       for (size_t i = 0; i < iter_num; i++) {
         int val = sycl::sqrt(float(i));
@@ -76,8 +91,8 @@ class EnqueueBarrierTestBase {
         sycl::accessor result_buf_a_acc(result_buf_a, cgh, sycl::write_only);
         sycl::accessor loop_arr_buf_a_acc(loop_arr_buf_a, cgh,
                                           sycl::write_only);
-        enqueue_barrier_kernel<ker_a_iter_num> kern_a(
-            loop_arr_buf_a_acc, result_buf_a_acc, completion_flags);
+        enqueue_barrier_kernel kern_a(loop_arr_buf_a_acc, result_buf_a_acc,
+                                      completion_flags, ker_a_iter_num);
         cgh.single_task(kern_a);
       });
 
@@ -86,8 +101,8 @@ class EnqueueBarrierTestBase {
             sycl::accessor(result_buf_b, cgh, sycl::write_only);
         auto loop_arr_buf_b_acc =
             sycl::accessor(loop_arr_buf_b, cgh, sycl::write_only);
-        enqueue_barrier_kernel<ker_b_iter_num> kern_b(
-            loop_arr_buf_b_acc, result_buf_b_acc, completion_flags);
+        enqueue_barrier_kernel kern_b(loop_arr_buf_b_acc, result_buf_b_acc,
+                                      completion_flags, ker_b_iter_num);
         cgh.single_task(kern_b);
       });
 
