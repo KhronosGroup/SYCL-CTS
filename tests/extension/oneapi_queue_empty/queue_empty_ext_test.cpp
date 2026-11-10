@@ -10,16 +10,28 @@
 
 namespace queue_empty::tests {
 constexpr size_t buf_size = 10;
-constexpr size_t iter_num = 10000000;
+// The kernel below is a single_task loop, so it runs as a single
+// work-item. Unoptimized device code (O0/debug builds) runs this loop orders
+// of magnitude slower, so the kernel runs for many seconds. A GPU that can be
+// preempted only at work-group boundaries then cannot answer an OS preemption
+// request in time, and Windows resets the device (TDR). Keep the loop short
+// in unoptimized builds; the checks do not depend on the loop length.
+#ifdef __OPTIMIZE__
+constexpr size_t iter_num_divisor = 1;
+#else
+constexpr size_t iter_num_divisor = 1000;
+#endif
+constexpr size_t iter_num = 10000000 / iter_num_divisor;
 
-template <size_t iter_num, typename AccT>
+template <typename AccT>
 class Kernel {
   AccT array_acc;
+  size_t loop_iter_num;
 
  public:
-  Kernel(AccT acc) : array_acc(acc) {}
+  Kernel(AccT acc, size_t n) : array_acc(acc), loop_iter_num(n) {}
   void operator()() const {
-    for (size_t i = 0; i < iter_num; i++) {
+    for (size_t i = 0; i < loop_iter_num; i++) {
       int val = sycl::sqrt(float(i));
       array_acc[val % array_acc.size()] = i;
     }
@@ -53,7 +65,7 @@ TEST_CASE(
 
   auto e = queue.submit([&](sycl::handler& cgh) {
     auto array_acc = sycl::accessor(array_buf, cgh, sycl::write_only);
-    cgh.single_task(Kernel<iter_num, decltype(array_acc)>(array_acc));
+    cgh.single_task(Kernel<decltype(array_acc)>(array_acc, iter_num));
   });
 
   bool is_empty = queue.ext_oneapi_empty();
@@ -83,13 +95,13 @@ TEST_CASE(
 
   auto Ea = queue.submit([&](sycl::handler& cgh) {
     auto array_acc = sycl::accessor(array_buf, cgh, sycl::write_only);
-    cgh.single_task(Kernel<iter_num, decltype(array_acc)>(array_acc));
+    cgh.single_task(Kernel<decltype(array_acc)>(array_acc, iter_num));
   });
 
   auto Eb = queue.submit([&](sycl::handler& cgh) {
     cgh.depends_on(Ea);
     auto array_acc = sycl::accessor(array_buf, cgh, sycl::write_only);
-    cgh.single_task(Kernel<iter_num, decltype(array_acc)>(array_acc));
+    cgh.single_task(Kernel<decltype(array_acc)>(array_acc, iter_num));
   });
 
   Ea.wait();
