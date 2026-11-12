@@ -85,7 +85,8 @@ compile.
 === `<sycl/khr/split_headers/context.hpp>`
 
 * Check that the 8 new constructors accept `empty_properties_t`, reject
-  invalid arguments and are explicit.
+  invalid arguments and are `explicit`, so a property or properties list does
+  not implicitly convert to a `context`.
 * Check that only `empty_properties_t` applies to `context`.
 * At runtime, check that each constructor has the effect of the matching core
   constructor and that the context can run a kernel.
@@ -94,7 +95,8 @@ compile.
 
 * Check that the 10 new constructors accept the queue properties, lists of
   them and `empty_properties_t`, reject invalid arguments and invalid device
-  selectors, and are explicit.
+  selectors, and are `explicit`, so a property or properties list does not
+  implicitly convert to a `queue`.
 * Check that `is_in_order` and `khr_is_profiling_enabled` are `const` and
   return `bool`.
 * At runtime, for each constructor, with a single property and with a list,
