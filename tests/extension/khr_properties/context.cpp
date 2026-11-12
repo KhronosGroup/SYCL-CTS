@@ -63,7 +63,6 @@ TEST_CASE("the new context constructors are constrained on PropertyOrList",
   }
   SECTION("types that are neither properties nor lists are rejected") {
     check_context_constraints<not_a_property>(false);
-    check_context_constraints<key::in_order>(false);
   }
   SECTION("the new constructors are explicit") {
     STATIC_CHECK_FALSE(

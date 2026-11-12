@@ -223,7 +223,6 @@ TEST_CASE("the new USM overloads are constrained on PropertyOrList",
   }
   SECTION("types that are neither properties nor lists are rejected") {
     check_usm_constraints<not_a_property>(false);
-    check_usm_constraints<key::in_order>(false);
   }
 }
 

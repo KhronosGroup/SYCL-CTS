@@ -51,8 +51,7 @@ Splitting the tests this way:
 
 Applications cannot define their own properties, so the context, stream, USM
 and kernel bundle APIs should be tested with `khr::empty_properties_t`. The
-queue properties, lists of them, property keys and an unrelated type should be
-used to check that the constraints reject invalid arguments.
+queue properties, lists of them and an unrelated type should be used to check that the constraints reject invalid arguments.
 
 Constraints should be checked with `std::is_constructible`,
 `std::is_convertible` and detection traits, without code that fails to
@@ -78,9 +77,10 @@ compile.
 * Check that the old-style traits `sycl::is_property` and
   `sycl::is_property_of` are `false` for the new properties.
 * For `enable_profiling`, `in_order` and `initialize_to_identity`, check that
-  the property and its key are trivially copyable, that the property has a
-  `bool value` member that defaults to `true`, and that its constructor from
-  `bool` is `constexpr` and `explicit`.
+  the property is trivially copyable, that it has a `bool value` member that
+  defaults to `true`, and that its constructor from `bool` is `constexpr` and
+  `explicit`. The keys are only declared and can be incomplete types, so no
+  requirements are checked on them.
 
 === `<sycl/khr/split_headers/context.hpp>`
 

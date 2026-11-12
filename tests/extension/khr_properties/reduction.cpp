@@ -77,7 +77,6 @@ TEST_CASE("the new reduction overloads are constrained on PropertyOrList",
   }
   SECTION("types that are neither properties nor lists are rejected") {
     check_reduction_constraints<not_a_property>(false);
-    check_reduction_constraints<key::initialize_to_identity>(false);
   }
 }
 

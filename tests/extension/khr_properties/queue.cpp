@@ -82,7 +82,6 @@ TEST_CASE("the new queue constructors are constrained on PropertyOrList",
 
   SECTION("types that are neither properties nor lists are rejected") {
     STATIC_CHECK_FALSE(std::is_constructible_v<queue, not_a_property>);
-    STATIC_CHECK_FALSE(std::is_constructible_v<queue, key::in_order>);
     STATIC_CHECK_FALSE(std::is_constructible_v<queue, dev_t, not_a_property>);
   }
 

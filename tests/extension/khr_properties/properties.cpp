@@ -408,16 +408,15 @@ TEST_CASE("the old-style property traits do not classify new-style properties",
       sycl::is_property_of_v<prop::enable_profiling, sycl::queue>);
 }
 
-template <typename Property, typename Key>
+// The keys are only declared by the specification and can be incomplete
+// types, so no requirements are checked on them here.
+template <typename Property>
 void check_boolean_property() {
   STATIC_CHECK(std::is_trivially_copyable_v<Property>);
-  STATIC_CHECK(std::is_trivially_copyable_v<Key>);
 
   STATIC_CHECK(std::is_same_v<decltype(Property::value), bool>);
   STATIC_CHECK(std::is_default_constructible_v<Property>);
   STATIC_CHECK(std::is_constructible_v<Property, bool>);
-  STATIC_CHECK(std::is_default_constructible_v<Key>);
-  STATIC_CHECK(std::is_empty_v<Key>);
 
   // The constructor is constexpr and the default value is true.
   constexpr Property default_prop{};
@@ -433,21 +432,19 @@ void check_boolean_property() {
   CHECK(runtime_prop.value);
 }
 
-TEST_CASE("the enable_profiling property and its key satisfy the requirements",
+TEST_CASE("the enable_profiling property satisfies the requirements",
           "[khr_properties][traits][queue]") {
-  check_boolean_property<prop::enable_profiling, key::enable_profiling>();
+  check_boolean_property<prop::enable_profiling>();
 }
 
-TEST_CASE("the in_order property and its key satisfy the requirements",
+TEST_CASE("the in_order property satisfies the requirements",
           "[khr_properties][traits][queue]") {
-  check_boolean_property<prop::in_order, key::in_order>();
+  check_boolean_property<prop::in_order>();
 }
 
-TEST_CASE(
-    "the initialize_to_identity property and its key satisfy the requirements",
-    "[khr_properties][traits][reduction]") {
-  check_boolean_property<prop::initialize_to_identity,
-                         key::initialize_to_identity>();
+TEST_CASE("the initialize_to_identity property satisfies the requirements",
+          "[khr_properties][traits][reduction]") {
+  check_boolean_property<prop::initialize_to_identity>();
 }
 
 TEST_CASE("the constructors of the boolean properties from bool are explicit",
