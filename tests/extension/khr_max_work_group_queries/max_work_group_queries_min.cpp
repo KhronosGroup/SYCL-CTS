@@ -68,6 +68,6 @@ TEST_CASE("if the device is not info::device_type::custom, the minimal size",
   check_min_total_size();
 }
 
-#endif
+#endif  // SYCL_KHR_MAX_WORK_GROUP_QUERIES
 
 }  // namespace max_work_group_range::tests

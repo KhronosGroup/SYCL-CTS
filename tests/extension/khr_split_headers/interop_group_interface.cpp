@@ -19,7 +19,7 @@
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
 
-#if SYCL_CTS_KHR_SPLIT_HEADERS && defined(SYCL_KHR_GROUP_INTERFACE)
+#if SYCL_KHR_SPLIT_HEADERS && defined(SYCL_KHR_GROUP_INTERFACE)
 
 #include <sycl/khr/group_interface.hpp>
 #include <sycl/khr/split_headers/groups.hpp>
@@ -41,7 +41,7 @@ TEST_CASE(
     "the group_interface feature test macro is provided through "
     "<sycl/khr/split_headers/version.hpp>",
     "[khr_split_headers][group_interface]") {
-  STATIC_REQUIRE(SYCL_KHR_GROUP_INTERFACE >= 1);
+  STATIC_REQUIRE(SYCL_KHR_GROUP_INTERFACE == 1);
 }
 
 }  // namespace khr_split_headers::tests

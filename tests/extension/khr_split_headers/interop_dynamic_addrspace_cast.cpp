@@ -18,7 +18,7 @@
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
 
-#if SYCL_CTS_KHR_SPLIT_HEADERS && defined(SYCL_KHR_DYNAMIC_ADDRSPACE_CAST)
+#if SYCL_KHR_SPLIT_HEADERS && defined(SYCL_KHR_DYNAMIC_ADDRSPACE_CAST)
 
 #include <sycl/khr/dynamic_addrspace_cast.hpp>
 #include <sycl/khr/split_headers/multi_ptr.hpp>
@@ -49,7 +49,7 @@ TEST_CASE(
     "the dynamic_addrspace_cast feature test macro is provided through "
     "<sycl/khr/split_headers/version.hpp>",
     "[khr_split_headers][dynamic_addrspace_cast]") {
-  STATIC_REQUIRE(SYCL_KHR_DYNAMIC_ADDRSPACE_CAST >= 1);
+  STATIC_REQUIRE(SYCL_KHR_DYNAMIC_ADDRSPACE_CAST == 1);
 }
 
 }  // namespace khr_split_headers::tests

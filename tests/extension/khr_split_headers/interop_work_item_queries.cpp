@@ -18,7 +18,7 @@
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
 
-#if SYCL_CTS_KHR_SPLIT_HEADERS && defined(SYCL_KHR_WORK_ITEM_QUERIES)
+#if SYCL_KHR_SPLIT_HEADERS && defined(SYCL_KHR_WORK_ITEM_QUERIES)
 
 #include <sycl/khr/split_headers/index_space.hpp>
 #include <sycl/khr/work_item_queries.hpp>
@@ -43,7 +43,7 @@ TEST_CASE(
     "the work_item_queries feature test macro is provided through "
     "<sycl/khr/split_headers/version.hpp>",
     "[khr_split_headers][work_item_queries]") {
-  STATIC_REQUIRE(SYCL_KHR_WORK_ITEM_QUERIES >= 1);
+  STATIC_REQUIRE(SYCL_KHR_WORK_ITEM_QUERIES == 1);
 }
 
 }  // namespace khr_split_headers::tests

@@ -10,20 +10,10 @@
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
 
-#if SYCL_CTS_KHR_SPLIT_HEADERS
+#if SYCL_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/interop_handle.hpp>
 
 namespace khr_split_headers::tests {
-
-TEST_CASE("the interhop_handle header defines the SYCL_KHR_SPLIT_HEADERS macro",
-          "[khr_split_headers][interop_handle]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 TEST_CASE("the interop_handle header defines the interop_handle class",
           "[khr_split_headers][interop_handle]") {
@@ -41,4 +31,4 @@ TEST_CASE("the interop_handle tests require sycl_khr_split_headers",
   SKIP("SYCL_KHR_SPLIT_HEADERS is not defined");
 }
 
-#endif  // SYCL_CTS_KHR_SPLIT_HEADERS
+#endif  // SYCL_KHR_SPLIT_HEADERS

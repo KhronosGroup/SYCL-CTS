@@ -10,7 +10,7 @@
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
 
-#if SYCL_CTS_KHR_SPLIT_HEADERS
+#if SYCL_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/builtins_math.hpp>
 #include <sycl/khr/split_headers/multi_ptr.hpp>
 #include <type_traits>
@@ -94,4 +94,4 @@ TEST_CASE("the builtins_multi_ptr tests require sycl_khr_split_headers",
   SKIP("SYCL_KHR_SPLIT_HEADERS is not defined");
 }
 
-#endif  // SYCL_CTS_KHR_SPLIT_HEADERS
+#endif  // SYCL_KHR_SPLIT_HEADERS

@@ -15,18 +15,14 @@
 // Unlike the other KHR extensions, sycl_khr_split_headers cannot be detected by
 // checking its feature-test macro directly: the macro is defined by the very
 // headers the extension introduces, so an implementation that does not provide
-// them cannot be queried at all. Probe for the header that provides the macro
-// instead, and expose the result as SYCL_CTS_KHR_SPLIT_HEADERS so that the test
-// cases of this category can be compiled out (and reported as skipped) when the
+// them cannot be queried at all. Detect it the way the extension specification
+// prescribes instead -- probe for the header, include it if it exists, and then
+// test SYCL_KHR_SPLIT_HEADERS, which is only guaranteed to be defined once the
+// header has been included. The test cases of this category are guarded on that
+// macro so that they are compiled out, and reported as skipped, when the
 // extension is not implemented.
 #if __has_include(<sycl/khr/split_headers/version.hpp>)
 #include <sycl/khr/split_headers/version.hpp>
-#endif
-
-#ifdef SYCL_KHR_SPLIT_HEADERS
-#define SYCL_CTS_KHR_SPLIT_HEADERS 1
-#else
-#define SYCL_CTS_KHR_SPLIT_HEADERS 0
 #endif
 
 namespace sycl_cts::util {

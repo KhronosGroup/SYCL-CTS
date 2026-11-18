@@ -17,7 +17,7 @@ TEST_CASE(
 #ifndef SYCL_KHR_MAX_WORK_GROUP_QUERIES
   SKIP("SYCL_KHR_MAX_WORK_GROUP_QUERIES is not defined");
 #else
-  STATIC_REQUIRE(SYCL_KHR_MAX_WORK_GROUP_QUERIES >= 1);
+  STATIC_REQUIRE(SYCL_KHR_MAX_WORK_GROUP_QUERIES == 1);
 #endif
 }
 }  // namespace max_num_work_groups_macro::tests

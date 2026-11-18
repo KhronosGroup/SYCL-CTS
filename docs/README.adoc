@@ -373,7 +373,7 @@ Guard each file once rather than each test case: anything that refers to the ext
 
 Most extensions have a test case that checks the feature-test macro itself.
 That test case refers to no extension API, so it stays outside the guard and reports the skip for the whole file.
-Check the macro's value rather than merely that it is defined, since an extension defines its feature-test macro to an integer revision:
+Check the macro's value rather than merely that it is defined: an extension defines its feature-test macro to an integer revision, and the KHR extensions currently specify `1` as the only valid value.
 
 [source,c++]
 ----
@@ -382,7 +382,7 @@ TEST_CASE("the some extension defines the SYCL_KHR_SOME_EXTENSION macro",
 #ifndef SYCL_KHR_SOME_EXTENSION
   SKIP("SYCL_KHR_SOME_EXTENSION is not defined");
 #else
-  STATIC_REQUIRE(SYCL_KHR_SOME_EXTENSION >= 1);
+  STATIC_REQUIRE(SYCL_KHR_SOME_EXTENSION == 1);
 #endif
 }
 
@@ -423,7 +423,8 @@ TIP: An implementation may advertise an extension while still missing an unrelat
 The feature-test macro says nothing about that, so use <<Compile-Time Disabled Test Cases>> for those individual test cases.
 
 NOTE: `sycl_khr_split_headers` is a special case, because its feature-test macro is defined by the very headers that the extension introduces and therefore cannot be queried on an implementation that does not provide them.
-That category probes for the header with `__has_include` instead and exposes the result as `SYCL_CTS_KHR_SPLIT_HEADERS`; see link:../tests/extension/khr_split_headers/util.h[`tests/extension/khr_split_headers/util.h`].
+That category follows the detection idiom given in the extension specification instead: probe for `<sycl/khr/split_headers/version.hpp>` with `__has_include`, include it if it exists, and only then guard on `SYCL_KHR_SPLIT_HEADERS`.
+The probe lives in link:../tests/extension/khr_split_headers/util.h[`tests/extension/khr_split_headers/util.h`], which every test file of the category includes.
 
 === Best Practices
 

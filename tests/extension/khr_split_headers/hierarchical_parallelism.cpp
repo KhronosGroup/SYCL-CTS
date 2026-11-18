@@ -10,22 +10,10 @@
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
 
-#if SYCL_CTS_KHR_SPLIT_HEADERS
+#if SYCL_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/hierarchical_parallelism.hpp>
 
 namespace khr_split_headers::tests {
-
-TEST_CASE(
-    "the hierarchical_parallelism header defines the SYCL_KHR_SPLIT_HEADERS "
-    "macro",
-    "[khr_split_headers][hierarchical_parallelism]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 TEST_CASE(
     "the hierarchical_parallelism header defines the private_memory class "
@@ -53,4 +41,4 @@ TEST_CASE("the hierarchical_parallelism tests require sycl_khr_split_headers",
   SKIP("SYCL_KHR_SPLIT_HEADERS is not defined");
 }
 
-#endif  // SYCL_CTS_KHR_SPLIT_HEADERS
+#endif  // SYCL_KHR_SPLIT_HEADERS

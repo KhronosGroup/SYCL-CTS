@@ -18,7 +18,7 @@
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
 
-#if SYCL_CTS_KHR_SPLIT_HEADERS && defined(SYCL_KHR_MAX_WORK_GROUP_QUERIES)
+#if SYCL_KHR_SPLIT_HEADERS && defined(SYCL_KHR_MAX_WORK_GROUP_QUERIES)
 
 #include <sycl/khr/max_work_group_queries.hpp>
 #include <sycl/khr/split_headers/device.hpp>
@@ -45,7 +45,7 @@ TEST_CASE(
     "the max_work_group_queries feature test macro is provided through "
     "<sycl/khr/split_headers/version.hpp>",
     "[khr_split_headers][max_work_group_queries]") {
-  STATIC_REQUIRE(SYCL_KHR_MAX_WORK_GROUP_QUERIES >= 1);
+  STATIC_REQUIRE(SYCL_KHR_MAX_WORK_GROUP_QUERIES == 1);
 }
 
 }  // namespace khr_split_headers::tests
