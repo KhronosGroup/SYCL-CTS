@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_CTS_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/buffer.hpp>
 
 namespace khr_split_headers::tests {
@@ -30,3 +32,14 @@ TEST_CASE("the buffer header defines the buffer class template",
 }
 
 }  // namespace khr_split_headers::tests
+
+#else
+
+// The extension is not implemented, so none of the headers under test exist.
+// Keep one always-present test case to report the category as skipped.
+TEST_CASE("the buffer tests require sycl_khr_split_headers",
+          "[khr_split_headers][buffer]") {
+  SKIP("SYCL_KHR_SPLIT_HEADERS is not defined");
+}
+
+#endif  // SYCL_CTS_KHR_SPLIT_HEADERS

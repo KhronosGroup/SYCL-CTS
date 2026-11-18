@@ -16,9 +16,13 @@ TEST_CASE(
     "SYCL_KHR_STATIC_ADDRSPACE_CAST macro",
     "[khr_static_addrspace_cast]") {
 #ifndef SYCL_KHR_STATIC_ADDRSPACE_CAST
-  static_assert(false, "SYCL_KHR_STATIC_ADDRSPACE_CAST is not defined");
+  SKIP("SYCL_KHR_STATIC_ADDRSPACE_CAST is not defined");
+#else
+  STATIC_REQUIRE(SYCL_KHR_STATIC_ADDRSPACE_CAST >= 1);
 #endif
 }
+
+#ifdef SYCL_KHR_STATIC_ADDRSPACE_CAST
 
 /*
  * This function checks the static address space cast functionality
@@ -216,5 +220,7 @@ TEST_CASE(
   check_private_ptr_cast<sycl::decorated_generic_ptr<int>, 2, 3>();
   check_private_ptr_cast<sycl::decorated_generic_ptr<int>, 2, 3, 4>();
 }
+
+#endif  // SYCL_KHR_STATIC_ADDRSPACE_CAST
 
 }  // namespace static_addrspace_cast::tests

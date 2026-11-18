@@ -362,6 +362,69 @@ The CTS may include tests that cannot be executed in all circumstances.
 Examples of such tests include tests for optional features, tests that depend on certain device capabilities, tests that require multiple devices as well as tests for vendor extensions.
 In such scenarios, Catch2's `SKIP` macro should be used to explicitly report a test case as skipped.
 
+=== Testing Extensions
+
+Tests for Khronos (`sycl_khr_*`) extensions live in link:../tests/extension[`tests/extension`].
+They are opt-in: `SYCL_CTS_ENABLE_KHR_TESTS` enables all of them, and `SYCL_CTS_ENABLE_KHR_<EXTENSION>_TESTS` enables an individual one.
+Both default to `OFF`, but <<Continuous Integration (CI)>> configures the CTS with `SYCL_CTS_ENABLE_KHR_TESTS=ON`, so KHR tests are compiled for every SYCL implementation on every pull request.
+
+Since not every implementation implements every extension, the tests in a file must be guarded by the extension's feature-test macro, and the file must report itself as skipped when that macro is not predefined.
+Guard each file once rather than each test case: anything that refers to the extension's APIs -- test cases, helper functions, type aliases, additional headers -- goes behind a single `#ifdef`, so that the translation unit still compiles for implementations without the extension.
+
+Most extensions have a test case that checks the feature-test macro itself.
+That test case refers to no extension API, so it stays outside the guard and reports the skip for the whole file.
+Check the macro's value rather than merely that it is defined, since an extension defines its feature-test macro to an integer revision:
+
+[source,c++]
+----
+TEST_CASE("the some extension defines the SYCL_KHR_SOME_EXTENSION macro",
+          "[khr_some_extension]") {
+#ifndef SYCL_KHR_SOME_EXTENSION
+  SKIP("SYCL_KHR_SOME_EXTENSION is not defined");
+#else
+  STATIC_REQUIRE(SYCL_KHR_SOME_EXTENSION >= 1);
+#endif
+}
+
+#ifdef SYCL_KHR_SOME_EXTENSION
+
+static int call_some_api() { return sycl::khr::some_api(); }
+
+TEST_CASE("sycl::khr::some_api does the right thing", "[khr_some_extension]") {
+  CHECK(call_some_api() == 42);
+}
+
+#endif  // SYCL_KHR_SOME_EXTENSION
+----
+
+A file without such a test case uses `#ifndef` instead and puts a single skipping test case in that branch, so that the file still reports why it did nothing.
+A file whose only test case is guarded internally, with the `SKIP` in that test case's `#ifndef` branch, achieves the same thing and is equally fine:
+
+[source,c++]
+----
+#ifndef SYCL_KHR_SOME_EXTENSION
+
+TEST_CASE("the some_api tests require the sycl_khr_some_extension extension",
+          "[khr_some_extension]") {
+  SKIP("SYCL_KHR_SOME_EXTENSION is not defined");
+}
+
+#else
+// ... test cases ...
+#endif
+----
+
+IMPORTANT: Report a missing extension with `SKIP`, never with `SUCCEED`.
+A skipped test case is clearly distinguishable from a passing one when parsing the test logs, which is what tells us whether an extension was actually exercised.
+
+This keeps a KHR test category compiling for every implementation, so that CI can cover it, and makes the category start testing an implementation as soon as that implementation advertises the extension, without any change to the CTS.
+
+TIP: An implementation may advertise an extension while still missing an unrelated API that a particular test case needs.
+The feature-test macro says nothing about that, so use <<Compile-Time Disabled Test Cases>> for those individual test cases.
+
+NOTE: `sycl_khr_split_headers` is a special case, because its feature-test macro is defined by the very headers that the extension introduces and therefore cannot be queried on an implementation that does not provide them.
+That category probes for the header with `__has_include` instead and exposes the result as `SYCL_CTS_KHR_SPLIT_HEADERS`; see link:../tests/extension/khr_split_headers/util.h[`tests/extension/khr_split_headers/util.h`].
+
 === Best Practices
 
 Here is a list of best practices for writing test cases.

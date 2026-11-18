@@ -16,9 +16,13 @@ TEST_CASE(
     "macro",
     "[khr_work_item_queries]") {
 #ifndef SYCL_KHR_WORK_ITEM_QUERIES
-  static_assert(false, "SYCL_KHR_WORK_ITEM_QUERIES is not defined");
+  SKIP("SYCL_KHR_WORK_ITEM_QUERIES is not defined");
+#else
+  STATIC_REQUIRE(SYCL_KHR_WORK_ITEM_QUERIES >= 1);
 #endif
 }
+
+#ifdef SYCL_KHR_WORK_ITEM_QUERIES
 
 template <size_t... Dims>
 static void check_this_nd_item_api() {
@@ -108,5 +112,7 @@ TEST_CASE("sycl::khr::this_sub_group returns the current sub-group",
   check_this_sub_group_api<2, 3>();
   check_this_sub_group_api<2, 3, 4>();
 }
+
+#endif  // SYCL_KHR_WORK_ITEM_QUERIES
 
 }  // namespace work_item_queries::tests

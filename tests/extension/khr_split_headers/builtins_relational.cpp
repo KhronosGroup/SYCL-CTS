@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_CTS_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/builtins_relational.hpp>
 #include <type_traits>
 #include <utility>
@@ -165,3 +167,14 @@ TEST_CASE(
 }
 
 }  // namespace khr_split_headers::tests
+
+#else
+
+// The extension is not implemented, so none of the headers under test exist.
+// Keep one always-present test case to report the category as skipped.
+TEST_CASE("the builtins_relational tests require sycl_khr_split_headers",
+          "[khr_split_headers][builtins_relational]") {
+  SKIP("SYCL_KHR_SPLIT_HEADERS is not defined");
+}
+
+#endif  // SYCL_CTS_KHR_SPLIT_HEADERS

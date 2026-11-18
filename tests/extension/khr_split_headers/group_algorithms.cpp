@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_CTS_KHR_SPLIT_HEADERS
 // group_algorithms.hpp provides the algorithms; groups.hpp provides the group
 // type used as their first argument, and functional.hpp provides the SYCL
 // binary operators (e.g. sycl::plus) used by the reduce and scan algorithms.
@@ -184,3 +186,14 @@ TEST_CASE("the group_algorithms header defines joint_inclusive_scan",
 }
 
 }  // namespace khr_split_headers::tests
+
+#else
+
+// The extension is not implemented, so none of the headers under test exist.
+// Keep one always-present test case to report the category as skipped.
+TEST_CASE("the group_algorithms tests require sycl_khr_split_headers",
+          "[khr_split_headers][group_algorithms]") {
+  SKIP("SYCL_KHR_SPLIT_HEADERS is not defined");
+}
+
+#endif  // SYCL_CTS_KHR_SPLIT_HEADERS

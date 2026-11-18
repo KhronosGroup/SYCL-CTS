@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_CTS_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/builtins_common.hpp>
 #include <type_traits>
 #include <utility>
@@ -102,3 +104,14 @@ TEST_CASE("the builtins_common header provides functions for double scalars",
 }
 
 }  // namespace khr_split_headers::tests
+
+#else
+
+// The extension is not implemented, so none of the headers under test exist.
+// Keep one always-present test case to report the category as skipped.
+TEST_CASE("the builtins_common tests require sycl_khr_split_headers",
+          "[khr_split_headers][builtins_common]") {
+  SKIP("SYCL_KHR_SPLIT_HEADERS is not defined");
+}
+
+#endif  // SYCL_CTS_KHR_SPLIT_HEADERS

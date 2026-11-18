@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_CTS_KHR_SPLIT_HEADERS
 // functional.hpp provides sycl::plus, used below as the binary operator for the
 // known_identity / has_known_identity traits.
 #include <sycl/khr/split_headers/functional.hpp>
@@ -100,3 +102,14 @@ TEST_CASE("the type_traits header defines the has_known_identity trait",
 }
 
 }  // namespace khr_split_headers::tests
+
+#else
+
+// The extension is not implemented, so none of the headers under test exist.
+// Keep one always-present test case to report the category as skipped.
+TEST_CASE("the type_traits tests require sycl_khr_split_headers",
+          "[khr_split_headers][type_traits]") {
+  SKIP("SYCL_KHR_SPLIT_HEADERS is not defined");
+}
+
+#endif  // SYCL_CTS_KHR_SPLIT_HEADERS

@@ -11,6 +11,19 @@
 
 namespace max_work_group_range::tests {
 
+#ifndef SYCL_KHR_MAX_WORK_GROUP_QUERIES
+
+// The extension is not implemented, so the test cases below
+// cannot be compiled. Report the category as skipped.
+TEST_CASE(
+    "the max_work_group_range queries require the "
+    "sycl_khr_max_work_group_queries extension",
+    "[khr_max_work_group_range]") {
+  SKIP("SYCL_KHR_MAX_WORK_GROUP_QUERIES is not defined");
+}
+
+#else
+
 template <int DIMENSION>
 void check_min_size() {
   auto queue = sycl_cts::util::get_cts_object::queue();
@@ -54,5 +67,7 @@ TEST_CASE("if the device is not info::device_type::custom, the minimal size",
   check_min_size<3>();
   check_min_total_size();
 }
+
+#endif
 
 }  // namespace max_work_group_range::tests
