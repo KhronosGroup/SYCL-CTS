@@ -275,13 +275,11 @@ static void run_ctors_test_for_kind(util::logger& log) {
       FAIL(log, "usm_allocator rebinding copy constructor is not noexcept" +
                     kind_hint);
     }
-    if (!noexcept(std::declval<const AllocatorT&>()
-                      .template has_property<
-                          sycl::property::buffer::use_host_ptr>())) {
-      FAIL(log, "usm_allocator::has_property is not noexcept" + kind_hint);
-    }
   }
 
+// TODO: Remove the ProtoSYCL guard once usm_allocator provides has_property
+// and get_property: https://github.com/0x12CC/ProtoSYCL/issues/7
+#if !SYCL_CTS_COMPILING_WITH_PROTOSYCL
   /** Check property interface when constructed without properties
    */
   {
@@ -290,6 +288,10 @@ static void run_ctors_test_for_kind(util::logger& log) {
         " for kind: " +
         std::string(usm_helper::get_allocation_description<kind>());
     AllocatorT allctr(ctx, dev, pl);
+
+    if (!noexcept(allctr.template has_property<PropT>())) {
+      FAIL(log, "usm_allocator::has_property is not noexcept" + kind_hint);
+    }
 
     if (allctr.template has_property<PropT>()) {
       FAIL(log,
@@ -313,6 +315,7 @@ static void run_ctors_test_for_kind(util::logger& log) {
       }
     }
   }
+#endif  // !SYCL_CTS_COMPILING_WITH_PROTOSYCL
 }
 
 /** @brief Main test-suite
