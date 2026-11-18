@@ -201,8 +201,8 @@ static void run_ctors_test_for_kind(util::logger& log) {
 
   /** Check equality operator
    *
-   *  Allocators compare equal if and only if they have the same context and
-   *  device. The value type, USM kind and alignment do not affect equality.
+   *  Allocators compare equal if and only if they have the same USM kind,
+   *  context and device. The value type and alignment do not affect equality.
    */
   {
     const std::string kind_hint =
@@ -230,10 +230,11 @@ static void run_ctors_test_for_kind(util::logger& log) {
         sycl::usm_allocator<T, other_kind<kind>(), align>;
     if (usm_alloc_help::allocation_supported<other_kind<kind>()>(log, queue)) {
       AllocatorDiffKindT allctrDiffKind(ctx, dev);
-      check_equal(log, allctrA, allctrDiffKind,
-                  "different USM kind" + kind_hint);
+      check_not_equal(log, allctrA, allctrDiffKind,
+                      "different USM kind" + kind_hint);
     } else {
-      log.note("(skipped equality check with different USM kind)" + kind_hint);
+      log.note("(skipped inequality check with different USM kind)" +
+               kind_hint);
     }
 
     // Different alignment
