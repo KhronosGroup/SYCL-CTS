@@ -74,6 +74,9 @@ compile.
 * For each trait, check that it inherits from `std::true_type` or
   `std::false_type` as specified for properties, keys, properties lists and
   unrelated types, and that the `_v` variable equals `::value`.
+* Check that `is_property_or_list_for` is `true` for a bare property that
+  applies to the class, as well as for a properties list whose properties all
+  apply to it, and `false` for keys and unrelated types.
 * Check that the old-style traits `sycl::is_property` and
   `sycl::is_property_of` are `false` for the new properties.
 * For `enable_profiling`, `in_order` and `initialize_to_identity`, check that

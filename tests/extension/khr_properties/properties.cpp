@@ -247,8 +247,11 @@ TEST_CASE("the _v variable templates have the value of their traits",
                khr::is_property_for<prop::in_order, sycl::queue>::value);
   STATIC_CHECK(khr::is_property_key_for_v<key::in_order, sycl::queue> ==
                khr::is_property_key_for<key::in_order, sycl::queue>::value);
-  STATIC_CHECK(khr::is_property_list_for_v<queue_props_t, sycl::queue> ==
-               khr::is_property_list_for<queue_props_t, sycl::queue>::value);
+  STATIC_CHECK(khr::is_property_or_list_for_v<queue_props_t, sycl::queue> ==
+               khr::is_property_or_list_for<queue_props_t, sycl::queue>::value);
+  STATIC_CHECK(
+      khr::is_property_or_list_for_v<prop::in_order, sycl::queue> ==
+      khr::is_property_or_list_for<prop::in_order, sycl::queue>::value);
   STATIC_CHECK(
       std::is_same_v<decltype(khr::is_property_v<prop::in_order>), const bool>);
 }
@@ -348,40 +351,60 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "is_property_list_for classifies the classes a properties list applies to",
+    "is_property_or_list_for classifies the classes a property or properties "
+    "list applies to",
     "[khr_properties][traits]") {
   using empty_t = khr::empty_properties_t;
   SECTION("the empty list applies to the queue and reduction") {
-    check_binary_trait<khr::is_property_list_for, empty_t, sycl::queue, true>();
-    check_binary_trait<khr::is_property_list_for, empty_t, tag::reduction,
+    check_binary_trait<khr::is_property_or_list_for, empty_t, sycl::queue,
+                       true>();
+    check_binary_trait<khr::is_property_or_list_for, empty_t, tag::reduction,
                        true>();
   }
 
   SECTION("a non-empty list applies only if all its properties apply") {
-    check_binary_trait<khr::is_property_list_for, queue_props_t, sycl::queue,
+    check_binary_trait<khr::is_property_or_list_for, queue_props_t, sycl::queue,
                        true>();
-    check_binary_trait<khr::is_property_list_for, reduction_props_t,
+    check_binary_trait<khr::is_property_or_list_for, reduction_props_t,
                        tag::reduction, true>();
     using in_order_only_t = decltype(khr::properties{prop::in_order{}});
-    check_binary_trait<khr::is_property_list_for, in_order_only_t, sycl::queue,
-                       true>();
+    check_binary_trait<khr::is_property_or_list_for, in_order_only_t,
+                       sycl::queue, true>();
 
-    check_binary_trait<khr::is_property_list_for, queue_props_t, tag::reduction,
-                       false>();
-    check_binary_trait<khr::is_property_list_for, reduction_props_t,
+    check_binary_trait<khr::is_property_or_list_for, queue_props_t,
+                       tag::reduction, false>();
+    check_binary_trait<khr::is_property_or_list_for, reduction_props_t,
                        sycl::queue, false>();
-    check_binary_trait<khr::is_property_list_for, mixed_props_t, sycl::queue,
+    check_binary_trait<khr::is_property_or_list_for, mixed_props_t, sycl::queue,
                        false>();
-    check_binary_trait<khr::is_property_list_for, mixed_props_t, tag::reduction,
-                       false>();
+    check_binary_trait<khr::is_property_or_list_for, mixed_props_t,
+                       tag::reduction, false>();
   }
 
-  SECTION("types that are not properties lists") {
-    check_binary_trait<khr::is_property_list_for, prop::in_order, sycl::queue,
+  SECTION("a bare property applies like a list with one property") {
+    check_binary_trait<khr::is_property_or_list_for, prop::in_order,
+                       sycl::queue, true>();
+    check_binary_trait<khr::is_property_or_list_for, prop::enable_profiling,
+                       sycl::queue, true>();
+    check_binary_trait<khr::is_property_or_list_for,
+                       prop::initialize_to_identity, tag::reduction, true>();
+
+    check_binary_trait<khr::is_property_or_list_for, prop::in_order,
+                       tag::reduction, false>();
+    check_binary_trait<khr::is_property_or_list_for, prop::enable_profiling,
+                       tag::reduction, false>();
+    check_binary_trait<khr::is_property_or_list_for,
+                       prop::initialize_to_identity, sycl::queue, false>();
+  }
+
+  SECTION("types that are neither properties nor properties lists") {
+    check_binary_trait<khr::is_property_or_list_for, key::in_order, sycl::queue,
                        false>();
-    check_binary_trait<khr::is_property_list_for, int, sycl::queue, false>();
-    check_binary_trait<khr::is_property_list_for, sycl::property_list,
+    check_binary_trait<khr::is_property_or_list_for, int, sycl::queue, false>();
+    check_binary_trait<khr::is_property_or_list_for, sycl::property_list,
                        sycl::queue, false>();
+    check_binary_trait<khr::is_property_or_list_for,
+                       sycl::property::queue::in_order, sycl::queue, false>();
   }
 }
 

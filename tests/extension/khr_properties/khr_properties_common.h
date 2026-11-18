@@ -94,9 +94,12 @@ void check_class_without_properties() {
   check_binary_trait<khr::is_property_key_for, key::in_order, Class, false>();
   check_binary_trait<khr::is_property_key_for, key::enable_profiling, Class,
                      false>();
-  check_binary_trait<khr::is_property_list_for, khr::empty_properties_t, Class,
-                     true>();
-  check_binary_trait<khr::is_property_list_for, queue_props_t, Class, false>();
+  check_binary_trait<khr::is_property_or_list_for, khr::empty_properties_t,
+                     Class, true>();
+  check_binary_trait<khr::is_property_or_list_for, queue_props_t, Class,
+                     false>();
+  check_binary_trait<khr::is_property_or_list_for, prop::in_order, Class,
+                     false>();
 }
 
 }  // namespace khr_properties::tests
