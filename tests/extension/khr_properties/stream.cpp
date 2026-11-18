@@ -37,7 +37,10 @@ TEST_CASE("the new stream constructor is constrained on PropertyOrList",
   STATIC_CHECK(can_construct_stream_v<khr::empty_properties_t>);
   STATIC_CHECK_FALSE(can_construct_stream_v<prop::in_order>);
   STATIC_CHECK_FALSE(can_construct_stream_v<prop::enable_profiling>);
+  STATIC_CHECK_FALSE(can_construct_stream_v<prop::initialize_to_identity>);
   STATIC_CHECK_FALSE(can_construct_stream_v<queue_props_t>);
+  STATIC_CHECK_FALSE(can_construct_stream_v<reduction_props_t>);
+  STATIC_CHECK_FALSE(can_construct_stream_v<mixed_props_t>);
   STATIC_CHECK_FALSE(can_construct_stream_v<not_a_property>);
 }
 

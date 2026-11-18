@@ -30,6 +30,11 @@
 
 namespace khr_properties::tests {
 
+using ctx_dev_t = const sycl::device&;
+using ctx_plt_t = const sycl::platform&;
+using ctx_devs_t = const std::vector<sycl::device>&;
+using ctx_ah_t = sycl::async_handler;
+
 template <typename PropertyOrList>
 void check_context_constraints(bool expected) {
   using sycl::context;
@@ -58,15 +63,32 @@ TEST_CASE("the new context constructors are constrained on PropertyOrList",
     check_context_constraints<prop::in_order>(false);
     check_context_constraints<prop::enable_profiling>(false);
   }
+  SECTION("reduction properties are rejected") {
+    check_context_constraints<prop::initialize_to_identity>(false);
+  }
   SECTION("properties lists with properties of other classes are rejected") {
     check_context_constraints<queue_props_t>(false);
+    check_context_constraints<reduction_props_t>(false);
+    check_context_constraints<mixed_props_t>(false);
   }
   SECTION("types that are neither properties nor lists are rejected") {
     check_context_constraints<not_a_property>(false);
   }
   SECTION("the new constructors are explicit") {
+    using sycl::context;
+    using p_t = khr::empty_properties_t;
+    STATIC_CHECK_FALSE(std::is_convertible_v<p_t, context>);
+    STATIC_CHECK_FALSE(is_implicitly_constructible_v<context, p_t>);
+    STATIC_CHECK_FALSE(is_implicitly_constructible_v<context, ctx_ah_t, p_t>);
+    STATIC_CHECK_FALSE(is_implicitly_constructible_v<context, ctx_dev_t, p_t>);
     STATIC_CHECK_FALSE(
-        std::is_convertible_v<khr::empty_properties_t, sycl::context>);
+        is_implicitly_constructible_v<context, ctx_dev_t, ctx_ah_t, p_t>);
+    STATIC_CHECK_FALSE(is_implicitly_constructible_v<context, ctx_plt_t, p_t>);
+    STATIC_CHECK_FALSE(
+        is_implicitly_constructible_v<context, ctx_plt_t, ctx_ah_t, p_t>);
+    STATIC_CHECK_FALSE(is_implicitly_constructible_v<context, ctx_devs_t, p_t>);
+    STATIC_CHECK_FALSE(
+        is_implicitly_constructible_v<context, ctx_devs_t, ctx_ah_t, p_t>);
   }
 }
 

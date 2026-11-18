@@ -22,9 +22,6 @@
 
 namespace khr_properties::tests {
 
-using reduction_props_t =
-    decltype(khr::properties{prop::initialize_to_identity{}});
-
 using plus_t = sycl::plus<int>;
 using span2_t = sycl::span<int, 2>;
 using dyn_span_t = sycl::span<int, sycl::dynamic_extent>;

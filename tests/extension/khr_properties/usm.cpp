@@ -218,8 +218,13 @@ TEST_CASE("the new USM overloads are constrained on PropertyOrList",
     check_usm_constraints<prop::in_order>(false);
     check_usm_constraints<prop::enable_profiling>(false);
   }
+  SECTION("reduction properties are rejected") {
+    check_usm_constraints<prop::initialize_to_identity>(false);
+  }
   SECTION("properties lists with properties of other classes are rejected") {
     check_usm_constraints<queue_props_t>(false);
+    check_usm_constraints<reduction_props_t>(false);
+    check_usm_constraints<mixed_props_t>(false);
   }
   SECTION("types that are neither properties nor lists are rejected") {
     check_usm_constraints<not_a_property>(false);

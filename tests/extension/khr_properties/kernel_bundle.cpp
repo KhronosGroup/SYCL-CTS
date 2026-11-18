@@ -81,7 +81,11 @@ TEST_CASE("the new compile, link and build overloads are constrained",
   }
   SECTION("properties of other classes are rejected") {
     check_kernel_bundle_constraints<prop::in_order>(false);
+    check_kernel_bundle_constraints<prop::enable_profiling>(false);
+    check_kernel_bundle_constraints<prop::initialize_to_identity>(false);
     check_kernel_bundle_constraints<queue_props_t>(false);
+    check_kernel_bundle_constraints<reduction_props_t>(false);
+    check_kernel_bundle_constraints<mixed_props_t>(false);
   }
   SECTION("types that are neither properties nor lists are rejected") {
     check_kernel_bundle_constraints<not_a_property>(false);

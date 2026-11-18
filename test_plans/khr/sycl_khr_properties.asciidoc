@@ -51,7 +51,8 @@ Splitting the tests this way:
 
 Applications cannot define their own properties, so the context, stream, USM
 and kernel bundle APIs should be tested with `khr::empty_properties_t`. The
-queue properties, lists of them and an unrelated type should be used to check that the constraints reject invalid arguments.
+queue properties, the reduction property, lists of them and an unrelated type
+should be used to check that the constraints reject invalid arguments.
 
 Constraints should be checked with `std::is_constructible`,
 `std::is_convertible` and detection traits, without code that fails to
@@ -75,10 +76,13 @@ compile.
   `std::false_type` as specified for properties, keys, properties lists and
   unrelated types, and that the `_v` variable equals `::value`.
 * Check that `is_property_or_list_for` is `true` for a bare property that
-  applies to the class, as well as for a properties list whose properties all
-  apply to it, and `false` for keys and unrelated types.
+  applies to the class, for a properties list whose properties all apply to
+  it, and for the empty properties list, and `false` for a property or a list
+  containing a property that does not apply to the class, for keys, for
+  old-style properties and `property_list`, and for unrelated types.
 * Check that the old-style traits `sycl::is_property` and
-  `sycl::is_property_of` are `false` for the new properties.
+  `sycl::is_property_of` are `false` for the new properties, and that an
+  old-style `property_list` cannot be constructed from them.
 * For `enable_profiling`, `in_order` and `initialize_to_identity`, check that
   the property is trivially copyable, that it has a `bool value` member that
   defaults to `true`, and that its constructor from `bool` is `constexpr` and
@@ -156,8 +160,12 @@ compile.
 == Requirements that are not tested
 
 * Mandates clauses, because violating them makes the program ill-formed.
-* The static `get_property` overload, because the extension defines no
-  compile-time property.
+* That the static `get_property` overload is available for compile-time keys,
+  and that `is_property_key_compile_time` is `true` for them, because the
+  extension defines no compile-time property.
+* That `usm_allocator` with `usm::alloc::device` rejects the new
+  constructors, because the core specification provides no `usm_allocator`
+  for `usm::alloc::device`.
 * The `errc::invalid` throws of the parameterized USM functions, because no
   USM property exists to trigger them.
 * The effect of the `async_handler` arguments.

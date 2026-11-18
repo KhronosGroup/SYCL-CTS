@@ -15,9 +15,9 @@
 //  compilation error, and include <sycl/sycl.hpp> otherwise. This header does
 //  not include any CTS helper that includes <sycl/sycl.hpp>.
 //
-//  Every test uses the queue properties, so this header also includes
-//  <sycl/khr/properties.hpp> and the queue header. Each test file includes
-//  the other split headers it needs when
+//  Every test uses the queue and reduction properties, so this header also
+//  includes <sycl/khr/properties.hpp>, the queue header and the reduction
+//  header. Each test file includes the other split headers it needs when
 //  SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS is 1.
 //
 *******************************************************************************/
@@ -33,6 +33,7 @@
 #define SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS 1
 #include <sycl/khr/properties.hpp>
 #include <sycl/khr/split_headers/queue.hpp>
+#include <sycl/khr/split_headers/reduction.hpp>
 #else
 #define SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS 0
 #include <sycl/sycl.hpp>
@@ -52,6 +53,14 @@ namespace key = sycl::khr::property::key;
 /** A properties list that contains only queue properties. */
 using queue_props_t =
     decltype(khr::properties{prop::in_order{}, prop::enable_profiling{}});
+
+/** A properties list that contains only a reduction property. */
+using reduction_props_t =
+    decltype(khr::properties{prop::initialize_to_identity{}});
+
+/** A properties list with a queue property and a reduction property. */
+using mixed_props_t =
+    decltype(khr::properties{prop::in_order{}, prop::initialize_to_identity{}});
 
 /**
  * A type that is neither a property nor a properties list. Used to check that
@@ -74,6 +83,29 @@ struct not_a_property {};
   template <typename P>                                            \
   inline constexpr bool NAME##_v = NAME<P>::value;
 
+namespace detail {
+template <typename T>
+void take_by_value(T);
+
+template <typename T, typename ArgList, typename = void>
+struct is_implicitly_constructible_impl : std::false_type {};
+template <typename T, typename... Args>
+struct is_implicitly_constructible_impl<
+    T, void(Args...),
+    std::void_t<decltype(take_by_value<T>({std::declval<Args>()...}))>>
+    : std::true_type {};
+}  // namespace detail
+
+/**
+ * True if `T` can be copy-list-initialized from `{Args...}`, which is
+ * ill-formed if the selected constructor is `explicit`. Unlike
+ * `std::is_convertible`, this also checks constructors with more than one
+ * parameter.
+ */
+template <typename T, typename... Args>
+inline constexpr bool is_implicitly_constructible_v =
+    detail::is_implicitly_constructible_impl<T, void(Args...)>::value;
+
 template <template <typename, typename> class Trait, typename T, typename Class,
           bool Expected>
 void check_binary_trait() {
@@ -91,15 +123,27 @@ void check_class_without_properties() {
   check_binary_trait<khr::is_property_for, prop::in_order, Class, false>();
   check_binary_trait<khr::is_property_for, prop::enable_profiling, Class,
                      false>();
+  check_binary_trait<khr::is_property_for, prop::initialize_to_identity, Class,
+                     false>();
   check_binary_trait<khr::is_property_key_for, key::in_order, Class, false>();
   check_binary_trait<khr::is_property_key_for, key::enable_profiling, Class,
                      false>();
+  check_binary_trait<khr::is_property_key_for, key::initialize_to_identity,
+                     Class, false>();
   check_binary_trait<khr::is_property_or_list_for, khr::empty_properties_t,
                      Class, true>();
   check_binary_trait<khr::is_property_or_list_for, queue_props_t, Class,
                      false>();
+  check_binary_trait<khr::is_property_or_list_for, reduction_props_t, Class,
+                     false>();
+  check_binary_trait<khr::is_property_or_list_for, mixed_props_t, Class,
+                     false>();
   check_binary_trait<khr::is_property_or_list_for, prop::in_order, Class,
                      false>();
+  check_binary_trait<khr::is_property_or_list_for, prop::enable_profiling,
+                     Class, false>();
+  check_binary_trait<khr::is_property_or_list_for, prop::initialize_to_identity,
+                     Class, false>();
 }
 
 }  // namespace khr_properties::tests

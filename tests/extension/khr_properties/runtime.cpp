@@ -357,12 +357,12 @@ TEST_CASE("khr::property::enable_profiling{false} has no effect on the queue",
 
 TEST_CASE("queues constructed with both queue properties",
           "[khr_properties][queue]") {
-  if (!device_has_queue_profiling()) {
-    SKIP("Device does not have aspect::queue_profiling");
-  }
   const bool in_order = GENERATE(true, false);
   const bool profiling = GENERATE(true, false);
   CAPTURE(in_order, profiling);
+  if (profiling && !device_has_queue_profiling()) {
+    SKIP("Device does not have aspect::queue_profiling");
+  }
   for_each_queue_ctor(khr::properties{prop::in_order{in_order},
                                       prop::enable_profiling{profiling}},
                       [=](sycl::queue& q, auto ctx, auto dev) {

@@ -19,13 +19,9 @@
 #include <sycl/khr/split_headers/context.hpp>
 #include <sycl/khr/split_headers/device.hpp>
 #include <sycl/khr/split_headers/exception.hpp>
-#include <sycl/khr/split_headers/reduction.hpp>
 #endif
 
 namespace khr_properties::tests {
-
-using reduction_props_t =
-    decltype(khr::properties{prop::initialize_to_identity{}});
 
 TEST_CASE("the new queue constructors are constrained on PropertyOrList",
           "[khr_properties][queue]") {
@@ -70,14 +66,12 @@ TEST_CASE("the new queue constructors are constrained on PropertyOrList",
   }
 
   SECTION("properties lists that do not apply to queue are rejected") {
-    using mixed_t = decltype(khr::properties{prop::in_order{},
-                                             prop::initialize_to_identity{}});
     STATIC_CHECK_FALSE(std::is_constructible_v<queue, reduction_props_t>);
-    STATIC_CHECK_FALSE(std::is_constructible_v<queue, mixed_t>);
+    STATIC_CHECK_FALSE(std::is_constructible_v<queue, mixed_props_t>);
     STATIC_CHECK_FALSE(
         std::is_constructible_v<queue, dev_t, reduction_props_t>);
     STATIC_CHECK_FALSE(
-        std::is_constructible_v<queue, ctx_t, dev_t, ah_t, mixed_t>);
+        std::is_constructible_v<queue, ctx_t, dev_t, ah_t, mixed_props_t>);
   }
 
   SECTION("types that are neither properties nor lists are rejected") {
@@ -89,7 +83,11 @@ TEST_CASE("the new queue constructors are constrained on PropertyOrList",
     STATIC_CHECK_FALSE(
         std::is_constructible_v<queue, not_a_property, queue_props_t>);
     STATIC_CHECK_FALSE(
+        std::is_constructible_v<queue, not_a_property, ah_t, queue_props_t>);
+    STATIC_CHECK_FALSE(
         std::is_constructible_v<queue, ctx_t, not_a_property, queue_props_t>);
+    STATIC_CHECK_FALSE(std::is_constructible_v<queue, ctx_t, not_a_property,
+                                               ah_t, queue_props_t>);
   }
 
   SECTION("the new constructors are explicit") {
@@ -97,6 +95,20 @@ TEST_CASE("the new queue constructors are constrained on PropertyOrList",
     STATIC_CHECK_FALSE(std::is_convertible_v<prop::enable_profiling, queue>);
     STATIC_CHECK_FALSE(std::is_convertible_v<queue_props_t, queue>);
     STATIC_CHECK_FALSE(std::is_convertible_v<khr::empty_properties_t, queue>);
+
+    using p_t = prop::in_order;
+    STATIC_CHECK_FALSE(is_implicitly_constructible_v<queue, p_t>);
+    STATIC_CHECK_FALSE(is_implicitly_constructible_v<queue, ah_t, p_t>);
+    STATIC_CHECK_FALSE(is_implicitly_constructible_v<queue, sel_t, p_t>);
+    STATIC_CHECK_FALSE(is_implicitly_constructible_v<queue, sel_t, ah_t, p_t>);
+    STATIC_CHECK_FALSE(is_implicitly_constructible_v<queue, dev_t, p_t>);
+    STATIC_CHECK_FALSE(is_implicitly_constructible_v<queue, dev_t, ah_t, p_t>);
+    STATIC_CHECK_FALSE(is_implicitly_constructible_v<queue, ctx_t, sel_t, p_t>);
+    STATIC_CHECK_FALSE(
+        is_implicitly_constructible_v<queue, ctx_t, sel_t, ah_t, p_t>);
+    STATIC_CHECK_FALSE(is_implicitly_constructible_v<queue, ctx_t, dev_t, p_t>);
+    STATIC_CHECK_FALSE(
+        is_implicitly_constructible_v<queue, ctx_t, dev_t, ah_t, p_t>);
   }
 }
 

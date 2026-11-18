@@ -17,19 +17,11 @@
 
 #if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
 #include <sycl/khr/split_headers/property_list.hpp>
-#include <sycl/khr/split_headers/reduction.hpp>
 #endif
 
 #include <catch2/generators/catch_generators.hpp>
 
 namespace khr_properties::tests {
-
-using reduction_props_t =
-    decltype(khr::properties{prop::initialize_to_identity{}});
-
-// A properties list with a queue property and a reduction property.
-using mixed_props_t =
-    decltype(khr::properties{prop::in_order{}, prop::initialize_to_identity{}});
 
 namespace tag = sycl::khr::property::tag;
 
@@ -301,6 +293,8 @@ TEST_CASE(
                     false>();
   check_unary_trait<khr::is_property_key_compile_time,
                     key::initialize_to_identity, false>();
+  // Properties are not keys.
+  check_unary_trait<khr::is_property_key_compile_time, prop::in_order, false>();
   check_unary_trait<khr::is_property_key_compile_time, int, false>();
 }
 
@@ -429,6 +423,19 @@ TEST_CASE("the old-style property traits do not classify new-style properties",
   STATIC_CHECK_FALSE(sycl::is_property_of_v<prop::in_order, sycl::queue>);
   STATIC_CHECK_FALSE(
       sycl::is_property_of_v<prop::enable_profiling, sycl::queue>);
+}
+
+TEST_CASE("an old-style property_list cannot contain new-style properties",
+          "[khr_properties][traits]") {
+  STATIC_CHECK_FALSE(
+      std::is_constructible_v<sycl::property_list, prop::in_order>);
+  STATIC_CHECK_FALSE(
+      std::is_constructible_v<sycl::property_list, prop::enable_profiling>);
+  STATIC_CHECK_FALSE(std::is_constructible_v<sycl::property_list,
+                                             prop::initialize_to_identity>);
+  STATIC_CHECK_FALSE(
+      std::is_constructible_v<sycl::property_list, prop::in_order,
+                              prop::enable_profiling>);
 }
 
 // The keys are only declared by the specification and can be incomplete
