@@ -16,9 +16,42 @@
 #include "../common/common.h"
 #include "usm_allocations_helper.h"
 #include <memory>
+#include <type_traits>
 
 namespace usm_allocator_constructors {
 using namespace sycl_cts;
+
+/** @brief Check that two allocators compare equal, using both operator== and
+ *         operator!=, in both directions
+ */
+template <typename AllocA, typename AllocB>
+static void check_equal(util::logger& log, const AllocA& a, const AllocB& b,
+                        const std::string& hint) {
+  if (!(a == b) || !(b == a)) {
+    FAIL(log, "usm_allocator equality operator does not work correctly (" +
+                  hint + ")");
+  }
+  if ((a != b) || (b != a)) {
+    FAIL(log, "usm_allocator non-equality operator does not work correctly (" +
+                  hint + ")");
+  }
+}
+
+/** @brief Check that two allocators compare unequal, using both operator==
+ *         and operator!=, in both directions
+ */
+template <typename AllocA, typename AllocB>
+static void check_not_equal(util::logger& log, const AllocA& a, const AllocB& b,
+                            const std::string& hint) {
+  if ((a == b) || (b == a)) {
+    FAIL(log, "usm_allocator equality operator does not work correctly (" +
+                  hint + ")");
+  }
+  if (!(a != b) || !(b != a)) {
+    FAIL(log, "usm_allocator non-equality operator does not work correctly (" +
+                  hint + ")");
+  }
+}
 
 /** @brief Run tests for given usm::alloc
  */
@@ -167,51 +200,116 @@ static void run_ctors_test_for_kind(util::logger& log) {
   }
 
   /** Check equality operator
+   *
+   *  Allocators compare equal if and only if they have the same context and
+   *  device. The value type, USM kind and alignment do not affect equality.
    */
   {
-    using AllocatorDiffT = sycl::usm_allocator<T, other_kind<kind>(), align>;
+    const std::string kind_hint =
+        " for kind: " +
+        std::string(usm_helper::get_allocation_description<kind>());
+
     AllocatorT allctrA(ctx, dev);
+
+    // Copy constructed
     AllocatorT allctrB(allctrA);
+    check_equal(log, allctrA, allctrB, "copy constructed" + kind_hint);
+
+    // Copy assigned
     AllocatorT allctrC(queue);
     allctrC = allctrA;
-    AllocatorDiffT allctrD(ctx, dev);
-    std::string kind_hint{usm_helper::get_allocation_description<kind>()};
+    check_equal(log, allctrA, allctrC, "copy assigned" + kind_hint);
 
-    if (!(allctrA == allctrB)) {
+    // Constructed separately from the same context and device
+    AllocatorT allctrD(queue);
+    check_equal(log, allctrA, allctrD,
+                "constructed from the same context and device" + kind_hint);
+
+    // Different USM kind
+    using AllocatorDiffKindT =
+        sycl::usm_allocator<T, other_kind<kind>(), align>;
+    if (usm_alloc_help::allocation_supported<other_kind<kind>()>(log, queue)) {
+      AllocatorDiffKindT allctrDiffKind(ctx, dev);
+      check_equal(log, allctrA, allctrDiffKind,
+                  "different USM kind" + kind_hint);
+    } else {
+      log.note("(skipped equality check with different USM kind)" + kind_hint);
+    }
+
+    // Different alignment
+    using AllocatorDiffAlignT = sycl::usm_allocator<T, kind, align * 2>;
+    AllocatorDiffAlignT allctrDiffAlign(ctx, dev);
+    check_equal(log, allctrA, allctrDiffAlign,
+                "different alignment" + kind_hint);
+
+    // Different value type
+    using AllocatorDiffTypeT = sycl::usm_allocator<custom_type, kind, align>;
+    AllocatorDiffTypeT allctrDiffType(ctx, dev);
+    check_equal(log, allctrA, allctrDiffType,
+                "different value type" + kind_hint);
+
+    // Different context
+    sycl::context other_ctx(dev);
+    AllocatorT allctrDiffCtx(other_ctx, dev);
+    check_not_equal(log, allctrA, allctrDiffCtx,
+                    "different context" + kind_hint);
+  }
+
+  /** Check noexcept guarantees
+   */
+  {
+    using AllocDiffTType = sycl::usm_allocator<custom_type, kind, align>;
+    const std::string kind_hint =
+        " for kind: " +
+        std::string(usm_helper::get_allocation_description<kind>());
+
+    if (!std::is_nothrow_move_constructible_v<AllocatorT>) {
+      FAIL(log, "usm_allocator move constructor is not noexcept" + kind_hint);
+    }
+    if (!std::is_nothrow_move_assignable_v<AllocatorT>) {
+      FAIL(log, "usm_allocator move assignment operator is not noexcept" +
+                    kind_hint);
+    }
+    if (!std::is_nothrow_constructible_v<AllocatorT, const AllocDiffTType&>) {
+      FAIL(log, "usm_allocator rebinding copy constructor is not noexcept" +
+                    kind_hint);
+    }
+    if (!noexcept(std::declval<const AllocatorT&>()
+                      .template has_property<
+                          sycl::property::buffer::use_host_ptr>())) {
+      FAIL(log, "usm_allocator::has_property is not noexcept" + kind_hint);
+    }
+  }
+
+  /** Check property interface when constructed without properties
+   */
+  {
+    using PropT = sycl::property::buffer::use_host_ptr;
+    const std::string kind_hint =
+        " for kind: " +
+        std::string(usm_helper::get_allocation_description<kind>());
+    AllocatorT allctr(ctx, dev, pl);
+
+    if (allctr.template has_property<PropT>()) {
       FAIL(log,
-           "usm_allocator equality operator does not work correctly"
-           "(copy constructed) for kind: " +
+           "usm_allocator::has_property returned true for a property it was "
+           "not constructed with" +
                kind_hint);
     }
-    if (!(allctrA == allctrC)) {
+
+    try {
+      (void)allctr.template get_property<PropT>();
       FAIL(log,
-           "usm_allocator equality operator does not work correctly"
-           "(copy assigned) for kind: " +
+           "usm_allocator::get_property did not throw for a property it was "
+           "not constructed with" +
                kind_hint);
-    }
-    if (allctrA != allctrB) {
-      FAIL(log,
-           "usm_allocator non-equality operator does not work correctly"
-           "(copy constructed) for kind: " +
-               kind_hint);
-    }
-    if (allctrA != allctrC) {
-      FAIL(log,
-           "usm_allocator non-equality operator does not work correctly"
-           "(copy constructed) for kind: " +
-               kind_hint);
-    }
-    if (allctrC == allctrD) {
-      FAIL(log,
-           "usm_allocator equality operator does not work correctly"
-           "(comparing with different) for kind: " +
-               kind_hint);
-    }
-    if (!(allctrC != allctrD)) {
-      FAIL(log,
-           "usm_allocator non-equality operator does not work correctly"
-           "(comparing with different) for kind: " +
-               kind_hint);
+    } catch (const sycl::exception& e) {
+      if (e.code() != sycl::errc::invalid) {
+        FAIL(log,
+             "usm_allocator::get_property threw an exception with the wrong "
+             "error code" +
+                 kind_hint);
+      }
     }
   }
 }
