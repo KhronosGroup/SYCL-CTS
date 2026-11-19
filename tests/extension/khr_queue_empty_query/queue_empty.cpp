@@ -17,10 +17,10 @@ TEST_CASE(
     "the queue empty query extension defines the "
     "SYCL_KHR_QUEUE_EMPTY_QUERY macro",
     "[khr_queue_empty_query]") {
-#ifndef SYCL_KHR_QUEUE_EMPTY_QUERY
-  SKIP("SYCL_KHR_QUEUE_EMPTY_QUERY is not defined");
-#else
+#ifdef SYCL_KHR_QUEUE_EMPTY_QUERY
   STATIC_REQUIRE(SYCL_KHR_QUEUE_EMPTY_QUERY == 1);
+#else
+  SKIP("SYCL_KHR_QUEUE_EMPTY_QUERY is not defined");
 #endif
 }
 

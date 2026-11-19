@@ -50,13 +50,4 @@ TEST_CASE(
 
 }  // namespace khr_split_headers::tests
 
-#else
-
-TEST_CASE("max_work_group_queries split_headers coexistence is not applicable",
-          "[khr_split_headers][max_work_group_queries]") {
-  SKIP(
-      "SYCL_KHR_SPLIT_HEADERS and/or SYCL_KHR_MAX_WORK_GROUP_QUERIES is not "
-      "defined");
-}
-
-#endif
+#endif  // SYCL_KHR_SPLIT_HEADERS && SYCL_KHR_MAX_WORK_GROUP_QUERIES

@@ -46,14 +46,4 @@ TEST_CASE(
 
 }  // namespace khr_split_headers::tests
 
-#else
-
-// When either extension is not implemented the coexistence requirement does not
-// apply; keep at least one always-present test case so the translation unit is
-// not empty.
-TEST_CASE("group_interface split_headers coexistence is not applicable",
-          "[khr_split_headers][group_interface]") {
-  SKIP("SYCL_KHR_SPLIT_HEADERS and/or SYCL_KHR_GROUP_INTERFACE is not defined");
-}
-
-#endif
+#endif  // SYCL_KHR_SPLIT_HEADERS && SYCL_KHR_GROUP_INTERFACE

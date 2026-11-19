@@ -16,10 +16,10 @@ TEST_CASE(
     "the queue flush extension defines the "
     "SYCL_KHR_QUEUE_FLUSH macro",
     "[khr_queue_flush]") {
-#ifndef SYCL_KHR_QUEUE_FLUSH
-  SKIP("SYCL_KHR_QUEUE_FLUSH is not defined");
-#else
+#ifdef SYCL_KHR_QUEUE_FLUSH
   STATIC_REQUIRE(SYCL_KHR_QUEUE_FLUSH == 1);
+#else
+  SKIP("SYCL_KHR_QUEUE_FLUSH is not defined");
 #endif
 }
 

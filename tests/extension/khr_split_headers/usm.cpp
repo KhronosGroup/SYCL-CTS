@@ -137,13 +137,4 @@ TEST_CASE("the usm header defines the get_pointer_device query function",
 
 }  // namespace khr_split_headers::tests
 
-#else
-
-// The extension is not implemented, so none of the headers under test exist.
-// Keep one always-present test case to report the category as skipped.
-TEST_CASE("the usm tests require sycl_khr_split_headers",
-          "[khr_split_headers][usm]") {
-  SKIP("SYCL_KHR_SPLIT_HEADERS is not defined");
-}
-
 #endif  // SYCL_KHR_SPLIT_HEADERS

@@ -10,11 +10,22 @@
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
 
-#if SYCL_KHR_SPLIT_HEADERS
-#include <sycl/khr/split_headers/version.hpp>
-#include <type_traits>
-
 namespace khr_split_headers::tests {
+
+// This test case is the only one of the category that does not depend on any
+// header that the extension introduces, so it is the one that reports the
+// category as skipped when the extension is not implemented.
+TEST_CASE(
+    "the split headers extension defines the SYCL_KHR_SPLIT_HEADERS macro",
+    "[khr_split_headers][version]") {
+#if SYCL_KHR_SPLIT_HEADERS
+  STATIC_REQUIRE(SYCL_KHR_SPLIT_HEADERS == 1);
+#else
+  SKIP("SYCL_KHR_SPLIT_HEADERS is not defined");
+#endif
+}
+
+#if SYCL_KHR_SPLIT_HEADERS
 
 TEST_CASE("the version header defines the SYCL_LANGUAGE_VERSION macro",
           "[khr_split_headers][version]") {
@@ -26,15 +37,6 @@ TEST_CASE("the version header defines the SYCL_LANGUAGE_VERSION macro",
   STATIC_REQUIRE(version == 202012L);
 }
 
-}  // namespace khr_split_headers::tests
-
-#else
-
-// The extension is not implemented, so none of the headers under test exist.
-// Keep one always-present test case to report the category as skipped.
-TEST_CASE("the version tests require sycl_khr_split_headers",
-          "[khr_split_headers][version]") {
-  SKIP("SYCL_KHR_SPLIT_HEADERS is not defined");
-}
-
 #endif  // SYCL_KHR_SPLIT_HEADERS
+
+}  // namespace khr_split_headers::tests

@@ -48,13 +48,4 @@ TEST_CASE(
 
 }  // namespace khr_split_headers::tests
 
-#else
-
-TEST_CASE("work_item_queries split_headers coexistence is not applicable",
-          "[khr_split_headers][work_item_queries]") {
-  SKIP(
-      "SYCL_KHR_SPLIT_HEADERS and/or SYCL_KHR_WORK_ITEM_QUERIES is not "
-      "defined");
-}
-
-#endif
+#endif  // SYCL_KHR_SPLIT_HEADERS && SYCL_KHR_WORK_ITEM_QUERIES

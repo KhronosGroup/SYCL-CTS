@@ -15,10 +15,10 @@ TEST_CASE(
     "the group interface extension defines the SYCL_KHR_GROUP_INTERFACE "
     "macro",
     "[khr_group_interface]") {
-#ifndef SYCL_KHR_GROUP_INTERFACE
-  SKIP("SYCL_KHR_GROUP_INTERFACE is not defined");
-#else
+#ifdef SYCL_KHR_GROUP_INTERFACE
   STATIC_REQUIRE(SYCL_KHR_GROUP_INTERFACE == 1);
+#else
+  SKIP("SYCL_KHR_GROUP_INTERFACE is not defined");
 #endif
 }
 

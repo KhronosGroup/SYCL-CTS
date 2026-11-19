@@ -368,21 +368,22 @@ Tests for Khronos (`sycl_khr_*`) extensions live in link:../tests/extension[`tes
 They are opt-in: `SYCL_CTS_ENABLE_KHR_TESTS` enables all of them, and `SYCL_CTS_ENABLE_KHR_<EXTENSION>_TESTS` enables an individual one.
 Both default to `OFF`, but <<Continuous Integration (CI)>> configures the CTS with `SYCL_CTS_ENABLE_KHR_TESTS=ON`, so KHR tests are compiled for every SYCL implementation on every pull request.
 
-Since not every implementation implements every extension, the tests in a file must be guarded by the extension's feature-test macro, and the file must report itself as skipped when that macro is not predefined.
+Since not every implementation implements every extension, the tests in a file must be guarded by the extension's feature-test macro, and the category must report itself as skipped when that macro is not predefined.
 Guard each file once rather than each test case: anything that refers to the extension's APIs -- test cases, helper functions, type aliases, additional headers -- goes behind a single `#ifdef`, so that the translation unit still compiles for implementations without the extension.
+Spell a guard that has both branches positively, with `#ifdef` rather than `#ifndef`, so that the branch which does the work comes first.
 
-Most extensions have a test case that checks the feature-test macro itself.
-That test case refers to no extension API, so it stays outside the guard and reports the skip for the whole file.
+Report the skip once per extension, not once per file, and report it from the test case that checks the feature-test macro itself.
+Every category has such a test case, and it refers to no extension API, so it stays outside the guard.
 Check the macro's value rather than merely that it is defined: an extension defines its feature-test macro to an integer revision, and the KHR extensions currently specify `1` as the only valid value.
 
 [source,c++]
 ----
 TEST_CASE("the some extension defines the SYCL_KHR_SOME_EXTENSION macro",
           "[khr_some_extension]") {
-#ifndef SYCL_KHR_SOME_EXTENSION
-  SKIP("SYCL_KHR_SOME_EXTENSION is not defined");
-#else
+#ifdef SYCL_KHR_SOME_EXTENSION
   STATIC_REQUIRE(SYCL_KHR_SOME_EXTENSION == 1);
+#else
+  SKIP("SYCL_KHR_SOME_EXTENSION is not defined");
 #endif
 }
 
@@ -397,21 +398,15 @@ TEST_CASE("sycl::khr::some_api does the right thing", "[khr_some_extension]") {
 #endif  // SYCL_KHR_SOME_EXTENSION
 ----
 
-A file without such a test case uses `#ifndef` instead and puts a single skipping test case in that branch, so that the file still reports why it did nothing.
-A file whose only test case is guarded internally, with the `SKIP` in that test case's `#ifndef` branch, achieves the same thing and is equally fine:
+The other files of a category need no second branch at all: they compile to nothing when the extension is missing, and the test case above already reports the category as skipped.
 
 [source,c++]
 ----
-#ifndef SYCL_KHR_SOME_EXTENSION
+#ifdef SYCL_KHR_SOME_EXTENSION
 
-TEST_CASE("the some_api tests require the sycl_khr_some_extension extension",
-          "[khr_some_extension]") {
-  SKIP("SYCL_KHR_SOME_EXTENSION is not defined");
-}
-
-#else
 // ... test cases ...
-#endif
+
+#endif  // SYCL_KHR_SOME_EXTENSION
 ----
 
 IMPORTANT: Report a missing extension with `SKIP`, never with `SUCCEED`.
@@ -425,6 +420,7 @@ The feature-test macro says nothing about that, so use <<Compile-Time Disabled T
 NOTE: `sycl_khr_split_headers` is a special case, because its feature-test macro is defined by the very headers that the extension introduces and therefore cannot be queried on an implementation that does not provide them.
 That category follows the detection idiom given in the extension specification instead: probe for `<sycl/khr/split_headers/version.hpp>` with `__has_include`, include it if it exists, and only then guard on `SYCL_KHR_SPLIT_HEADERS`.
 The probe lives in link:../tests/extension/khr_split_headers/util.h[`tests/extension/khr_split_headers/util.h`], which every test file of the category includes.
+The macro test case, and with it the skip for the whole category, lives in link:../tests/extension/khr_split_headers/version.cpp[`version.cpp`].
 
 === Best Practices
 

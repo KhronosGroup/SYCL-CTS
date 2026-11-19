@@ -15,10 +15,10 @@ TEST_CASE(
     "the work item queries extension defines the SYCL_KHR_WORK_ITEM_QUERIES "
     "macro",
     "[khr_work_item_queries]") {
-#ifndef SYCL_KHR_WORK_ITEM_QUERIES
-  SKIP("SYCL_KHR_WORK_ITEM_QUERIES is not defined");
-#else
+#ifdef SYCL_KHR_WORK_ITEM_QUERIES
   STATIC_REQUIRE(SYCL_KHR_WORK_ITEM_QUERIES == 1);
+#else
+  SKIP("SYCL_KHR_WORK_ITEM_QUERIES is not defined");
 #endif
 }
 

@@ -15,10 +15,10 @@ TEST_CASE(
     "the dynamic addrspace cast extension defines the "
     "SYCL_KHR_DYNAMIC_ADDRSPACE_CAST macro",
     "[khr_dynamic_addrspace_cast]") {
-#ifndef SYCL_KHR_DYNAMIC_ADDRSPACE_CAST
-  SKIP("SYCL_KHR_DYNAMIC_ADDRSPACE_CAST is not defined");
-#else
+#ifdef SYCL_KHR_DYNAMIC_ADDRSPACE_CAST
   STATIC_REQUIRE(SYCL_KHR_DYNAMIC_ADDRSPACE_CAST == 1);
+#else
+  SKIP("SYCL_KHR_DYNAMIC_ADDRSPACE_CAST is not defined");
 #endif
 }
 

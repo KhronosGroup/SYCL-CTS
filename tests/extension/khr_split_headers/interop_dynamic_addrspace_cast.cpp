@@ -54,13 +54,4 @@ TEST_CASE(
 
 }  // namespace khr_split_headers::tests
 
-#else
-
-TEST_CASE("dynamic_addrspace_cast split_headers coexistence is not applicable",
-          "[khr_split_headers][dynamic_addrspace_cast]") {
-  SKIP(
-      "SYCL_KHR_SPLIT_HEADERS and/or SYCL_KHR_DYNAMIC_ADDRSPACE_CAST is not "
-      "defined");
-}
-
-#endif
+#endif  // SYCL_KHR_SPLIT_HEADERS && SYCL_KHR_DYNAMIC_ADDRSPACE_CAST

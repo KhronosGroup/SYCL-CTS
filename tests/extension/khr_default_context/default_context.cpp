@@ -14,10 +14,10 @@ namespace default_context::tests {
 TEST_CASE(
     "the default context extension defines the SYCL_KHR_DEFAULT_CONTEXT macro",
     "[khr_default_context]") {
-#ifndef SYCL_KHR_DEFAULT_CONTEXT
-  SKIP("SYCL_KHR_DEFAULT_CONTEXT is not defined");
-#else
+#ifdef SYCL_KHR_DEFAULT_CONTEXT
   STATIC_REQUIRE(SYCL_KHR_DEFAULT_CONTEXT == 1);
+#else
+  SKIP("SYCL_KHR_DEFAULT_CONTEXT is not defined");
 #endif
 }
 

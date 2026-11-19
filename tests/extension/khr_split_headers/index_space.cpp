@@ -52,13 +52,4 @@ TEST_CASE("the index_space header defines the nd_range class template",
 
 }  // namespace khr_split_headers::tests
 
-#else
-
-// The extension is not implemented, so none of the headers under test exist.
-// Keep one always-present test case to report the category as skipped.
-TEST_CASE("the index_space tests require sycl_khr_split_headers",
-          "[khr_split_headers][index_space]") {
-  SKIP("SYCL_KHR_SPLIT_HEADERS is not defined");
-}
-
 #endif  // SYCL_KHR_SPLIT_HEADERS
