@@ -370,7 +370,6 @@ Both default to `OFF`, but <<Continuous Integration (CI)>> configures the CTS wi
 
 Since not every implementation implements every extension, the tests in a file must be guarded by the extension's feature-test macro, and the category must report itself as skipped when that macro is not predefined.
 Guard each file once rather than each test case: anything that refers to the extension's APIs -- test cases, helper functions, type aliases, additional headers -- goes behind a single `#ifdef`, so that the translation unit still compiles for implementations without the extension.
-Spell a guard that has both branches positively, with `#ifdef` rather than `#ifndef`, so that the branch which does the work comes first.
 
 Report the skip once per extension, not once per file, and report it from the test case that checks the feature-test macro itself.
 Every category has such a test case, and it refers to no extension API, so it stays outside the guard.
