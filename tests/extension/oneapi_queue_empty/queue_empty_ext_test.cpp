@@ -10,7 +10,12 @@
 
 namespace queue_empty::tests {
 constexpr size_t buf_size = 10;
-constexpr size_t iter_num = 10000000;
+// The kernel below is a single_task loop, so it runs as a single work-item.
+// A long loop keeps the device busy for seconds (much longer in unoptimized
+// builds), and a GPU that can be preempted only at work-group boundaries then
+// misses the OS preemption timeout and the device is reset. Keep the loop
+// short; the checks do not depend on the loop length.
+constexpr size_t iter_num = 10000;
 
 template <size_t iter_num, typename AccT>
 class Kernel {

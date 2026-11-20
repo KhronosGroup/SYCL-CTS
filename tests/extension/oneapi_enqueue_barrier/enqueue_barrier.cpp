@@ -18,8 +18,13 @@ inline void skip_if_dev_does_not_support_usm_alloc(
 }
 
 constexpr size_t buffer_size = 10;
-constexpr size_t ker_a_iter_num = 1000000;
-constexpr size_t ker_b_iter_num = 3000000;
+// The kernels below are single_task loops, so each one runs as a single
+// work-item. Long loops keep the device busy for seconds (much longer in
+// unoptimized builds), and a GPU that can be preempted only at work-group
+// boundaries then misses the OS preemption timeout and the device is reset.
+// Keep the loops short; the checks do not depend on the loop length.
+constexpr size_t ker_a_iter_num = 1000;
+constexpr size_t ker_b_iter_num = 3000;
 
 class EnqueueBarrierTestBase {
   template <size_t iter_num>
