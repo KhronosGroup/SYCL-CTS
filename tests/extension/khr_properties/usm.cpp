@@ -30,6 +30,8 @@
 
 namespace khr_properties::tests {
 
+#ifdef SYCL_KHR_PROPERTIES
+
 using q_t = const sycl::queue&;
 using d_t = const sycl::device&;
 using c_t = const sycl::context&;
@@ -263,5 +265,7 @@ TEST_CASE("only the empty properties list applies to the USM tags",
   check_class_without_properties<tag::usm_host>();
   check_class_without_properties<tag::usm_shared>();
 }
+
+#endif  // SYCL_KHR_PROPERTIES
 
 }  // namespace khr_properties::tests

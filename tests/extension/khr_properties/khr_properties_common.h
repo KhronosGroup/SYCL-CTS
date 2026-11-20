@@ -31,7 +31,9 @@
 
 #ifdef SYCL_KHR_SPLIT_HEADERS
 #define SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS 1
+#ifdef SYCL_KHR_PROPERTIES
 #include <sycl/khr/properties.hpp>
+#endif
 #include <sycl/khr/split_headers/queue.hpp>
 #include <sycl/khr/split_headers/reduction.hpp>
 #else
@@ -43,6 +45,8 @@
 
 #include <type_traits>
 #include <utility>
+
+#ifdef SYCL_KHR_PROPERTIES
 
 namespace khr_properties::tests {
 
@@ -147,5 +151,7 @@ void check_class_without_properties() {
 }
 
 }  // namespace khr_properties::tests
+
+#endif  // SYCL_KHR_PROPERTIES
 
 #endif  // __SYCLCTS_TESTS_EXTENSION_KHR_PROPERTIES_COMMON_H

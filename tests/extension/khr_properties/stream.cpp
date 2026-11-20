@@ -27,6 +27,8 @@
 
 namespace khr_properties::tests {
 
+#ifdef SYCL_KHR_PROPERTIES
+
 template <typename P>
 inline constexpr bool can_construct_stream_v =
     std::is_constructible_v<sycl::stream, std::size_t, std::size_t,
@@ -48,5 +50,7 @@ TEST_CASE("only the empty properties list applies to the stream class",
           "[khr_properties][stream][traits]") {
   check_class_without_properties<sycl::stream>();
 }
+
+#endif  // SYCL_KHR_PROPERTIES
 
 }  // namespace khr_properties::tests

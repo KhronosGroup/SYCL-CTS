@@ -27,6 +27,8 @@
 
 namespace khr_properties::tests {
 
+#ifdef SYCL_KHR_PROPERTIES
+
 using input_bundle_t = sycl::kernel_bundle<sycl::bundle_state::input>;
 using object_bundle_t = sycl::kernel_bundle<sycl::bundle_state::object>;
 using exe_bundle_t = sycl::kernel_bundle<sycl::bundle_state::executable>;
@@ -131,5 +133,7 @@ TEST_CASE("only the empty properties list applies to the kernel bundle tags",
   check_class_without_properties<tag::link>();
   check_class_without_properties<tag::build>();
 }
+
+#endif  // SYCL_KHR_PROPERTIES
 
 }  // namespace khr_properties::tests

@@ -23,6 +23,8 @@
 
 namespace khr_properties::tests {
 
+#ifdef SYCL_KHR_PROPERTIES
+
 TEST_CASE("the new queue constructors are constrained on PropertyOrList",
           "[khr_properties][queue]") {
   using sycl::queue;
@@ -123,5 +125,7 @@ TEST_CASE(
       std::is_same_v<decltype(std::declval<q_t>().khr_is_profiling_enabled()),
                      bool>);
 }
+
+#endif  // SYCL_KHR_PROPERTIES
 
 }  // namespace khr_properties::tests

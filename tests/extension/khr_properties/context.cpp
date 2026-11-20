@@ -30,6 +30,8 @@
 
 namespace khr_properties::tests {
 
+#ifdef SYCL_KHR_PROPERTIES
+
 using ctx_dev_t = const sycl::device&;
 using ctx_plt_t = const sycl::platform&;
 using ctx_devs_t = const std::vector<sycl::device>&;
@@ -96,5 +98,7 @@ TEST_CASE("only the empty properties list applies to the context class",
           "[khr_properties][context][traits]") {
   check_class_without_properties<sycl::context>();
 }
+
+#endif  // SYCL_KHR_PROPERTIES
 
 }  // namespace khr_properties::tests

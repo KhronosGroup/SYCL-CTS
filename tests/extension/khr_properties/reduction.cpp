@@ -22,6 +22,8 @@
 
 namespace khr_properties::tests {
 
+#ifdef SYCL_KHR_PROPERTIES
+
 using plus_t = sycl::plus<int>;
 using span2_t = sycl::span<int, 2>;
 using dyn_span_t = sycl::span<int, sycl::dynamic_extent>;
@@ -89,5 +91,7 @@ TEST_CASE(
   STATIC_CHECK_FALSE(can_reduce_dyn_span_identity_v<reduction_props_t>);
   STATIC_CHECK_FALSE(can_reduce_dyn_span_identity_v<khr::empty_properties_t>);
 }
+
+#endif  // SYCL_KHR_PROPERTIES
 
 }  // namespace khr_properties::tests

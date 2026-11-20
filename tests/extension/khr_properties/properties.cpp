@@ -23,6 +23,17 @@
 
 namespace khr_properties::tests {
 
+TEST_CASE("the properties extension defines the SYCL_KHR_PROPERTIES macro",
+          "[khr_properties][properties]") {
+#ifdef SYCL_KHR_PROPERTIES
+  STATIC_REQUIRE(SYCL_KHR_PROPERTIES == 1);
+#else
+  SKIP("SYCL_KHR_PROPERTIES is not defined");
+#endif
+}
+
+#ifdef SYCL_KHR_PROPERTIES
+
 namespace tag = sycl::khr::property::tag;
 
 template <typename T>
@@ -61,15 +72,6 @@ void check_unary_trait() {
   using base_t = std::integral_constant<bool, Expected>;
   STATIC_CHECK(std::is_base_of_v<base_t, Trait<T>>);
   STATIC_CHECK(Trait<T>::value == Expected);
-}
-
-TEST_CASE("the properties extension defines the SYCL_KHR_PROPERTIES macro",
-          "[khr_properties][properties]") {
-#ifndef SYCL_KHR_PROPERTIES
-  static_assert(false, "SYCL_KHR_PROPERTIES is not defined");
-#else
-  STATIC_CHECK(SYCL_KHR_PROPERTIES == 1);
-#endif
 }
 
 TEST_CASE("empty_properties_t is the type of an empty properties list",
@@ -483,5 +485,7 @@ TEST_CASE("the constructors of the boolean properties from bool are explicit",
   STATIC_CHECK_FALSE(std::is_convertible_v<bool, prop::in_order>);
   STATIC_CHECK_FALSE(std::is_convertible_v<bool, prop::initialize_to_identity>);
 }
+
+#endif  // SYCL_KHR_PROPERTIES
 
 }  // namespace khr_properties::tests

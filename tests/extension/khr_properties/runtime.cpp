@@ -39,6 +39,8 @@
 
 namespace khr_properties::tests {
 
+#ifdef SYCL_KHR_PROPERTIES
+
 // ----------------------------------------------------------------------------
 // Context
 // ----------------------------------------------------------------------------
@@ -1008,5 +1010,7 @@ TEST_CASE("a stream constructed with an empty properties list",
   CHECK(size == total_buffer_size);
   CHECK(wi_size == work_item_buffer_size);
 }
+
+#endif  // SYCL_KHR_PROPERTIES
 
 }  // namespace khr_properties::tests
