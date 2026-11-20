@@ -15,6 +15,8 @@
 
 #include "khr_properties_common.h"
 
+#ifdef SYCL_KHR_PROPERTIES
+
 #if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
 #include <sycl/khr/split_headers/context.hpp>
 #include <sycl/khr/split_headers/device.hpp>
@@ -22,8 +24,6 @@
 #endif
 
 namespace khr_properties::tests {
-
-#ifdef SYCL_KHR_PROPERTIES
 
 TEST_CASE("the new queue constructors are constrained on PropertyOrList",
           "[khr_properties][queue]") {
@@ -126,6 +126,6 @@ TEST_CASE(
                      bool>);
 }
 
-#endif  // SYCL_KHR_PROPERTIES
-
 }  // namespace khr_properties::tests
+
+#endif  // SYCL_KHR_PROPERTIES

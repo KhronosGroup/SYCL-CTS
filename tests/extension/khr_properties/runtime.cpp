@@ -22,6 +22,8 @@
 
 #include "khr_properties_common.h"
 
+#ifdef SYCL_KHR_PROPERTIES
+
 #include <catch2/generators/catch_generators.hpp>
 
 #include <algorithm>
@@ -38,8 +40,6 @@
 #endif
 
 namespace khr_properties::tests {
-
-#ifdef SYCL_KHR_PROPERTIES
 
 // ----------------------------------------------------------------------------
 // Context
@@ -1011,6 +1011,6 @@ TEST_CASE("a stream constructed with an empty properties list",
   CHECK(wi_size == work_item_buffer_size);
 }
 
-#endif  // SYCL_KHR_PROPERTIES
-
 }  // namespace khr_properties::tests
+
+#endif  // SYCL_KHR_PROPERTIES

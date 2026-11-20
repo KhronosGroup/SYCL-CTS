@@ -19,6 +19,8 @@
 
 #include "khr_properties_common.h"
 
+#ifdef SYCL_KHR_PROPERTIES
+
 #if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
 #include <sycl/khr/split_headers/context.hpp>
 #include <sycl/khr/split_headers/device.hpp>
@@ -29,8 +31,6 @@
 #include <vector>
 
 namespace khr_properties::tests {
-
-#ifdef SYCL_KHR_PROPERTIES
 
 using ctx_dev_t = const sycl::device&;
 using ctx_plt_t = const sycl::platform&;
@@ -99,6 +99,6 @@ TEST_CASE("only the empty properties list applies to the context class",
   check_class_without_properties<sycl::context>();
 }
 
-#endif  // SYCL_KHR_PROPERTIES
-
 }  // namespace khr_properties::tests
+
+#endif  // SYCL_KHR_PROPERTIES

@@ -14,6 +14,8 @@
 
 #include "khr_properties_common.h"
 
+#ifdef SYCL_KHR_PROPERTIES
+
 #if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
 #include <sycl/khr/split_headers/functional.hpp>
 #include <sycl/khr/split_headers/reduction.hpp>
@@ -21,8 +23,6 @@
 #endif
 
 namespace khr_properties::tests {
-
-#ifdef SYCL_KHR_PROPERTIES
 
 using plus_t = sycl::plus<int>;
 using span2_t = sycl::span<int, 2>;
@@ -92,6 +92,6 @@ TEST_CASE(
   STATIC_CHECK_FALSE(can_reduce_dyn_span_identity_v<khr::empty_properties_t>);
 }
 
-#endif  // SYCL_KHR_PROPERTIES
-
 }  // namespace khr_properties::tests
+
+#endif  // SYCL_KHR_PROPERTIES

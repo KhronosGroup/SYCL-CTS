@@ -15,12 +15,6 @@
 
 #include "khr_properties_common.h"
 
-#if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
-#include <sycl/khr/split_headers/property_list.hpp>
-#endif
-
-#include <catch2/generators/catch_generators.hpp>
-
 namespace khr_properties::tests {
 
 TEST_CASE("the properties extension defines the SYCL_KHR_PROPERTIES macro",
@@ -32,7 +26,17 @@ TEST_CASE("the properties extension defines the SYCL_KHR_PROPERTIES macro",
 #endif
 }
 
+}  // namespace khr_properties::tests
+
 #ifdef SYCL_KHR_PROPERTIES
+
+#if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
+#include <sycl/khr/split_headers/property_list.hpp>
+#endif
+
+#include <catch2/generators/catch_generators.hpp>
+
+namespace khr_properties::tests {
 
 namespace tag = sycl::khr::property::tag;
 
@@ -486,6 +490,6 @@ TEST_CASE("the constructors of the boolean properties from bool are explicit",
   STATIC_CHECK_FALSE(std::is_convertible_v<bool, prop::initialize_to_identity>);
 }
 
-#endif  // SYCL_KHR_PROPERTIES
-
 }  // namespace khr_properties::tests
+
+#endif  // SYCL_KHR_PROPERTIES

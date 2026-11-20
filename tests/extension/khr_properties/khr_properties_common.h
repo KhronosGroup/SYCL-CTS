@@ -31,11 +31,6 @@
 
 #ifdef SYCL_KHR_SPLIT_HEADERS
 #define SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS 1
-#ifdef SYCL_KHR_PROPERTIES
-#include <sycl/khr/properties.hpp>
-#endif
-#include <sycl/khr/split_headers/queue.hpp>
-#include <sycl/khr/split_headers/reduction.hpp>
 #else
 #define SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS 0
 #include <sycl/sycl.hpp>
@@ -43,10 +38,16 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#ifdef SYCL_KHR_PROPERTIES
+
+#if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
+#include <sycl/khr/properties.hpp>
+#include <sycl/khr/split_headers/queue.hpp>
+#include <sycl/khr/split_headers/reduction.hpp>
+#endif
+
 #include <type_traits>
 #include <utility>
-
-#ifdef SYCL_KHR_PROPERTIES
 
 namespace khr_properties::tests {
 

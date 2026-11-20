@@ -18,6 +18,8 @@
 
 #include "khr_properties_common.h"
 
+#ifdef SYCL_KHR_PROPERTIES
+
 #if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
 #include <sycl/khr/split_headers/handler.hpp>
 #include <sycl/khr/split_headers/stream.hpp>
@@ -26,8 +28,6 @@
 #include <cstddef>
 
 namespace khr_properties::tests {
-
-#ifdef SYCL_KHR_PROPERTIES
 
 template <typename P>
 inline constexpr bool can_construct_stream_v =
@@ -51,6 +51,6 @@ TEST_CASE("only the empty properties list applies to the stream class",
   check_class_without_properties<sycl::stream>();
 }
 
-#endif  // SYCL_KHR_PROPERTIES
-
 }  // namespace khr_properties::tests
+
+#endif  // SYCL_KHR_PROPERTIES

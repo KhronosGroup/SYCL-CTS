@@ -18,6 +18,8 @@
 
 #include "khr_properties_common.h"
 
+#ifdef SYCL_KHR_PROPERTIES
+
 #if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
 #include <sycl/khr/split_headers/device.hpp>
 #include <sycl/khr/split_headers/kernel_bundle.hpp>
@@ -26,8 +28,6 @@
 #include <vector>
 
 namespace khr_properties::tests {
-
-#ifdef SYCL_KHR_PROPERTIES
 
 using input_bundle_t = sycl::kernel_bundle<sycl::bundle_state::input>;
 using object_bundle_t = sycl::kernel_bundle<sycl::bundle_state::object>;
@@ -134,6 +134,6 @@ TEST_CASE("only the empty properties list applies to the kernel bundle tags",
   check_class_without_properties<tag::build>();
 }
 
-#endif  // SYCL_KHR_PROPERTIES
-
 }  // namespace khr_properties::tests
+
+#endif  // SYCL_KHR_PROPERTIES
