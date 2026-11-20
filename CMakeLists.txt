@@ -165,6 +165,10 @@ add_cts_option(SYCL_CTS_ENABLE_KHR_PROPERTIES_TESTS
     "Enable sycl_khr_properties extension tests" OFF
     FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
 
+add_cts_option(SYCL_CTS_ENABLE_KHR_VIRTUAL_MEM_TESTS
+    "Enable sycl_khr_virtual_mem tests" OFF
+    FORCE_ON ${SYCL_CTS_ENABLE_KHR_TESTS})
+
 # TODO: Deprecated - remove
 add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG
     "Enable debug-level logs (deprecated)" OFF)
