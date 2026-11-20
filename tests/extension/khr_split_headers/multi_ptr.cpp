@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/multi_ptr.hpp>
 #include <type_traits>
 
@@ -29,16 +31,6 @@ using deco = as::decorated;
 
 template <space Space, deco Decorated>
 using mp = sycl::multi_ptr<int, Space, Decorated>;
-
-TEST_CASE("the multi_ptr header defines the SYCL_KHR_SPLIT_HEADERS macro",
-          "[khr_split_headers][multi_ptr]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 TEST_CASE("the multi_ptr header defines the address_space enumeration",
           "[khr_split_headers][multi_ptr]") {
@@ -143,3 +135,5 @@ TEST_CASE("the multi_ptr header defines the decorated_generic_ptr alias",
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

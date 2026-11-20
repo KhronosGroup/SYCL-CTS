@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 #include <cstdint>
 #include <sycl/khr/split_headers/builtins_common.hpp>
 #include <sycl/khr/split_headers/builtins_geometric.hpp>
@@ -102,3 +104,5 @@ TEST_CASE("builtins compose with marray: geometric functions",
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

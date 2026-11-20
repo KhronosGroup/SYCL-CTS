@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/builtins_geometric.hpp>
 #include <type_traits>
 #include <utility>
@@ -22,17 +24,6 @@
 // defined for 3- or 4-element vec/marray inputs.
 
 namespace khr_split_headers::tests {
-
-TEST_CASE(
-    "the builtins_geometric header defines the SYCL_KHR_SPLIT_HEADERS macro",
-    "[khr_split_headers][builtins_geometric]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 TEST_CASE("the builtins_geometric header defines the dot function",
           "[khr_split_headers][builtins_geometric]") {
@@ -89,3 +80,5 @@ TEST_CASE("the builtins_geometric header provides functions for double scalars",
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

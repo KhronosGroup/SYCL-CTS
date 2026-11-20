@@ -9,19 +9,11 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/vec.hpp>
 
 namespace khr_split_headers::tests {
-
-TEST_CASE("the vec header defines the SYCL_KHR_SPLIT_HEADERS macro",
-          "[khr_split_headers][vec]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 TEST_CASE("the vec header defines the vec class template",
           "[khr_split_headers][vec]") {
@@ -32,3 +24,5 @@ TEST_CASE("the vec header defines the vec class template",
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

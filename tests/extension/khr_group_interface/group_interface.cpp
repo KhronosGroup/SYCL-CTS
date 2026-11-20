@@ -11,6 +11,19 @@
 
 namespace group_interface::tests {
 
+TEST_CASE(
+    "the group interface extension defines the SYCL_KHR_GROUP_INTERFACE "
+    "macro",
+    "[khr_group_interface]") {
+#ifdef SYCL_KHR_GROUP_INTERFACE
+  STATIC_REQUIRE(SYCL_KHR_GROUP_INTERFACE == 1);
+#else
+  SKIP("SYCL_KHR_GROUP_INTERFACE is not defined");
+#endif
+}
+
+#ifdef SYCL_KHR_GROUP_INTERFACE
+
 template <int Dimensions>
 static bool testWorkGroup(sycl::nd_item<Dimensions> it) {
   bool passed = true;
@@ -367,15 +380,6 @@ static void testGroupInterface(sycl::nd_range<Dimensions> nd_range) {
 }
 
 TEST_CASE(
-    "the group interface extension defines the SYCL_KHR_GROUP_INTERFACE "
-    "macro",
-    "[khr_group_interface]") {
-#ifndef SYCL_KHR_GROUP_INTERFACE
-  static_assert(false, "SYCL_KHR_GROUP_INTERFACE is not defined");
-#endif
-}
-
-TEST_CASE(
     "the group interface extension correctly defines the work_group, "
     "sub_group, and work_item classes",
     "[khr_group_interface]") {
@@ -383,5 +387,7 @@ TEST_CASE(
   testGroupInterface(sycl::nd_range<2>({10, 12}, {2, 3}));
   testGroupInterface(sycl::nd_range<3>({3, 10, 12}, {1, 2, 3}));
 }
+
+#endif  // SYCL_KHR_GROUP_INTERFACE
 
 }  // namespace group_interface::tests

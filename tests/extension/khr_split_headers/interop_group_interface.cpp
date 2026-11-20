@@ -18,11 +18,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
-// version.hpp of the split_headers extension is required to expose the feature
-// test macros of all other supported extensions.
-#include <sycl/khr/split_headers/version.hpp>
 
-#if defined(SYCL_KHR_SPLIT_HEADERS) && defined(SYCL_KHR_GROUP_INTERFACE)
+#if SYCL_KHR_SPLIT_HEADERS && defined(SYCL_KHR_GROUP_INTERFACE)
 
 #include <sycl/khr/group_interface.hpp>
 #include <sycl/khr/split_headers/groups.hpp>
@@ -44,20 +41,9 @@ TEST_CASE(
     "the group_interface feature test macro is provided through "
     "<sycl/khr/split_headers/version.hpp>",
     "[khr_split_headers][group_interface]") {
-  STATIC_REQUIRE(SYCL_KHR_GROUP_INTERFACE >= 1);
+  STATIC_REQUIRE(SYCL_KHR_GROUP_INTERFACE == 1);
 }
 
 }  // namespace khr_split_headers::tests
 
-#else
-
-// When either extension is not implemented the coexistence requirement does not
-// apply; keep at least one always-present test case so the translation unit is
-// not empty.
-TEST_CASE("group_interface split_headers coexistence is not applicable",
-          "[khr_split_headers][group_interface]") {
-  SUCCEED(
-      "SYCL_KHR_SPLIT_HEADERS and/or SYCL_KHR_GROUP_INTERFACE not implemented");
-}
-
-#endif
+#endif  // SYCL_KHR_SPLIT_HEADERS && SYCL_KHR_GROUP_INTERFACE

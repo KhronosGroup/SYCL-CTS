@@ -31,15 +31,20 @@
 
 #ifdef SYCL_KHR_SPLIT_HEADERS
 #define SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS 1
-#include <sycl/khr/properties.hpp>
-#include <sycl/khr/split_headers/queue.hpp>
-#include <sycl/khr/split_headers/reduction.hpp>
 #else
 #define SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS 0
 #include <sycl/sycl.hpp>
 #endif
 
 #include <catch2/catch_test_macros.hpp>
+
+#ifdef SYCL_KHR_PROPERTIES
+
+#if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
+#include <sycl/khr/properties.hpp>
+#include <sycl/khr/split_headers/queue.hpp>
+#include <sycl/khr/split_headers/reduction.hpp>
+#endif
 
 #include <type_traits>
 #include <utility>
@@ -147,5 +152,7 @@ void check_class_without_properties() {
 }
 
 }  // namespace khr_properties::tests
+
+#endif  // SYCL_KHR_PROPERTIES
 
 #endif  // __SYCLCTS_TESTS_EXTENSION_KHR_PROPERTIES_COMMON_H

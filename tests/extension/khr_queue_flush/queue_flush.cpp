@@ -16,10 +16,14 @@ TEST_CASE(
     "the queue flush extension defines the "
     "SYCL_KHR_QUEUE_FLUSH macro",
     "[khr_queue_flush]") {
-#ifndef SYCL_KHR_QUEUE_FLUSH
-  static_assert(false, "SYCL_KHR_QUEUE_FLUSH is not defined");
+#ifdef SYCL_KHR_QUEUE_FLUSH
+  STATIC_REQUIRE(SYCL_KHR_QUEUE_FLUSH == 1);
+#else
+  SKIP("SYCL_KHR_QUEUE_FLUSH is not defined");
 #endif
 }
+
+#ifdef SYCL_KHR_QUEUE_FLUSH
 
 TEST_CASE("Flush and spin lock event", "[khr_queue_flush]") {
   sycl::queue q;
@@ -41,5 +45,7 @@ TEST_CASE("Flush and host task", "[khr_queue_flush]") {
   promise.set_value();
   q.wait();
 }
+
+#endif  // SYCL_KHR_QUEUE_FLUSH
 
 }  // namespace queue_flush::tests

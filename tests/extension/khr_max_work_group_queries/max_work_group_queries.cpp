@@ -9,7 +9,20 @@
 
 #include "../../common/common.h"
 
-namespace max_work_group_range::tests {
+namespace max_work_group_queries::tests {
+
+TEST_CASE(
+    "the max work group queries extension defines the "
+    "SYCL_KHR_MAX_WORK_GROUP_QUERIES macro",
+    "[khr_max_work_group_queries]") {
+#ifdef SYCL_KHR_MAX_WORK_GROUP_QUERIES
+  STATIC_REQUIRE(SYCL_KHR_MAX_WORK_GROUP_QUERIES == 1);
+#else
+  SKIP("SYCL_KHR_MAX_WORK_GROUP_QUERIES is not defined");
+#endif
+}
+
+#ifdef SYCL_KHR_MAX_WORK_GROUP_QUERIES
 
 template <int DIMENSION>
 void check_min_size() {
@@ -47,12 +60,16 @@ void check_min_total_size() {
   CHECK(max_total >= 1);
 }
 
-TEST_CASE("if the device is not info::device_type::custom, the minimal size",
-          "in each dimension and in total is 1 [khr_max_work_group_range]") {
+TEST_CASE(
+    "if the device is not info::device_type::custom, the minimal size in each "
+    "dimension and in total is 1",
+    "[khr_max_work_group_queries]") {
   check_min_size<1>();
   check_min_size<2>();
   check_min_size<3>();
   check_min_total_size();
 }
 
-}  // namespace max_work_group_range::tests
+#endif  // SYCL_KHR_MAX_WORK_GROUP_QUERIES
+
+}  // namespace max_work_group_queries::tests

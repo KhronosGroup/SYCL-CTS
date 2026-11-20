@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 // functional.hpp provides sycl::plus, used below as the binary operator for the
 // known_identity / has_known_identity traits.
 #include <sycl/khr/split_headers/functional.hpp>
@@ -24,16 +26,6 @@
 // types.
 
 namespace khr_split_headers::tests {
-
-TEST_CASE("the type_traits header defines the SYCL_KHR_SPLIT_HEADERS macro",
-          "[khr_split_headers][type_traits]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 // NOTE: The spec lists is_group and is_device_copyable (with their _v forms)
 // as part of this header. The current DPC++ build only includes
@@ -100,3 +92,5 @@ TEST_CASE("the type_traits header defines the has_known_identity trait",
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

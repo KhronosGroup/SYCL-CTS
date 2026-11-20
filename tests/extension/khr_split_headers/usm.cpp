@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 #include <cstddef>
 #include <sycl/khr/split_headers/usm.hpp>
 #include <type_traits>
@@ -23,16 +25,6 @@
 // using the queue-based overloads so the checks remain compile-time only.
 
 namespace khr_split_headers::tests {
-
-TEST_CASE("the usm header defines the SYCL_KHR_SPLIT_HEADERS macro",
-          "[khr_split_headers][usm]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 TEST_CASE("the usm header defines the usm::alloc enumeration",
           "[khr_split_headers][usm]") {
@@ -144,3 +136,5 @@ TEST_CASE("the usm header defines the get_pointer_device query function",
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

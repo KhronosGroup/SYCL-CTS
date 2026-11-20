@@ -18,6 +18,8 @@
 
 #include "khr_properties_common.h"
 
+#ifdef SYCL_KHR_PROPERTIES
+
 #if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
 #include <sycl/khr/split_headers/device.hpp>
 #include <sycl/khr/split_headers/kernel_bundle.hpp>
@@ -133,3 +135,5 @@ TEST_CASE("only the empty properties list applies to the kernel bundle tags",
 }
 
 }  // namespace khr_properties::tests
+
+#endif  // SYCL_KHR_PROPERTIES

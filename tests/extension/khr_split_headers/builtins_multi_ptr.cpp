@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/builtins_math.hpp>
 #include <sycl/khr/split_headers/multi_ptr.hpp>
 #include <type_traits>
@@ -82,3 +84,5 @@ TEST_CASE("builtins compose with multi_ptr: local address space is writeable",
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

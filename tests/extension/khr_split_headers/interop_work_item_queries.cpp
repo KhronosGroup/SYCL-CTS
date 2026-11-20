@@ -17,9 +17,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
-#include <sycl/khr/split_headers/version.hpp>
 
-#if defined(SYCL_KHR_SPLIT_HEADERS) && defined(SYCL_KHR_WORK_ITEM_QUERIES)
+#if SYCL_KHR_SPLIT_HEADERS && defined(SYCL_KHR_WORK_ITEM_QUERIES)
 
 #include <sycl/khr/split_headers/index_space.hpp>
 #include <sycl/khr/work_item_queries.hpp>
@@ -44,18 +43,9 @@ TEST_CASE(
     "the work_item_queries feature test macro is provided through "
     "<sycl/khr/split_headers/version.hpp>",
     "[khr_split_headers][work_item_queries]") {
-  STATIC_REQUIRE(SYCL_KHR_WORK_ITEM_QUERIES >= 1);
+  STATIC_REQUIRE(SYCL_KHR_WORK_ITEM_QUERIES == 1);
 }
 
 }  // namespace khr_split_headers::tests
 
-#else
-
-TEST_CASE("work_item_queries split_headers coexistence is not applicable",
-          "[khr_split_headers][work_item_queries]") {
-  SUCCEED(
-      "SYCL_KHR_SPLIT_HEADERS and/or SYCL_KHR_WORK_ITEM_QUERIES not "
-      "implemented");
-}
-
-#endif
+#endif  // SYCL_KHR_SPLIT_HEADERS && SYCL_KHR_WORK_ITEM_QUERIES

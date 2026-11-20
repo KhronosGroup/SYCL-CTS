@@ -14,6 +14,8 @@
 
 #include "khr_properties_common.h"
 
+#ifdef SYCL_KHR_PROPERTIES
+
 #if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
 #include <sycl/khr/split_headers/functional.hpp>
 #include <sycl/khr/split_headers/reduction.hpp>
@@ -91,3 +93,5 @@ TEST_CASE(
 }
 
 }  // namespace khr_properties::tests
+
+#endif  // SYCL_KHR_PROPERTIES

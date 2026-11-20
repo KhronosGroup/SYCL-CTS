@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 // group_algorithms.hpp provides the algorithms; groups.hpp provides the group
 // type used as their first argument, and functional.hpp provides the SYCL
 // binary operators (e.g. sycl::plus) used by the reduce and scan algorithms.
@@ -40,17 +42,6 @@ using op_t = sycl::plus<int>;
 struct int_predicate {
   bool operator()(int) const;
 };
-
-TEST_CASE(
-    "the group_algorithms header defines the SYCL_KHR_SPLIT_HEADERS macro",
-    "[khr_split_headers][group_algorithms]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 TEST_CASE("the group_algorithms header defines group_broadcast",
           "[khr_split_headers][group_algorithms]") {
@@ -184,3 +175,5 @@ TEST_CASE("the group_algorithms header defines joint_inclusive_scan",
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

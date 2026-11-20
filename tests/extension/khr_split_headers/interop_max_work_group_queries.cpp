@@ -17,9 +17,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
-#include <sycl/khr/split_headers/version.hpp>
 
-#if defined(SYCL_KHR_SPLIT_HEADERS) && defined(SYCL_KHR_MAX_WORK_GROUP_QUERIES)
+#if SYCL_KHR_SPLIT_HEADERS && defined(SYCL_KHR_MAX_WORK_GROUP_QUERIES)
 
 #include <sycl/khr/max_work_group_queries.hpp>
 #include <sycl/khr/split_headers/device.hpp>
@@ -46,18 +45,9 @@ TEST_CASE(
     "the max_work_group_queries feature test macro is provided through "
     "<sycl/khr/split_headers/version.hpp>",
     "[khr_split_headers][max_work_group_queries]") {
-  STATIC_REQUIRE(SYCL_KHR_MAX_WORK_GROUP_QUERIES >= 1);
+  STATIC_REQUIRE(SYCL_KHR_MAX_WORK_GROUP_QUERIES == 1);
 }
 
 }  // namespace khr_split_headers::tests
 
-#else
-
-TEST_CASE("max_work_group_queries split_headers coexistence is not applicable",
-          "[khr_split_headers][max_work_group_queries]") {
-  SUCCEED(
-      "SYCL_KHR_SPLIT_HEADERS and/or SYCL_KHR_MAX_WORK_GROUP_QUERIES not "
-      "implemented");
-}
-
-#endif
+#endif  // SYCL_KHR_SPLIT_HEADERS && SYCL_KHR_MAX_WORK_GROUP_QUERIES

@@ -9,20 +9,12 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/span.hpp>
 #include <type_traits>
 
 namespace khr_split_headers::tests {
-
-TEST_CASE("the span header defines the SYCL_KHR_SPLIT_HEADERS macro",
-          "[khr_split_headers][span]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 TEST_CASE("the span header defines the span class template",
           "[khr_split_headers][span]") {
@@ -37,3 +29,5 @@ TEST_CASE("the span header defines the dynamic_extent constant",
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

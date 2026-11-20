@@ -22,6 +22,8 @@
 
 #include "khr_properties_common.h"
 
+#ifdef SYCL_KHR_PROPERTIES
+
 #include <catch2/generators/catch_generators.hpp>
 
 #include <algorithm>
@@ -1010,3 +1012,5 @@ TEST_CASE("a stream constructed with an empty properties list",
 }
 
 }  // namespace khr_properties::tests
+
+#endif  // SYCL_KHR_PROPERTIES

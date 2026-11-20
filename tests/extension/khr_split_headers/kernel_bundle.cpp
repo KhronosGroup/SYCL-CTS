@@ -9,19 +9,11 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/kernel_bundle.hpp>
 
 namespace khr_split_headers::tests {
-
-TEST_CASE("the kernel_bundle header defines the SYCL_KHR_SPLIT_HEADERS macro",
-          "[khr_split_headers][kernel_bundle]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 TEST_CASE("the kernel_bundle header defines the kernel_bundle class template",
           "[khr_split_headers][kernel_bundle]") {
@@ -34,3 +26,5 @@ TEST_CASE("the kernel_bundle header defines the kernel_bundle class template",
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

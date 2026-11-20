@@ -15,10 +15,14 @@ TEST_CASE(
     "the dynamic addrspace cast extension defines the "
     "SYCL_KHR_DYNAMIC_ADDRSPACE_CAST macro",
     "[khr_dynamic_addrspace_cast]") {
-#ifndef SYCL_KHR_DYNAMIC_ADDRSPACE_CAST
-  static_assert(false, "SYCL_KHR_DYNAMIC_ADDRSPACE_CAST is not defined");
+#ifdef SYCL_KHR_DYNAMIC_ADDRSPACE_CAST
+  STATIC_REQUIRE(SYCL_KHR_DYNAMIC_ADDRSPACE_CAST == 1);
+#else
+  SKIP("SYCL_KHR_DYNAMIC_ADDRSPACE_CAST is not defined");
 #endif
 }
+
+#ifdef SYCL_KHR_DYNAMIC_ADDRSPACE_CAST
 
 /*
  * This function checks the dynamic address space cast functionality by creating
@@ -256,5 +260,7 @@ TEST_CASE(
   check_private_ptr_cast<sycl::decorated_generic_ptr<int>, 2, 3>();
   check_private_ptr_cast<sycl::decorated_generic_ptr<int>, 2, 3, 4>();
 }
+
+#endif  // SYCL_KHR_DYNAMIC_ADDRSPACE_CAST
 
 }  // namespace dynamic_addrspace_cast::tests

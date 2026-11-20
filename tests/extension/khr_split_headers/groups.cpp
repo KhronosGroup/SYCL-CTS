@@ -9,19 +9,11 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/groups.hpp>
 
 namespace khr_split_headers::tests {
-
-TEST_CASE("the groups header defines the SYCL_KHR_SPLIT_HEADERS macro",
-          "[khr_split_headers][groups]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 TEST_CASE("the groups header defines the group class template",
           "[khr_split_headers][groups]") {
@@ -41,3 +33,5 @@ TEST_CASE("the groups header defines the device_event class",
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

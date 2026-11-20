@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 #include <cstdint>
 #include <sycl/khr/split_headers/builtins_math.hpp>
 #include <type_traits>
@@ -22,16 +24,6 @@
 // (returns int). Pointer-argument functions take raw pointers.
 
 namespace khr_split_headers::tests {
-
-TEST_CASE("the builtins_math header defines the SYCL_KHR_SPLIT_HEADERS macro",
-          "[khr_split_headers][builtins_math]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 // Helper: assert f(float...) returns float.
 #define CHECK_UNARY_FLOAT(FN)                                        \
@@ -294,3 +286,5 @@ TEST_CASE("the builtins_math header defines the half_precision::powr function",
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

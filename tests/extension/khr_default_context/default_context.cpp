@@ -14,10 +14,14 @@ namespace default_context::tests {
 TEST_CASE(
     "the default context extension defines the SYCL_KHR_DEFAULT_CONTEXT macro",
     "[khr_default_context]") {
-#ifndef SYCL_KHR_DEFAULT_CONTEXT
-  static_assert(false, "SYCL_KHR_DEFAULT_CONTEXT is not defined");
+#ifdef SYCL_KHR_DEFAULT_CONTEXT
+  STATIC_REQUIRE(SYCL_KHR_DEFAULT_CONTEXT == 1);
+#else
+  SKIP("SYCL_KHR_DEFAULT_CONTEXT is not defined");
 #endif
 }
+
+#ifdef SYCL_KHR_DEFAULT_CONTEXT
 
 TEST_CASE("the default context contains all of the default platform's devices",
           "[khr_default_context]") {
@@ -60,5 +64,7 @@ TEST_CASE("queue constructors use the default context or the context parameter",
         sycl::queue{syclContext, syclDevice, asyncHandler, propList}
             .get_context());
 }
+
+#endif  // SYCL_KHR_DEFAULT_CONTEXT
 
 }  // namespace default_context::tests

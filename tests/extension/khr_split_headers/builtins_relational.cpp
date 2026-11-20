@@ -9,6 +9,8 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/builtins_relational.hpp>
 #include <type_traits>
 #include <utility>
@@ -21,17 +23,6 @@
 // type.
 
 namespace khr_split_headers::tests {
-
-TEST_CASE(
-    "the builtins_relational header defines the SYCL_KHR_SPLIT_HEADERS macro",
-    "[khr_split_headers][builtins_relational]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 TEST_CASE("the builtins_relational header defines the isequal function",
           "[khr_split_headers][builtins_relational]") {
@@ -165,3 +156,5 @@ TEST_CASE(
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

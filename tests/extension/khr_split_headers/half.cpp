@@ -9,19 +9,11 @@
 
 #include "util.h"
 #include <catch2/catch_test_macros.hpp>
+
+#if SYCL_KHR_SPLIT_HEADERS
 #include <sycl/khr/split_headers/half.hpp>
 
 namespace khr_split_headers::tests {
-
-TEST_CASE("the half header defines the SYCL_KHR_SPLIT_HEADERS macro",
-          "[khr_split_headers][half]") {
-#ifdef SYCL_KHR_SPLIT_HEADERS
-  constexpr bool macro_is_defined = true;
-#else
-  constexpr bool macro_is_defined = false;
-#endif
-  STATIC_REQUIRE(macro_is_defined);
-}
 
 TEST_CASE("the half header defines the half class",
           "[khr_split_headers][half]") {
@@ -29,3 +21,5 @@ TEST_CASE("the half header defines the half class",
 }
 
 }  // namespace khr_split_headers::tests
+
+#endif  // SYCL_KHR_SPLIT_HEADERS

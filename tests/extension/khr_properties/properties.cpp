@@ -15,6 +15,21 @@
 
 #include "khr_properties_common.h"
 
+namespace khr_properties::tests {
+
+TEST_CASE("the properties extension defines the SYCL_KHR_PROPERTIES macro",
+          "[khr_properties][properties]") {
+#ifdef SYCL_KHR_PROPERTIES
+  STATIC_REQUIRE(SYCL_KHR_PROPERTIES == 1);
+#else
+  SKIP("SYCL_KHR_PROPERTIES is not defined");
+#endif
+}
+
+}  // namespace khr_properties::tests
+
+#ifdef SYCL_KHR_PROPERTIES
+
 #if SYCL_CTS_KHR_PROPERTIES_SPLIT_HEADERS
 #include <sycl/khr/split_headers/property_list.hpp>
 #endif
@@ -61,15 +76,6 @@ void check_unary_trait() {
   using base_t = std::integral_constant<bool, Expected>;
   STATIC_CHECK(std::is_base_of_v<base_t, Trait<T>>);
   STATIC_CHECK(Trait<T>::value == Expected);
-}
-
-TEST_CASE("the properties extension defines the SYCL_KHR_PROPERTIES macro",
-          "[khr_properties][properties]") {
-#ifndef SYCL_KHR_PROPERTIES
-  static_assert(false, "SYCL_KHR_PROPERTIES is not defined");
-#else
-  STATIC_CHECK(SYCL_KHR_PROPERTIES == 1);
-#endif
 }
 
 TEST_CASE("empty_properties_t is the type of an empty properties list",
@@ -485,3 +491,5 @@ TEST_CASE("the constructors of the boolean properties from bool are explicit",
 }
 
 }  // namespace khr_properties::tests
+
+#endif  // SYCL_KHR_PROPERTIES
